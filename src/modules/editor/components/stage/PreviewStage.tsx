@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Maximize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useProjectStore } from '@/modules/projects';
 import { IconButton } from '@/shared/components/ui/IconButton';
+import { CanvasStage } from '@/modules/editor/features/canvas';
 
 export function PreviewStage() {
   const { playhead, isPlaying, togglePlay, stepForward, stepBackward } = usePlaybackStore();
@@ -27,21 +28,12 @@ export function PreviewStage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#121419] text-[#F4F5F7] select-none">
-      {/* Upper Stage Area */}
-      <div className="relative flex flex-1 items-center justify-center p-6 overflow-hidden">
-        {/* Centered Canvas Container */}
-        <div className="relative aspect-video w-full max-w-3xl rounded-lg border border-[#2B2F38] bg-[#000000] shadow-2xl flex items-center justify-center overflow-hidden">
-          {/* Subtle Grid / Canvas Placeholder */}
-          <div className="text-center text-[#9298A3]">
-            <p className="text-xs font-mono font-medium tracking-wide">
-              {settings.width} × {settings.height} ({settings.aspectRatio}) • {settings.fps} FPS
-            </p>
-            <p className="text-[11px] text-[#6F716F] mt-1">Canvas Preview Stage</p>
-          </div>
-        </div>
+      {/* Interactive Canvas Stage */}
+      <div className="flex-1 overflow-hidden relative">
+        <CanvasStage />
       </div>
 
-      {/* Playback Controls Footer Bar */}
+      {/* Playback Transport Control Bar */}
       <div className="flex h-11 shrink-0 items-center justify-between border-t border-[#2B2F38] bg-[#14161B] px-4">
         {/* Left: Resolution & FPS Info */}
         <div className="flex items-center gap-2 text-xs font-mono text-[#9298A3]">
@@ -78,12 +70,8 @@ export function PreviewStage() {
           </span>
         </div>
 
-        {/* Right: Fullscreen Toggle */}
-        <div className="flex items-center gap-2">
-          <IconButton label="Fullscreen preview" size="sm" variant="ghost">
-            <Maximize2 className="h-3.5 w-3.5" />
-          </IconButton>
-        </div>
+        {/* Right: Spacer */}
+        <div className="w-24" />
       </div>
     </div>
   );

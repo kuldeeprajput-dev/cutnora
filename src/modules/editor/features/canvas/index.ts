@@ -1,1 +1,11 @@
-export const CANVAS_FEATURE = 'canvas';
+export * from './components/CanvasStage';
+export * from './components/CanvasRenderer';
+export * from './components/VideoLayer';
+export * from './components/ImageLayer';
+export * from './components/TextLayer';
+export * from './components/ElementLayer';
+export * from './components/SelectionOverlay';
+export * from './components/CropOverlay';
+export * from './hooks/useTransformHandler';
+export * from './utils/stage-math';
+export * from './utils/snapping-utils';
