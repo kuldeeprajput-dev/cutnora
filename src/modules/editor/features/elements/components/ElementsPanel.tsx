@@ -24,6 +24,7 @@ const elementPresets: ElementPreset[] = [
     style: {
       fillColor: '#FF5A36',
       borderRadius: 0,
+      shapeType: 'rectangle',
       width: 300,
       height: 200,
     },
@@ -35,6 +36,7 @@ const elementPresets: ElementPreset[] = [
     style: {
       fillColor: '#F2C94C',
       borderRadius: 24,
+      shapeType: 'rounded-rect',
       width: 300,
       height: 180,
     },
@@ -46,6 +48,7 @@ const elementPresets: ElementPreset[] = [
     style: {
       fillColor: '#3478D4',
       borderRadius: 999,
+      shapeType: 'circle',
       width: 200,
       height: 200,
     },
@@ -56,9 +59,12 @@ const elementPresets: ElementPreset[] = [
     icon: Minus,
     style: {
       fillColor: '#F4F5F7',
-      borderRadius: 2,
+      strokeColor: '#F4F5F7',
+      strokeWidth: 4,
+      lineStyle: 'solid',
+      shapeType: 'line',
       width: 400,
-      height: 6,
+      height: 20,
     },
   },
   {
@@ -67,7 +73,10 @@ const elementPresets: ElementPreset[] = [
     icon: ArrowRight,
     style: {
       fillColor: '#248A5A',
-      borderRadius: 8,
+      strokeColor: '#248A5A',
+      strokeWidth: 4,
+      arrowHead: 'end',
+      shapeType: 'arrow',
       width: 320,
       height: 80,
     },
@@ -78,7 +87,7 @@ const elementPresets: ElementPreset[] = [
     icon: Triangle,
     style: {
       fillColor: '#FF5A36',
-      borderRadius: 8,
+      shapeType: 'triangle',
       width: 200,
       height: 200,
     },
@@ -92,6 +101,7 @@ const elementPresets: ElementPreset[] = [
       strokeColor: '#FF5A36',
       strokeWidth: 3,
       borderRadius: 16,
+      shapeType: 'speech-bubble',
       width: 350,
       height: 160,
     },
@@ -102,9 +112,12 @@ const elementPresets: ElementPreset[] = [
     icon: Sliders,
     style: {
       fillColor: '#248A5A',
+      strokeColor: '#1D2027',
       borderRadius: 12,
+      shapeType: 'progress-bar',
+      progress: 65,
       width: 500,
-      height: 24,
+      height: 28,
     },
   },
   {
@@ -114,6 +127,7 @@ const elementPresets: ElementPreset[] = [
     style: {
       fillColor: '#FF5A36',
       borderRadius: 4,
+      shapeType: 'divider',
       width: 250,
       height: 12,
     },
