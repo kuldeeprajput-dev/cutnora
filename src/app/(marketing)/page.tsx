@@ -1,5 +1,15 @@
 import React from 'react';
-import { LandingHeader, LandingHeroSection } from '@/modules/marketing';
+import {
+  LandingHeader,
+  LandingHeroSection,
+  FeaturesSection,
+  WorkflowSection,
+  PrivacySection,
+  CapabilitiesSection,
+  FaqSection,
+  FinalCtaSection,
+  LandingFooter,
+} from '@/modules/marketing';
 
 export default function MarketingPage() {
   return (
@@ -7,7 +17,14 @@ export default function MarketingPage() {
       <LandingHeader />
       <main>
         <LandingHeroSection />
+        <FeaturesSection />
+        <WorkflowSection />
+        <PrivacySection />
+        <CapabilitiesSection />
+        <FaqSection />
+        <FinalCtaSection />
       </main>
+      <LandingFooter />
     </div>
   );
 }
