@@ -8,6 +8,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Container } from "@/shared/components/layout/Container";
 import { Plus, Film, Trash2 } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 export default function StudioDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -57,11 +58,14 @@ export default function StudioDashboardPage() {
             </p>
           </div>
 
-          <Link href="/studio/new">
-            <Button size="md" variant="primary">
-              <Plus className="h-4 w-4" /> Create New Project
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle className="border-studio-border bg-studio-bg text-studio-fg hover:bg-studio-hover" />
+            <Link href="/studio/new">
+              <Button size="md" variant="primary">
+                <Plus className="h-4 w-4" /> Create New Project
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Projects Grid */}

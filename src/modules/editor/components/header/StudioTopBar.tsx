@@ -22,6 +22,7 @@ import { historyManager } from "@/modules/editor/store/useHistoryStore";
 import { IconButton } from "@/shared/components/ui/IconButton";
 import { Button } from "@/shared/components/ui/Button";
 import { BrandMark } from "@/shared/components/BrandMark";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 
 export interface StudioTopBarProps {
@@ -190,6 +191,8 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
 
       {/* Right: Help & Export Action Button */}
       <div className="flex items-center gap-2">
+        <ThemeToggle className="border-studio-border bg-studio-topbar text-studio-fg hover:bg-studio-hover" />
+
         <IconButton
           label="Repair project references"
           size="sm"

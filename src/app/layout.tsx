@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./themes.css";
 
 export const metadata: Metadata = {
   title: {
@@ -29,10 +30,21 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#101216",
+  themeColor: "#f8f9fb",
   width: "device-width",
   initialScale: 1,
 };
+
+const themeScript = `
+  try {
+    const storedTheme = localStorage.getItem("cutframe_theme");
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : systemTheme;
+    document.documentElement.dataset.theme = theme;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#070707" : "#f8f9fb");
+  } catch {}
+`;
 
 export default function RootLayout({
   children,
@@ -40,7 +52,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+          suppressHydrationWarning
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
