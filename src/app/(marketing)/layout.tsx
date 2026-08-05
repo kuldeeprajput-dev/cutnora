@@ -6,7 +6,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-[#fcfbf9] text-[#1a1918]">
+    <div className="min-h-screen bg-[#F6F4EF] text-[#151619]">
       {children}
     </div>
   );
