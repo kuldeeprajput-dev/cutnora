@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Undo2, Redo2, Download, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Undo2, Redo2, Download, Check, AlertCircle, Loader2, HelpCircle } from 'lucide-react';
 import { useProjectStore, autosaveService, type SaveStatus } from '@/modules/projects';
 import { useExportStore } from '@/modules/editor/store/useExportStore';
 import { historyManager } from '@/modules/editor/store/useHistoryStore';
 import { IconButton } from '@/shared/components/ui/IconButton';
 import { Button } from '@/shared/components/ui/Button';
 
-export function StudioTopBar() {
+export interface StudioTopBarProps {
+  onOpenHelp?: () => void;
+}
+
+export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   const { currentProject, undo, redo } = useProjectStore();
   const { setExportModalOpen } = useExportStore();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -147,8 +151,17 @@ export function StudioTopBar() {
         </IconButton>
       </div>
 
-      {/* Right: Export Action Button */}
-      <div className="flex items-center gap-3">
+      {/* Right: Help & Export Action Button */}
+      <div className="flex items-center gap-2">
+        <IconButton
+          label="Keyboard Shortcuts (?)"
+          size="sm"
+          variant="ghost"
+          onClick={onOpenHelp}
+        >
+          <HelpCircle className="h-4 w-4" />
+        </IconButton>
+
         <Button
           size="sm"
           variant="primary"

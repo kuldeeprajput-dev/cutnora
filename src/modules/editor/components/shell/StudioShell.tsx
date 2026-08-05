@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StudioTopBar } from '../header/StudioTopBar';
 import { StudioToolRail } from '../rail/StudioToolRail';
 import { ContextualPanel } from '../panels/ContextualPanel';
@@ -8,11 +8,17 @@ import { PreviewStage } from '../stage/PreviewStage';
 import { TimelineShell } from '../timeline/TimelineShell';
 import { ResizableDivider } from '@/shared/components/layout/ResizableDivider';
 import { ExportModal } from '@/modules/editor/features/export';
+import { KeyboardShortcutsModal } from '../modals/KeyboardShortcutsModal';
+import { ToastContainer } from '@/shared/components/ui/Toast/ToastContainer';
+import { useKeyboardShortcuts } from '@/modules/editor/commands/useKeyboardShortcuts';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { Monitor } from 'lucide-react';
 
 export function StudioShell() {
   const { leftPanelWidth, setLeftPanelWidth, timelineHeight, setTimelineHeight } = useEditorUIStore();
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  useKeyboardShortcuts(() => setIsShortcutsOpen(true));
 
   useEffect(() => {
     const savedWidth = localStorage.getItem('cutframe_panel_width');
@@ -36,7 +42,7 @@ export function StudioShell() {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#101216] text-[#F4F5F7] select-none">
       {/* Top 56px Bar */}
-      <StudioTopBar />
+      <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
       {/* Screen Width < 1024px Warning Banner */}
       <div className="lg:hidden flex items-center justify-between bg-[#F2C94C] text-[#101216] px-4 py-2 text-xs font-semibold">
@@ -81,8 +87,10 @@ export function StudioShell() {
         </div>
       </div>
 
-      {/* Global Export Modal */}
+      {/* Global Modals & Notifications */}
       <ExportModal />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+      <ToastContainer />
     </div>
   );
 }

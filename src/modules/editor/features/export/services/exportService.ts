@@ -44,14 +44,14 @@ export async function runExportTask(
   let audioSession: ReturnType<typeof createAudioExporterSession> = null;
   const mediaElementsMap = new Map<
     string,
-    HTMLVideoElement | HTMLImageElement
+    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
   >();
   const objectUrlsToRevoke: string[] = [];
 
   try {
     onProgress(0, project.settings.duration, 0, "rendering");
 
-    // 1. Preload Media Elements (Images & Videos) from IndexedDB
+    // 1. Preload Media Elements (Images, Videos, & Audio) from IndexedDB
     for (const assetId of project.assetIds) {
       if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
       const asset = await db.assets.get(assetId);
@@ -72,9 +72,19 @@ export async function runExportTask(
 
         await new Promise<void>((resolve) => {
           videoEl.onloadedmetadata = () => resolve();
-          videoEl.onerror = () => resolve(); // continue on format error
+          videoEl.onerror = () => resolve();
         });
         mediaElementsMap.set(asset.id, videoEl);
+      } else if (asset.type === "audio") {
+        const audioEl = document.createElement("audio");
+        audioEl.preload = "auto";
+        audioEl.src = blobUrl;
+
+        await new Promise<void>((resolve) => {
+          audioEl.onloadedmetadata = () => resolve();
+          audioEl.onerror = () => resolve();
+        });
+        mediaElementsMap.set(asset.id, audioEl);
       } else if (asset.type === "image") {
         const imgEl = new Image();
         imgEl.src = blobUrl;
@@ -95,10 +105,10 @@ export async function runExportTask(
     let exportW = projW;
     let exportH = projH;
 
-    if (settings.resolution === "720p") {
+    if (settings.resolution === "720p" || settings.resolution === "1280x720") {
       exportW = 1280;
       exportH = 720;
-    } else if (settings.resolution === "1080p") {
+    } else if (settings.resolution === "1080p" || settings.resolution === "1920x1080") {
       exportW = 1920;
       exportH = 1080;
     }
@@ -236,7 +246,6 @@ export async function runExportTask(
         console.warn("FFmpeg MP4 conversion fallback to WebM:", ffmpegErr);
         // Fallback to WebM if FFmpeg WASM fails or SharedArrayBuffer is unsupported
         finalExportBlob = webmBlob;
-        finalMimeType = "video/webm";
         fileExtension = "webm";
       }
     }
@@ -271,11 +280,16 @@ export async function runExportTask(
       audioSession.cleanup();
     }
     mediaElementsMap.forEach((el) => {
-      if (el instanceof HTMLVideoElement) {
+      if (el instanceof HTMLVideoElement || el instanceof HTMLAudioElement) {
         el.pause();
         el.src = "";
         el.load();
       }
+    });
+    objectUrlsToRevoke.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
     });
   }
 }

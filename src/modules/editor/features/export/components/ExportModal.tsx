@@ -251,8 +251,12 @@ export function ExportModal() {
                   }
                   className="h-8 text-xs border-[#2B2F38]"
                 >
-                  <option value="webm">WebM (Fast)</option>
-                  <option value="mp4">MP4 (H.264 Transcode)</option>
+                  <option value="webm">WebM</option>
+                  <option value="mp4" disabled={!capabilities.hasFFmpegSupport}>
+                    {capabilities.hasFFmpegSupport
+                      ? "MP4 (FFmpeg conversion)"
+                      : "MP4 (Not supported on device)"}
+                  </option>
                 </Select>
               </div>
 
@@ -267,10 +271,10 @@ export function ExportModal() {
                   }
                   className="h-8 text-xs border-[#2B2F38]"
                 >
-                  <option value="1080p">1920×1080 (1080p)</option>
-                  <option value="720p">1280×720 (720p)</option>
+                  <option value="1280x720">1280x720</option>
+                  <option value="1920x1080">1920x1080</option>
                   <option value="project">
-                    Project ({currentProject.settings.width}×
+                    Project resolution ({currentProject.settings.width}x
                     {currentProject.settings.height})
                   </option>
                 </Select>
@@ -290,15 +294,15 @@ export function ExportModal() {
                   }
                   className="h-8 text-xs border-[#2B2F38]"
                 >
-                  <option value="24">24 FPS (Cinematic)</option>
-                  <option value="30">30 FPS (Standard)</option>
-                  <option value="60">60 FPS (Smooth)</option>
+                  <option value="24">24</option>
+                  <option value="30">30</option>
+                  <option value="60">60 when practical</option>
                 </Select>
               </div>
 
               <div>
                 <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
-                  Video Quality
+                  Quality
                 </label>
                 <Select
                   value={exportQuality}
@@ -307,9 +311,9 @@ export function ExportModal() {
                   }
                   className="h-8 text-xs border-[#2B2F38]"
                 >
-                  <option value="draft">Draft (3 Mbps)</option>
-                  <option value="standard">Standard (8 Mbps)</option>
-                  <option value="high">High (15 Mbps)</option>
+                  <option value="draft">Draft</option>
+                  <option value="standard">Standard</option>
+                  <option value="high">High</option>
                 </Select>
               </div>
             </div>
@@ -325,8 +329,8 @@ export function ExportModal() {
                 </span>
               </div>
               <p className="text-[11px] text-[#9298A3] mt-1">
-                Local export performance depends on project length, resolution,
-                and your device hardware.
+                Local export performance depends on project length, resolution
+                and device performance.
               </p>
             </div>
           </div>
