@@ -32,7 +32,7 @@ export function TimelineEditor() {
 
   const tracks = currentProject?.tracks || [];
   const projectDuration = currentProject?.settings.duration || 10;
-  const totalWidthPx = Math.max(1000, projectDuration * zoom);
+  const totalWidthPx = Math.max(100, projectDuration * zoom + 60);
   const playheadLeftPx = playhead * zoom;
 
   // Track reorder end handler
@@ -140,7 +140,15 @@ export function TimelineEditor() {
       } else if (mode === 'trim-start') {
         const rawStart = Math.max(0, initialStart + deltaSecs);
         const snapRes = snapTimelineTime(rawStart, tracks, playhead, clip.id, zoom, isSnapping);
-        const newStart = Math.min(initialStart + initialDuration - 0.1, snapRes.snappedTime);
+
+        // Cannot trim left past the start of the source video (sourceStart >= 0)
+        const minTimelineStart = (clip.type === 'video' || clip.type === 'audio')
+          ? initialStart - initialSourceStart
+          : 0;
+
+        let newStart = Math.max(minTimelineStart, snapRes.snappedTime);
+        newStart = Math.min(initialStart + initialDuration - 0.1, newStart);
+
         const newDuration = Math.max(0.1, initialDuration + (initialStart - newStart));
         const newSourceStart = Math.max(0, initialSourceStart + (newStart - initialStart));
 
@@ -151,7 +159,13 @@ export function TimelineEditor() {
         const rawEnd = initialStart + rawDuration;
         const snapRes = snapTimelineTime(rawEnd, tracks, playhead, clip.id, zoom, isSnapping);
         const newEnd = snapRes.snappedTime;
-        const newDuration = Math.max(0.1, newEnd - initialStart);
+        let newDuration = Math.max(0.1, newEnd - initialStart);
+
+        // Clamp duration so clip duration does not exceed remaining source video/audio file length
+        if ((clip.type === 'video' || clip.type === 'audio') && clip.sourceDuration) {
+          const maxAvailable = Math.max(0.1, (clip.sourceDuration - initialSourceStart) / (clip.speed || 1));
+          newDuration = Math.min(maxAvailable, newDuration);
+        }
 
         setActiveSnapLine(snapRes.isSnapped ? snapRes.snappedTime : null);
         trimClip(clip.id, initialStart, newDuration, initialSourceStart);
@@ -214,7 +228,7 @@ export function TimelineEditor() {
               <span>No tracks created yet</span>
             </div>
           ) : (
-            <div className="flex flex-col relative" style={{ width: `${totalWidthPx}px` }}>
+            <div className="flex flex-col relative w-full" style={{ minWidth: `${totalWidthPx}px` }}>
               {tracks.map((track) => (
                 <TrackLane
                   key={track.id}

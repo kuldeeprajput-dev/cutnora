@@ -80,11 +80,21 @@ export function trimClipBounds(
       ...track,
       clips: track.clips.map((clip) => {
         if (clip.id !== clipId) return clip;
+
+        const safeSourceStart = Math.max(0, newSourceStart);
+        let safeDuration = Math.max(0.1, newDuration);
+
+        // Lock video and audio clips to max asset source duration
+        if ((clip.type === 'video' || clip.type === 'audio') && clip.sourceDuration) {
+          const maxAvailable = Math.max(0.1, (clip.sourceDuration - safeSourceStart) / (clip.speed || 1));
+          safeDuration = Math.min(maxAvailable, safeDuration);
+        }
+
         return {
           ...clip,
           timelineStart: Math.max(0, newStart),
-          timelineDuration: Math.max(0.1, newDuration),
-          sourceStart: Math.max(0, newSourceStart),
+          timelineDuration: safeDuration,
+          sourceStart: safeSourceStart,
         };
       }),
     };

@@ -14,8 +14,15 @@ import {
   calculateProjectDuration,
 } from "@/modules/editor/utils/timeline-utils";
 import { historyManager } from "@/modules/editor/store/useHistoryStore";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { autosaveService } from "../services/autosave-service";
 import { db } from "@/modules/core/db/database";
+
+function syncProjectDuration(project: Project) {
+  const newDuration = calculateProjectDuration(project.tracks);
+  project.settings.duration = newDuration;
+  usePlaybackStore.getState().setDuration(newDuration);
+}
 
 interface ProjectState {
   currentProject: Project | null;
@@ -74,38 +81,7 @@ export const useProjectStore = create<ProjectState>()(
         ...customSettings,
       };
 
-      const defaultTracks: Track[] = [
-        {
-          id: nanoid(),
-          type: "text",
-          name: "Text 1",
-          order: 0,
-          hidden: false,
-          locked: false,
-          muted: false,
-          clips: [],
-        },
-        {
-          id: nanoid(),
-          type: "video",
-          name: "Video 1",
-          order: 1,
-          hidden: false,
-          locked: false,
-          muted: false,
-          clips: [],
-        },
-        {
-          id: nanoid(),
-          type: "audio",
-          name: "Audio 1",
-          order: 2,
-          hidden: false,
-          locked: false,
-          muted: false,
-          clips: [],
-        },
-      ];
+      const defaultTracks: Track[] = [];
 
       const newProject: Project = {
         id: nanoid(),
@@ -136,6 +112,7 @@ export const useProjectStore = create<ProjectState>()(
       try {
         const project = await db.projects.get(id);
         if (project) {
+          project.tracks = project.tracks.filter((t) => t.clips.length > 0);
           historyManager.clear();
           set((state) => {
             state.currentProject = project;
@@ -352,9 +329,7 @@ export const useProjectStore = create<ProjectState>()(
             trackId,
             clip,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -377,9 +352,7 @@ export const useProjectStore = create<ProjectState>()(
               return clip;
             });
           });
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -404,9 +377,7 @@ export const useProjectStore = create<ProjectState>()(
             targetTrackId,
             newStart,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -428,9 +399,7 @@ export const useProjectStore = create<ProjectState>()(
             newDuration,
             newSourceStart,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -450,6 +419,7 @@ export const useProjectStore = create<ProjectState>()(
             clipId,
             splitTime,
           );
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -467,10 +437,8 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = deleteClipsFromTracks(
             state.currentProject.tracks,
             clipIds,
-          );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          ).filter((t) => t.clips.length > 0);
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -489,9 +457,7 @@ export const useProjectStore = create<ProjectState>()(
             state.currentProject.tracks,
             clipIds,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 

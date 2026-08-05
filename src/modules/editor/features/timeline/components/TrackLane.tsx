@@ -14,8 +14,8 @@ export interface TrackLaneProps {
 export function TrackLane({ track, zoom, totalWidthPx, onStartDragClip }: TrackLaneProps) {
   return (
     <div
-      style={{ width: `${totalWidthPx}px` }}
-      className="relative h-12 border-b border-studio-border/60 bg-timeline-bg select-none"
+      style={{ minWidth: `${totalWidthPx}px` }}
+      className="relative h-12 w-full bg-timeline-bg select-none"
     >
       {track.clips.map((clip) => (
         <TimelineClipItem

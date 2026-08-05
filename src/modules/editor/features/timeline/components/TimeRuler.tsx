@@ -16,7 +16,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
   const [isSeeking, setIsSeeking] = useState(false);
 
   const ticks = generateRulerTicks(duration, zoom, fps);
-  const totalWidthPx = Math.max(1000, duration * zoom);
+  const totalWidthPx = Math.max(100, duration * zoom + 60);
   const playheadLeftPx = playhead * zoom;
 
   const seekFromPointer = (e: React.PointerEvent | PointerEvent) => {
@@ -50,8 +50,8 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
     <div
       ref={rulerRef}
       onPointerDown={handlePointerDown}
-      style={{ width: `${totalWidthPx}px` }}
-      className={`relative h-6 border-b border-studio-border bg-studio-topbar text-studio-muted select-none ${
+      style={{ minWidth: `${totalWidthPx}px` }}
+      className={`relative h-6 w-full border-b border-studio-border bg-studio-topbar text-studio-muted select-none ${
         isSeeking ? 'cursor-grabbing' : 'cursor-pointer'
       }`}
     >

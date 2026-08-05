@@ -12,7 +12,10 @@ export interface VideoLayerProps {
 
 export function VideoLayer({ clip }: VideoLayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(() => {
+    if (!clip.assetId) return null;
+    return objectUrlManager.getUrl(clip.assetId) || null;
+  });
   const { playhead, isPlaying } = usePlaybackStore();
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
       const asset = await db.assets.get(clip.assetId);
       if (!asset || !asset.blobId) return;
 
-      const cached = objectUrlManager.getUrl(asset.blobId);
+      const cached = objectUrlManager.getUrl(asset.blobId) || objectUrlManager.getUrl(clip.assetId);
       if (cached) {
         if (isMounted) setVideoUrl(cached);
         return;
@@ -33,6 +36,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
       const blobRecord = await db.blobs.get(asset.blobId);
       if (blobRecord && isMounted) {
         const url = objectUrlManager.createUrl(asset.blobId, blobRecord.blob);
+        objectUrlManager.createUrl(clip.assetId, blobRecord.blob);
         setVideoUrl(url);
       }
     }
