@@ -9,6 +9,7 @@ import { TimelineToolbar } from './TimelineToolbar';
 import { TimeRuler } from './TimeRuler';
 import { TrackHeader } from './TrackHeader';
 import { TrackLane } from './TrackLane';
+import { TimelineContextMenu } from './TimelineContextMenu';
 import { snapTimelineTime } from '../utils/timeline-snap-utils';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -22,6 +23,7 @@ export function TimelineEditor() {
 
   const [isAltPressed, setIsAltPressed] = useState(false);
   const [activeSnapLine, setActiveSnapLine] = useState<number | null>(null);
+  const [timelineContextMenu, setTimelineContextMenu] = useState<{ x: number; y: number; pasteTime: number } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -188,6 +190,18 @@ export function TimelineEditor() {
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
+          onContextMenu={(e) => {
+            // Right-click on empty timeline area
+            const target = e.target as HTMLElement | null;
+            if (target && (target.id.startsWith('timeline-clip-') || target.closest('[id^="timeline-clip-"]'))) {
+              return; // Clip right-click handled inside TimelineClipItem
+            }
+            e.preventDefault();
+            const rect = scrollContainerRef.current?.getBoundingClientRect();
+            const clickX = rect ? e.clientX - rect.left + (scrollContainerRef.current?.scrollLeft || 0) : 0;
+            const pasteTime = Math.max(0, clickX / zoom);
+            setTimelineContextMenu({ x: e.clientX, y: e.clientY, pasteTime });
+          }}
           className="flex-1 overflow-x-auto overflow-y-auto relative"
         >
           {/* Time Ruler Row */}
@@ -228,6 +242,15 @@ export function TimelineEditor() {
           )}
         </div>
       </div>
+
+      {timelineContextMenu && (
+        <TimelineContextMenu
+          x={timelineContextMenu.x}
+          y={timelineContextMenu.y}
+          pasteTime={timelineContextMenu.pasteTime}
+          onClose={() => setTimelineContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
