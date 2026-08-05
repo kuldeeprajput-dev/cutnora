@@ -1,14 +1,28 @@
 'use client';
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Repeat, AlertCircle } from 'lucide-react';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useProjectStore } from '@/modules/projects';
 import { IconButton } from '@/shared/components/ui/IconButton';
 import { CanvasStage } from '@/modules/editor/features/canvas';
+import { usePlaybackEngine } from '@/modules/editor/features/playback';
 
 export function PreviewStage() {
-  const { playhead, isPlaying, togglePlay, stepForward, stepBackward } = usePlaybackStore();
+  usePlaybackEngine();
+
+  const {
+    playhead,
+    isPlaying,
+    togglePlay,
+    stepForward,
+    stepBackward,
+    isLooping,
+    toggleLooping,
+    wasTabHiddenPaused,
+    setWasTabHiddenPaused,
+  } = usePlaybackStore();
+
   const { currentProject } = useProjectStore();
 
   const settings = currentProject?.settings || {
@@ -28,6 +42,22 @@ export function PreviewStage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#121419] text-[#F4F5F7] select-none">
+      {/* Tab Hidden Paused Banner */}
+      {wasTabHiddenPaused && (
+        <div className="flex items-center justify-between bg-[#1D2027] border-b border-[#2B2F38] px-4 py-1.5 text-xs text-[#F2C94C]">
+          <span className="flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5" /> Playback paused automatically because tab was hidden.
+          </span>
+          <button
+            type="button"
+            onClick={() => setWasTabHiddenPaused(false)}
+            className="text-[11px] underline text-[#9298A3] hover:text-[#F4F5F7]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Interactive Canvas Stage */}
       <div className="flex-1 overflow-hidden relative">
         <CanvasStage />
@@ -42,7 +72,7 @@ export function PreviewStage() {
           <span>{settings.fps} FPS</span>
         </div>
 
-        {/* Center: Play / Pause / Step Controls */}
+        {/* Center: Play / Pause / Step Controls / Loop */}
         <div className="flex items-center gap-2">
           <IconButton label="Step 1 frame backward" size="sm" variant="ghost" onClick={stepBackward}>
             <SkipBack className="h-3.5 w-3.5" />
@@ -63,6 +93,15 @@ export function PreviewStage() {
 
           <IconButton label="Step 1 frame forward" size="sm" variant="ghost" onClick={stepForward}>
             <SkipForward className="h-3.5 w-3.5" />
+          </IconButton>
+
+          <IconButton
+            label={isLooping ? 'Disable loop' : 'Enable loop'}
+            size="sm"
+            variant={isLooping ? 'selection' : 'ghost'}
+            onClick={toggleLooping}
+          >
+            <Repeat className="h-3.5 w-3.5" />
           </IconButton>
 
           <span className="ml-3 font-mono text-xs font-semibold text-[#F4F5F7]">

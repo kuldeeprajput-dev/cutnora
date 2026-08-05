@@ -4,27 +4,34 @@ import { immer } from 'zustand/middleware/immer';
 interface PlaybackState {
   playhead: number; // In seconds
   isPlaying: boolean;
+  isLooping: boolean;
   playbackRate: number;
   fps: number;
   duration: number;
+  wasTabHiddenPaused: boolean;
 
   setPlayhead: (time: number) => void;
   stepForward: () => void;
   stepBackward: () => void;
   setIsPlaying: (isPlaying: boolean) => void;
   togglePlay: () => void;
+  setIsLooping: (isLooping: boolean) => void;
+  toggleLooping: () => void;
   setPlaybackRate: (rate: number) => void;
   setFps: (fps: number) => void;
   setDuration: (duration: number) => void;
+  setWasTabHiddenPaused: (paused: boolean) => void;
 }
 
 export const usePlaybackStore = create<PlaybackState>()(
   immer((set, get) => ({
     playhead: 0,
     isPlaying: false,
+    isLooping: false,
     playbackRate: 1,
     fps: 30,
     duration: 10,
+    wasTabHiddenPaused: false,
 
     setPlayhead: (time) =>
       set((state) => {
@@ -50,11 +57,29 @@ export const usePlaybackStore = create<PlaybackState>()(
     setIsPlaying: (isPlaying) =>
       set((state) => {
         state.isPlaying = isPlaying;
+        if (isPlaying) {
+          state.wasTabHiddenPaused = false;
+        }
       }),
 
-    togglePlay: () =>
+    togglePlay: () => {
+      const current = get().isPlaying;
       set((state) => {
-        state.isPlaying = !state.isPlaying;
+        state.isPlaying = !current;
+        if (!current) {
+          state.wasTabHiddenPaused = false;
+        }
+      });
+    },
+
+    setIsLooping: (isLooping) =>
+      set((state) => {
+        state.isLooping = isLooping;
+      }),
+
+    toggleLooping: () =>
+      set((state) => {
+        state.isLooping = !state.isLooping;
       }),
 
     setPlaybackRate: (rate) =>
@@ -73,6 +98,11 @@ export const usePlaybackStore = create<PlaybackState>()(
         if (state.playhead > state.duration) {
           state.playhead = state.duration;
         }
+      }),
+
+    setWasTabHiddenPaused: (paused) =>
+      set((state) => {
+        state.wasTabHiddenPaused = paused;
       }),
   }))
 );
