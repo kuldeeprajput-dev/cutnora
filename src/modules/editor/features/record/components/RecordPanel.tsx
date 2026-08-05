@@ -289,9 +289,9 @@ export function RecordPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-[#F4F5F7] select-none">
+    <div className="flex flex-col gap-4 p-4 text-studio-fg select-none">
       <Tabs defaultValue="mic" value={activeTab} onValueChange={(val) => setActiveTab(val as 'mic' | 'screen' | 'camera')}>
-        <TabList className="grid grid-cols-3 gap-1 mb-4 bg-[#14161B] p-1 rounded-lg border border-[#2B2F38]">
+        <TabList className="grid grid-cols-3 gap-1 mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border">
           <TabTrigger value="mic" className="text-xs py-1.5 gap-1.5" disabled={isRecording}>
             <Mic className="h-3.5 w-3.5" /> Mic
           </TabTrigger>
@@ -304,7 +304,7 @@ export function RecordPanel() {
         </TabList>
 
         {errorMsg && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#E45858]/50 bg-[#E45858]/10 p-2.5 text-xs text-[#E45858] mb-2">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-2.5 text-xs text-destructive mb-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -344,7 +344,7 @@ export function RecordPanel() {
         <div className="mt-4 flex flex-col gap-2">
           {isRecording ? (
             <div className="flex items-center gap-2">
-              <Button size="md" variant="primary" onClick={handleStopRecording} className="flex-1 gap-2 bg-[#E45858] hover:bg-[#E45858]/90">
+              <Button size="md" variant="primary" onClick={handleStopRecording} className="flex-1 gap-2 bg-destructive hover:bg-destructive/90">
                 <Square className="h-4 w-4 fill-current" /> Stop Recording
               </Button>
               <Button size="md" variant="secondary" onClick={handleCancelRecording}>
@@ -353,15 +353,15 @@ export function RecordPanel() {
             </div>
           ) : (
             <Button size="md" variant="primary" onClick={handleStartRecording} className="gap-2">
-              <Circle className="h-4 w-4 fill-current text-[#FF5A36]" /> Start Recording
+              <Circle className="h-4 w-4 fill-current text-brand" /> Start Recording
             </Button>
           )}
 
           {lastRecordedAssetId && !isRecording && (
-            <div className="flex items-center justify-between rounded-lg border border-[#248A5A]/50 bg-[#248A5A]/10 p-2.5 mt-2">
+            <div className="flex items-center justify-between rounded-lg border border-mkt-success/50 bg-mkt-success/10 p-2.5 mt-2">
               <div className="flex flex-col text-xs">
-                <span className="font-bold text-[#248A5A]">Recording Saved!</span>
-                <span className="text-[10px] text-[#9298A3]">{lastRecordedDuration.toFixed(1)}s duration saved to media library</span>
+                <span className="font-bold text-mkt-success">Recording Saved!</span>
+                <span className="text-[10px] text-studio-muted">{lastRecordedDuration.toFixed(1)}s duration saved to media library</span>
               </div>
               <Button size="sm" variant="selection" onClick={handleAddToTimeline} className="gap-1.5 text-xs">
                 <Plus className="h-3.5 w-3.5" /> Add to Timeline

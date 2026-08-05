@@ -36,22 +36,22 @@ export default function StudioEditorPage({ params }: StudioEditorPageProps) {
 
   if (isLoading || !isLoaded) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-[#101216] text-[#F4F5F7]">
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
         <Spinner size="lg" label="Loading project..." />
-        <p className="mt-4 text-sm text-[#9298A3]">Opening Cutframe Studio...</p>
+        <p className="mt-4 text-sm text-studio-muted">Opening Cutframe Studio...</p>
       </div>
     );
   }
 
   if (error || !currentProject) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-[#101216] text-[#F4F5F7] px-4 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E45858]/15 text-[#E45858] mb-4">
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg px-4 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/15 text-destructive mb-4">
           <AlertCircle className="h-6 w-6" />
         </div>
-        <h1 className="text-2xl font-bold text-[#F4F5F7]">Project Not Found</h1>
-        <p className="mt-2 text-sm text-[#9298A3] max-w-md">
-          The requested project with ID <span className="font-mono text-[#F2C94C]">{projectId}</span> does not exist or was removed from your local browser database.
+        <h1 className="text-2xl font-bold text-studio-fg">Project Not Found</h1>
+        <p className="mt-2 text-sm text-studio-muted max-w-md">
+          The requested project with ID <span className="font-mono text-selection">{projectId}</span> does not exist or was removed from your local browser database.
         </p>
         <div className="mt-6 flex items-center gap-3">
           <Link href="/studio/new">

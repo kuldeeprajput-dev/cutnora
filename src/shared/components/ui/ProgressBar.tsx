@@ -21,7 +21,7 @@ export function ProgressBar({
   return (
     <div className={cn('flex flex-col gap-1 w-full', className)} {...props}>
       {(label || showValue) && (
-        <div className="flex justify-between items-center text-xs text-[#9298A3]">
+        <div className="flex justify-between items-center text-xs text-studio-muted">
           {label && <span>{label}</span>}
           {showValue && <span className="font-mono">{Math.round(percentage)}%</span>}
         </div>
@@ -31,10 +31,10 @@ export function ProgressBar({
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        className="h-2 w-full overflow-hidden rounded-full bg-[#2B2F38]"
+        className="h-2 w-full overflow-hidden rounded-full bg-studio-border"
       >
         <div
-          className="h-full bg-[#FF5A36] transition-all duration-300 ease-out"
+          className="h-full bg-brand transition-all duration-300 ease-out"
           style={{ width: `${percentage}%` }}
         />
       </div>

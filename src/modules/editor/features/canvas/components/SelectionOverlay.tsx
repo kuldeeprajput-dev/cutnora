@@ -43,17 +43,17 @@ export function SelectionOverlay({ clip, stageScale, onStartTransform, isDraggin
         transform: `rotate(${transform.rotation}deg)`,
         transformOrigin: 'center center',
       }}
-      className="pointer-events-none border-2 border-[#F2C94C] z-30 select-none"
+      className="pointer-events-none border-2 border-selection z-30 select-none"
     >
       {/* Center Dot Indicator during drag */}
       {isDragging && (
-        <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#FF5A36] shadow-md z-40" />
+        <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-brand shadow-md z-40" />
       )}
 
       {/* Rotation Handle */}
       <div
         onPointerDown={(e) => onStartTransform(clip, 'rotate', e)}
-        className="pointer-events-auto absolute -top-7 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-[#2B2F38] bg-[#14161B] text-[#F2C94C] hover:scale-110 cursor-grab active:cursor-grabbing transition-transform z-40 shadow-sm"
+        className="pointer-events-auto absolute -top-7 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-studio-border bg-studio-topbar text-selection hover:scale-110 cursor-grab active:cursor-grabbing transition-transform z-40 shadow-sm"
         title="Click and drag to rotate"
       >
         <RotateCw className="h-3 w-3" />
@@ -64,7 +64,7 @@ export function SelectionOverlay({ clip, stageScale, onStartTransform, isDraggin
         <div
           key={h.mode}
           onPointerDown={(e) => onStartTransform(clip, h.mode, e)}
-          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border-2 border-[#101216] bg-[#F2C94C] shadow-sm z-40 hover:scale-125 transition-transform ${h.className}`}
+          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border-2 border-studio-bg bg-selection shadow-sm z-40 hover:scale-125 transition-transform ${h.className}`}
         />
       ))}
     </div>

@@ -47,7 +47,7 @@ export function InspectorPanel() {
         <EmptyState
           title="No clip selected"
           description="Click a clip on the canvas stage or timeline to inspect and tweak its transform, filters, volume, and timing properties."
-          icon={<MousePointer className="h-8 w-8 text-[#9298A3]" />}
+          icon={<MousePointer className="h-8 w-8 text-studio-muted" />}
         />
       </StudioPanel>
     );
@@ -73,17 +73,17 @@ export function InspectorPanel() {
 
     return (
       <StudioPanel title={`${selectedClips.length} Clips Selected`} className="h-full w-full">
-        <div className="flex flex-col gap-4 text-[#F4F5F7]">
-          <div className="flex items-center gap-2 rounded-lg border border-[#2B2F38] bg-[#171A20] p-3 text-xs text-[#9298A3]">
-            <Layers className="h-4 w-4 text-[#F2C94C] shrink-0" />
+        <div className="flex flex-col gap-4 text-studio-fg">
+          <div className="flex items-center gap-2 rounded-lg border border-studio-border bg-studio-panel p-3 text-xs text-studio-muted">
+            <Layers className="h-4 w-4 text-selection shrink-0" />
             <span>Multi-selection mode. Controls apply to all {selectedClips.length} selected clips simultaneously.</span>
           </div>
 
           {/* Group Opacity Slider */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-medium text-[#9298A3]">Group Opacity</label>
-              <span className="font-mono text-xs text-[#F4F5F7]">Mixed</span>
+              <label className="text-[11px] font-medium text-studio-muted">Group Opacity</label>
+              <span className="font-mono text-xs text-studio-fg">Mixed</span>
             </div>
             <Slider
               value={1}
@@ -95,7 +95,7 @@ export function InspectorPanel() {
           </div>
 
           {/* Group Delete Action */}
-          <Button size="sm" variant="ghost" onClick={handleMultiDelete} className="h-8 gap-1.5 text-xs text-[#E45858] hover:bg-[#E45858]/10">
+          <Button size="sm" variant="ghost" onClick={handleMultiDelete} className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10">
             <Trash2 className="h-3.5 w-3.5" /> Delete Selected Clips
           </Button>
         </div>
@@ -113,7 +113,7 @@ export function InspectorPanel() {
   return (
     <StudioPanel title={clip.name} className="h-full w-full">
       <Tabs defaultValue={isText ? 'text' : isElement ? 'element' : 'transform'} value={activeTab} onValueChange={setActiveTab}>
-        <TabList className="grid grid-cols-4 gap-1 mb-4 bg-[#14161B] p-1 rounded-lg border border-[#2B2F38]">
+        <TabList className="grid grid-cols-4 gap-1 mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border">
           {isText && <TabTrigger value="text" className="text-xs py-1">Text</TabTrigger>}
           {isElement && <TabTrigger value="element" className="text-xs py-1">Shape</TabTrigger>}
           <TabTrigger value="transform" className="text-xs py-1">Transform</TabTrigger>

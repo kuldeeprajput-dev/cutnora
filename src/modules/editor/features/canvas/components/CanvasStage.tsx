@@ -120,7 +120,7 @@ export function CanvasStage() {
   }, []);
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#121419] text-[#F4F5F7] select-none">
+    <div className="flex h-full w-full flex-col bg-canvas-bg text-studio-fg select-none">
       {/* Upper Stage Viewport */}
       <div
         ref={containerRef}
@@ -162,21 +162,21 @@ export function CanvasStage() {
                 width: g.type === 'vertical' ? '1px' : '100%',
                 height: g.type === 'horizontal' ? '1px' : '100%',
               }}
-              className="bg-[#FF5A36] z-50 pointer-events-none"
+              className="bg-brand z-50 pointer-events-none"
             />
           ))}
         </div>
       </div>
 
       {/* Floating Stage Controls Bar */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-t border-[#2B2F38] bg-[#14161B] px-4">
+      <div className="flex h-11 shrink-0 items-center justify-between border-t border-studio-border bg-studio-topbar px-4">
         {/* Left: Resolution & Scale Badge */}
-        <div className="flex items-center gap-2 text-xs font-mono text-[#9298A3]">
+        <div className="flex items-center gap-2 text-xs font-mono text-studio-muted">
           <span>
             {projectSettings.width}×{projectSettings.height}
           </span>
           <span>•</span>
-          <span className="font-semibold text-[#F4F5F7]">
+          <span className="font-semibold text-studio-fg">
             {Math.round(stageScale * 100)}%
           </span>
         </div>
@@ -198,7 +198,7 @@ export function CanvasStage() {
               const val = e.target.value;
               setZoomMode(val === 'fit' ? 'fit' : parseInt(val, 10));
             }}
-            className="h-7 text-xs w-28 py-0 pl-2 pr-6 border-[#2B2F38]"
+            className="h-7 text-xs w-28 py-0 pl-2 pr-6 border-studio-border"
           >
             <option value="fit">Fit Stage</option>
             <option value="25">25%</option>
@@ -215,8 +215,8 @@ export function CanvasStage() {
         </div>
 
         {/* Right: Hint */}
-        <div className="text-[11px] text-[#9298A3]">
-          Hold <kbd className="font-mono bg-[#1D2027] px-1 rounded text-white">Space</kbd> to pan
+        <div className="text-[11px] text-studio-muted">
+          Hold <kbd className="font-mono bg-studio-panel-raised px-1 rounded text-white">Space</kbd> to pan
         </div>
       </div>
     </div>

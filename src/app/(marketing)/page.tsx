@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   LandingHeader,
   LandingHeroSection,
@@ -9,11 +8,11 @@ import {
   FaqSection,
   FinalCtaSection,
   LandingFooter,
-} from '@/modules/marketing';
+} from "@/modules/marketing";
 
 export default function MarketingPage() {
   return (
-    <div className="min-h-screen bg-[#F6F4EF] text-[#151619]">
+    <div className="min-h-screen bg-mkt-bg text-mkt-fg">
       <LandingHeader />
       <main>
         <LandingHeroSection />

@@ -36,29 +36,29 @@ export function TimeTab({ clip }: TimeTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Playhead Actions */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-2">Playhead Alignment</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-2">Playhead Alignment</label>
         <div className="flex flex-col gap-1.5">
           <Button size="sm" variant="secondary" onClick={handleMoveToPlayhead} className="justify-start gap-2 text-xs">
-            <Move className="h-3.5 w-3.5 text-[#FF5A36]" /> Move Clip Start to Playhead
+            <Move className="h-3.5 w-3.5 text-brand" /> Move Clip Start to Playhead
           </Button>
           <Button size="sm" variant="secondary" onClick={handleTrimStartToPlayhead} className="justify-start gap-2 text-xs">
-            <Scissors className="h-3.5 w-3.5 text-[#F2C94C]" /> Trim Start to Playhead
+            <Scissors className="h-3.5 w-3.5 text-selection" /> Trim Start to Playhead
           </Button>
           <Button size="sm" variant="secondary" onClick={handleTrimEndToPlayhead} className="justify-start gap-2 text-xs">
-            <Scissors className="h-3.5 w-3.5 text-[#3478D4]" /> Trim End to Playhead
+            <Scissors className="h-3.5 w-3.5 text-mkt-info" /> Trim End to Playhead
           </Button>
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Timeline Timing Controls */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Timeline Start (s)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Timeline Start (s)</label>
           <Input
             type="number"
             min={0}
@@ -70,7 +70,7 @@ export function TimeTab({ clip }: TimeTabProps) {
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Timeline Duration (s)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Timeline Duration (s)</label>
           <Input
             type="number"
             min={0.1}
@@ -89,7 +89,7 @@ export function TimeTab({ clip }: TimeTabProps) {
       {clip.assetId && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Source Start (s)</label>
+            <label className="text-[11px] font-medium text-studio-muted block mb-1">Source Start (s)</label>
             <Input
               type="number"
               min={0}
@@ -104,7 +104,7 @@ export function TimeTab({ clip }: TimeTabProps) {
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Source End (s)</label>
+            <label className="text-[11px] font-medium text-studio-muted block mb-1">Source End (s)</label>
             <Input
               type="number"
               disabled

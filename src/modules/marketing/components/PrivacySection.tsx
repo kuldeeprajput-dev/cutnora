@@ -26,19 +26,19 @@ export function PrivacySection() {
   ];
 
   return (
-    <section id="privacy" className="py-20 bg-[#101216] text-[#F4F5F7] border-t border-[#2B2F38]">
-      <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
+    <section id="privacy" className="py-20 sm:py-24 lg:py-28 bg-studio-bg text-studio-fg border-t border-studio-border">
+      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-10">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#2B2F38] bg-[#1D2027] px-3.5 py-1 text-xs font-medium text-[#F2C94C] mb-4">
-            <span className="h-2 w-2 rounded-full bg-[#248A5A]" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-studio-border bg-studio-panel-raised px-3.5 py-1 text-xs font-medium text-selection mb-4">
+            <span className="h-2 w-2 rounded-full bg-mkt-success" />
             <span>Local-First Architecture</span>
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-[#F4F5F7]">
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-studio-fg">
             Your media files never leave your device.
           </h2>
-          <p className="mt-4 text-base text-[#9298A3]">
+          <p className="mt-4 text-base text-studio-muted">
             Cutframe is built from the ground up to operate locally. Video footage is processed in client memory and stored in local browser storage.
           </p>
         </div>
@@ -50,13 +50,13 @@ export function PrivacySection() {
             return (
               <div
                 key={point.title}
-                className="rounded-2xl border border-[#2B2F38] bg-[#171A20] p-6 shadow-md hover:border-[#FF5A36]/50 transition-colors"
+                className="rounded-2xl border border-studio-border bg-studio-panel p-6 shadow-md hover:border-brand/50 transition-colors"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF5A36]/15 text-[#FF5A36] mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15 text-brand mb-4">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-base font-bold text-[#F4F5F7] mb-2">{point.title}</h3>
-                <p className="text-xs text-[#9298A3] leading-relaxed">{point.description}</p>
+                <h3 className="text-base font-bold text-studio-fg mb-2">{point.title}</h3>
+                <p className="text-xs text-studio-muted leading-relaxed">{point.description}</p>
               </div>
             );
           })}

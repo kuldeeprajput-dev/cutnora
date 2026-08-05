@@ -12,14 +12,14 @@ export function ToastContainer() {
   const renderIcon = (type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-[#248A5A] shrink-0" />;
+        return <CheckCircle className="h-4 w-4 text-mkt-success shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-[#F2C94C] shrink-0" />;
+        return <AlertTriangle className="h-4 w-4 text-selection shrink-0" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-[#E45858] shrink-0" />;
+        return <XCircle className="h-4 w-4 text-destructive shrink-0" />;
       case 'info':
       default:
-        return <Info className="h-4 w-4 text-[#3478D4] shrink-0" />;
+        return <Info className="h-4 w-4 text-mkt-info shrink-0" />;
     }
   };
 
@@ -28,7 +28,7 @@ export function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto flex items-center justify-between gap-3 rounded-lg border border-[#2B2F38] bg-[#171A20] p-3 text-xs text-[#F4F5F7] shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
+          className="pointer-events-auto flex items-center justify-between gap-3 rounded-lg border border-studio-border bg-studio-panel p-3 text-xs text-studio-fg shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
         >
           <div className="flex items-center gap-2 min-w-0">
             {renderIcon(toast.type)}
@@ -38,7 +38,7 @@ export function ToastContainer() {
           <button
             type="button"
             onClick={() => removeToast(toast.id)}
-            className="text-[#9298A3] hover:text-[#F4F5F7] transition-colors"
+            className="text-studio-muted hover:text-studio-fg transition-colors"
           >
             <X className="h-3.5 w-3.5" />
           </button>

@@ -86,13 +86,13 @@ export function TrackHeader({ track }: TrackHeaderProps) {
   const renderTypeIcon = () => {
     switch (track.type) {
       case 'video':
-        return <Video className="h-3.5 w-3.5 text-[#FF5A36]" />;
+        return <Video className="h-3.5 w-3.5 text-brand" />;
       case 'overlay':
-        return <Shapes className="h-3.5 w-3.5 text-[#3478D4]" />;
+        return <Shapes className="h-3.5 w-3.5 text-mkt-info" />;
       case 'text':
-        return <Type className="h-3.5 w-3.5 text-[#F2C94C]" />;
+        return <Type className="h-3.5 w-3.5 text-selection" />;
       case 'audio':
-        return <Music className="h-3.5 w-3.5 text-[#248A5A]" />;
+        return <Music className="h-3.5 w-3.5 text-mkt-success" />;
     }
   };
 
@@ -112,8 +112,8 @@ export function TrackHeader({ track }: TrackHeaderProps) {
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          'flex h-12 w-[180px] shrink-0 items-center justify-between border-b border-[#2B2F38] bg-[#14161B] px-2 text-[#F4F5F7] select-none',
-          isSelected && 'bg-[#1D2027] border-l-2 border-l-[#FF5A36]'
+          'flex h-12 w-[180px] shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-2 text-studio-fg select-none',
+          isSelected && 'bg-studio-panel-raised border-l-2 border-l-brand'
         )}
       >
         {/* Left: Drag Handle & Track Name */}
@@ -123,7 +123,7 @@ export function TrackHeader({ track }: TrackHeaderProps) {
             aria-label="Reorder track"
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-[#9298A3] hover:text-[#F4F5F7] p-0.5"
+            className="cursor-grab active:cursor-grabbing text-studio-muted hover:text-studio-fg p-0.5"
           >
             <GripVertical className="h-3.5 w-3.5" />
           </button>
@@ -137,10 +137,10 @@ export function TrackHeader({ track }: TrackHeaderProps) {
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={handleRenameSubmit}
               autoFocus
-              className="h-5 w-20 rounded bg-[#101216] border border-[#FF5A36] px-1 text-[11px] text-[#F4F5F7]"
+              className="h-5 w-20 rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg"
             />
           ) : (
-            <span className="text-xs font-semibold text-[#F4F5F7] truncate" title={track.name}>
+            <span className="text-xs font-semibold text-studio-fg truncate" title={track.name}>
               {track.name}
             </span>
           )}
@@ -154,7 +154,7 @@ export function TrackHeader({ track }: TrackHeaderProps) {
             variant="ghost"
             onClick={handleToggleLock}
           >
-            {track.locked ? <Lock className="h-3 w-3 text-[#F2C94C]" /> : <Unlock className="h-3 w-3 text-[#9298A3]" />}
+            {track.locked ? <Lock className="h-3 w-3 text-selection" /> : <Unlock className="h-3 w-3 text-studio-muted" />}
           </IconButton>
 
           {track.type !== 'audio' && (
@@ -164,7 +164,7 @@ export function TrackHeader({ track }: TrackHeaderProps) {
               variant="ghost"
               onClick={handleToggleHide}
             >
-              {track.hidden ? <EyeOff className="h-[#E45858]" /> : <Eye className="h-3 w-3 text-[#9298A3]" />}
+              {track.hidden ? <EyeOff className="h-destructive" /> : <Eye className="h-3 w-3 text-studio-muted" />}
             </IconButton>
           )}
 
@@ -175,7 +175,7 @@ export function TrackHeader({ track }: TrackHeaderProps) {
               variant="ghost"
               onClick={handleToggleMute}
             >
-              {track.muted ? <VolumeX className="h-3 w-3 text-[#E45858]" /> : <Volume2 className="h-3 w-3 text-[#9298A3]" />}
+              {track.muted ? <VolumeX className="h-3 w-3 text-destructive" /> : <Volume2 className="h-3 w-3 text-studio-muted" />}
             </IconButton>
           )}
 

@@ -76,14 +76,14 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
           ref={menuRef}
           role="menu"
           style={{ top: `${position.y}px`, left: `${position.x}px` }}
-          className="fixed z-50 min-w-[170px] rounded-lg border border-[#2B2F38] bg-[#171A20] p-1.5 text-[#F4F5F7] shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-50 min-w-[170px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
           onClick={handleClose}
         >
           {items ? (
             <div className="flex flex-col gap-0.5">
               {items.map((item, idx) => {
                 if (item.isDivider) {
-                  return <div key={item.id || idx} className="my-1 h-px bg-[#2B2F38]" />;
+                  return <div key={item.id || idx} className="my-1 h-px bg-studio-border" />;
                 }
                 return (
                   <button
@@ -102,8 +102,8 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
                       item.disabled && 'opacity-40 cursor-not-allowed',
                       !item.disabled &&
                         (item.destructive
-                          ? 'text-[#E45858] hover:bg-[#E45858]/10'
-                          : 'text-[#F4F5F7] hover:bg-[#242832]')
+                          ? 'text-destructive hover:bg-destructive/10'
+                          : 'text-studio-fg hover:bg-studio-hover')
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
@@ -111,7 +111,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
                       <span className="truncate">{item.label}</span>
                     </div>
                     {item.shortcut && (
-                      <span className="font-mono text-[10px] text-[#9298A3] shrink-0">{item.shortcut}</span>
+                      <span className="font-mono text-[10px] text-studio-muted shrink-0">{item.shortcut}</span>
                     )}
                   </button>
                 );
@@ -137,8 +137,8 @@ export function ContextMenuItem({ className, children, destructive, ...props }: 
       role="menuitem"
       className={cn(
         'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-left transition-colors select-none',
-        'focus-visible:outline-none focus-visible:bg-[#242832]',
-        destructive ? 'text-[#E45858] hover:bg-[#E45858]/10' : 'text-[#F4F5F7] hover:bg-[#242832]',
+        'focus-visible:outline-none focus-visible:bg-studio-hover',
+        destructive ? 'text-destructive hover:bg-destructive/10' : 'text-studio-fg hover:bg-studio-hover',
         className
       )}
       {...props}

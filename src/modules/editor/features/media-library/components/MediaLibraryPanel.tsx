@@ -77,12 +77,12 @@ export function MediaLibraryPanel() {
 
       {/* Progress Bar during active imports */}
       {isImporting && (
-        <div className="rounded-xl border border-[#2B2F38] bg-[#171A20] p-3">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#F4F5F7] mb-1.5">
-            <span className="flex items-center gap-1.5 text-[#FF5A36]">
+        <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
+          <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
+            <span className="flex items-center gap-1.5 text-brand">
               <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing media assets...
             </span>
-            <span className="font-mono text-[11px] text-[#9298A3]">{importProgress}%</span>
+            <span className="font-mono text-[11px] text-studio-muted">{importProgress}%</span>
           </div>
           <ProgressBar value={importProgress} />
         </div>
@@ -90,7 +90,7 @@ export function MediaLibraryPanel() {
 
       {/* Import Error Alerts */}
       {importErrors.length > 0 && (
-        <div className="rounded-xl border border-[#E45858]/30 bg-[#E45858]/10 p-3 text-xs text-[#E45858]">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
           <div className="flex items-center justify-between font-bold mb-1">
             <span className="flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> Import Issues</span>
             <button type="button" onClick={clearErrors} className="text-[10px] underline hover:opacity-80">
@@ -124,8 +124,8 @@ export function MediaLibraryPanel() {
                 onClick={() => setFilter(cat)}
                 className={`rounded-md px-2 py-1 text-[11px] font-semibold capitalize transition-colors ${
                   filter === cat
-                    ? 'bg-[#FF5A36] text-white'
-                    : 'bg-[#171A20] text-[#9298A3] hover:bg-[#1D2027] hover:text-[#F4F5F7]'
+                    ? 'bg-brand text-white'
+                    : 'bg-studio-panel text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg'
                 }`}
               >
                 {cat}
@@ -137,14 +137,14 @@ export function MediaLibraryPanel() {
             <Select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="h-7 text-[11px] py-0 pl-2 pr-6 border-[#2B2F38]"
+              className="h-7 text-[11px] py-0 pl-2 pr-6 border-studio-border"
             >
               <option value="newest">Newest</option>
               <option value="name">Name</option>
               <option value="duration">Duration</option>
             </Select>
 
-            <div className="flex items-center rounded-lg border border-[#2B2F38] bg-[#171A20] p-0.5">
+            <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel p-0.5">
               <Button
                 size="sm"
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
@@ -168,7 +168,7 @@ export function MediaLibraryPanel() {
 
       {/* Asset Grid / List Container */}
       {filteredAssets.length === 0 ? (
-        <div className="py-8 text-center text-xs text-[#9298A3]">
+        <div className="py-8 text-center text-xs text-studio-muted">
           {rawAssets && rawAssets.length === 0 ? 'No media imported yet.' : 'No assets match your search or filter.'}
         </div>
       ) : (

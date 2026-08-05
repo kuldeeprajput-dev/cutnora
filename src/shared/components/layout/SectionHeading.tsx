@@ -31,8 +31,8 @@ export function SectionHeading({
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium tracking-tight mb-1',
             theme === 'marketing'
-              ? 'bg-[#FFF0EB] text-[#FF5A36] border border-[#FF5A36]/20'
-              : 'bg-[#1D2027] text-[#F2C94C] border border-[#2B2F38]'
+              ? 'bg-brand-soft text-brand border border-brand/20'
+              : 'bg-studio-panel-raised text-selection border border-studio-border'
           )}
         >
           {badge}
@@ -41,7 +41,7 @@ export function SectionHeading({
       <h2
         className={cn(
           'text-2xl font-bold tracking-tight sm:text-3xl',
-          theme === 'marketing' ? 'text-[#151619]' : 'text-[#F4F5F7]'
+          theme === 'marketing' ? 'text-mkt-fg' : 'text-studio-fg'
         )}
       >
         {title}
@@ -50,7 +50,7 @@ export function SectionHeading({
         <p
           className={cn(
             'text-sm max-w-2xl',
-            theme === 'marketing' ? 'text-[#6F716F]' : 'text-[#9298A3]'
+            theme === 'marketing' ? 'text-mkt-muted' : 'text-studio-muted'
           )}
         >
           {subtitle}

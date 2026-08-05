@@ -39,15 +39,15 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
     return (
       <div className="flex flex-col gap-1 w-full">
         {label && (
-          <div className="flex items-center justify-between text-xs text-[#9298A3]">
+          <div className="flex items-center justify-between text-xs text-studio-muted">
             <span>{label}</span>
             <span className="font-mono">{value}</span>
           </div>
         )}
         <div className="relative flex items-center w-full h-5 touch-none select-none">
-          <div className="relative w-full h-1.5 rounded-full bg-[#2B2F38] overflow-hidden">
+          <div className="relative w-full h-1.5 rounded-full bg-studio-border overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full bg-[#FF5A36] rounded-full"
+              className="absolute left-0 top-0 h-full bg-brand rounded-full"
               style={{ width: `${percentage}%` }}
             />
           </div>

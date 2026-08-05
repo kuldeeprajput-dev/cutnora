@@ -173,27 +173,27 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
       className="pointer-events-auto z-50 select-none relative"
     >
       {/* Top Floating Control Bar */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#14161B] border border-[#2B2F38] px-3 py-1.5 rounded-xl shadow-2xl z-50 whitespace-nowrap">
-        <span className="text-xs font-bold text-[#FF5A36] flex items-center gap-1">
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-studio-topbar border border-studio-border px-3 py-1.5 rounded-xl shadow-2xl z-50 whitespace-nowrap">
+        <span className="text-xs font-bold text-brand flex items-center gap-1">
           <Move className="h-3.5 w-3.5" /> Crop Mode
         </span>
-        <div className="h-4 w-px bg-[#2B2F38]" />
+        <div className="h-4 w-px bg-studio-border" />
 
         {/* Aspect Ratio Buttons */}
         <div className="flex items-center gap-1 text-[11px]">
-          <button type="button" onClick={() => applyAspectRatio(16 / 9)} className="px-1.5 py-0.5 rounded bg-[#1C1F25] hover:bg-[#2B2F38] text-[#F4F5F7]">16:9</button>
-          <button type="button" onClick={() => applyAspectRatio(9 / 16)} className="px-1.5 py-0.5 rounded bg-[#1C1F25] hover:bg-[#2B2F38] text-[#F4F5F7]">9:16</button>
-          <button type="button" onClick={() => applyAspectRatio(4 / 3)} className="px-1.5 py-0.5 rounded bg-[#1C1F25] hover:bg-[#2B2F38] text-[#F4F5F7]">4:3</button>
-          <button type="button" onClick={() => applyAspectRatio(1)} className="px-1.5 py-0.5 rounded bg-[#1C1F25] hover:bg-[#2B2F38] text-[#F4F5F7]">1:1</button>
+          <button type="button" onClick={() => applyAspectRatio(16 / 9)} className="px-1.5 py-0.5 rounded bg-timeline-bg hover:bg-studio-border text-studio-fg">16:9</button>
+          <button type="button" onClick={() => applyAspectRatio(9 / 16)} className="px-1.5 py-0.5 rounded bg-timeline-bg hover:bg-studio-border text-studio-fg">9:16</button>
+          <button type="button" onClick={() => applyAspectRatio(4 / 3)} className="px-1.5 py-0.5 rounded bg-timeline-bg hover:bg-studio-border text-studio-fg">4:3</button>
+          <button type="button" onClick={() => applyAspectRatio(1)} className="px-1.5 py-0.5 rounded bg-timeline-bg hover:bg-studio-border text-studio-fg">1:1</button>
         </div>
 
-        <div className="h-4 w-px bg-[#2B2F38]" />
+        <div className="h-4 w-px bg-studio-border" />
 
-        <Button size="sm" variant="ghost" onClick={handleResetCrop} className="h-7 px-2 text-xs text-[#9298A3] hover:text-white">
+        <Button size="sm" variant="ghost" onClick={handleResetCrop} className="h-7 px-2 text-xs text-studio-muted hover:text-white">
           <RotateCcw className="h-3 w-3" /> Reset
         </Button>
 
-        <Button size="sm" variant="ghost" onClick={handleCancelCrop} className="h-7 px-2 text-xs text-[#E45858]">
+        <Button size="sm" variant="ghost" onClick={handleCancelCrop} className="h-7 px-2 text-xs text-destructive">
           <X className="h-3 w-3" /> Cancel
         </Button>
 
@@ -221,7 +221,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
           width: `${cropWidthPx}px`,
           height: `${cropHeightPx}px`,
         }}
-        className="border-2 border-[#FF5A36] pointer-events-none relative shadow-xl"
+        className="border-2 border-brand pointer-events-none relative shadow-xl"
       >
         {/* Rule of Thirds Grid Lines */}
         <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-30 pointer-events-none">
@@ -244,7 +244,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
           className="absolute -top-3 -left-3 h-6 w-6 cursor-nwse-resize pointer-events-auto flex items-center justify-center group"
           title="Drag to crop Top-Left"
         >
-          <div className="h-4 w-4 border-t-4 border-l-4 border-[#FF5A36] bg-[#14161B] shadow-md group-hover:scale-125 transition-transform" />
+          <div className="h-4 w-4 border-t-4 border-l-4 border-brand bg-studio-topbar shadow-md group-hover:scale-125 transition-transform" />
         </div>
 
         {/* Top-Right NE Handle */}
@@ -253,7 +253,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
           className="absolute -top-3 -right-3 h-6 w-6 cursor-nesw-resize pointer-events-auto flex items-center justify-center group"
           title="Drag to crop Top-Right"
         >
-          <div className="h-4 w-4 border-t-4 border-r-4 border-[#FF5A36] bg-[#14161B] shadow-md group-hover:scale-125 transition-transform" />
+          <div className="h-4 w-4 border-t-4 border-r-4 border-brand bg-studio-topbar shadow-md group-hover:scale-125 transition-transform" />
         </div>
 
         {/* Bottom-Left SW Handle */}
@@ -262,7 +262,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
           className="absolute -bottom-3 -left-3 h-6 w-6 cursor-nesw-resize pointer-events-auto flex items-center justify-center group"
           title="Drag to crop Bottom-Left"
         >
-          <div className="h-4 w-4 border-b-4 border-l-4 border-[#FF5A36] bg-[#14161B] shadow-md group-hover:scale-125 transition-transform" />
+          <div className="h-4 w-4 border-b-4 border-l-4 border-brand bg-studio-topbar shadow-md group-hover:scale-125 transition-transform" />
         </div>
 
         {/* Bottom-Right SE Handle */}
@@ -271,7 +271,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
           className="absolute -bottom-3 -right-3 h-6 w-6 cursor-nwse-resize pointer-events-auto flex items-center justify-center group"
           title="Drag to crop Bottom-Right"
         >
-          <div className="h-4 w-4 border-b-4 border-r-4 border-[#FF5A36] bg-[#14161B] shadow-md group-hover:scale-125 transition-transform" />
+          <div className="h-4 w-4 border-b-4 border-r-4 border-brand bg-studio-topbar shadow-md group-hover:scale-125 transition-transform" />
         </div>
 
         {/* --- EDGE DRAG HANDLES WITH ARROWS --- */}
@@ -279,7 +279,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         {/* Top Edge N Handle */}
         <div
           onPointerDown={(e) => handleStartDragHandle('n', e)}
-          className="absolute -top-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-[#FF5A36] text-white shadow-md hover:scale-110 transition-transform"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag top edge"
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
@@ -288,7 +288,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         {/* Bottom Edge S Handle */}
         <div
           onPointerDown={(e) => handleStartDragHandle('s', e)}
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-[#FF5A36] text-white shadow-md hover:scale-110 transition-transform"
+          className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag bottom edge"
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
@@ -297,7 +297,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         {/* Left Edge W Handle */}
         <div
           onPointerDown={(e) => handleStartDragHandle('w', e)}
-          className="absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-[#FF5A36] text-white shadow-md hover:scale-110 transition-transform"
+          className="absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag left edge"
         >
           <ArrowLeftRight className="h-3.5 w-3.5" />
@@ -306,7 +306,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         {/* Right Edge E Handle */}
         <div
           onPointerDown={(e) => handleStartDragHandle('e', e)}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-[#FF5A36] text-white shadow-md hover:scale-110 transition-transform"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag right edge"
         >
           <ArrowLeftRight className="h-3.5 w-3.5" />

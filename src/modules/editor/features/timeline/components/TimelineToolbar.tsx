@@ -45,7 +45,7 @@ export function TimelineToolbar() {
   };
 
   return (
-    <div className="flex h-10 w-full shrink-0 items-center justify-between border-b border-[#2B2F38] bg-[#14161B] px-3 select-none">
+    <div className="flex h-10 w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3 select-none">
       {/* Left: Edit Actions (Split, Duplicate, Delete, Add Track) */}
       <div className="flex items-center gap-1">
         <IconButton
@@ -75,10 +75,10 @@ export function TimelineToolbar() {
           disabled={!hasSelection}
           onClick={handleDelete}
         >
-          <Trash2 className="h-3.5 w-3.5 text-[#E45858]" />
+          <Trash2 className="h-3.5 w-3.5 text-destructive" />
         </IconButton>
 
-        <div className="mx-1.5 h-4 w-px bg-[#2B2F38]" />
+        <div className="mx-1.5 h-4 w-px bg-studio-border" />
 
         <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => addTrack('video')}>
           <Plus className="h-3.5 w-3.5" /> Add Track
@@ -86,10 +86,10 @@ export function TimelineToolbar() {
       </div>
 
       {/* Center: Playhead Timecode & Duration */}
-      <div className="font-mono text-xs font-semibold text-[#F4F5F7]">
+      <div className="font-mono text-xs font-semibold text-studio-fg">
         <span>{formatTimecode(playhead, fps, true)}</span>
-        <span className="text-[#9298A3] mx-1">/</span>
-        <span className="text-[#9298A3]">{formatTimecode(duration, fps, false)}</span>
+        <span className="text-studio-muted mx-1">/</span>
+        <span className="text-studio-muted">{formatTimecode(duration, fps, false)}</span>
       </div>
 
       {/* Right: Snapping & Zoom Controls */}
@@ -109,11 +109,11 @@ export function TimelineToolbar() {
 
         <div className="flex items-center gap-1.5 w-32">
           <IconButton label="Zoom out" size="sm" variant="ghost" onClick={() => setZoom(zoom - 10)}>
-            <ZoomOut className="h-3.5 w-3.5 text-[#9298A3]" />
+            <ZoomOut className="h-3.5 w-3.5 text-studio-muted" />
           </IconButton>
           <Slider value={zoom} min={10} max={200} step={5} onValueChange={setZoom} />
           <IconButton label="Zoom in" size="sm" variant="ghost" onClick={() => setZoom(zoom + 10)}>
-            <ZoomIn className="h-3.5 w-3.5 text-[#9298A3]" />
+            <ZoomIn className="h-3.5 w-3.5 text-studio-muted" />
           </IconButton>
         </div>
       </div>

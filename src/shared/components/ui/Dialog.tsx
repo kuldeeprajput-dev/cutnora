@@ -73,7 +73,7 @@ export function Dialog({ isOpen, onClose, title, description, children, classNam
         aria-labelledby={title ? 'dialog-title' : undefined}
         aria-describedby={description ? 'dialog-description' : undefined}
         className={cn(
-          'relative w-full max-w-lg rounded-xl border border-[#2B2F38] bg-[#171A20] p-6 text-[#F4F5F7] shadow-xl transition-all',
+          'relative w-full max-w-lg rounded-xl border border-studio-border bg-studio-panel p-6 text-studio-fg shadow-xl transition-all',
           'focus-visible:outline-none',
           className
         )}
@@ -81,12 +81,12 @@ export function Dialog({ isOpen, onClose, title, description, children, classNam
         <div className="flex items-center justify-between mb-4">
           <div>
             {title && (
-              <h2 id="dialog-title" className="text-lg font-semibold tracking-tight text-[#F4F5F7]">
+              <h2 id="dialog-title" className="text-lg font-semibold tracking-tight text-studio-fg">
                 {title}
               </h2>
             )}
             {description && (
-              <p id="dialog-description" className="text-xs text-[#9298A3] mt-1">
+              <p id="dialog-description" className="text-xs text-studio-muted mt-1">
                 {description}
               </p>
             )}

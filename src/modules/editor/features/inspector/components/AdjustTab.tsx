@@ -44,20 +44,20 @@ export function AdjustTab({ clip }: AdjustTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
-      <p className="text-[11px] text-[#9298A3]">Double-click any label to reset that property.</p>
+    <div className="flex flex-col gap-4 text-studio-fg">
+      <p className="text-[11px] text-studio-muted">Double-click any label to reset that property.</p>
 
       {/* Brightness */}
       <div>
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('brightness')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Brightness
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(adj.brightness * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.brightness * 100)}%</span>
         </div>
         <Slider
           value={adj.brightness}
@@ -73,12 +73,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('contrast')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Contrast
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(adj.contrast * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.contrast * 100)}%</span>
         </div>
         <Slider
           value={adj.contrast}
@@ -94,12 +94,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('saturation')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Saturation
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(adj.saturation * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.saturation * 100)}%</span>
         </div>
         <Slider
           value={adj.saturation}
@@ -115,12 +115,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('blur')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Blur (px)
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{adj.blur}px</span>
+          <span className="font-mono text-xs text-studio-fg">{adj.blur}px</span>
         </div>
         <Slider
           value={adj.blur}
@@ -136,12 +136,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('grayscale')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Grayscale
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(adj.grayscale * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.grayscale * 100)}%</span>
         </div>
         <Slider
           value={adj.grayscale}
@@ -157,12 +157,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <div className="flex items-center justify-between mb-1">
           <label
             onDoubleClick={() => handleResetProp('sepia')}
-            className="text-[11px] font-medium text-[#9298A3] cursor-pointer hover:text-[#F4F5F7]"
+            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
             title="Double-click to reset"
           >
             Sepia
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(adj.sepia * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.sepia * 100)}%</span>
         </div>
         <Slider
           value={adj.sepia}
@@ -174,7 +174,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleResetAll} className="h-8 gap-1.5 text-xs text-[#9298A3] hover:text-[#E45858]">
+      <Button size="sm" variant="ghost" onClick={handleResetAll} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
         <RotateCcw className="h-3.5 w-3.5" /> Reset All Adjustments
       </Button>
     </div>

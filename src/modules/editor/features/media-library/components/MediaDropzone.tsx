@@ -49,8 +49,8 @@ export function MediaDropzone({ onFilesSelected, isImporting = false }: MediaDro
       className={cn(
         'relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all select-none',
         isDragOver
-          ? 'border-[#FF5A36] bg-[#FF5A36]/10 scale-[0.99]'
-          : 'border-[#2B2F38] bg-[#171A20] hover:border-[#9298A3]'
+          ? 'border-brand bg-brand/10 scale-[0.99]'
+          : 'border-studio-border bg-studio-panel hover:border-studio-muted'
       )}
     >
       <input
@@ -62,12 +62,12 @@ export function MediaDropzone({ onFilesSelected, isImporting = false }: MediaDro
         className="hidden"
       />
 
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1D2027] text-[#FF5A36] mb-3">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-studio-panel-raised text-brand mb-3">
         <UploadCloud className="h-6 w-6" />
       </div>
 
-      <h4 className="text-xs font-bold text-[#F4F5F7]">Drag and drop media files</h4>
-      <p className="mt-1 text-[11px] text-[#9298A3]">Support for videos, images, and audio tracks</p>
+      <h4 className="text-xs font-bold text-studio-fg">Drag and drop media files</h4>
+      <p className="mt-1 text-[11px] text-studio-muted">Support for videos, images, and audio tracks</p>
 
       <div className="mt-4">
         <Button
@@ -81,14 +81,14 @@ export function MediaDropzone({ onFilesSelected, isImporting = false }: MediaDro
       </div>
 
       {/* Formats Badges */}
-      <div className="mt-4 flex items-center gap-3 text-[10px] text-[#9298A3]">
-        <span className="flex items-center gap-1"><FileVideo className="h-3 w-3 text-[#FF5A36]" /> MP4, WebM, MOV</span>
-        <span className="flex items-center gap-1"><ImageIcon className="h-3 w-3 text-[#F2C94C]" /> PNG, JPG, WebP</span>
-        <span className="flex items-center gap-1"><Music className="h-3 w-3 text-[#3478D4]" /> MP3, WAV, M4A</span>
+      <div className="mt-4 flex items-center gap-3 text-[10px] text-studio-muted">
+        <span className="flex items-center gap-1"><FileVideo className="h-3 w-3 text-brand" /> MP4, WebM, MOV</span>
+        <span className="flex items-center gap-1"><ImageIcon className="h-3 w-3 text-selection" /> PNG, JPG, WebP</span>
+        <span className="flex items-center gap-1"><Music className="h-3 w-3 text-mkt-info" /> MP3, WAV, M4A</span>
       </div>
 
       {/* Local-first Security Assurance */}
-      <div className="mt-4 flex items-center gap-1 text-[10px] text-[#248A5A] font-medium">
+      <div className="mt-4 flex items-center gap-1 text-[10px] text-mkt-success font-medium">
         <ShieldCheck className="h-3.5 w-3.5" />
         <span>Files stay 100% private on your device</span>
       </div>

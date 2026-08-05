@@ -20,8 +20,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           onClick={() => !disabled && onCheckedChange(!checked)}
           className={cn(
             'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A36] focus-visible:ring-offset-2 focus-visible:ring-offset-[#101216]',
-            checked ? 'bg-[#FF5A36]' : 'bg-[#2B2F38]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-studio-bg',
+            checked ? 'bg-brand' : 'bg-studio-border',
             className
           )}
           {...props}
@@ -33,7 +33,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
             )}
           />
         </button>
-        {label && <span className="text-sm font-medium text-[#F4F5F7]">{label}</span>}
+        {label && <span className="text-sm font-medium text-studio-fg">{label}</span>}
       </label>
     );
   }

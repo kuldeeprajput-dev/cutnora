@@ -84,15 +84,15 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
   const getBgColor = () => {
     switch (clip.type) {
       case 'video':
-        return 'bg-[#FF5A36]/20 border-[#FF5A36]/50 text-[#FF5A36]';
+        return 'bg-brand/20 border-brand/50 text-brand';
       case 'image':
-        return 'bg-[#F2C94C]/20 border-[#F2C94C]/50 text-[#F2C94C]';
+        return 'bg-selection/20 border-selection/50 text-selection';
       case 'audio':
-        return 'bg-[#248A5A]/20 border-[#248A5A]/50 text-[#248A5A]';
+        return 'bg-mkt-success/20 border-mkt-success/50 text-mkt-success';
       case 'text':
-        return 'bg-[#3478D4]/20 border-[#3478D4]/50 text-[#3478D4]';
+        return 'bg-mkt-info/20 border-mkt-info/50 text-mkt-info';
       case 'overlay':
-        return 'bg-[#9B51E0]/20 border-[#9B51E0]/50 text-[#9B51E0]';
+        return 'bg-overlay/20 border-overlay/50 text-overlay';
     }
   };
 
@@ -238,7 +238,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
           {
             id: 'detach-audio',
             label: 'Detach audio',
-            icon: <Unlink className="h-3.5 w-3.5 text-[#FF5A36]" />,
+            icon: <Unlink className="h-3.5 w-3.5 text-brand" />,
             onClick: () => detachAudioFromVideo(clip.id),
           },
         ]
@@ -247,7 +247,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
     {
       id: 'delete',
       label: 'Delete',
-      icon: <Trash2 className="h-3.5 w-3.5 text-[#E45858]" />,
+      icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
       shortcut: 'Del',
       onClick: () => deleteClips([clip.id]),
     },
@@ -269,7 +269,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         className={cn(
           'group relative flex items-center justify-between rounded-lg border px-2 select-none overflow-hidden cursor-pointer transition-colors',
           getBgColor(),
-          isSelected && 'ring-2 ring-[#F2C94C] border-[#F2C94C]',
+          isSelected && 'ring-2 ring-selection border-selection',
           track.locked && 'opacity-60 cursor-not-allowed'
         )}
       >
@@ -280,7 +280,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
               e.stopPropagation();
               onStartDrag(clip, 'trim-start', e);
             }}
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-[#F2C94C] z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip start"
           />
         )}
@@ -306,23 +306,23 @@ totalAssetDuration={assetDuration}
         {/* Clip Content Label */}
         <div className="flex items-center gap-1.5 min-w-0 z-10">
           {renderIcon()}
-          <span className="text-[11px] font-semibold truncate text-[#F4F5F7]">
+          <span className="text-[11px] font-semibold truncate text-studio-fg">
             {clip.name}
           </span>
           {isAudioMuted && (clip.type === 'audio' || clip.type === 'video') && (
             <span title="Audio muted">
-              <VolumeX className="h-3 w-3 text-[#9298A3] shrink-0" />
+              <VolumeX className="h-3 w-3 text-studio-muted shrink-0" />
             </span>
           )}
           {isMissingAsset && (
-            <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#E45858] bg-[#E45858]/20 px-1 rounded" title="Missing asset file">
+            <span className="flex items-center gap-0.5 text-[9px] font-bold text-destructive bg-destructive/20 px-1 rounded" title="Missing asset file">
               <AlertCircle className="h-2.5 w-2.5" /> Missing
             </span>
           )}
         </div>
 
         {/* Duration Badge */}
-        <span className="text-[9px] font-mono text-[#9298A3] shrink-0 ml-1 z-10">
+        <span className="text-[9px] font-mono text-studio-muted shrink-0 ml-1 z-10">
           {clip.timelineDuration.toFixed(1)}s
         </span>
 
@@ -333,7 +333,7 @@ totalAssetDuration={assetDuration}
               e.stopPropagation();
               onStartDrag(clip, 'trim-end', e);
             }}
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-[#F2C94C] z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip end"
           />
         )}

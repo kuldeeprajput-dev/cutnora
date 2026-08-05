@@ -40,12 +40,12 @@ export function AudioTab({ clip }: AudioTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Volume */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] font-medium text-[#9298A3]">Volume</label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round((audio.muted ? 0 : audio.volume) * 100)}%</span>
+          <label className="text-[11px] font-medium text-studio-muted">Volume</label>
+          <span className="font-mono text-xs text-studio-fg">{Math.round((audio.muted ? 0 : audio.volume) * 100)}%</span>
         </div>
         <Slider
           value={audio.volume}
@@ -59,20 +59,20 @@ export function AudioTab({ clip }: AudioTabProps) {
 
       {/* Mute Toggle */}
       <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-[#9298A3]">Mute Clip Audio</label>
+        <label className="text-xs font-medium text-studio-muted">Mute Clip Audio</label>
         <Checkbox
           checked={audio.muted}
           onChange={(e) => updateAudioProp({ muted: e.target.checked })}
         />
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Fade In */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] font-medium text-[#9298A3]">Fade In (seconds)</label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{audio.fadeIn.toFixed(1)}s</span>
+          <label className="text-[11px] font-medium text-studio-muted">Fade In (seconds)</label>
+          <span className="font-mono text-xs text-studio-fg">{audio.fadeIn.toFixed(1)}s</span>
         </div>
         <Slider
           value={audio.fadeIn}
@@ -86,8 +86,8 @@ export function AudioTab({ clip }: AudioTabProps) {
       {/* Fade Out */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] font-medium text-[#9298A3]">Fade Out (seconds)</label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{audio.fadeOut.toFixed(1)}s</span>
+          <label className="text-[11px] font-medium text-studio-muted">Fade Out (seconds)</label>
+          <span className="font-mono text-xs text-studio-fg">{audio.fadeOut.toFixed(1)}s</span>
         </div>
         <Slider
           value={audio.fadeOut}
@@ -104,14 +104,14 @@ export function AudioTab({ clip }: AudioTabProps) {
           size="sm"
           variant="secondary"
           onClick={() => detachAudioFromVideo(clip.id)}
-          className="h-8 gap-1.5 text-xs text-[#FF5A36] border-[#FF5A36]/40 hover:bg-[#FF5A36]/10"
+          className="h-8 gap-1.5 text-xs text-brand border-brand/40 hover:bg-brand/10"
         >
           <Unlink className="h-3.5 w-3.5" /> Detach Audio to Track
         </Button>
       )}
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-[#9298A3] hover:text-[#E45858]">
+      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
         <RotateCcw className="h-3.5 w-3.5" /> Reset Audio Controls
       </Button>
     </div>

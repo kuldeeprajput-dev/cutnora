@@ -51,7 +51,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
       ref={rulerRef}
       onPointerDown={handlePointerDown}
       style={{ width: `${totalWidthPx}px` }}
-      className={`relative h-6 border-b border-[#2B2F38] bg-[#14161B] text-[#9298A3] select-none ${
+      className={`relative h-6 border-b border-studio-border bg-studio-topbar text-studio-muted select-none ${
         isSeeking ? 'cursor-grabbing' : 'cursor-pointer'
       }`}
     >
@@ -60,9 +60,9 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
         const leftPx = tick.time * zoom;
         return (
           <div key={i} style={{ left: `${leftPx}px` }} className="absolute top-0 bottom-0 flex flex-col justify-between">
-            <div className={`w-px bg-[#2B2F38] ${tick.isMajor ? 'h-3 bg-[#6F716F]' : 'h-1.5'}`} />
+            <div className={`w-px bg-studio-border ${tick.isMajor ? 'h-3 bg-mkt-muted' : 'h-1.5'}`} />
             {tick.label && (
-              <span className="font-mono text-[9px] font-semibold text-[#9298A3] -translate-x-1/2 pl-1 mb-0.5">
+              <span className="font-mono text-[9px] font-semibold text-studio-muted -translate-x-1/2 pl-1 mb-0.5">
                 {tick.label}
               </span>
             )}
@@ -75,7 +75,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
         style={{ left: `${playheadLeftPx}px` }}
         className="absolute top-0 bottom-0 z-30 pointer-events-none -translate-x-1/2"
       >
-        <div className="h-2.5 w-2.5 rotate-45 bg-[#FF5A36] shadow-sm -mt-1" />
+        <div className="h-2.5 w-2.5 rotate-45 bg-brand shadow-sm -mt-1" />
       </div>
     </div>
   );

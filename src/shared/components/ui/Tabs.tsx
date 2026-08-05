@@ -38,7 +38,7 @@ export function TabList({ className, children, ...props }: React.HTMLAttributes<
   return (
     <div
       role="tablist"
-      className={cn('inline-flex items-center gap-1 rounded-lg bg-[#14161B] p-1 border border-[#2B2F38]', className)}
+      className={cn('inline-flex items-center gap-1 rounded-lg bg-studio-topbar p-1 border border-studio-border', className)}
       {...props}
     >
       {children}
@@ -64,10 +64,10 @@ export function TabTrigger({ value, className, children, ...props }: TabTriggerP
       onClick={() => context.setActiveTab(value)}
       className={cn(
         'inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md transition-colors select-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A36]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
         isActive
-          ? 'bg-[#1D2027] text-[#F4F5F7] shadow-sm font-semibold'
-          : 'text-[#9298A3] hover:text-[#F4F5F7] hover:bg-[#171A20]',
+          ? 'bg-studio-panel-raised text-studio-fg shadow-sm font-semibold'
+          : 'text-studio-muted hover:text-studio-fg hover:bg-studio-panel',
         className
       )}
       {...props}

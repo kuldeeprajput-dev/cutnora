@@ -40,14 +40,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center bg-[#14161B] text-[#F4F5F7] rounded-xl border border-[#2B2F38]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E45858]/15 text-[#E45858] mb-3">
+        <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center bg-studio-topbar text-studio-fg rounded-xl border border-studio-border">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/15 text-destructive mb-3">
             <AlertCircle className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-bold text-[#F4F5F7]">
+          <h4 className="text-sm font-bold text-studio-fg">
             {this.props.fallbackTitle || 'Component Error'}
           </h4>
-          <p className="mt-1 text-xs text-[#9298A3] max-w-sm">
+          <p className="mt-1 text-xs text-studio-muted max-w-sm">
             {this.props.fallbackMessage ||
               this.state.error?.message ||
               'An isolated rendering error occurred.'}

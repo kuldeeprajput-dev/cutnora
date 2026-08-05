@@ -190,9 +190,9 @@ export function TextPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-[#F4F5F7] select-none">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Text Presets</h3>
-      <p className="text-[11px] text-[#9298A3]">Click a preset to add text at the current playhead position.</p>
+    <div className="flex flex-col gap-4 p-4 text-studio-fg select-none">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-studio-muted">Text Presets</h3>
+      <p className="text-[11px] text-studio-muted">Click a preset to add text at the current playhead position.</p>
 
       <div className="flex flex-col gap-2">
         {textPresets.map((preset) => {
@@ -203,14 +203,14 @@ export function TextPanel() {
               variant="secondary"
               size="md"
               onClick={() => handleAddPreset(preset)}
-              className="justify-start gap-3 h-11 border border-[#2B2F38] hover:border-[#FF5A36] transition-colors"
+              className="justify-start gap-3 h-11 border border-studio-border hover:border-brand transition-colors"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#101216] text-[#FF5A36]">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-studio-bg text-brand">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-[#F4F5F7]">{preset.name}</span>
-                <span className="text-[10px] text-[#9298A3] truncate max-w-[200px]">{preset.style.text}</span>
+                <span className="text-xs font-bold text-studio-fg">{preset.name}</span>
+                <span className="text-[10px] text-studio-muted truncate max-w-[200px]">{preset.style.text}</span>
               </div>
             </Button>
           );

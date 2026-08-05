@@ -37,7 +37,7 @@ export function ResizableDivider({
       tabIndex={0}
       onMouseDown={handleMouseDown}
       className={cn(
-        'relative flex shrink-0 items-center justify-center bg-[#2B2F38] transition-colors hover:bg-[#FF5A36] select-none',
+        'relative flex shrink-0 items-center justify-center bg-studio-border transition-colors hover:bg-brand select-none',
         orientation === 'vertical'
           ? 'h-full w-1 cursor-col-resize hover:w-1.5'
           : 'w-full h-1 cursor-row-resize hover:h-1.5',

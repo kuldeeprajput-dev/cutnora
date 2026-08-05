@@ -109,7 +109,7 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Quick Layout Actions (Fit, Fill, Crop, Flips) */}
       <div className="grid grid-cols-3 gap-2">
         <Button size="sm" variant="secondary" onClick={handleFit} className="gap-1 text-xs">
@@ -132,12 +132,12 @@ export function TransformTab({ clip }: TransformTabProps) {
         </Button>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Position & Dimensions */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">X Position (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">X Position (px)</label>
           <Input
             type="number"
             value={x}
@@ -148,7 +148,7 @@ export function TransformTab({ clip }: TransformTabProps) {
           />
         </div>
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Y Position (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Y Position (px)</label>
           <Input
             type="number"
             value={y}
@@ -161,14 +161,14 @@ export function TransformTab({ clip }: TransformTabProps) {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Width (px)</label>
+            <label className="text-[11px] font-medium text-studio-muted">Width (px)</label>
             <button
               type="button"
               onClick={() => setIsAspectLocked(!isAspectLocked)}
-              className="text-[#9298A3] hover:text-[#F4F5F7]"
+              className="text-studio-muted hover:text-studio-fg"
               title={isAspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
             >
-              {isAspectLocked ? <Lock className="h-3 w-3 text-[#FF5A36]" /> : <Unlock className="h-3 w-3" />}
+              {isAspectLocked ? <Lock className="h-3 w-3 text-brand" /> : <Unlock className="h-3 w-3" />}
             </button>
           </div>
           <Input
@@ -189,7 +189,7 @@ export function TransformTab({ clip }: TransformTabProps) {
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Height (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Height (px)</label>
           <Input
             type="number"
             value={height}
@@ -208,14 +208,14 @@ export function TransformTab({ clip }: TransformTabProps) {
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Rotation & Opacity */}
       <div className="flex flex-col gap-3">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Rotation (°)</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{rotation}°</span>
+            <label className="text-[11px] font-medium text-studio-muted">Rotation (°)</label>
+            <span className="font-mono text-xs text-studio-fg">{rotation}°</span>
           </div>
           <Slider
             value={rotation}
@@ -231,8 +231,8 @@ export function TransformTab({ clip }: TransformTabProps) {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Opacity</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(opacity * 100)}%</span>
+            <label className="text-[11px] font-medium text-studio-muted">Opacity</label>
+            <span className="font-mono text-xs text-studio-fg">{Math.round(opacity * 100)}%</span>
           </div>
           <Slider
             value={opacity}
@@ -248,7 +248,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-[#9298A3] hover:text-[#E45858]">
+      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
         <RotateCcw className="h-3.5 w-3.5" /> Reset Transform
       </Button>
     </div>

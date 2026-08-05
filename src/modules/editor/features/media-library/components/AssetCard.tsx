@@ -160,11 +160,11 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
   const renderIcon = () => {
     switch (asset.type) {
       case 'video':
-        return <FileVideo className="h-6 w-6 text-[#FF5A36]" />;
+        return <FileVideo className="h-6 w-6 text-brand" />;
       case 'image':
-        return <ImageIcon className="h-6 w-6 text-[#F2C94C]" />;
+        return <ImageIcon className="h-6 w-6 text-selection" />;
       case 'audio':
-        return <Music className="h-6 w-6 text-[#3478D4]" />;
+        return <Music className="h-6 w-6 text-mkt-info" />;
     }
   };
 
@@ -172,10 +172,10 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
     return (
       <div
         onDoubleClick={handleAddToTimeline}
-        className="group flex items-center justify-between rounded-lg border border-[#2B2F38] bg-[#171A20] p-2 hover:border-[#FF5A36] transition-colors select-none cursor-pointer"
+        className="group flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-2 hover:border-brand transition-colors select-none cursor-pointer"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-14 shrink-0 rounded bg-[#101216] border border-[#2B2F38] overflow-hidden flex items-center justify-center">
+          <div className="h-10 w-14 shrink-0 rounded bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
             {thumbUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumbUrl} alt={asset.name} className="h-full w-full object-cover" />
@@ -191,12 +191,12 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
                 onChange={(e) => setNameInput(e.target.value)}
                 onBlur={handleRenameSubmit}
                 autoFocus
-                className="h-6 rounded bg-[#101216] border border-[#FF5A36] px-1 text-xs text-[#F4F5F7]"
+                className="h-6 rounded bg-studio-bg border border-brand px-1 text-xs text-studio-fg"
               />
             ) : (
-              <p className="text-xs font-semibold text-[#F4F5F7] truncate">{asset.name}</p>
+              <p className="text-xs font-semibold text-studio-fg truncate">{asset.name}</p>
             )}
-            <p className="text-[10px] text-[#9298A3] font-mono mt-0.5">
+            <p className="text-[10px] text-studio-muted font-mono mt-0.5">
               {asset.type !== 'image' && `${formatDuration(asset.duration)} • `}
               {formatSize(asset.size)}
             </p>
@@ -226,10 +226,10 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
   return (
     <div
       onDoubleClick={handleAddToTimeline}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-[#2B2F38] bg-[#171A20] p-1.5 transition-all hover:border-[#FF5A36] select-none cursor-pointer"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-all hover:border-brand select-none cursor-pointer"
     >
       {/* Thumbnail View Stage */}
-      <div className="relative aspect-video w-full rounded-lg bg-[#101216] border border-[#2B2F38] overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-video w-full rounded-lg bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
         {thumbUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={thumbUrl} alt={asset.name} className="h-full w-full object-cover" />
@@ -238,7 +238,7 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
         )}
 
         {/* Duration / Tag Overlay */}
-        <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1 py-0.5 font-mono text-[9px] text-[#F4F5F7]">
+        <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1 py-0.5 font-mono text-[9px] text-studio-fg">
           {asset.type === 'image' ? 'IMAGE' : formatDuration(asset.duration)}
         </span>
 
@@ -260,12 +260,12 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={handleRenameSubmit}
               autoFocus
-              className="h-5 w-full rounded bg-[#101216] border border-[#FF5A36] px-1 text-[11px] text-[#F4F5F7]"
+              className="h-5 w-full rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg"
             />
           ) : (
-            <p className="text-[11px] font-semibold text-[#F4F5F7] truncate">{asset.name}</p>
+            <p className="text-[11px] font-semibold text-studio-fg truncate">{asset.name}</p>
           )}
-          <p className="text-[9px] font-mono text-[#9298A3]">
+          <p className="text-[9px] font-mono text-studio-muted">
             {asset.width && asset.height ? `${asset.width}×${asset.height} • ` : ''}
             {formatSize(asset.size)}
           </p>
@@ -273,7 +273,7 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
 
         <DropdownMenu
           trigger={
-            <button type="button" aria-label="Asset options" className="text-[#9298A3] hover:text-[#F4F5F7] p-0.5 rounded">
+            <button type="button" aria-label="Asset options" className="text-studio-muted hover:text-studio-fg p-0.5 rounded">
               <MoreVertical className="h-3.5 w-3.5" />
             </button>
           }

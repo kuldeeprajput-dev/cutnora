@@ -54,10 +54,10 @@ export function CanvasSettingsPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Aspect Ratio Presets */}
       <div>
-        <label className="text-xs font-medium text-[#9298A3] block mb-2">Aspect Ratio Presets</label>
+        <label className="text-xs font-medium text-studio-muted block mb-2">Aspect Ratio Presets</label>
         <div className="grid grid-cols-2 gap-2">
           {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
             <Button
@@ -72,12 +72,12 @@ export function CanvasSettingsPanel() {
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Resolution Dimensions */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Width (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Width (px)</label>
           <Input
             type="number"
             value={settings.width}
@@ -87,7 +87,7 @@ export function CanvasSettingsPanel() {
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Height (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Height (px)</label>
           <Input
             type="number"
             value={settings.height}
@@ -99,11 +99,11 @@ export function CanvasSettingsPanel() {
 
       {/* Frame Rate */}
       <div>
-        <label className="text-xs font-medium text-[#9298A3] block mb-1.5">Project Frame Rate (FPS)</label>
+        <label className="text-xs font-medium text-studio-muted block mb-1.5">Project Frame Rate (FPS)</label>
         <Select
           value={settings.fps}
           onChange={(e) => updateProjectSettings({ fps: parseInt(e.target.value, 10) || 30 })}
-          className="h-8 text-xs border-[#2B2F38]"
+          className="h-8 text-xs border-studio-border"
         >
           <option value="24">24 FPS (Cinematic)</option>
           <option value="30">30 FPS (Standard Video)</option>
@@ -113,27 +113,27 @@ export function CanvasSettingsPanel() {
 
       {/* Background Color */}
       <div>
-        <label className="text-xs font-medium text-[#9298A3] block mb-1.5">Canvas Background Color</label>
+        <label className="text-xs font-medium text-studio-muted block mb-1.5">Canvas Background Color</label>
         <div className="flex items-center gap-2">
           <input
             type="color"
             value={settings.backgroundColor || '#000000'}
             onChange={(e) => updateProjectSettings({ backgroundColor: e.target.value })}
-            className="h-8 w-12 rounded cursor-pointer border border-[#2B2F38] bg-[#171A20] p-0.5"
+            className="h-8 w-12 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
           />
-          <span className="font-mono text-xs text-[#9298A3]">{settings.backgroundColor}</span>
+          <span className="font-mono text-xs text-studio-muted">{settings.backgroundColor}</span>
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Master Volume */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-xs font-medium text-[#9298A3] flex items-center gap-1">
-            <Volume2 className="h-3.5 w-3.5 text-[#248A5A]" /> Master Volume
+          <label className="text-xs font-medium text-studio-muted flex items-center gap-1">
+            <Volume2 className="h-3.5 w-3.5 text-mkt-success" /> Master Volume
           </label>
-          <span className="font-mono text-xs text-[#F4F5F7]">{Math.round(settings.masterVolume * 100)}%</span>
+          <span className="font-mono text-xs text-studio-fg">{Math.round(settings.masterVolume * 100)}%</span>
         </div>
         <Slider
           value={settings.masterVolume}
@@ -147,12 +147,12 @@ export function CanvasSettingsPanel() {
       {/* Confirmation Dialog on Resolution Resize */}
       <Dialog isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} title="Change Project Dimensions?">
         <div className="flex items-start gap-3 p-4">
-          <AlertTriangle className="h-6 w-6 text-[#F2C94C] shrink-0" />
-          <div className="text-xs text-[#9298A3]">
+          <AlertTriangle className="h-6 w-6 text-selection shrink-0" />
+          <div className="text-xs text-studio-muted">
             Changing resolution will scale the project canvas dimensions. Existing clips on the timeline may require position adjustments.
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2 p-4 border-t border-[#2B2F38]">
+        <div className="flex items-center justify-end gap-2 p-4 border-t border-studio-border">
           <Button size="sm" variant="ghost" onClick={() => setIsConfirmOpen(false)}>
             Cancel
           </Button>

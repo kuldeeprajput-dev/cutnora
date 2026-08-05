@@ -41,17 +41,17 @@ export function PreviewStage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#121419] text-[#F4F5F7] select-none">
+    <div className="flex h-full w-full flex-col bg-canvas-bg text-studio-fg select-none">
       {/* Tab Hidden Paused Banner */}
       {wasTabHiddenPaused && (
-        <div className="flex items-center justify-between bg-[#1D2027] border-b border-[#2B2F38] px-4 py-1.5 text-xs text-[#F2C94C]">
+        <div className="flex items-center justify-between bg-studio-panel-raised border-b border-studio-border px-4 py-1.5 text-xs text-selection">
           <span className="flex items-center gap-1.5">
             <AlertCircle className="h-3.5 w-3.5" /> Playback paused automatically because tab was hidden.
           </span>
           <button
             type="button"
             onClick={() => setWasTabHiddenPaused(false)}
-            className="text-[11px] underline text-[#9298A3] hover:text-[#F4F5F7]"
+            className="text-[11px] underline text-studio-muted hover:text-studio-fg"
           >
             Dismiss
           </button>
@@ -64,9 +64,9 @@ export function PreviewStage() {
       </div>
 
       {/* Playback Transport Control Bar */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-t border-[#2B2F38] bg-[#14161B] px-4">
+      <div className="flex h-11 shrink-0 items-center justify-between border-t border-studio-border bg-studio-topbar px-4">
         {/* Left: Resolution & FPS Info */}
-        <div className="flex items-center gap-2 text-xs font-mono text-[#9298A3]">
+        <div className="flex items-center gap-2 text-xs font-mono text-studio-muted">
           <span>{settings.aspectRatio}</span>
           <span>•</span>
           <span>{settings.fps} FPS</span>
@@ -104,7 +104,7 @@ export function PreviewStage() {
             <Repeat className="h-3.5 w-3.5" />
           </IconButton>
 
-          <span className="ml-3 font-mono text-xs font-semibold text-[#F4F5F7]">
+          <span className="ml-3 font-mono text-xs font-semibold text-studio-fg">
             {formatTime(playhead)} / {formatTime(settings.duration)}
           </span>
         </div>

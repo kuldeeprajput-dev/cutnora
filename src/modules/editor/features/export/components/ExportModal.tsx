@@ -133,7 +133,7 @@ export function ExportModal() {
       <div className="flex flex-col gap-4">
         {/* Browser Capability Warnings */}
         {(!capabilities.hasCaptureStream || !capabilities.hasMediaRecorder) && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#E45858]/50 bg-[#E45858]/10 p-3 text-xs text-[#E45858] mb-2">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive mb-2">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>
               Your browser lacks canvas stream recording capabilities. Video
@@ -146,26 +146,26 @@ export function ExportModal() {
         {(exportPhase === "rendering" || exportPhase === "converting") && (
           <div className="flex flex-col gap-4 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#FF5A36] flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 {exportPhase === "rendering"
                   ? "Rendering Video Frames..."
                   : "Converting MP4 (WASM)..."}
               </span>
-              <span className="font-mono text-xs font-semibold text-[#F4F5F7]">
+              <span className="font-mono text-xs font-semibold text-studio-fg">
                 {exportProgress}%
               </span>
             </div>
 
             {/* Progress Bar */}
-            <div className="h-3 w-full rounded-full bg-[#1D2027] overflow-hidden border border-[#2B2F38]">
+            <div className="h-3 w-full rounded-full bg-studio-panel-raised overflow-hidden border border-studio-border">
               <div
-                className="h-full bg-[#FF5A36] transition-all duration-150 rounded-full"
+                className="h-full bg-brand transition-all duration-150 rounded-full"
                 style={{ width: `${exportProgress}%` }}
               />
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-[#9298A3]">
+            <div className="flex items-center justify-between text-xs font-mono text-studio-muted">
               <span>
                 {formatSeconds(currentExportTime)} /{" "}
                 {formatSeconds(totalDuration)}
@@ -174,7 +174,7 @@ export function ExportModal() {
             </div>
 
             {/* Active Tab Notice */}
-            <div className="flex items-center gap-2 rounded-lg border border-[#F2C94C]/40 bg-[#F2C94C]/10 p-2.5 text-xs text-[#F2C94C]">
+            <div className="flex items-center gap-2 rounded-lg border border-selection/40 bg-selection/10 p-2.5 text-xs text-selection">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <span>
                 Keep this tab active while the export is running to ensure
@@ -187,13 +187,13 @@ export function ExportModal() {
         {/* Phase View: Completed */}
         {exportPhase === "completed" && (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#248A5A]/20 text-[#248A5A]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-mkt-success/20 text-mkt-success">
               <CheckCircle className="h-6 w-6" />
             </div>
-            <h4 className="text-sm font-bold text-[#F4F5F7]">
+            <h4 className="text-sm font-bold text-studio-fg">
               Export Completed Successfully!
             </h4>
-            <p className="text-xs text-[#9298A3]">
+            <p className="text-xs text-studio-muted">
               Your video file has been generated and saved locally.
             </p>
 
@@ -201,7 +201,7 @@ export function ExportModal() {
               <a
                 href={exportBlobUrl}
                 download={`${filename}.${exportFormat}`}
-                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-[#FF5A36] px-4 py-2 text-xs font-semibold text-white hover:bg-[#FF5A36]/90 transition-colors"
+                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-white hover:bg-brand/90 transition-colors"
               >
                 <Download className="h-4 w-4" /> Download Video File
               </a>
@@ -212,11 +212,11 @@ export function ExportModal() {
         {/* Phase View: Error */}
         {exportPhase === "error" && (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E45858]/20 text-[#E45858]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 text-destructive">
               <XCircle className="h-6 w-6" />
             </div>
-            <h4 className="text-sm font-bold text-[#E45858]">Export Failed</h4>
-            <p className="text-xs text-[#9298A3] max-w-xs">
+            <h4 className="text-sm font-bold text-destructive">Export Failed</h4>
+            <p className="text-xs text-studio-muted max-w-xs">
               {exportError || "An unexpected error occurred during rendering."}
             </p>
           </div>
@@ -227,7 +227,7 @@ export function ExportModal() {
           <div className="flex flex-col gap-4">
             {/* Filename Input */}
             <div>
-              <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
+              <label className="text-[11px] font-medium text-studio-muted block mb-1">
                 Export Filename
               </label>
               <Input
@@ -241,7 +241,7 @@ export function ExportModal() {
             {/* Format & Resolution */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
+                <label className="text-[11px] font-medium text-studio-muted block mb-1">
                   Format
                 </label>
                 <Select
@@ -249,7 +249,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportFormat(e.target.value as ExportFormat)
                   }
-                  className="h-8 text-xs border-[#2B2F38]"
+                  className="h-8 text-xs border-studio-border"
                 >
                   <option value="webm">WebM</option>
                   <option value="mp4" disabled={!capabilities.hasFFmpegSupport}>
@@ -261,7 +261,7 @@ export function ExportModal() {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
+                <label className="text-[11px] font-medium text-studio-muted block mb-1">
                   Resolution
                 </label>
                 <Select
@@ -269,7 +269,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportResolution(e.target.value as ExportResolution)
                   }
-                  className="h-8 text-xs border-[#2B2F38]"
+                  className="h-8 text-xs border-studio-border"
                 >
                   <option value="1280x720">1280x720</option>
                   <option value="1920x1080">1920x1080</option>
@@ -284,7 +284,7 @@ export function ExportModal() {
             {/* Frame Rate & Quality */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
+                <label className="text-[11px] font-medium text-studio-muted block mb-1">
                   Frame Rate
                 </label>
                 <Select
@@ -292,7 +292,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportFps(parseInt(e.target.value, 10) as 24 | 30 | 60)
                   }
-                  className="h-8 text-xs border-[#2B2F38]"
+                  className="h-8 text-xs border-studio-border"
                 >
                   <option value="24">24</option>
                   <option value="30">30</option>
@@ -301,7 +301,7 @@ export function ExportModal() {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-[#9298A3] block mb-1">
+                <label className="text-[11px] font-medium text-studio-muted block mb-1">
                   Quality
                 </label>
                 <Select
@@ -309,7 +309,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportQuality(e.target.value as ExportQuality)
                   }
-                  className="h-8 text-xs border-[#2B2F38]"
+                  className="h-8 text-xs border-studio-border"
                 >
                   <option value="draft">Draft</option>
                   <option value="standard">Standard</option>
@@ -319,16 +319,16 @@ export function ExportModal() {
             </div>
 
             {/* Duration Badge & Performance Disclaimer */}
-            <div className="rounded-lg border border-[#2B2F38] bg-[#14161B] p-3 text-xs flex flex-col gap-1">
-              <div className="flex items-center justify-between text-[#F4F5F7] font-semibold">
+            <div className="rounded-lg border border-studio-border bg-studio-topbar p-3 text-xs flex flex-col gap-1">
+              <div className="flex items-center justify-between text-studio-fg font-semibold">
                 <span className="flex items-center gap-1.5">
-                  <Film className="h-4 w-4 text-[#FF5A36]" /> Estimated Duration
+                  <Film className="h-4 w-4 text-brand" /> Estimated Duration
                 </span>
                 <span className="font-mono">
                   {formatSeconds(totalDuration)}
                 </span>
               </div>
-              <p className="text-[11px] text-[#9298A3] mt-1">
+              <p className="text-[11px] text-studio-muted mt-1">
                 Local export performance depends on project length, resolution
                 and device performance.
               </p>
@@ -337,13 +337,13 @@ export function ExportModal() {
         )}
 
         {/* Modal Actions */}
-        <div className="mt-4 flex items-center justify-end gap-2 border-t border-[#2B2F38] pt-4">
+        <div className="mt-4 flex items-center justify-end gap-2 border-t border-studio-border pt-4">
           {(exportPhase === "rendering" || exportPhase === "converting") && (
             <Button
               size="sm"
               variant="secondary"
               onClick={handleCancelExport}
-              className="w-full text-[#E45858]"
+              className="w-full text-destructive"
             >
               Cancel Export
             </Button>

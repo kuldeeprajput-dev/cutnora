@@ -33,9 +33,9 @@ export default function NewProjectPage() {
   }, [createProject, router]);
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-[#101216] text-[#F4F5F7]">
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
       <Spinner size="lg" label="Setting up new video project..." />
-      <p className="mt-4 text-sm text-[#9298A3]">Setting up workspace...</p>
+      <p className="mt-4 text-sm text-studio-muted">Setting up workspace...</p>
     </div>
   );
 }

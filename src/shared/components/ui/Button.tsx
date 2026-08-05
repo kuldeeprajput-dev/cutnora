@@ -1,8 +1,15 @@
-import React, { forwardRef } from 'react';
-import { cn } from '@/shared/utils/cn';
+import React, { forwardRef } from "react";
+import { cn } from "@/shared/utils/cn";
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'selection' | 'marketing';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "destructive"
+  | "selection"
+  | "marketing";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -11,34 +18,50 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-[#FF5A36] text-white hover:bg-[#E84928] active:bg-[#d03d1e]',
-  secondary: 'bg-[#1D2027] text-[#F4F5F7] hover:bg-[#242832] border border-[#2B2F38]',
-  outline: 'border border-[#2B2F38] text-[#F4F5F7] bg-transparent hover:bg-[#1D2027]',
-  ghost: 'text-[#9298A3] hover:text-[#F4F5F7] hover:bg-[#1D2027]',
-  destructive: 'bg-[#E45858] text-white hover:bg-[#d34545]',
-  selection: 'bg-[#F2C94C] text-[#101216] font-semibold hover:bg-[#e0b73b]',
-  marketing: 'bg-[#FF5A36] text-white font-medium hover:bg-[#E84928] shadow-sm',
+  primary:
+    "bg-brand text-white hover:bg-brand-hover active:bg-brand-active",
+  secondary:
+    "bg-studio-panel-raised text-studio-fg hover:bg-studio-hover border border-studio-border",
+  outline:
+    "border border-studio-border text-studio-fg bg-transparent hover:bg-studio-panel-raised",
+  ghost: "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised",
+  destructive: "bg-destructive text-white hover:bg-destructive-hover",
+  selection:
+    "bg-selection text-studio-bg font-semibold hover:bg-selection-hover",
+  marketing:
+    "bg-brand text-white font-medium hover:bg-brand-hover shadow-sm",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
-  md: 'h-9 px-4 text-sm gap-2 rounded-lg',
-  lg: 'h-11 px-5 text-base gap-2.5 rounded-xl',
+  sm: "h-8 px-3 text-xs gap-1.5 rounded-md",
+  md: "h-9 px-4 text-sm gap-2 rounded-lg",
+  lg: "h-11 px-5 text-base gap-2.5 rounded-xl",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', isLoading = false, disabled, children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      disabled,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-colors select-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A36] focus-visible:ring-offset-2 focus-visible:ring-offset-[#101216]',
-          'disabled:opacity-50 disabled:pointer-events-none motion-reduce:transition-none',
+          "inline-flex items-center justify-center font-medium transition-colors select-none",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-studio-bg",
+          "disabled:opacity-50 disabled:pointer-events-none motion-reduce:transition-none",
           variantStyles[variant],
           sizeStyles[size],
-          className
+          className,
         )}
         {...props}
       >
@@ -48,7 +71,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     );
-  }
+  },
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";

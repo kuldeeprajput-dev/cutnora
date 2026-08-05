@@ -129,7 +129,7 @@ export function TextLayer({ clip }: TextLayerProps) {
       {/* Overflow Warning Badge */}
       {isOverflowing && (
         <div
-          className="absolute -top-3 -right-3 z-40 rounded-full bg-[#FF5A36] p-1 text-white shadow-lg opacity-0 group-hover/text:opacity-100 transition-opacity"
+          className="absolute -top-3 -right-3 z-40 rounded-full bg-brand p-1 text-white shadow-lg opacity-0 group-hover/text:opacity-100 transition-opacity"
           title="Clip extends outside video canvas boundaries!"
         >
           <AlertTriangle className="h-3 w-3" />

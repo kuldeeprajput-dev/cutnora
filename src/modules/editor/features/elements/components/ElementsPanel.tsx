@@ -210,9 +210,9 @@ export function ElementsPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-[#F4F5F7] select-none">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Shapes & Overlays</h3>
-      <p className="text-[11px] text-[#9298A3]">Click any shape to add an SVG/CSS layer to your video stage.</p>
+    <div className="flex flex-col gap-4 p-4 text-studio-fg select-none">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-studio-muted">Shapes & Overlays</h3>
+      <p className="text-[11px] text-studio-muted">Click any shape to add an SVG/CSS layer to your video stage.</p>
 
       <div className="grid grid-cols-2 gap-2">
         {elementPresets.map((preset) => {
@@ -223,9 +223,9 @@ export function ElementsPanel() {
               variant="secondary"
               size="md"
               onClick={() => handleAddElement(preset)}
-              className="justify-start gap-2 h-10 border border-[#2B2F38] hover:border-[#FF5A36] transition-colors text-xs"
+              className="justify-start gap-2 h-10 border border-studio-border hover:border-brand transition-colors text-xs"
             >
-              <Icon className="h-4 w-4 text-[#FF5A36] shrink-0" />
+              <Icon className="h-4 w-4 text-brand shrink-0" />
               <span className="truncate">{preset.name}</span>
             </Button>
           );

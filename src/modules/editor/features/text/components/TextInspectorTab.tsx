@@ -44,28 +44,28 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Text Content Textarea */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Text Content</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-1">Text Content</label>
         <textarea
           rows={3}
           value={textStyle.text}
           onChange={(e) => updateTextStyle({ text: e.target.value })}
-          className="w-full rounded-lg border border-[#2B2F38] bg-[#171A20] p-2 text-xs text-[#F4F5F7] focus:outline-none focus:ring-2 focus:ring-[#FF5A36] resize-none"
+          className="w-full rounded-lg border border-studio-border bg-studio-panel p-2 text-xs text-studio-fg focus:outline-none focus:ring-2 focus:ring-brand resize-none"
         />
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Font Family & Size */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Font Family</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Font Family</label>
           <Select
             value={textStyle.fontFamily}
             onChange={(e) => updateTextStyle({ fontFamily: e.target.value })}
-            className="h-8 text-xs border-[#2B2F38]"
+            className="h-8 text-xs border-studio-border"
           >
             {fontFamilies.map((f) => (
               <option key={f.value} value={f.value}>
@@ -76,7 +76,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Font Size (px)</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Font Size (px)</label>
           <Input
             type="number"
             min={10}
@@ -90,7 +90,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
 
       {/* Alignment & Weight / Style */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-1.5">Style & Alignment</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Style & Alignment</label>
         <div className="flex items-center gap-2">
           <Button
             size="sm"
@@ -112,7 +112,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
             <Italic className="h-4 w-4" />
           </Button>
 
-          <div className="flex items-center rounded-lg border border-[#2B2F38] bg-[#171A20] p-0.5 ml-auto">
+          <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel p-0.5 ml-auto">
             <Button
               size="sm"
               variant={textStyle.textAlign === 'left' ? 'secondary' : 'ghost'}
@@ -145,8 +145,8 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Line Height</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{(textStyle.lineHeight || 1.2).toFixed(1)}</span>
+            <label className="text-[11px] font-medium text-studio-muted">Line Height</label>
+            <span className="font-mono text-xs text-studio-fg">{(textStyle.lineHeight || 1.2).toFixed(1)}</span>
           </div>
           <Slider
             value={textStyle.lineHeight || 1.2}
@@ -159,8 +159,8 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Letter Spacing (px)</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{textStyle.letterSpacing || 0}px</span>
+            <label className="text-[11px] font-medium text-studio-muted">Letter Spacing (px)</label>
+            <span className="font-mono text-xs text-studio-fg">{textStyle.letterSpacing || 0}px</span>
           </div>
           <Slider
             value={textStyle.letterSpacing || 0}
@@ -172,33 +172,33 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Colors */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1.5">Text Color</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Text Color</label>
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={textStyle.color || '#FFFFFF'}
               onChange={(e) => updateTextStyle({ color: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-[#2B2F38] bg-[#171A20] p-0.5"
+              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
             />
-            <span className="font-mono text-xs text-[#9298A3]">{textStyle.color}</span>
+            <span className="font-mono text-xs text-studio-muted">{textStyle.color}</span>
           </div>
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-[#9298A3] block mb-1.5">Background Fill</label>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Background Fill</label>
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={textStyle.backgroundColor || '#000000'}
               onChange={(e) => updateTextStyle({ backgroundColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-[#2B2F38] bg-[#171A20] p-0.5"
+              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
             />
-            <span className="font-mono text-xs text-[#9298A3]">{textStyle.backgroundColor || 'None'}</span>
+            <span className="font-mono text-xs text-studio-muted">{textStyle.backgroundColor || 'None'}</span>
           </div>
         </div>
       </div>
@@ -207,8 +207,8 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Bg Padding (px)</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{textStyle.bgPadding || 0}px</span>
+            <label className="text-[11px] font-medium text-studio-muted">Bg Padding (px)</label>
+            <span className="font-mono text-xs text-studio-fg">{textStyle.bgPadding || 0}px</span>
           </div>
           <Slider
             value={textStyle.bgPadding || 0}
@@ -221,8 +221,8 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-[#9298A3]">Bg Radius (px)</label>
-            <span className="font-mono text-xs text-[#F4F5F7]">{textStyle.bgRadius || 0}px</span>
+            <label className="text-[11px] font-medium text-studio-muted">Bg Radius (px)</label>
+            <span className="font-mono text-xs text-studio-fg">{textStyle.bgRadius || 0}px</span>
           </div>
           <Slider
             value={textStyle.bgRadius || 0}
@@ -234,26 +234,26 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
         </div>
       </div>
 
-      <div className="h-px bg-[#2B2F38]" />
+      <div className="h-px bg-studio-border" />
 
       {/* Text Outline / Stroke */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-1.5">Text Outline</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Text Outline</label>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={textStyle.outlineColor || '#000000'}
               onChange={(e) => updateTextStyle({ outlineColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-[#2B2F38] bg-[#171A20] p-0.5"
+              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
             />
-            <span className="font-mono text-xs text-[#9298A3]">{textStyle.outlineColor || '#000'}</span>
+            <span className="font-mono text-xs text-studio-muted">{textStyle.outlineColor || '#000'}</span>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-[#9298A3]">Width</span>
-              <span className="font-mono text-xs text-[#F4F5F7]">{textStyle.outlineWidth || 0}px</span>
+              <span className="text-[10px] text-studio-muted">Width</span>
+              <span className="font-mono text-xs text-studio-fg">{textStyle.outlineWidth || 0}px</span>
             </div>
             <Slider
               value={textStyle.outlineWidth || 0}
@@ -268,21 +268,21 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
 
       {/* Drop Shadow */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-1.5">Text Shadow</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Text Shadow</label>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={textStyle.shadowColor || '#000000'}
               onChange={(e) => updateTextStyle({ shadowColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-[#2B2F38] bg-[#171A20] p-0.5"
+              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
             />
-            <span className="font-mono text-xs text-[#9298A3]">Shadow Color</span>
+            <span className="font-mono text-xs text-studio-muted">Shadow Color</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <span className="text-[10px] text-[#9298A3] block">Blur</span>
+              <span className="text-[10px] text-studio-muted block">Blur</span>
               <Slider
                 value={textStyle.shadowBlur || 0}
                 min={0}
@@ -292,7 +292,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
               />
             </div>
             <div>
-              <span className="text-[10px] text-[#9298A3] block">Offset X</span>
+              <span className="text-[10px] text-studio-muted block">Offset X</span>
               <Slider
                 value={textStyle.shadowOffsetX || 0}
                 min={-20}
@@ -302,7 +302,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
               />
             </div>
             <div>
-              <span className="text-[10px] text-[#9298A3] block">Offset Y</span>
+              <span className="text-[10px] text-studio-muted block">Offset Y</span>
               <Slider
                 value={textStyle.shadowOffsetY || 0}
                 min={-20}

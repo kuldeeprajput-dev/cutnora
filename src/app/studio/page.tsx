@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { db } from '@/modules/core/db/database';
-import type { Project } from '@/modules/projects';
-import { Button } from '@/shared/components/ui/Button';
-import { Container } from '@/shared/components/layout/Container';
-import { Plus, Film, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { db } from "@/modules/core/db/database";
+import type { Project } from "@/modules/projects";
+import { Button } from "@/shared/components/ui/Button";
+import { Container } from "@/shared/components/layout/Container";
+import { Plus, Film, Trash2 } from "lucide-react";
+import { BrandMark } from "@/shared/components/BrandMark";
 
 export default function StudioDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,10 +16,10 @@ export default function StudioDashboardPage() {
   useEffect(() => {
     async function loadProjects() {
       try {
-        const list = await db.projects.orderBy('updatedAt').reverse().toArray();
+        const list = await db.projects.orderBy("updatedAt").reverse().toArray();
         setProjects(list);
       } catch (err) {
-        console.error('Failed to load projects:', err);
+        console.error("Failed to load projects:", err);
       } finally {
         setIsLoading(false);
       }
@@ -30,40 +31,28 @@ export default function StudioDashboardPage() {
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this local project?')) {
+    if (confirm("Are you sure you want to delete this local project?")) {
       await db.projects.delete(id);
       setProjects((prev) => prev.filter((p) => p.id !== id));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#101216] text-[#F4F5F7] py-12">
+    <div className="min-h-screen bg-studio-bg text-studio-fg py-12">
       <Container size="lg">
         {/* Dashboard Header */}
-        <div className="flex items-center justify-between border-b border-[#2B2F38] pb-6 mb-8">
+        <div className="flex items-center justify-between border-b border-studio-border pb-6 mb-8">
           <div>
             <Link href="/" className="flex items-center gap-2 mb-2">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <rect width="32" height="32" rx="8" fill="#FF5A36" />
-                <path
-                  d="M10 8L22 8C23.1046 8 24 8.89543 24 10V22C24 23.1046 23.1046 24 22 24H10C8.89543 24 8 23.1046 8 22V10C8 8.89543 8.89543 8 10 8Z"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinejoin="round"
-                />
-                <path d="M14 12L20 16L14 20V12Z" fill="white" />
-              </svg>
-              <span className="text-sm font-bold tracking-tight text-[#9298A3]">Cutframe Studio</span>
+              <BrandMark size={24} />
+              <span className="text-sm font-bold tracking-tight text-studio-muted">
+                Cutframe Studio
+              </span>
             </Link>
-            <h1 className="text-3xl font-extrabold tracking-tight text-[#F4F5F7]">Local Projects</h1>
-            <p className="mt-1 text-xs text-[#9298A3]">
+            <h1 className="text-3xl font-extrabold tracking-tight text-studio-fg">
+              Local Projects
+            </h1>
+            <p className="mt-1 text-xs text-studio-muted">
               Projects stored on your local browser IndexedDB storage.
             </p>
           </div>
@@ -77,12 +66,18 @@ export default function StudioDashboardPage() {
 
         {/* Projects Grid */}
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-[#9298A3]">Loading local projects...</div>
+          <div className="py-12 text-center text-sm text-studio-muted">
+            Loading local projects...
+          </div>
         ) : projects.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#2B2F38] bg-[#171A20] p-12 text-center">
-            <Film className="mx-auto h-12 w-12 text-[#9298A3] mb-4" />
-            <h3 className="text-base font-bold text-[#F4F5F7]">No local projects found</h3>
-            <p className="mt-1 text-xs text-[#9298A3]">Create a new video project to start editing in your browser.</p>
+          <div className="rounded-2xl border border-dashed border-studio-border bg-studio-panel p-12 text-center">
+            <Film className="mx-auto h-12 w-12 text-studio-muted mb-4" />
+            <h3 className="text-base font-bold text-studio-fg">
+              No local projects found
+            </h3>
+            <p className="mt-1 text-xs text-studio-muted">
+              Create a new video project to start editing in your browser.
+            </p>
             <div className="mt-6">
               <Link href="/studio/new">
                 <Button size="sm" variant="primary">
@@ -97,25 +92,26 @@ export default function StudioDashboardPage() {
               <Link
                 key={project.id}
                 href={`/studio/${project.id}`}
-                className="group relative rounded-xl border border-[#2B2F38] bg-[#171A20] p-4 transition-all hover:border-[#FF5A36]"
+                className="group relative rounded-xl border border-studio-border bg-studio-panel p-4 transition-all hover:border-brand"
               >
-                <div className="aspect-video w-full rounded-lg bg-[#101216] border border-[#2B2F38] flex items-center justify-center mb-3">
-                  <Film className="h-8 w-8 text-[#9298A3] group-hover:text-[#FF5A36] transition-colors" />
+                <div className="aspect-video w-full rounded-lg bg-studio-bg border border-studio-border flex items-center justify-center mb-3">
+                  <Film className="h-8 w-8 text-studio-muted group-hover:text-brand transition-colors" />
                 </div>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="text-sm font-bold text-[#F4F5F7] group-hover:text-[#FF5A36] transition-colors truncate">
+                    <h3 className="text-sm font-bold text-studio-fg group-hover:text-brand transition-colors truncate">
                       {project.name}
                     </h3>
-                    <p className="text-[11px] font-mono text-[#9298A3] mt-0.5">
-                      {project.settings.width}×{project.settings.height} ({project.settings.aspectRatio})
+                    <p className="text-[11px] font-mono text-studio-muted mt-0.5">
+                      {project.settings.width}×{project.settings.height} (
+                      {project.settings.aspectRatio})
                     </p>
                   </div>
                   <button
                     type="button"
                     title="Delete project"
                     onClick={(e) => handleDeleteProject(project.id, e)}
-                    className="p-1 text-[#9298A3] hover:text-[#E45858] transition-colors"
+                    className="p-1 text-studio-muted hover:text-destructive transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

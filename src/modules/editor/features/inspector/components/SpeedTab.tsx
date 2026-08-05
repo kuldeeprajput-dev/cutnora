@@ -28,10 +28,10 @@ export function SpeedTab({ clip }: SpeedTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-[#F4F5F7]">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Speed Presets Grid */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-2">Speed Presets</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-2">Speed Presets</label>
         <div className="grid grid-cols-4 gap-1.5">
           {speedPresets.map((sp) => (
             <Button
@@ -49,7 +49,7 @@ export function SpeedTab({ clip }: SpeedTabProps) {
 
       {/* Custom Speed Input */}
       <div>
-        <label className="text-[11px] font-medium text-[#9298A3] block mb-1">Custom Speed Multiplier</label>
+        <label className="text-[11px] font-medium text-studio-muted block mb-1">Custom Speed Multiplier</label>
         <div className="flex items-center gap-2">
           <Input
             type="number"
@@ -60,13 +60,13 @@ export function SpeedTab({ clip }: SpeedTabProps) {
             onChange={(e) => handleSpeedChange(parseFloat(e.target.value) || 1)}
             className="h-8 text-xs font-mono"
           />
-          <span className="text-xs font-mono text-[#9298A3]">x</span>
+          <span className="text-xs font-mono text-studio-muted">x</span>
         </div>
       </div>
 
       {/* Explanatory Hint */}
-      <div className="flex items-start gap-2 rounded-lg border border-[#2B2F38] bg-[#171A20] p-2.5 text-xs text-[#9298A3]">
-        <Info className="h-4 w-4 text-[#FF5A36] shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 rounded-lg border border-studio-border bg-studio-panel p-2.5 text-xs text-studio-muted">
+        <Info className="h-4 w-4 text-brand shrink-0 mt-0.5" />
         <span>Changing clip playback speed adjusts its visible duration on the timeline without altering source trims.</span>
       </div>
     </div>

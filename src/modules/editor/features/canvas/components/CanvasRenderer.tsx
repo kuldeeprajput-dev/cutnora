@@ -152,7 +152,7 @@ export function CanvasRenderer({ stageScale, onGuidesChange }: CanvasRendererPro
     {
       id: 'delete',
       label: 'Delete',
-      icon: <Trash2 className="h-3.5 w-3.5 text-[#E45858]" />,
+      icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
       shortcut: 'Del',
       onClick: () => deleteClips([contextMenu.clip.id]),
     },

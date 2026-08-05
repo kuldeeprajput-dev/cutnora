@@ -19,15 +19,15 @@ export function StudioPanel({
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden border border-[#2B2F38] text-[#F4F5F7]',
-        raised ? 'bg-[#1D2027]' : 'bg-[#171A20]',
+        'flex flex-col overflow-hidden border border-studio-border text-studio-fg',
+        raised ? 'bg-studio-panel-raised' : 'bg-studio-panel',
         className
       )}
       {...props}
     >
       {(title || actions) && (
-        <div className="flex h-10 shrink-0 items-center justify-between border-b border-[#2B2F38] bg-[#14161B] px-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#9298A3]">
+        <div className="flex h-10 shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-studio-muted">
             {title}
           </div>
           {actions && <div className="flex items-center gap-1">{actions}</div>}

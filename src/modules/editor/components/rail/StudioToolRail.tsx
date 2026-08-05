@@ -37,7 +37,7 @@ export function StudioToolRail() {
   const { activeTool, setActiveTool } = useEditorUIStore();
 
   return (
-    <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-2 border-r border-[#2B2F38] bg-[#14161B] py-3 text-[#9298A3] select-none">
+    <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-2 border-r border-studio-border bg-studio-topbar py-3 text-studio-muted select-none">
       {railItems.map((item) => {
         const Icon = item.icon;
         const isActive = activeTool === item.id || (activeTool === 'select' && item.id === 'media');
@@ -50,10 +50,10 @@ export function StudioToolRail() {
               onClick={() => setActiveTool(item.id as EditorTool)}
               className={cn(
                 'flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A36] focus-visible:ring-offset-1 focus-visible:ring-offset-[#14161B]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 focus-visible:ring-offset-studio-topbar',
                 isActive
-                  ? 'bg-[#FF5A36]/15 text-[#FF5A36] font-semibold'
-                  : 'hover:bg-[#1D2027] hover:text-[#F4F5F7]'
+                  ? 'bg-brand/15 text-brand font-semibold'
+                  : 'hover:bg-studio-panel-raised hover:text-studio-fg'
               )}
             >
               <Icon className="h-4 w-4" />

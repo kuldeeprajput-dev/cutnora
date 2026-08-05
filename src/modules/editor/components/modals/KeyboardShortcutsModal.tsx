@@ -54,7 +54,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
       <div className="flex flex-col gap-4">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#9298A3]" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-studio-muted" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -65,7 +65,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
         </div>
 
         {/* Category Tabs */}
-        <div className="flex items-center gap-1 border-b border-[#2B2F38] pb-2 overflow-x-auto">
+        <div className="flex items-center gap-1 border-b border-studio-border pb-2 overflow-x-auto">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -73,8 +73,8 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap ${
                 activeCategory === cat.id
-                  ? 'bg-[#FF5A36] text-white'
-                  : 'text-[#9298A3] hover:bg-[#1D2027] hover:text-[#F4F5F7]'
+                  ? 'bg-brand text-white'
+                  : 'text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg'
               }`}
             >
               {cat.icon}
@@ -86,16 +86,16 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
         {/* Shortcuts List */}
         <div className="max-h-[380px] overflow-y-auto pr-1 flex flex-col gap-1.5">
           {filteredCommands.length === 0 ? (
-            <p className="text-center text-xs text-[#9298A3] py-8">No matching commands found.</p>
+            <p className="text-center text-xs text-studio-muted py-8">No matching commands found.</p>
           ) : (
             filteredCommands.map((cmd) => (
               <div
                 key={cmd.id}
-                className="flex items-center justify-between gap-4 rounded-lg border border-[#2B2F38] bg-[#14161B] p-2.5 hover:border-[#3B3F4A] transition-colors"
+                className="flex items-center justify-between gap-4 rounded-lg border border-studio-border bg-studio-topbar p-2.5 hover:border-studio-border-strong transition-colors"
               >
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-[#F4F5F7] truncate">{cmd.label}</span>
-                  <span className="text-[11px] text-[#9298A3] truncate">{cmd.description}</span>
+                  <span className="text-xs font-semibold text-studio-fg truncate">{cmd.label}</span>
+                  <span className="text-[11px] text-studio-muted truncate">{cmd.description}</span>
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0 font-mono text-[11px]">
@@ -104,7 +104,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
                     .map((part, idx) => (
                       <kbd
                         key={idx}
-                        className="rounded border border-[#3B3F4A] bg-[#1D2027] px-2 py-0.5 font-bold text-[#F4F5F7] shadow-xs"
+                        className="rounded border border-studio-border-strong bg-studio-panel-raised px-2 py-0.5 font-bold text-studio-fg shadow-xs"
                       >
                         {part}
                       </kbd>

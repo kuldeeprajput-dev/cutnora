@@ -169,14 +169,14 @@ export function TimelineEditor() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#1C1F25] text-[#F4F5F7] select-none">
+    <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none">
       {/* Top Timeline Toolbar */}
       <TimelineToolbar />
 
       {/* Main Multi-track Workspace Layout */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Column: Track Headers */}
-        <div className="w-[180px] shrink-0 border-r border-[#2B2F38] bg-[#14161B] z-20 flex flex-col pt-6 overflow-hidden">
+        <div className="w-[180px] shrink-0 border-r border-studio-border bg-studio-topbar z-20 flex flex-col pt-6 overflow-hidden">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={tracks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
               {tracks.map((track) => (
@@ -209,8 +209,8 @@ export function TimelineEditor() {
 
           {/* Track Lanes */}
           {tracks.length === 0 ? (
-            <div className="flex h-32 flex-col items-center justify-center text-xs text-[#9298A3]">
-              <Film className="h-6 w-6 mb-2 text-[#6F716F]" />
+            <div className="flex h-32 flex-col items-center justify-center text-xs text-studio-muted">
+              <Film className="h-6 w-6 mb-2 text-mkt-muted" />
               <span>No tracks created yet</span>
             </div>
           ) : (
@@ -228,14 +228,14 @@ export function TimelineEditor() {
               {/* Red Continuous Scrubber Line */}
               <div
                 style={{ left: `${playheadLeftPx}px` }}
-                className="absolute top-0 bottom-0 w-0.5 bg-[#FF5A36] z-30 pointer-events-none shadow-md"
+                className="absolute top-0 bottom-0 w-0.5 bg-brand z-30 pointer-events-none shadow-md"
               />
 
               {/* Active Snapping Guideline */}
               {activeSnapLine !== null && (
                 <div
                   style={{ left: `${activeSnapLine * zoom}px` }}
-                  className="absolute top-0 bottom-0 w-0.5 bg-[#F2C94C] z-40 pointer-events-none"
+                  className="absolute top-0 bottom-0 w-0.5 bg-selection z-40 pointer-events-none"
                 />
               )}
             </div>
