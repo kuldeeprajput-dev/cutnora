@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { useProjectStore } from '@/modules/projects';
 
 interface PlaybackState {
   playhead: number; // In seconds
@@ -54,20 +55,58 @@ export const usePlaybackStore = create<PlaybackState>()(
       });
     },
 
-    setIsPlaying: (isPlaying) =>
+    setIsPlaying: (isPlaying) => {
+      const { playhead, duration } = get();
+      const currentProject = useProjectStore.getState().currentProject;
+      let maxDuration = duration;
+
+      if (currentProject) {
+        let maxClipEnd = 0;
+        for (const track of currentProject.tracks) {
+          for (const clip of track.clips) {
+            const clipEnd = clip.timelineStart + clip.timelineDuration;
+            if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
+          }
+        }
+        maxDuration = maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
+      }
+
       set((state) => {
         state.isPlaying = isPlaying;
         if (isPlaying) {
           state.wasTabHiddenPaused = false;
+          if (playhead >= maxDuration - 0.15) {
+            state.playhead = 0;
+          }
         }
-      }),
+      });
+    },
 
     togglePlay: () => {
-      const current = get().isPlaying;
+      const { isPlaying, playhead, duration } = get();
+      const currentProject = useProjectStore.getState().currentProject;
+      let maxDuration = duration;
+
+      if (currentProject) {
+        let maxClipEnd = 0;
+        for (const track of currentProject.tracks) {
+          for (const clip of track.clips) {
+            const clipEnd = clip.timelineStart + clip.timelineDuration;
+            if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
+          }
+        }
+        maxDuration = maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
+      }
+
+      const willPlay = !isPlaying;
+
       set((state) => {
-        state.isPlaying = !current;
-        if (!current) {
+        state.isPlaying = willPlay;
+        if (willPlay) {
           state.wasTabHiddenPaused = false;
+          if (playhead >= maxDuration - 0.15) {
+            state.playhead = 0;
+          }
         }
       });
     },

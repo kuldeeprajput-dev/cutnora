@@ -11,7 +11,7 @@ export function calculateProjectDuration(tracks: Track[]): number {
       }
     }
   }
-  return Math.max(10, Math.ceil(maxEnd));
+  return maxEnd > 0 ? Number(maxEnd.toFixed(2)) : 10;
 }
 
 export function addClipToTrack(tracks: Track[], targetTrackId: string, newClip: TimelineClip): Track[] {

@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import { nanoid } from 'nanoid';
-import type { Project, ProjectSettings, MediaAsset } from '../types';
-import type { Track, TimelineClip } from '@/modules/editor/types';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { nanoid } from "nanoid";
+import type { Project, ProjectSettings, MediaAsset } from "../types";
+import type { Track, TimelineClip } from "@/modules/editor/types";
 import {
   addClipToTrack,
   moveClipInTimeline,
@@ -12,25 +12,28 @@ import {
   duplicateClipsInTracks,
   reorderTrackLanes,
   calculateProjectDuration,
-} from '@/modules/editor/utils/timeline-utils';
-import { historyManager } from '@/modules/editor/store/useHistoryStore';
-import { autosaveService } from '../services/autosave-service';
-import { db } from '@/modules/core/db/database';
+} from "@/modules/editor/utils/timeline-utils";
+import { historyManager } from "@/modules/editor/store/useHistoryStore";
+import { autosaveService } from "../services/autosave-service";
+import { db } from "@/modules/core/db/database";
 
 interface ProjectState {
   currentProject: Project | null;
   isLoading: boolean;
   error: string | null;
 
-  createProject: (name?: string, settings?: Partial<ProjectSettings>) => Promise<Project>;
+  createProject: (
+    name?: string,
+    settings?: Partial<ProjectSettings>,
+  ) => Promise<Project>;
   loadProject: (id: string) => Promise<boolean>;
   updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
-  
+
   addAsset: (asset: MediaAsset) => void;
   removeAsset: (assetId: string) => void;
   repairProjectReferences: () => Promise<number>;
 
-  addTrack: (type: Track['type'], name?: string) => void;
+  addTrack: (type: Track["type"], name?: string) => void;
   deleteTrack: (trackId: string) => void;
   reorderTracks: (startIndex: number, endIndex: number) => void;
   toggleTrackMute: (trackId: string) => void;
@@ -39,7 +42,12 @@ interface ProjectState {
   updateClip: (clipId: string, updates: Partial<TimelineClip>) => void;
   renameClip: (clipId: string, name: string) => void;
   moveClip: (clipId: string, targetTrackId: string, newStart: number) => void;
-  trimClip: (clipId: string, newStart: number, newDuration: number, newSourceStart: number) => void;
+  trimClip: (
+    clipId: string,
+    newStart: number,
+    newDuration: number,
+    newSourceStart: number,
+  ) => void;
   splitClip: (clipId: string, splitTime: number) => void;
   deleteClips: (clipIds: string[]) => void;
   duplicateClips: (clipIds: string[]) => void;
@@ -54,22 +62,49 @@ export const useProjectStore = create<ProjectState>()(
     isLoading: false,
     error: null,
 
-    createProject: async (name = 'Untitled Project', customSettings = {}) => {
+    createProject: async (name = "Untitled Project", customSettings = {}) => {
       const defaultSettings: ProjectSettings = {
         width: 1920,
         height: 1080,
-        aspectRatio: '16:9',
+        aspectRatio: "16:9",
         fps: 30,
         duration: 10,
-        backgroundColor: '#000000',
+        backgroundColor: "#000000",
         masterVolume: 1,
         ...customSettings,
       };
 
       const defaultTracks: Track[] = [
-        { id: nanoid(), type: 'text', name: 'Text 1', order: 0, hidden: false, locked: false, muted: false, clips: [] },
-        { id: nanoid(), type: 'video', name: 'Video 1', order: 1, hidden: false, locked: false, muted: false, clips: [] },
-        { id: nanoid(), type: 'audio', name: 'Audio 1', order: 2, hidden: false, locked: false, muted: false, clips: [] },
+        {
+          id: nanoid(),
+          type: "text",
+          name: "Text 1",
+          order: 0,
+          hidden: false,
+          locked: false,
+          muted: false,
+          clips: [],
+        },
+        {
+          id: nanoid(),
+          type: "video",
+          name: "Video 1",
+          order: 1,
+          hidden: false,
+          locked: false,
+          muted: false,
+          clips: [],
+        },
+        {
+          id: nanoid(),
+          type: "audio",
+          name: "Audio 1",
+          order: 2,
+          hidden: false,
+          locked: false,
+          muted: false,
+          clips: [],
+        },
       ];
 
       const newProject: Project = {
@@ -110,7 +145,7 @@ export const useProjectStore = create<ProjectState>()(
         } else {
           set((state) => {
             state.isLoading = false;
-            state.error = 'Project not found';
+            state.error = "Project not found";
           });
           return false;
         }
@@ -164,9 +199,13 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.assetIds = state.currentProject.assetIds.filter((id) => id !== assetId);
+          state.currentProject.assetIds = state.currentProject.assetIds.filter(
+            (id) => id !== assetId,
+          );
           state.currentProject.tracks.forEach((track) => {
-            track.clips = track.clips.filter((clip) => clip.assetId !== assetId);
+            track.clips = track.clips.filter(
+              (clip) => clip.assetId !== assetId,
+            );
           });
         }
       });
@@ -229,7 +268,9 @@ export const useProjectStore = create<ProjectState>()(
           const newTrack: Track = {
             id: nanoid(),
             type,
-            name: name || `${type.charAt(0).toUpperCase() + type.slice(1)} ${trackCount + 1}`,
+            name:
+              name ||
+              `${type.charAt(0).toUpperCase() + type.slice(1)} ${trackCount + 1}`,
             order: trackCount,
             hidden: false,
             locked: false,
@@ -251,8 +292,12 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = state.currentProject.tracks.filter((t) => t.id !== trackId);
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.tracks = state.currentProject.tracks.filter(
+            (t) => t.id !== trackId,
+          );
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -267,7 +312,11 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = reorderTrackLanes(state.currentProject.tracks, startIndex, endIndex);
+          state.currentProject.tracks = reorderTrackLanes(
+            state.currentProject.tracks,
+            startIndex,
+            endIndex,
+          );
         }
       });
 
@@ -298,8 +347,14 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = addClipToTrack(state.currentProject.tracks, trackId, clip);
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.tracks = addClipToTrack(
+            state.currentProject.tracks,
+            trackId,
+            clip,
+          );
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -322,7 +377,9 @@ export const useProjectStore = create<ProjectState>()(
               return clip;
             });
           });
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -345,9 +402,11 @@ export const useProjectStore = create<ProjectState>()(
             state.currentProject.tracks,
             clipId,
             targetTrackId,
-            newStart
+            newStart,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -367,9 +426,11 @@ export const useProjectStore = create<ProjectState>()(
             clipId,
             newStart,
             newDuration,
-            newSourceStart
+            newSourceStart,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -384,7 +445,11 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = splitClipAtTime(state.currentProject.tracks, clipId, splitTime);
+          state.currentProject.tracks = splitClipAtTime(
+            state.currentProject.tracks,
+            clipId,
+            splitTime,
+          );
         }
       });
 
@@ -399,8 +464,13 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = deleteClipsFromTracks(state.currentProject.tracks, clipIds);
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.tracks = deleteClipsFromTracks(
+            state.currentProject.tracks,
+            clipIds,
+          );
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -415,8 +485,13 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = duplicateClipsInTracks(state.currentProject.tracks, clipIds);
-          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
+          state.currentProject.tracks = duplicateClipsInTracks(
+            state.currentProject.tracks,
+            clipIds,
+          );
+          state.currentProject.settings.duration = calculateProjectDuration(
+            state.currentProject.tracks,
+          );
         }
       });
 
@@ -449,5 +524,5 @@ export const useProjectStore = create<ProjectState>()(
         autosaveService.scheduleSave(next);
       }
     },
-  }))
+  })),
 );

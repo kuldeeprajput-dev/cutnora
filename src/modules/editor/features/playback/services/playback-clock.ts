@@ -23,7 +23,19 @@ class PlaybackClock {
       const newPlayhead = this.startPlayhead + elapsedSecs * store.playbackRate;
 
       const currentProject = useProjectStore.getState().currentProject;
-      const maxDuration = currentProject?.settings.duration || store.duration || 10;
+      let maxDuration = currentProject?.settings.duration || store.duration || 10;
+      if (currentProject) {
+        let maxClipEnd = 0;
+        for (const track of currentProject.tracks) {
+          for (const clip of track.clips) {
+            const clipEnd = clip.timelineStart + clip.timelineDuration;
+            if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
+          }
+        }
+        if (maxClipEnd > 0) {
+          maxDuration = maxClipEnd;
+        }
+      }
 
       if (newPlayhead >= maxDuration) {
         if (store.isLooping) {

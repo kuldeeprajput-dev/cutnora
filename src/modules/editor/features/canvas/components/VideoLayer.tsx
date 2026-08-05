@@ -44,28 +44,38 @@ export function VideoLayer({ clip }: VideoLayerProps) {
     };
   }, [clip.assetId]);
 
-  // Synchronize playback time and play/pause state
+  // Synchronize playback time and play/pause state without video decoding stutters
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoUrl) return;
 
-    const targetTime = clip.sourceStart + (playhead - clip.timelineStart) * clip.speed;
-
-    if (Math.abs(video.currentTime - targetTime) > 0.15) {
-      video.currentTime = Math.max(0, targetTime);
-    }
-
     video.playbackRate = clip.speed;
     video.volume = clip.audio?.muted ? 0 : (clip.audio?.volume ?? 1);
 
+    const targetTime = Math.max(0, clip.sourceStart + (playhead - clip.timelineStart) * clip.speed);
+
     if (isPlaying) {
-      video.play().catch(() => {
-        // Handle autoplay policy restriction if any
-      });
+      if (video.paused) {
+        video.currentTime = targetTime;
+        video.play().catch(() => {});
+      } else {
+        // While video is actively playing, avoid continuous seeking calls
+        // Only resynchronize if drift exceeds 400ms (e.g. explicit user jump)
+        const drift = Math.abs(video.currentTime - targetTime);
+        if (drift > 0.4) {
+          video.currentTime = targetTime;
+        }
+      }
     } else {
-      video.pause();
+      if (!video.paused) {
+        video.pause();
+      }
+      // When paused or scrubbing, keep currentTime in exact sync with playhead
+      if (Math.abs(video.currentTime - targetTime) > 0.02) {
+        video.currentTime = targetTime;
+      }
     }
-  }, [playhead, isPlaying, videoUrl, clip]);
+  }, [playhead, isPlaying, videoUrl, clip.speed, clip.audio?.muted, clip.audio?.volume, clip.sourceStart, clip.timelineStart]);
 
   if (!videoUrl) return null;
 
