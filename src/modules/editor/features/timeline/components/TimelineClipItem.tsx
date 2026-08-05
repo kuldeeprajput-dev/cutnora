@@ -31,7 +31,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
 
   const isSelected = selectedClipIds.includes(clip.id);
   const widthPx = Math.max(12, clip.timelineDuration * zoom);
-  const leftPx = clip.timelineStart * zoom;
+  const leftPx = 16 + clip.timelineStart * zoom;
 
   useEffect(() => {
     let isMounted = true;

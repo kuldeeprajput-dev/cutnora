@@ -112,7 +112,7 @@ export function TrackHeader({ track }: TrackHeaderProps) {
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          'flex h-12 w-[180px] shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-2 text-studio-fg select-none',
+          'flex h-12 w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-2 text-studio-fg select-none',
           isSelected && 'bg-studio-panel-raised border-l-2 border-l-brand'
         )}
       >
@@ -136,8 +136,12 @@ export function TrackHeader({ track }: TrackHeaderProps) {
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={handleRenameSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRenameSubmit();
+                if (e.key === 'Escape') setIsRenaming(false);
+              }}
               autoFocus
-              className="h-5 w-20 rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg"
+              className="h-6 flex-1 min-w-[100px] rounded bg-studio-panel-raised border border-brand px-2 text-xs font-medium text-studio-fg focus:outline-none focus:ring-1 focus:ring-brand z-10"
             />
           ) : (
             <span className="text-xs font-semibold text-studio-fg truncate" title={track.name}>
@@ -147,47 +151,49 @@ export function TrackHeader({ track }: TrackHeaderProps) {
         </div>
 
         {/* Right: Lock, Hide, Mute, Menu */}
-        <div className="flex items-center gap-0.5">
-          <IconButton
-            label={track.locked ? 'Unlock track' : 'Lock track'}
-            size="sm"
-            variant="ghost"
-            onClick={handleToggleLock}
-          >
-            {track.locked ? <Lock className="h-3 w-3 text-selection" /> : <Unlock className="h-3 w-3 text-studio-muted" />}
-          </IconButton>
-
-          {track.type !== 'audio' && (
+        {!isRenaming && (
+          <div className="flex items-center gap-0.5 shrink-0">
             <IconButton
-              label={track.hidden ? 'Show track' : 'Hide track'}
+              label={track.locked ? 'Unlock track' : 'Lock track'}
               size="sm"
               variant="ghost"
-              onClick={handleToggleHide}
+              onClick={handleToggleLock}
             >
-              {track.hidden ? <EyeOff className="h-destructive" /> : <Eye className="h-3 w-3 text-studio-muted" />}
+              {track.locked ? <Lock className="h-3 w-3 text-selection" /> : <Unlock className="h-3 w-3 text-studio-muted" />}
             </IconButton>
-          )}
 
-          {(track.type === 'audio' || track.type === 'video') && (
-            <IconButton
-              label={track.muted ? 'Unmute track' : 'Mute track'}
-              size="sm"
-              variant="ghost"
-              onClick={handleToggleMute}
-            >
-              {track.muted ? <VolumeX className="h-3 w-3 text-destructive" /> : <Volume2 className="h-3 w-3 text-studio-muted" />}
-            </IconButton>
-          )}
+            {track.type !== 'audio' && (
+              <IconButton
+                label={track.hidden ? 'Show track' : 'Hide track'}
+                size="sm"
+                variant="ghost"
+                onClick={handleToggleHide}
+              >
+                {track.hidden ? <EyeOff className="h-3 w-3 text-destructive" /> : <Eye className="h-3 w-3 text-studio-muted" />}
+              </IconButton>
+            )}
 
-          <DropdownMenu trigger={<IconButton label="Track options" size="sm" variant="ghost"><MoreVertical className="h-3 w-3" /></IconButton>} align="right">
-            <DropdownMenuItem onClick={() => setIsRenaming(true)}>
-              <Edit2 className="h-3.5 w-3.5" /> Rename Track
-            </DropdownMenuItem>
-            <DropdownMenuItem destructive onClick={handleDeleteTrack}>
-              <Trash2 className="h-3.5 w-3.5" /> Delete Track
-            </DropdownMenuItem>
-          </DropdownMenu>
-        </div>
+            {(track.type === 'audio' || track.type === 'video') && (
+              <IconButton
+                label={track.muted ? 'Unmute track' : 'Mute track'}
+                size="sm"
+                variant="ghost"
+                onClick={handleToggleMute}
+              >
+                {track.muted ? <VolumeX className="h-3 w-3 text-destructive" /> : <Volume2 className="h-3 w-3 text-studio-muted" />}
+              </IconButton>
+            )}
+
+            <DropdownMenu trigger={<IconButton label="Track options" size="sm" variant="ghost"><MoreVertical className="h-3 w-3" /></IconButton>} align="right">
+              <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+                <Edit2 className="h-3.5 w-3.5" /> Rename Track
+              </DropdownMenuItem>
+              <DropdownMenuItem destructive onClick={handleDeleteTrack}>
+                <Trash2 className="h-3.5 w-3.5" /> Delete Track
+              </DropdownMenuItem>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
 
       {contextMenuPos && (

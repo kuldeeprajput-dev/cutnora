@@ -15,14 +15,15 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
   const { playhead, setPlayhead, fps } = usePlaybackStore();
   const [isSeeking, setIsSeeking] = useState(false);
 
+  const RULER_OFFSET_X = 16;
   const ticks = generateRulerTicks(duration, zoom, fps);
-  const totalWidthPx = Math.max(100, duration * zoom + 60);
-  const playheadLeftPx = playhead * zoom;
+  const totalWidthPx = Math.max(100, duration * zoom + RULER_OFFSET_X + 60);
+  const playheadLeftPx = RULER_OFFSET_X + playhead * zoom;
 
   const seekFromPointer = (e: React.PointerEvent | PointerEvent) => {
     if (!rulerRef.current) return;
     const rect = rulerRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left + scrollLeft;
+    const clickX = e.clientX - rect.left + scrollLeft - RULER_OFFSET_X;
     const targetTime = Math.max(0, Math.min(duration, clickX / zoom));
     setPlayhead(targetTime);
   };
@@ -57,12 +58,12 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
     >
       {/* Ticks */}
       {ticks.map((tick, i) => {
-        const leftPx = tick.time * zoom;
+        const leftPx = RULER_OFFSET_X + tick.time * zoom;
         return (
           <div key={i} style={{ left: `${leftPx}px` }} className="absolute top-0 bottom-0 flex flex-col justify-between">
             <div className={`w-px bg-studio-border ${tick.isMajor ? 'h-3 bg-mkt-muted' : 'h-1.5'}`} />
             {tick.label && (
-              <span className="font-mono text-[9px] font-semibold text-studio-muted -translate-x-1/2 pl-1 mb-0.5">
+              <span className="font-mono text-[9px] font-semibold text-studio-muted -translate-x-1/2 mb-0.5">
                 {tick.label}
               </span>
             )}

@@ -12,6 +12,7 @@ interface EditorUIState {
   snappingEnabled: boolean;
   leftPanelWidth: number;
   timelineHeight: number;
+  trackHeaderWidth: number;
   stageScale: number;
   zoomMode: 'fit' | number;
   resetViewCount: number;
@@ -28,6 +29,7 @@ interface EditorUIState {
   setSnappingEnabled: (enabled: boolean) => void;
   setLeftPanelWidth: (width: number) => void;
   setTimelineHeight: (height: number) => void;
+  setTrackHeaderWidth: (width: number) => void;
   setStageScale: (scale: number) => void;
   setZoomMode: (mode: 'fit' | number) => void;
   triggerResetView: () => void;
@@ -46,6 +48,7 @@ export const useEditorUIStore = create<EditorUIState>()(
     snappingEnabled: true,
     leftPanelWidth: 320,
     timelineHeight: 220,
+    trackHeaderWidth: 180,
     stageScale: 0.5,
     zoomMode: 'fit',
     resetViewCount: 0,
@@ -112,6 +115,11 @@ export const useEditorUIStore = create<EditorUIState>()(
     setTimelineHeight: (height) =>
       set((state) => {
         state.timelineHeight = Math.min(500, Math.max(120, height));
+      }),
+
+    setTrackHeaderWidth: (width) =>
+      set((state) => {
+        state.trackHeaderWidth = Math.min(400, Math.max(180, width));
       }),
 
     setStageScale: (scale) =>

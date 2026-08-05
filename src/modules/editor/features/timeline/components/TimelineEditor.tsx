@@ -18,8 +18,28 @@ import { Film } from 'lucide-react';
 export function TimelineEditor() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { currentProject, moveClip, trimClip, reorderTracks, splitClip, duplicateClips, deleteClips } = useProjectStore();
-  const { zoom, scrollLeft, setScrollLeft, snappingEnabled, selectedClipIds, clearSelection } = useEditorUIStore();
+  const { zoom, scrollLeft, setScrollLeft, snappingEnabled, selectedClipIds, clearSelection, trackHeaderWidth = 180, setTrackHeaderWidth } = useEditorUIStore();
   const { playhead, isPlaying, togglePlay, stepForward, stepBackward } = usePlaybackStore();
+
+  const handleStartResizeTrackHeader = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = useEditorUIStore.getState().trackHeaderWidth || 180;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const newWidth = Math.max(180, Math.min(400, startWidth + deltaX));
+      useEditorUIStore.getState().setTrackHeaderWidth?.(newWidth);
+    };
+
+    const handlePointerUp = () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
 
   const [isAltPressed, setIsAltPressed] = useState(false);
   const [activeSnapLine, setActiveSnapLine] = useState<number | null>(null);
@@ -32,8 +52,8 @@ export function TimelineEditor() {
 
   const tracks = currentProject?.tracks || [];
   const projectDuration = currentProject?.settings.duration || 10;
-  const totalWidthPx = Math.max(100, projectDuration * zoom + 60);
-  const playheadLeftPx = playhead * zoom;
+  const totalWidthPx = Math.max(100, projectDuration * zoom + 16 + 60);
+  const playheadLeftPx = 16 + playhead * zoom;
 
   // Track reorder end handler
   const handleDragEnd = (event: DragEndEvent) => {
@@ -133,7 +153,7 @@ export function TimelineEditor() {
         // Update DOM element directly for 60fps smooth timeline drag
         const el = document.getElementById(`timeline-clip-${clip.id}`);
         if (el) {
-          el.style.left = `${targetStart * zoom}px`;
+          el.style.left = `${16 + targetStart * zoom}px`;
         }
 
         moveClip(clip.id, targetTrack.id, targetStart);
@@ -190,7 +210,10 @@ export function TimelineEditor() {
       {/* Main Multi-track Workspace Layout */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Column: Track Headers */}
-        <div className="w-[180px] shrink-0 border-r border-studio-border bg-studio-topbar z-20 flex flex-col pt-6 overflow-hidden">
+        <div
+          style={{ width: `${trackHeaderWidth}px` }}
+          className="shrink-0 bg-studio-topbar z-20 flex flex-col pt-6 overflow-hidden"
+        >
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={tracks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
               {tracks.map((track) => (
@@ -199,6 +222,13 @@ export function TimelineEditor() {
             </SortableContext>
           </DndContext>
         </div>
+
+        {/* Resizer Handle for Track Headers Width */}
+        <div
+          onPointerDown={handleStartResizeTrackHeader}
+          className="w-px bg-studio-border hover:bg-brand active:bg-brand hover:w-[3px] z-30 cursor-col-resize transition-all shrink-0"
+          title="Drag to resize track headers"
+        />
 
         {/* Right Area: Time Ruler & Track Canvas */}
         <div
@@ -212,7 +242,7 @@ export function TimelineEditor() {
             }
             e.preventDefault();
             const rect = scrollContainerRef.current?.getBoundingClientRect();
-            const clickX = rect ? e.clientX - rect.left + (scrollContainerRef.current?.scrollLeft || 0) : 0;
+            const clickX = rect ? e.clientX - rect.left + (scrollContainerRef.current?.scrollLeft || 0) - 16 : 0;
             const pasteTime = Math.max(0, clickX / zoom);
             setTimelineContextMenu({ x: e.clientX, y: e.clientY, pasteTime });
           }}
@@ -248,7 +278,7 @@ export function TimelineEditor() {
               {/* Active Snapping Guideline */}
               {activeSnapLine !== null && (
                 <div
-                  style={{ left: `${activeSnapLine * zoom}px` }}
+                  style={{ left: `${16 + activeSnapLine * zoom}px` }}
                   className="absolute top-0 bottom-0 w-0.5 bg-selection z-40 pointer-events-none"
                 />
               )}
