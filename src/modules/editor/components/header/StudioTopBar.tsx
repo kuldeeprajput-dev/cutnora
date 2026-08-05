@@ -13,8 +13,18 @@ export interface StudioTopBarProps {
   onOpenHelp?: () => void;
 }
 
+import { Wrench } from 'lucide-react';
+import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
+
 export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
-  const { currentProject, undo, redo } = useProjectStore();
+  const { currentProject, undo, redo, repairProjectReferences } = useProjectStore();
+
+  const handleRepair = async () => {
+    if (confirm("Scan and repair project references? Invalid or missing asset links will be safely cleaned up.")) {
+      const fixed = await repairProjectReferences();
+      useToastStore.getState().showToast(fixed > 0 ? `Repaired ${fixed} reference(s)` : 'Project references healthy', fixed > 0 ? 'success' : 'info');
+    }
+  };
   const { setExportModalOpen } = useExportStore();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [isEditingName, setIsEditingName] = useState(false);
@@ -153,6 +163,15 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
 
       {/* Right: Help & Export Action Button */}
       <div className="flex items-center gap-2">
+        <IconButton
+          label="Repair project references"
+          size="sm"
+          variant="ghost"
+          onClick={handleRepair}
+        >
+          <Wrench className="h-4 w-4" />
+        </IconButton>
+
         <IconButton
           label="Keyboard Shortcuts (?)"
           size="sm"

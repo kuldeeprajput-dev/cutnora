@@ -114,7 +114,15 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
   };
 
   const handleDeleteAsset = async () => {
-    if (confirm(`Delete asset "${asset.name}"?`)) {
+    const isUsedInTimeline = currentProject?.tracks.some((t) =>
+      t.clips.some((c) => c.assetId === asset.id)
+    );
+
+    const promptMessage = isUsedInTimeline
+      ? `Warning: Asset "${asset.name}" is currently used by clips in your timeline. Deleting it will also remove those clips from the timeline. Are you sure you want to delete it?`
+      : `Delete asset "${asset.name}"?`;
+
+    if (confirm(promptMessage)) {
       await db.assets.delete(asset.id);
       if (asset.blobId) await db.blobs.delete(asset.blobId);
       if (asset.thumbnailBlobId) await db.thumbnails.delete(asset.thumbnailBlobId);

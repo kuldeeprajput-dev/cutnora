@@ -51,10 +51,12 @@ class AutosaveService {
     this.pendingProject = null;
 
     try {
-      projectToSave.updatedAt = Date.now();
-      await db.projects.put(projectToSave);
+      const updatedProject: Project = {
+        ...projectToSave,
+        updatedAt: Date.now(),
+      };
+      await db.projects.put(updatedProject);
       this.setStatus('saved');
-      useToastStore.getState().showToast('Project saved', 'success');
     } catch (err) {
       console.error('Failed to autosave project:', err);
       this.setStatus('error');
@@ -65,8 +67,11 @@ class AutosaveService {
   public flushPendingSaveSync(): void {
     if (this.pendingProject) {
       const projectToSave = this.pendingProject;
-      projectToSave.updatedAt = Date.now();
-      db.projects.put(projectToSave).catch((err) => {
+      const updatedProject: Project = {
+        ...projectToSave,
+        updatedAt: Date.now(),
+      };
+      db.projects.put(updatedProject).catch((err) => {
         console.error('Failed sync flush save:', err);
       });
     }
