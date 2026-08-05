@@ -6,7 +6,8 @@ import { useProjectStore } from '@/modules/projects';
 import { Slider } from '@/shared/components/ui/Slider';
 import { Checkbox } from '@/shared/components/ui/Checkbox';
 import { Button } from '@/shared/components/ui/Button';
-import { RotateCcw } from 'lucide-react';
+import { detachAudioFromVideo } from '@/modules/editor/features/audio/utils/detachAudio';
+import { RotateCcw, Unlink } from 'lucide-react';
 
 export interface AudioTabProps {
   clip: TimelineClip;
@@ -96,6 +97,18 @@ export function AudioTab({ clip }: AudioTabProps) {
           onValueChange={(val) => updateAudioProp({ fadeOut: val })}
         />
       </div>
+
+      {/* Detach Audio Button for Video Clips */}
+      {(clip.type === 'video' || clip.type === 'overlay') && (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => detachAudioFromVideo(clip.id)}
+          className="h-8 gap-1.5 text-xs text-[#FF5A36] border-[#FF5A36]/40 hover:bg-[#FF5A36]/10"
+        >
+          <Unlink className="h-3.5 w-3.5" /> Detach Audio to Track
+        </Button>
+      )}
 
       {/* Reset Action */}
       <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-[#9298A3] hover:text-[#E45858]">

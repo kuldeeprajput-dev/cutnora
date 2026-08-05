@@ -31,9 +31,11 @@ interface ProjectState {
 
   addTrack: (type: Track['type'], name?: string) => void;
   reorderTracks: (startIndex: number, endIndex: number) => void;
+  toggleTrackMute: (trackId: string) => void;
 
   addClip: (trackId: string, clip: TimelineClip) => void;
   updateClip: (clipId: string, updates: Partial<TimelineClip>) => void;
+  renameClip: (clipId: string, name: string) => void;
   moveClip: (clipId: string, targetTrackId: string, newStart: number) => void;
   trimClip: (clipId: string, newStart: number, newDuration: number, newSourceStart: number) => void;
   splitClip: (clipId: string, splitTime: number) => void;
@@ -212,6 +214,22 @@ export const useProjectStore = create<ProjectState>()(
       if (updated) autosaveService.scheduleSave(updated);
     },
 
+    toggleTrackMute: (trackId) => {
+      const current = get().currentProject;
+      if (!current) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          const t = state.currentProject.tracks.find((x) => x.id === trackId);
+          if (t) t.muted = !t.muted;
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
     addClip: (trackId, clip) => {
       const current = get().currentProject;
       if (!current) return;
@@ -249,6 +267,10 @@ export const useProjectStore = create<ProjectState>()(
 
       const updated = get().currentProject;
       if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    renameClip: (clipId, name) => {
+      get().updateClip(clipId, { name });
     },
 
     moveClip: (clipId, targetTrackId, newStart) => {
