@@ -7,31 +7,42 @@ import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { CanvasRenderer } from './CanvasRenderer';
 import { calculateFitScale, type Point } from '../utils/stage-math';
 import type { GuideLine } from '../utils/snapping-utils';
-import { IconButton } from '@/shared/components/ui/IconButton';
-import { Select } from '@/shared/components/ui/Select';
-import { RotateCcw, Hand, Play, Pause, SkipBack, SkipForward, Repeat } from 'lucide-react';
+import { Play, Pause, Minimize2 } from 'lucide-react';
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
 
 export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { currentProject } = useProjectStore();
-  const { clearSelection, activeTool, setActiveTool } = useEditorUIStore();
+  const {
+    clearSelection,
+    activeTool,
+    zoomMode,
+    setZoomMode,
+    setStageScale,
+    resetViewCount,
+    isFullscreen,
+    setIsFullscreen,
+  } = useEditorUIStore();
 
   const {
     playhead,
+    setPlayhead,
+    duration,
     isPlaying,
     togglePlay,
-    stepForward,
-    stepBackward,
-    isLooping,
-    toggleLooping,
   } = usePlaybackStore();
 
-  const [zoomMode, setZoomMode] = useState<'fit' | number>('fit');
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ width: 800, height: 450 });
   const [guides, setGuides] = useState<GuideLine[]>([]);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const panStartRef = useRef<Point>({ x: 0, y: 0 });
 
   const projectSettings = currentProject?.settings || {
@@ -42,6 +53,18 @@ export function CanvasStage() {
     duration: 10,
     backgroundColor: '#000000',
   };
+
+  // Sync native browser fullscreen events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = !!document.fullscreenElement;
+      setIsNativeFullscreen(isFull);
+      setIsFullscreen(isFull);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [setIsFullscreen]);
 
   // ResizeObserver to update containerSize dynamically
   useEffect(() => {
@@ -83,13 +106,29 @@ export function CanvasStage() {
     };
   }, []);
 
+  const isFullscreenActive = isFullscreen || isNativeFullscreen;
+
   // Fit scale calculation (minimal 16px total padding for maximum video view)
   const fitScale = calculateFitScale(
-    { width: Math.max(100, containerSize.width - 16), height: Math.max(100, containerSize.height - 16) },
+    {
+      width: Math.max(100, isFullscreenActive ? window.innerWidth : containerSize.width - 16),
+      height: Math.max(100, isFullscreenActive ? window.innerHeight - 80 : containerSize.height - 16),
+    },
     { width: projectSettings.width, height: projectSettings.height }
   );
 
-  const stageScale = zoomMode === 'fit' ? fitScale : zoomMode / 100;
+  const stageScale = zoomMode === 'fit' || isFullscreenActive ? fitScale : zoomMode / 100;
+
+  useEffect(() => {
+    setStageScale(stageScale);
+  }, [stageScale, setStageScale]);
+
+  useEffect(() => {
+    if (resetViewCount > 0) {
+      setZoomMode('fit');
+      setPan({ x: 0, y: 0 });
+    }
+  }, [resetViewCount, setZoomMode]);
 
   const stageDisplayWidth = projectSettings.width * stageScale;
   const stageDisplayHeight = projectSettings.height * stageScale;
@@ -98,11 +137,6 @@ export function CanvasStage() {
     if (e.target === containerRef.current || (e.target as HTMLElement).id === 'stage-backdrop') {
       clearSelection();
     }
-  };
-
-  const handleResetView = () => {
-    setZoomMode('fit');
-    setPan({ x: 0, y: 0 });
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -130,16 +164,23 @@ export function CanvasStage() {
     setGuides(newGuides);
   }, []);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 100);
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+  const handleExitFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    setIsFullscreen(false);
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-canvas-bg text-studio-fg select-none">
-      {/* Canvas Viewport (Maximizes available vertical space with minimal padding) */}
+    <div
+      id="stage-fullscreen-container"
+      className={`flex w-full flex-col bg-canvas-bg text-studio-fg select-none ${
+        isFullscreenActive
+          ? 'fixed inset-0 z-50 h-screen w-screen bg-black justify-center items-center'
+          : 'h-full relative'
+      }`}
+    >
+      {/* Canvas Viewport */}
       <div
         ref={containerRef}
         id="stage-backdrop"
@@ -147,7 +188,7 @@ export function CanvasStage() {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className={`relative flex flex-1 items-center justify-center overflow-hidden p-2 ${
+        className={`relative flex flex-1 items-center justify-center overflow-hidden p-2 w-full h-full ${
           isSpacePressed || activeTool === 'hand'
             ? isPanning
               ? 'cursor-grabbing'
@@ -162,123 +203,79 @@ export function CanvasStage() {
             width: `${stageDisplayWidth}px`,
             height: `${stageDisplayHeight}px`,
             backgroundColor: projectSettings.backgroundColor || '#000000',
-            transform: `translate(${pan.x}px, ${pan.y}px)`,
+            transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
           className="relative shadow-2xl transition-transform duration-75 overflow-hidden rounded"
         >
           {/* Active Visual Layers */}
           <CanvasRenderer stageScale={stageScale} onGuidesChange={handleGuidesChange} />
 
-          {/* Snapping Guide Lines */}
-          {guides.map((g) => (
-            <div
-              key={g.id}
-              style={{
-                position: 'absolute',
-                left: g.type === 'vertical' ? `${g.position * stageScale}px` : 0,
-                top: g.type === 'horizontal' ? `${g.position * stageScale}px` : 0,
-                width: g.type === 'vertical' ? '1px' : '100%',
-                height: g.type === 'horizontal' ? '1px' : '100%',
-              }}
-              className="bg-brand z-50 pointer-events-none"
+          {/* Snapping Guide Lines (hidden in Fullscreen mode) */}
+          {!isFullscreenActive &&
+            guides.map((g) => (
+              <div
+                key={g.id}
+                style={{
+                  position: 'absolute',
+                  left: g.type === 'vertical' ? `${g.position * stageScale}px` : 0,
+                  top: g.type === 'horizontal' ? `${g.position * stageScale}px` : 0,
+                  width: g.type === 'vertical' ? '1px' : '100%',
+                  height: g.type === 'horizontal' ? '1px' : '100%',
+                }}
+                className="bg-brand z-50 pointer-events-none"
+              />
+            ))}
+        </div>
+      </div>
+
+      {/* Fullscreen Player Bottom Controls Overlay (Image 1 & Image 2) */}
+      {isFullscreenActive && (
+        <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pb-4 pt-8 transition-opacity duration-300">
+          {/* Progress Scrub Line */}
+          <div className="relative mb-3 flex items-center w-full group cursor-pointer">
+            <input
+              type="range"
+              min={0}
+              max={duration || 10}
+              step={0.01}
+              value={playhead}
+              onChange={(e) => setPlayhead(parseFloat(e.target.value))}
+              className="w-full h-1 bg-white/20 hover:h-1.5 rounded-lg appearance-none cursor-pointer accent-brand transition-all"
             />
-          ))}
-        </div>
-      </div>
-
-      {/* Single Unified Playbar (Canvas & Playback Transport Controls) */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-t border-studio-border bg-studio-topbar px-4 text-xs select-none">
-        {/* Left: Resolution, Zoom Select, Pan Tool & Reset View */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 font-mono text-studio-muted">
-            <span>
-              {projectSettings.width}×{projectSettings.height}
-            </span>
-            <span>•</span>
-            <span>{projectSettings.fps} FPS</span>
-            <span>•</span>
-            <span className="font-semibold text-studio-fg">
-              {Math.round(stageScale * 100)}%
-            </span>
           </div>
 
-          <div className="h-4 w-px bg-studio-border" />
+          {/* Overlay Controls Row */}
+          <div className="flex items-center justify-between text-xs text-white select-none">
+            {/* Left: Timecode */}
+            <div className="font-mono text-xs opacity-90">
+              {formatTime(playhead)} / {formatTime(duration)}
+            </div>
 
-          <div className="flex items-center gap-1">
-            <IconButton
-              label={activeTool === 'hand' ? 'Pan tool active' : 'Pan tool'}
-              size="sm"
-              variant={activeTool === 'hand' ? 'selection' : 'ghost'}
-              onClick={() => setActiveTool(activeTool === 'hand' ? 'select' : 'hand')}
+            {/* Center: Play / Pause Button */}
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
             >
-              <Hand className="h-3.5 w-3.5" />
-            </IconButton>
+              {isPlaying ? (
+                <Pause className="h-5 w-5 fill-current" />
+              ) : (
+                <Play className="h-5 w-5 fill-current ml-0.5" />
+              )}
+            </button>
 
-            <Select
-              value={zoomMode === 'fit' ? 'fit' : String(zoomMode)}
-              onChange={(e) => {
-                const val = e.target.value;
-                setZoomMode(val === 'fit' ? 'fit' : parseInt(val, 10));
-              }}
-              className="h-7 text-xs w-28 py-0 pl-2 pr-6 border-studio-border"
+            {/* Right: Exit Fullscreen Button with Minimize2 Icon (Image 2) */}
+            <button
+              type="button"
+              onClick={handleExitFullscreen}
+              className="p-2 rounded-md hover:bg-white/10 text-white/90 hover:text-white transition-colors cursor-pointer"
+              title="Exit Fullscreen"
             >
-              <option value="fit">Fit Stage</option>
-              <option value="25">25%</option>
-              <option value="50">50%</option>
-              <option value="75">75%</option>
-              <option value="100">100%</option>
-              <option value="150">150%</option>
-              <option value="200">200%</option>
-            </Select>
-
-            <IconButton label="Reset canvas view" size="sm" variant="ghost" onClick={handleResetView}>
-              <RotateCcw className="h-3.5 w-3.5" />
-            </IconButton>
+              <Minimize2 className="h-5 w-5" />
+            </button>
           </div>
         </div>
-
-        {/* Center: Play / Pause / Step Controls / Loop / Timestamp */}
-        <div className="flex items-center gap-2">
-          <IconButton label="Step 1 frame backward" size="sm" variant="ghost" onClick={stepBackward}>
-            <SkipBack className="h-3.5 w-3.5" />
-          </IconButton>
-
-          <IconButton
-            label={isPlaying ? 'Pause' : 'Play'}
-            size="md"
-            variant="primary"
-            onClick={togglePlay}
-          >
-            {isPlaying ? (
-              <Pause className="h-4 w-4 fill-current" />
-            ) : (
-              <Play className="h-4 w-4 fill-current ml-0.5" />
-            )}
-          </IconButton>
-
-          <IconButton label="Step 1 frame forward" size="sm" variant="ghost" onClick={stepForward}>
-            <SkipForward className="h-3.5 w-3.5" />
-          </IconButton>
-
-          <IconButton
-            label={isLooping ? 'Disable loop' : 'Enable loop'}
-            size="sm"
-            variant={isLooping ? 'selection' : 'ghost'}
-            onClick={toggleLooping}
-          >
-            <Repeat className="h-3.5 w-3.5" />
-          </IconButton>
-
-          <span className="ml-3 font-mono text-xs font-semibold text-studio-fg">
-            {formatTime(playhead)} / {formatTime(projectSettings.duration)}
-          </span>
-        </div>
-
-        {/* Right: Hold Space to Pan Hint */}
-        <div className="text-[11px] text-studio-muted flex items-center gap-1">
-          Hold <kbd className="font-mono bg-studio-panel-raised px-1 py-0.5 rounded text-white text-[10px]">Space</kbd> to pan
-        </div>
-      </div>
+      )}
     </div>
   );
 }
