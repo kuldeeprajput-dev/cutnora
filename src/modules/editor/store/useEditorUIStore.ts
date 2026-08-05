@@ -12,6 +12,10 @@ interface EditorUIState {
   snappingEnabled: boolean;
   leftPanelWidth: number;
   timelineHeight: number;
+  stageScale: number;
+  zoomMode: 'fit' | number;
+  resetViewCount: number;
+  isFullscreen: boolean;
 
   setActiveTool: (tool: EditorTool) => void;
   setSelectedClipIds: (ids: string[]) => void;
@@ -24,6 +28,11 @@ interface EditorUIState {
   setSnappingEnabled: (enabled: boolean) => void;
   setLeftPanelWidth: (width: number) => void;
   setTimelineHeight: (height: number) => void;
+  setStageScale: (scale: number) => void;
+  setZoomMode: (mode: 'fit' | number) => void;
+  triggerResetView: () => void;
+  setIsFullscreen: (full: boolean) => void;
+  toggleFullscreen: () => void;
 }
 
 export const useEditorUIStore = create<EditorUIState>()(
@@ -37,6 +46,10 @@ export const useEditorUIStore = create<EditorUIState>()(
     snappingEnabled: true,
     leftPanelWidth: 320,
     timelineHeight: 220,
+    stageScale: 0.5,
+    zoomMode: 'fit',
+    resetViewCount: 0,
+    isFullscreen: false,
 
     setActiveTool: (tool) =>
       set((state) => {
@@ -99,6 +112,31 @@ export const useEditorUIStore = create<EditorUIState>()(
     setTimelineHeight: (height) =>
       set((state) => {
         state.timelineHeight = Math.min(500, Math.max(120, height));
+      }),
+
+    setStageScale: (scale) =>
+      set((state) => {
+        state.stageScale = scale;
+      }),
+
+    setZoomMode: (mode) =>
+      set((state) => {
+        state.zoomMode = mode;
+      }),
+
+    triggerResetView: () =>
+      set((state) => {
+        state.resetViewCount += 1;
+      }),
+
+    setIsFullscreen: (full) =>
+      set((state) => {
+        state.isFullscreen = full;
+      }),
+
+    toggleFullscreen: () =>
+      set((state) => {
+        state.isFullscreen = !state.isFullscreen;
       }),
   }))
 );

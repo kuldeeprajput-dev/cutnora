@@ -223,8 +223,8 @@ export function TimelineEditor() {
 
           {/* Track Lanes */}
           {tracks.length === 0 ? (
-            <div className="flex h-32 flex-col items-center justify-center text-xs text-studio-muted">
-              <Film className="h-6 w-6 mb-2 text-mkt-muted" />
+            <div className="flex min-h-[220px] flex-1 flex-col items-center justify-center text-xs text-studio-muted py-12">
+              <Film className="h-6 w-6 mb-2 opacity-40 text-studio-muted" />
               <span>No tracks created yet</span>
             </div>
           ) : (
