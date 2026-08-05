@@ -1,19 +1,86 @@
-export type TrackType = 'video' | 'audio' | 'text' | 'image';
+export type TrackType = 'video' | 'overlay' | 'text' | 'audio';
+export type ClipType = 'video' | 'overlay' | 'text' | 'audio' | 'image';
+export type EditorTool = 'select' | 'split' | 'crop' | 'text' | 'hand';
+export type FitMode = 'contain' | 'cover' | 'fill';
 
-export interface Clip {
+export interface CropSettings {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export interface Transform {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+  opacity: number;
+  crop?: CropSettings;
+  fitMode: FitMode;
+}
+
+export interface Adjustments {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  blur: number;
+  grayscale: number;
+  sepia: number;
+}
+
+export interface AudioSettings {
+  volume: number;
+  muted: boolean;
+  fadeIn: number;
+  fadeOut: number;
+}
+
+export interface TextStyle {
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  backgroundColor?: string;
+  textAlign: 'left' | 'center' | 'right';
+  fontWeight: 'normal' | 'bold';
+}
+
+export interface ElementStyle {
+  fillColor: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  borderRadius?: number;
+}
+
+export interface TimelineClip {
   id: string;
   trackId: string;
-  mediaId?: string;
-  startTime: number;
-  duration: number;
-  trimStart: number;
-  trimEnd: number;
+  assetId?: string;
+  type: ClipType;
+  timelineStart: number;
+  timelineDuration: number;
+  sourceStart: number;
+  sourceDuration: number;
+  name: string;
+  transform: Transform;
+  adjustments: Adjustments;
+  audio: AudioSettings;
+  speed: number;
+  textStyle?: TextStyle;
+  elementStyle?: ElementStyle;
 }
 
 export interface Track {
   id: string;
-  name: string;
   type: TrackType;
-  muted: boolean;
+  name: string;
+  order: number;
+  hidden: boolean;
   locked: boolean;
+  muted: boolean;
+  clips: TimelineClip[];
 }
