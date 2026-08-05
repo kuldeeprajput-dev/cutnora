@@ -2,16 +2,20 @@
 
 import React from 'react';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { useProjectStore } from '@/modules/projects';
 import { StudioPanel } from '@/shared/components/layout/StudioPanel';
 import { Button } from '@/shared/components/ui/Button';
 import { EmptyState } from '@/shared/components/ui/EmptyState';
 import { MediaLibraryPanel } from '@/modules/editor/features/media-library';
+import { InspectorPanel, CanvasSettingsPanel } from '@/modules/editor/features/inspector';
 import { Type, Shapes, Mic } from 'lucide-react';
 
 export function ContextualPanel() {
-  const { activeTool } = useEditorUIStore();
-  const { currentProject, updateProjectSettings } = useProjectStore();
+  const { activeTool, selectedClipIds } = useEditorUIStore();
+
+  // If clips are selected, priority goes to the Inspector Panel
+  if (selectedClipIds.length > 0) {
+    return <InspectorPanel />;
+  }
 
   const renderContent = () => {
     switch (activeTool) {
@@ -20,6 +24,13 @@ export function ContextualPanel() {
       case 'images':
       case 'audio':
         return <MediaLibraryPanel />;
+
+      case 'canvas':
+        return (
+          <div className="p-4">
+            <CanvasSettingsPanel />
+          </div>
+        );
 
       case 'text':
         return (
@@ -38,28 +49,6 @@ export function ContextualPanel() {
                 <Type className="h-4 w-4 text-[#9298A3]" />
                 <span>Add Body Text</span>
               </Button>
-            </div>
-          </div>
-        );
-
-      case 'canvas':
-        return (
-          <div className="flex flex-col gap-4 p-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Canvas Settings</h3>
-            <div>
-              <label className="text-xs font-medium text-[#9298A3] block mb-1.5">Aspect Ratio</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
-                  <Button
-                    key={ratio}
-                    size="sm"
-                    variant={currentProject?.settings.aspectRatio === ratio ? 'selection' : 'secondary'}
-                    onClick={() => updateProjectSettings({ aspectRatio: ratio })}
-                  >
-                    {ratio}
-                  </Button>
-                ))}
-              </div>
             </div>
           </div>
         );
