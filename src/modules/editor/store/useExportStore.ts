@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
 export type ExportFormat = 'webm' | 'mp4';
-export type ExportResolution = '720p' | '1080p' | 'project';
+export type ExportResolution = '1280x720' | '1920x1080' | '720p' | '1080p' | 'project';
 export type ExportQuality = 'draft' | 'standard' | 'high';
 export type ExportPhase = 'idle' | 'rendering' | 'converting' | 'completed' | 'error' | 'cancelled';
 

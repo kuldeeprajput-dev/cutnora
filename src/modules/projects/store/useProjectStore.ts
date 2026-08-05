@@ -30,6 +30,7 @@ interface ProjectState {
   removeAsset: (assetId: string) => void;
 
   addTrack: (type: Track['type'], name?: string) => void;
+  deleteTrack: (trackId: string) => void;
   reorderTracks: (startIndex: number, endIndex: number) => void;
   toggleTrackMute: (trackId: string) => void;
 
@@ -192,6 +193,22 @@ export const useProjectStore = create<ProjectState>()(
             clips: [],
           };
           state.currentProject.tracks.push(newTrack);
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    deleteTrack: (trackId) => {
+      const current = get().currentProject;
+      if (!current) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          state.currentProject.tracks = state.currentProject.tracks.filter((t) => t.id !== trackId);
+          state.currentProject.settings.duration = calculateProjectDuration(state.currentProject.tracks);
         }
       });
 
