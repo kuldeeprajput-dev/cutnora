@@ -9,7 +9,7 @@ export interface RenderFrameOptions {
   currentTime: number;
   exportWidth: number;
   exportHeight: number;
-  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement>;
+  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement | HTMLAudioElement>;
 }
 
 export function renderExportFrame({
@@ -44,6 +44,7 @@ export function renderExportFrame({
 
   for (const track of visibleTracks) {
     for (const clip of track.clips) {
+      if ((clip as { hidden?: boolean }).hidden) continue;
       // Check active timeframe
       if (currentTime >= clip.timelineStart && currentTime < clip.timelineStart + clip.timelineDuration) {
         renderClipOnExportCanvas({
@@ -77,7 +78,7 @@ function renderClipOnExportCanvas({
   scaleX: number;
   scaleY: number;
   stageScale: number;
-  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement>;
+  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement | HTMLAudioElement>;
 }) {
   ctx.save();
 
@@ -111,7 +112,7 @@ function renderClipOnExportCanvas({
   // Draw Media (Video or Image)
   if (assetId && (type === 'video' || type === 'image')) {
     const mediaEl = mediaElementsMap.get(assetId);
-    if (mediaEl) {
+    if (mediaEl && (mediaEl instanceof HTMLVideoElement || mediaEl instanceof HTMLImageElement)) {
       if (type === 'video' && mediaEl instanceof HTMLVideoElement) {
         // Seek video element to sourceStart + (currentTime - timelineStart) * speed
         const clipElapsed = currentTime - clip.timelineStart;

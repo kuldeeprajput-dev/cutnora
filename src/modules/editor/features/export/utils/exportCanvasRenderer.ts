@@ -79,6 +79,14 @@ export function renderClipTo2DCanvas(
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = strokeWidth;
 
+    if (elementStyle.lineStyle === 'dashed') {
+      ctx.setLineDash([12 * stageScale, 6 * stageScale]);
+    } else if (elementStyle.lineStyle === 'dotted') {
+      ctx.setLineDash([3 * stageScale, 3 * stageScale]);
+    } else {
+      ctx.setLineDash([]);
+    }
+
     if (elementStyle.shadowColor) {
       ctx.shadowColor = elementStyle.shadowColor;
       ctx.shadowBlur = (elementStyle.shadowBlur || 0) * stageScale;
@@ -86,25 +94,92 @@ export function renderClipTo2DCanvas(
       ctx.shadowOffsetY = (elementStyle.shadowOffsetY || 0) * stageScale;
     }
 
+    const shapeType = elementStyle.shapeType || 'rectangle';
+
     ctx.beginPath();
-    if (elementStyle.shapeType === 'circle') {
+    if (shapeType === 'circle') {
       ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
-    } else if (elementStyle.shapeType === 'triangle') {
+      ctx.fill();
+      if (strokeWidth > 0 && strokeColor !== 'transparent') ctx.stroke();
+    } else if (shapeType === 'line') {
+      ctx.strokeStyle = fillColor !== 'transparent' ? fillColor : strokeColor;
+      ctx.lineWidth = strokeWidth || (4 * stageScale);
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+      ctx.stroke();
+    } else if (shapeType === 'arrow') {
+      const lineEnd = (elementStyle.arrowHead === 'end' || elementStyle.arrowHead === 'both') ? w * 0.85 : w;
+      const lineStart = elementStyle.arrowHead === 'both' ? w * 0.15 : 0;
+
+      ctx.strokeStyle = fillColor !== 'transparent' ? fillColor : strokeColor;
+      ctx.lineWidth = strokeWidth || (4 * stageScale);
+      ctx.moveTo(lineStart, h / 2);
+      ctx.lineTo(lineEnd, h / 2);
+      ctx.stroke();
+
+      ctx.fillStyle = fillColor;
+      if (elementStyle.arrowHead === 'end' || elementStyle.arrowHead === 'both') {
+        ctx.beginPath();
+        ctx.moveTo(w, h / 2);
+        ctx.lineTo(w * 0.85, h * 0.25);
+        ctx.lineTo(w * 0.85, h * 0.75);
+        ctx.closePath();
+        ctx.fill();
+      }
+      if (elementStyle.arrowHead === 'both') {
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2);
+        ctx.lineTo(w * 0.15, h * 0.25);
+        ctx.lineTo(w * 0.15, h * 0.75);
+        ctx.closePath();
+        ctx.fill();
+      }
+    } else if (shapeType === 'triangle') {
       ctx.moveTo(w / 2, 0);
       ctx.lineTo(w, h);
       ctx.lineTo(0, h);
       ctx.closePath();
+      ctx.fill();
+      if (strokeWidth > 0 && strokeColor !== 'transparent') ctx.stroke();
+    } else if (shapeType === 'progress-bar') {
+      const pct = Math.min(100, Math.max(0, elementStyle.progress ?? 65));
+      ctx.fillStyle = strokeColor !== 'transparent' ? strokeColor : '#1D2027';
+      if (ctx.roundRect) ctx.roundRect(0, 0, w, h, radius);
+      else ctx.rect(0, 0, w, h);
+      ctx.fill();
+
+      ctx.fillStyle = fillColor;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(0, 0, (w * pct) / 100, h, radius);
+      else ctx.rect(0, 0, (w * pct) / 100, h);
+      ctx.fill();
+    } else if (shapeType === 'speech-bubble') {
+      ctx.moveTo(w * 0.1, h * 0.1);
+      ctx.lineTo(w * 0.9, h * 0.1);
+      ctx.quadraticCurveTo(w, h * 0.1, w, h * 0.2);
+      ctx.lineTo(w, h * 0.7);
+      ctx.quadraticCurveTo(w, h * 0.8, w * 0.9, h * 0.8);
+      ctx.lineTo(w * 0.4, h * 0.8);
+      ctx.lineTo(w * 0.25, h);
+      ctx.lineTo(w * 0.28, h * 0.8);
+      ctx.lineTo(w * 0.1, h * 0.8);
+      ctx.quadraticCurveTo(0, h * 0.8, 0, h * 0.7);
+      ctx.lineTo(0, h * 0.2);
+      ctx.quadraticCurveTo(0, h * 0.1, w * 0.1, h * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      if (strokeWidth > 0 && strokeColor !== 'transparent') ctx.stroke();
     } else {
+      // rectangle / rounded-rect / divider / default
       if (ctx.roundRect) {
         ctx.roundRect(0, 0, w, h, radius);
       } else {
         ctx.rect(0, 0, w, h);
       }
-    }
-
-    ctx.fill();
-    if (strokeWidth > 0 && strokeColor !== 'transparent') {
-      ctx.stroke();
+      ctx.fill();
+      if (strokeWidth > 0 && strokeColor !== 'transparent') {
+        ctx.stroke();
+      }
     }
   }
 
