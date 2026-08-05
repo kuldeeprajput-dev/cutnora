@@ -28,7 +28,7 @@ interface EditorUIState {
 
 export const useEditorUIStore = create<EditorUIState>()(
   immer((set) => ({
-    activeTool: 'select',
+    activeTool: 'media',
     selectedClipIds: [],
     activeTrackId: null,
     zoom: 50, // 50px per second default timeline zoom

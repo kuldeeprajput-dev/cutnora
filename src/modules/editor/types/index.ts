@@ -1,6 +1,19 @@
 export type TrackType = 'video' | 'overlay' | 'text' | 'audio';
 export type ClipType = 'video' | 'overlay' | 'text' | 'audio' | 'image';
-export type EditorTool = 'select' | 'split' | 'crop' | 'text' | 'hand';
+export type EditorTool =
+  | 'media'
+  | 'canvas'
+  | 'text'
+  | 'audio'
+  | 'videos'
+  | 'images'
+  | 'elements'
+  | 'record'
+  | 'select'
+  | 'split'
+  | 'crop'
+  | 'hand';
+
 export type FitMode = 'contain' | 'cover' | 'fill';
 
 export interface CropSettings {
