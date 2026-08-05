@@ -1,1 +1,2 @@
-export const ELEMENTS_FEATURE = 'elements';
+export * from './components/ElementsPanel';
+export * from './components/ElementInspectorTab';
