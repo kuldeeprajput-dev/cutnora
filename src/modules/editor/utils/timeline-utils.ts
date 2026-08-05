@@ -14,12 +14,59 @@ export function calculateProjectDuration(tracks: Track[]): number {
   return maxEnd > 0 ? Number(maxEnd.toFixed(2)) : 10;
 }
 
+export function preventClipOverlap(
+  clipsOnTrack: TimelineClip[],
+  targetClipId: string,
+  proposedStart: number,
+  duration: number
+): number {
+  const otherClips = clipsOnTrack
+    .filter((c) => c.id !== targetClipId)
+    .sort((a, b) => a.timelineStart - b.timelineStart);
+
+  let start = Math.max(0, proposedStart);
+  let end = start + duration;
+
+  for (const other of otherClips) {
+    const otherStart = other.timelineStart;
+    const otherEnd = other.timelineStart + other.timelineDuration;
+
+    // Check collision: overlap occurs if start < otherEnd AND end > otherStart
+    if (start < otherEnd && end > otherStart) {
+      const proposedMid = proposedStart + duration / 2;
+      const otherMid = otherStart + other.timelineDuration / 2;
+
+      if (proposedMid >= otherMid) {
+        start = otherEnd;
+      } else {
+        start = Math.max(0, otherStart - duration);
+      }
+      end = start + duration;
+    }
+  }
+
+  // Second pass to guarantee no residual overlaps
+  for (const other of otherClips) {
+    const otherStart = other.timelineStart;
+    const otherEnd = other.timelineStart + other.timelineDuration;
+
+    if (start < otherEnd && start + duration > otherStart) {
+      start = otherEnd;
+    }
+  }
+
+  return Number(Math.max(0, start).toFixed(3));
+}
+
 export function addClipToTrack(tracks: Track[], targetTrackId: string, newClip: TimelineClip): Track[] {
   return tracks.map((track) => {
     if (track.id === targetTrackId) {
+      const safeStart = preventClipOverlap(track.clips, newClip.id, newClip.timelineStart, newClip.timelineDuration);
       return {
         ...track,
-        clips: [...track.clips, { ...newClip, trackId: targetTrackId }],
+        clips: [...track.clips, { ...newClip, trackId: targetTrackId, timelineStart: safeStart }].sort(
+          (a, b) => a.timelineStart - b.timelineStart
+        ),
       };
     }
     return track;
@@ -48,10 +95,14 @@ export function moveClipInTimeline(
 
   if (!foundClip) return tracks;
 
+  const targetTrack = tracksWithoutClip.find((t) => t.id === targetTrackId);
+  const otherClipsOnTarget = targetTrack ? targetTrack.clips : [];
+  const safeStart = preventClipOverlap(otherClipsOnTarget, clipId, newStart, (foundClip as TimelineClip).timelineDuration);
+
   const updatedClip: TimelineClip = {
     ...(foundClip as TimelineClip),
     trackId: targetTrackId,
-    timelineStart: Math.max(0, newStart),
+    timelineStart: safeStart,
   };
 
   return tracksWithoutClip.map((track) => {
@@ -84,15 +135,29 @@ export function trimClipBounds(
         const safeSourceStart = Math.max(0, newSourceStart);
         let safeDuration = Math.max(0.1, newDuration);
 
-        // Lock video and audio clips to max asset source duration
         if ((clip.type === 'video' || clip.type === 'audio') && clip.sourceDuration) {
           const maxAvailable = Math.max(0.1, (clip.sourceDuration - safeSourceStart) / (clip.speed || 1));
           safeDuration = Math.min(maxAvailable, safeDuration);
         }
 
+        const otherClips = track.clips.filter((c) => c.id !== clipId);
+        let safeStart = Math.max(0, newStart);
+
+        const prevClip = otherClips.filter((c) => c.timelineStart + c.timelineDuration <= clip.timelineStart).pop();
+        const nextClip = otherClips.find((c) => c.timelineStart >= clip.timelineStart + clip.timelineDuration);
+
+        if (prevClip && safeStart < prevClip.timelineStart + prevClip.timelineDuration) {
+          safeStart = prevClip.timelineStart + prevClip.timelineDuration;
+          safeDuration = Math.max(0.1, clip.timelineStart + clip.timelineDuration - safeStart);
+        }
+
+        if (nextClip && safeStart + safeDuration > nextClip.timelineStart) {
+          safeDuration = Math.max(0.1, nextClip.timelineStart - safeStart);
+        }
+
         return {
           ...clip,
-          timelineStart: Math.max(0, newStart),
+          timelineStart: safeStart,
           timelineDuration: safeDuration,
           sourceStart: safeSourceStart,
         };
@@ -111,13 +176,13 @@ export function splitClipAtTime(tracks: Track[], clipId: string, splitTime: numb
       return track;
     }
 
-    const firstHalfDuration = relativeSplit;
-    const secondHalfDuration = clipToSplit.timelineDuration - relativeSplit;
+    const firstHalfDuration = Number(relativeSplit.toFixed(3));
+    const secondHalfDuration = Number((clipToSplit.timelineDuration - relativeSplit).toFixed(3));
+    const speed = clipToSplit.speed || 1;
 
     const firstClip: TimelineClip = {
       ...clipToSplit,
       timelineDuration: firstHalfDuration,
-      sourceDuration: firstHalfDuration * clipToSplit.speed,
     };
 
     const secondClip: TimelineClip = {
@@ -125,8 +190,7 @@ export function splitClipAtTime(tracks: Track[], clipId: string, splitTime: numb
       id: nanoid(),
       timelineStart: splitTime,
       timelineDuration: secondHalfDuration,
-      sourceStart: clipToSplit.sourceStart + firstHalfDuration * clipToSplit.speed,
-      sourceDuration: secondHalfDuration * clipToSplit.speed,
+      sourceStart: Number((clipToSplit.sourceStart + firstHalfDuration * speed).toFixed(3)),
     };
 
     return {
@@ -151,10 +215,13 @@ export function duplicateClipsInTracks(tracks: Track[], clipIds: string[]): Trac
     for (const clip of track.clips) {
       duplicatedClips.push(clip);
       if (idsToDup.has(clip.id)) {
+        const proposedStart = clip.timelineStart + clip.timelineDuration + 0.1;
+        const otherClips = track.clips.filter((c) => c.id !== clip.id);
+        const safeStart = preventClipOverlap(otherClips, 'new-dup', proposedStart, clip.timelineDuration);
         duplicatedClips.push({
           ...clip,
           id: nanoid(),
-          timelineStart: clip.timelineStart + clip.timelineDuration + 0.5,
+          timelineStart: safeStart,
         });
       }
     }

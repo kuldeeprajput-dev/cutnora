@@ -11,6 +11,7 @@ import { TrackHeader } from './TrackHeader';
 import { TrackLane } from './TrackLane';
 import { TimelineContextMenu } from './TimelineContextMenu';
 import { snapTimelineTime } from '../utils/timeline-snap-utils';
+import { preventClipOverlap } from '@/modules/editor/utils/timeline-utils';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Film } from 'lucide-react';
@@ -149,14 +150,15 @@ export function TimelineEditor() {
         const currentTrackIndex = tracks.findIndex((t) => t.id === clip.trackId);
         const targetTrackIndex = Math.max(0, Math.min(tracks.length - 1, currentTrackIndex + trackIndexOffset));
         const targetTrack = tracks[targetTrackIndex];
+        const safeStart = preventClipOverlap(targetTrack.clips, clip.id, targetStart, clip.timelineDuration);
 
         // Update DOM element directly for 60fps smooth timeline drag
         const el = document.getElementById(`timeline-clip-${clip.id}`);
         if (el) {
-          el.style.left = `${16 + targetStart * zoom}px`;
+          el.style.left = `${16 + safeStart * zoom}px`;
         }
 
-        moveClip(clip.id, targetTrack.id, targetStart);
+        moveClip(clip.id, targetTrack.id, safeStart);
       } else if (mode === 'trim-start') {
         const rawStart = Math.max(0, initialStart + deltaSecs);
         const snapRes = snapTimelineTime(rawStart, tracks, playhead, clip.id, zoom, isSnapping);
