@@ -1,29 +1,5 @@
-import {
-  LandingHeader,
-  LandingHeroSection,
-  FeaturesSection,
-  WorkflowSection,
-  PrivacySection,
-  CapabilitiesSection,
-  FaqSection,
-  FinalCtaSection,
-  LandingFooter,
-} from "@/modules/marketing";
+import { MinimalLanding } from "@/modules/marketing/components/MinimalLanding";
 
 export default function MarketingPage() {
-  return (
-    <div className="min-h-screen bg-mkt-bg text-mkt-fg">
-      <LandingHeader />
-      <main>
-        <LandingHeroSection />
-        <FeaturesSection />
-        <WorkflowSection />
-        <PrivacySection />
-        <CapabilitiesSection />
-        <FaqSection />
-        <FinalCtaSection />
-      </main>
-      <LandingFooter />
-    </div>
-  );
+  return <MinimalLanding />;
 }

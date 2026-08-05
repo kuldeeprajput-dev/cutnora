@@ -67,7 +67,7 @@ export function FaqSection() {
         </div>
 
         {/* Accessible Accordion List */}
-        <div className="mx-auto max-w-3xl space-y-4">
+        <div className="mx-auto max-w-[1200px] space-y-4">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             const contentId = `faq-content-${index}`;

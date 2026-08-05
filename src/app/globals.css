@@ -1,76 +1,77 @@
 @import "tailwindcss";
+@import "./landing.css";
 
 @theme {
   --font-sans: "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
-  --color-brand: #ff5a36;
-  --color-brand-hover: #e84928;
-  --color-brand-soft: #fff0eb;
+  --color-brand: #c45100;
+  --color-brand-hover: #a94400;
+  --color-brand-soft: #f4e5d7;
   --color-brand-contrast: #ffffff;
 
-  --color-mkt-bg: #f6f4ef;
+  --color-mkt-bg: #f8f9fb;
   --color-mkt-surface: #ffffff;
-  --color-mkt-surface-secondary: #ece9e2;
-  --color-mkt-fg: #151619;
-  --color-mkt-muted: #6f716f;
-  --color-mkt-border: #d9d5cc;
-  --color-mkt-accent: #ff5a36;
-  --color-mkt-accent-hover: #e84928;
-  --color-mkt-accent-soft: #fff0eb;
-  --color-mkt-success: #248a5a;
-  --color-mkt-info: #3478d4;
+  --color-mkt-surface-secondary: #f0f1f3;
+  --color-mkt-fg: #0b0b0b;
+  --color-mkt-muted: #6d7075;
+  --color-mkt-border: #dedfe2;
+  --color-mkt-accent: #c45100;
+  --color-mkt-accent-hover: #a94400;
+  --color-mkt-accent-soft: #f4e5d7;
+  --color-mkt-success: #317a58;
+  --color-mkt-info: #6d7075;
 
-  --color-studio-bg: #101216;
-  --color-studio-topbar: #14161b;
-  --color-studio-panel: #171a20;
-  --color-studio-panel-raised: #1d2027;
-  --color-studio-hover: #242832;
-  --color-studio-border: #2b2f38;
-  --color-studio-border-strong: #414650;
-  --color-studio-fg: #f4f5f7;
-  --color-studio-muted: #9298a3;
-  --color-timeline-bg: #1c1f25;
-  --color-canvas-bg: #121419;
-  --color-selection: #f2c94c;
-  --color-selection-hover: #e0b73b;
-  --color-destructive: #e45858;
-  --color-destructive-hover: #d34545;
-  --color-overlay: #9298a3;
-  --color-brand-active: #d03d1e;
+  --color-studio-bg: #f6f7f9;
+  --color-studio-topbar: #ffffff;
+  --color-studio-panel: #ffffff;
+  --color-studio-panel-raised: #f0f1f3;
+  --color-studio-hover: #e9eaed;
+  --color-studio-border: #dcdde1;
+  --color-studio-border-strong: #b9bbc1;
+  --color-studio-fg: #0b0b0b;
+  --color-studio-muted: #6c7078;
+  --color-timeline-bg: #f1f2f4;
+  --color-canvas-bg: #e7e9ed;
+  --color-selection: #c45100;
+  --color-selection-hover: #a94400;
+  --color-destructive: #c43b30;
+  --color-destructive-hover: #a92f27;
+  --color-overlay: #777b82;
+  --color-brand-active: #913a00;
 }
 
 @layer base {
   :root {
-    color-scheme: dark;
-    --brand: #ff5a36;
-    --brand-hover: #e84928;
-    --brand-soft: #fff0eb;
+    color-scheme: light;
+    --brand: #c45100;
+    --brand-hover: #a94400;
+    --brand-soft: #f4e5d7;
     --brand-contrast: #ffffff;
-    --mkt-bg: #f6f4ef;
+    --mkt-bg: #f8f9fb;
     --mkt-surface: #ffffff;
-    --mkt-surface-secondary: #ece9e2;
-    --mkt-fg: #151619;
-    --mkt-muted: #6f716f;
-    --mkt-border: #d9d5cc;
-    --mkt-success: #248a5a;
-    --mkt-info: #3478d4;
-    --studio-bg: #101216;
-    --studio-topbar: #14161b;
-    --studio-panel: #171a20;
-    --studio-panel-raised: #1d2027;
-    --studio-hover: #242832;
-    --studio-border: #2b2f38;
-    --studio-border-strong: #414650;
-    --studio-fg: #f4f5f7;
-    --studio-muted: #9298a3;
-    --timeline-bg: #1c1f25;
-    --canvas-bg: #121419;
-    --selection: #f2c94c;
-    --selection-hover: #e0b73b;
-    --destructive: #e45858;
-    --destructive-hover: #d34545;
-    --overlay: #9298a3;
+    --mkt-surface-secondary: #f0f1f3;
+    --mkt-fg: #0b0b0b;
+    --mkt-muted: #6d7075;
+    --mkt-border: #dedfe2;
+    --mkt-success: #317a58;
+    --mkt-info: #6d7075;
+    --studio-bg: #f6f7f9;
+    --studio-topbar: #ffffff;
+    --studio-panel: #ffffff;
+    --studio-panel-raised: #f0f1f3;
+    --studio-hover: #e9eaed;
+    --studio-border: #dcdde1;
+    --studio-border-strong: #b9bbc1;
+    --studio-fg: #0b0b0b;
+    --studio-muted: #6c7078;
+    --timeline-bg: #f1f2f4;
+    --canvas-bg: #e7e9ed;
+    --selection: #c45100;
+    --selection-hover: #a94400;
+    --destructive: #c43b30;
+    --destructive-hover: #a92f27;
+    --overlay: #777b82;
   }
 
   html {
