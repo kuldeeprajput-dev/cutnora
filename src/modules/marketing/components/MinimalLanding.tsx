@@ -1,5 +1,10 @@
+import { Layers3 } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
-import { LandingHeaderNav, HeroIntroSection, PrimaryLink } from "./LandingHeroView";
+import {
+  LandingHeaderNav,
+  HeroIntroSection,
+  PrimaryLink,
+} from "./LandingHeroView";
 import { MinimalFeaturesSection } from "./MinimalFeaturesSection";
 
 const questions = [
@@ -33,52 +38,58 @@ export function MinimalLanding() {
         <HeroIntroSection />
         <MinimalFeaturesSection />
 
-        <section id="faq" className="border-t border-mkt-border bg-mkt-surface-secondary/70 py-20 sm:py-28">
-          <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-[11px] font-bold tracking-[0.18em] text-brand uppercase">
-                Questions
-              </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-4xl">
-                The useful answers.
-              </h2>
-            </div>
-
-            <div className="mx-auto mt-12 max-w-[1200px] space-y-4">
-              {questions.map((item) => (
-                <details
-                  key={item.question}
-                  className="group rounded-2xl border border-mkt-border bg-mkt-surface p-5 shadow-[0_4px_16px_rgb(0_0_0_/_0.03)] transition-colors hover:border-brand/40 [&_summary::-webkit-details-marker]:hidden"
-                >
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 font-semibold text-mkt-fg select-none">
-                    <span className="text-sm sm:text-base">{item.question}</span>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-mkt-border bg-mkt-surface-secondary text-mkt-muted transition-transform group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-3 text-xs leading-6 text-mkt-muted sm:text-sm">
-                    {item.answer}
-                  </p>
-                </details>
-              ))}
-            </div>
+        <section
+          id="faq"
+          className="mx-auto max-w-[760px] scroll-mt-20 px-5 pb-24 sm:px-8 sm:pb-32"
+        >
+          <div className="landing-reveal text-center">
+            <span className="font-mono text-[10px] tracking-[0.18em] text-brand uppercase">
+              Questions
+            </span>
+            <h2 className="mt-3 text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
+              The useful answers.
+            </h2>
+          </div>
+          <div className="landing-reveal landing-reveal-delay-1 mt-10 space-y-2">
+            {questions.map(({ question, answer }) => (
+              <details
+                key={question}
+                className="group rounded-xl border border-mkt-border bg-mkt-surface px-5 transition-colors duration-300 hover:-translate-y-0.5 hover:bg-mkt-surface-secondary open:bg-mkt-surface-secondary"
+              >
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg py-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg">
+                  {question}
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-mkt-border text-mkt-muted transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="max-w-xl pb-5 pr-8 text-sm leading-6 text-mkt-muted">
+                  {answer}
+                </p>
+              </details>
+            ))}
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1120px] px-5 py-20 sm:px-8 sm:py-28">
-          <div className="rounded-3xl border border-mkt-border bg-mkt-surface p-8 text-center shadow-[0_16px_50px_rgb(0_0_0_/_0.05)] sm:p-14">
-            <p className="text-[11px] font-bold tracking-[0.18em] text-brand uppercase">
-              Start Now
-            </p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-4xl">
-              Open the editor and start.
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-xs text-mkt-muted sm:text-sm">
-              Your media stays on your computer. Start editing immediately without cloud setup.
-            </p>
-
-            <div className="mt-8 flex justify-center">
-              <PrimaryLink>Open editor workspace</PrimaryLink>
+        <section className="mx-auto max-w-[1120px] px-5 pb-8 sm:px-8">
+          <div className="landing-reveal rounded-[24px] border border-mkt-border bg-mkt-surface p-7 shadow-[0_18px_70px_rgb(0_0_0_/_0.08)] sm:p-10">
+            <div className="rounded-[18px] bg-mkt-surface-secondary px-6 py-12 text-center sm:px-10 sm:py-16">
+              <Layers3
+                className="mx-auto h-6 w-6 text-brand"
+                aria-hidden="true"
+              />
+              <span className="mt-5 block font-mono text-[10px] tracking-[0.18em] text-brand uppercase">
+                Ready when you are
+              </span>
+              <h2 className="mx-auto mt-3 max-w-xl text-balance text-3xl font-medium tracking-[-0.045em] sm:text-5xl">
+                Your next cut starts here.
+              </h2>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-mkt-muted">
+                Open a local project and start editing. Nothing to install and
+                nothing to upload.
+              </p>
+              <div className="mt-7">
+                <PrimaryLink>Open Cutframe</PrimaryLink>
+              </div>
             </div>
           </div>
         </section>
@@ -92,7 +103,9 @@ export function MinimalLanding() {
               Cutframe
             </span>
           </div>
-          <p>© {new Date().getFullYear()} Cutframe. Browser-native video editing.</p>
+          <p>
+            © {new Date().getFullYear()} Cutframe. Browser-native video editing.
+          </p>
         </div>
       </footer>
     </div>
