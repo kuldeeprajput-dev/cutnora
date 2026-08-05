@@ -14,6 +14,9 @@ import { AudioTab } from './AudioTab';
 import { SpeedTab } from './SpeedTab';
 import { TimeTab } from './TimeTab';
 import { CanvasSettingsPanel } from './CanvasSettingsPanel';
+import { LayerOperations } from './LayerOperations';
+import { TextInspectorTab } from '@/modules/editor/features/text';
+import { ElementInspectorTab } from '@/modules/editor/features/elements';
 import { MousePointer, Trash2, Layers } from 'lucide-react';
 
 export function InspectorPanel() {
@@ -104,17 +107,33 @@ export function InspectorPanel() {
   const clip = selectedClips[0];
   const isVisual = clip.type === 'video' || clip.type === 'image' || clip.type === 'overlay';
   const hasAudio = clip.type === 'video' || clip.type === 'audio';
+  const isText = clip.type === 'text';
+  const isElement = clip.type === 'overlay';
 
   return (
     <StudioPanel title={clip.name} className="h-full w-full">
-      <Tabs defaultValue="transform" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue={isText ? 'text' : isElement ? 'element' : 'transform'} value={activeTab} onValueChange={setActiveTab}>
         <TabList className="grid grid-cols-4 gap-1 mb-4 bg-[#14161B] p-1 rounded-lg border border-[#2B2F38]">
+          {isText && <TabTrigger value="text" className="text-xs py-1">Text</TabTrigger>}
+          {isElement && <TabTrigger value="element" className="text-xs py-1">Shape</TabTrigger>}
           <TabTrigger value="transform" className="text-xs py-1">Transform</TabTrigger>
           {isVisual && <TabTrigger value="adjust" className="text-xs py-1">Adjust</TabTrigger>}
           {hasAudio && <TabTrigger value="audio" className="text-xs py-1">Audio</TabTrigger>}
           {hasAudio && <TabTrigger value="speed" className="text-xs py-1">Speed</TabTrigger>}
           <TabTrigger value="time" className="text-xs py-1">Time</TabTrigger>
         </TabList>
+
+        {isText && (
+          <TabContent value="text">
+            <TextInspectorTab clip={clip} />
+          </TabContent>
+        )}
+
+        {isElement && (
+          <TabContent value="element">
+            <ElementInspectorTab clip={clip} />
+          </TabContent>
+        )}
 
         <TabContent value="transform">
           <TransformTab clip={clip} />
@@ -142,6 +161,9 @@ export function InspectorPanel() {
           <TimeTab clip={clip} />
         </TabContent>
       </Tabs>
+
+      {/* Layer Ordering and Lock Operations */}
+      <LayerOperations clip={clip} />
     </StudioPanel>
   );
 }
