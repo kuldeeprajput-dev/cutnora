@@ -14,6 +14,9 @@ import { useKeyboardShortcuts } from '@/modules/editor/commands/useKeyboardShort
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { Monitor } from 'lucide-react';
 
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
+import { useExportStore } from '@/modules/editor/store/useExportStore';
+
 export function StudioShell() {
   const { leftPanelWidth, setLeftPanelWidth, timelineHeight, setTimelineHeight } = useEditorUIStore();
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -26,6 +29,20 @@ export function StudioShell() {
     if (savedWidth) setLeftPanelWidth(parseInt(savedWidth, 10));
     if (savedHeight) setTimelineHeight(parseInt(savedHeight, 10));
   }, [setLeftPanelWidth, setTimelineHeight]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const exportPhase = useExportStore.getState().exportPhase;
+      if (exportPhase === 'rendering' || exportPhase === 'converting') {
+        e.preventDefault();
+        e.returnValue = 'An export is currently in progress. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const handleWidthResize = (delta: number) => {
     const newWidth = leftPanelWidth + delta;
@@ -45,9 +62,9 @@ export function StudioShell() {
       <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
       {/* Screen Width < 1024px Warning Banner */}
-      <div className="lg:hidden flex items-center justify-between bg-[#F2C94C] text-[#101216] px-4 py-2 text-xs font-semibold">
+      <div className="lg:hidden flex items-center justify-between bg-[#F2C94C] text-[#101216] px-4 py-2 text-xs font-semibold shrink-0 z-40">
         <div className="flex items-center gap-2">
-          <Monitor className="h-4 w-4" />
+          <Monitor className="h-4 w-4 shrink-0" />
           <span>Desktop screen recommended: For optimal multitrack editing, please use a larger display (1024px+).</span>
         </div>
       </div>
@@ -64,7 +81,9 @@ export function StudioShell() {
           <div className="flex flex-1 overflow-hidden">
             {/* Left Contextual Panel */}
             <div style={{ width: `${leftPanelWidth}px` }} className="shrink-0 h-full overflow-hidden">
-              <ContextualPanel />
+              <ErrorBoundary fallbackTitle="Panel Error" fallbackMessage="Contextual panel encountered an error.">
+                <ContextualPanel />
+              </ErrorBoundary>
             </div>
 
             {/* Panel Width Resizable Divider */}
@@ -72,7 +91,9 @@ export function StudioShell() {
 
             {/* Center Preview Stage */}
             <div className="flex-1 h-full overflow-hidden">
-              <PreviewStage />
+              <ErrorBoundary fallbackTitle="Stage Preview Error" fallbackMessage="Stage failed to render preview frame.">
+                <PreviewStage />
+              </ErrorBoundary>
             </div>
           </div>
 
@@ -81,14 +102,18 @@ export function StudioShell() {
 
           {/* Bottom Timeline */}
           <div style={{ height: `${timelineHeight}px` }} className="shrink-0 w-full overflow-hidden">
-            <TimelineShell />
+            <ErrorBoundary fallbackTitle="Timeline Error" fallbackMessage="Multitrack timeline encountered an error.">
+              <TimelineShell />
+            </ErrorBoundary>
           </div>
 
         </div>
       </div>
 
       {/* Global Modals & Notifications */}
-      <ExportModal />
+      <ErrorBoundary fallbackTitle="Export Error">
+        <ExportModal />
+      </ErrorBoundary>
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
       <ToastContainer />
     </div>

@@ -28,6 +28,7 @@ interface ProjectState {
   
   addAsset: (asset: MediaAsset) => void;
   removeAsset: (assetId: string) => void;
+  repairProjectReferences: () => Promise<number>;
 
   addTrack: (type: Track['type'], name?: string) => void;
   deleteTrack: (trackId: string) => void;
@@ -172,6 +173,49 @@ export const useProjectStore = create<ProjectState>()(
 
       const updated = get().currentProject;
       if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    repairProjectReferences: async () => {
+      const current = get().currentProject;
+      if (!current) return 0;
+
+      let repairedCount = 0;
+      const validAssetIds = new Set<string>();
+
+      for (const assetId of current.assetIds) {
+        const asset = await db.assets.get(assetId);
+        if (asset) {
+          const blob = await db.blobs.get(asset.blobId);
+          if (blob) {
+            validAssetIds.add(assetId);
+          }
+        }
+      }
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          const origAssets = state.currentProject.assetIds.length;
+          state.currentProject.assetIds = Array.from(validAssetIds);
+
+          state.currentProject.tracks.forEach((track) => {
+            const origClips = track.clips.length;
+            track.clips = track.clips.filter((clip) => {
+              if (clip.assetId) {
+                return validAssetIds.has(clip.assetId);
+              }
+              return true;
+            });
+            repairedCount += origClips - track.clips.length;
+          });
+
+          repairedCount += origAssets - state.currentProject.assetIds.length;
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+      return repairedCount;
     },
 
     addTrack: (type, name) => {

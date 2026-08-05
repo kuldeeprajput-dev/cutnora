@@ -2,18 +2,22 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Cutframe — Video editing in your browser',
-  description: 'A fast, private, browser-based video editor.',
+  title: 'Cutframe — Web Video Editor',
+  description: 'Fast, multitrack, browser-based local video editing software.',
+  keywords: ['video editor', 'browser video editor', 'webm export', 'mp4 export', 'multitrack timeline', 'cutframe'],
+  authors: [{ name: 'Cutframe Team' }],
   icons: {
     icon: '/favicon.ico',
+  },
+  openGraph: {
+    title: 'Cutframe — Web Video Editor',
+    description: 'Fast, multitrack, browser-based local video editing software.',
+    type: 'website',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#121214' },
-    { media: '(prefers-color-scheme: light)', color: '#fcfbf9' },
-  ],
+  themeColor: '#101216',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -25,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-background text-foreground antialiased font-sans">
+    <html lang="en" className="dark">
+      <body className="bg-[#101216] text-[#F4F5F7] antialiased font-sans">
         {children}
       </body>
     </html>
