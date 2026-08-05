@@ -1,33 +1,69 @@
 @import "tailwindcss";
 
+@theme {
+  --color-mkt-bg: #F6F4EF;
+  --color-mkt-surface: #FFFFFF;
+  --color-mkt-surface-secondary: #ECE9E2;
+  --color-mkt-fg: #151619;
+  --color-mkt-muted: #6F716F;
+  --color-mkt-border: #D9D5CC;
+  --color-mkt-accent: #FF5A36;
+  --color-mkt-accent-hover: #E84928;
+  --color-mkt-accent-soft: #FFF0EB;
+  --color-mkt-success: #248A5A;
+  --color-mkt-info: #3478D4;
+
+  --color-studio-bg: #101216;
+  --color-studio-topbar: #14161B;
+  --color-studio-panel: #171A20;
+  --color-studio-panel-raised: #1D2027;
+  --color-studio-hover: #242832;
+  --color-studio-border: #2B2F38;
+  --color-studio-fg: #F4F5F7;
+  --color-studio-muted: #9298A3;
+  --color-timeline-bg: #1C1F25;
+  --color-canvas-bg: #121419;
+  --color-selection: #F2C94C;
+  --color-destructive: #E45858;
+}
+
 @layer base {
   :root {
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    
-    /* Marketing Theme: Warm off-white background, near-black text, coral/orange primary */
-    --mkt-bg: #fcfbf9;
-    --mkt-surface: #f7f4ef;
-    --mkt-text: #1a1918;
-    --mkt-muted: #6b6762;
-    --mkt-accent: #ea580c;
-    --mkt-border: #e6e2db;
+    --mkt-bg: #F6F4EF;
+    --mkt-surface: #FFFFFF;
+    --mkt-surface-secondary: #ECE9E2;
+    --mkt-fg: #151619;
+    --mkt-muted: #6F716F;
+    --mkt-border: #D9D5CC;
+    --mkt-accent: #FF5A36;
+    --mkt-accent-hover: #E84928;
+    --mkt-accent-soft: #FFF0EB;
+    --mkt-success: #248A5A;
+    --mkt-info: #3478D4;
 
-    /* Studio Theme: Charcoal dark background, layered panels, warm yellow indicators */
-    --studio-bg: #121214;
-    --studio-panel: #18181b;
-    --studio-panel-border: #27272a;
-    --studio-panel-hover: #2e2e33;
-    --studio-text: #f4f4f5;
-    --studio-muted: #a1a1aa;
-    --studio-accent-yellow: #facc15;
-    --studio-accent-blue: #3b82f6;
-    --studio-accent-purple: #a855f7;
+    --studio-bg: #101216;
+    --studio-topbar: #14161B;
+    --studio-panel: #171A20;
+    --studio-panel-raised: #1D2027;
+    --studio-hover: #242832;
+    --studio-border: #2B2F38;
+    --studio-fg: #F4F5F7;
+    --studio-muted: #9298A3;
+    --timeline-bg: #1C1F25;
+    --canvas-bg: #121419;
+    --selection: #F2C94C;
+    --destructive: #E45858;
   }
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: var(--font-sans);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  color: var(--studio-fg);
+  background-color: var(--studio-bg);
 }
