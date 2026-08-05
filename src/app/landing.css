@@ -1,0 +1,113 @@
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes landing-word-jitter {
+  0%,
+  100% {
+    text-shadow: none;
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    text-shadow:
+      2px 0 var(--brand),
+      -1px 0 var(--mkt-bg);
+    transform: translate3d(-1px, 0, 0);
+  }
+  50% {
+    text-shadow: -2px 0 var(--brand);
+    transform: translate3d(1px, 0, 0);
+  }
+  75% {
+    text-shadow: 1px 0 var(--mkt-fg);
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.landing-reveal {
+  animation: landing-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-reveal-delay-1 {
+  animation-delay: 100ms;
+}
+
+.landing-reveal-delay-2 {
+  animation-delay: 180ms;
+}
+
+.landing-reveal-delay-3 {
+  animation-delay: 260ms;
+}
+
+.landing-reveal-delay-4 {
+  animation-delay: 340ms;
+}
+
+.landing-showcase-reveal {
+  animation: landing-scale-in 900ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both;
+}
+
+.landing-kinetic-word {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  transition:
+    color 220ms ease,
+    transform 220ms ease;
+}
+
+.landing-kinetic-word::after {
+  position: absolute;
+  right: 0.02em;
+  bottom: 0.03em;
+  left: 0.02em;
+  z-index: -1;
+  height: 0.08em;
+  border-radius: 999px;
+  background: var(--brand);
+  content: "";
+  opacity: 0.25;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-kinetic-word:hover {
+  color: var(--brand);
+  animation: landing-word-jitter 360ms steps(2, end) 1;
+}
+
+.landing-kinetic-word:hover::after {
+  transform: scaleX(1);
+}
+
+.theme-icon--dark {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon--light {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon--dark {
+  display: block;
+}
