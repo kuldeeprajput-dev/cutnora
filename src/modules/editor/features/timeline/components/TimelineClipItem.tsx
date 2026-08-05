@@ -11,7 +11,7 @@ import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { WaveformCanvas } from '@/modules/editor/features/audio/components/WaveformCanvas';
 import { detachAudioFromVideo } from '@/modules/editor/features/audio/utils/detachAudio';
-import { FileVideo, Image as ImageIcon, Music, Type, Shapes, AlertCircle, Scissors, Copy, Trash2, Volume2, VolumeX, Unlink, Clipboard, MoveLeft } from 'lucide-react';
+import { FileVideo, Image as ImageIcon, Music, Type, Shapes, AlertCircle, Scissors, Copy, Trash2, Volume2, VolumeX, Unlink, Clipboard, MoveLeft, ArrowUp, ArrowDown, Lock, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 export interface TimelineClipItemProps {
@@ -124,7 +124,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
   const clipMenuItems: ContextMenuItemData[] = [
     {
       id: 'cut',
-      label: 'Cut clip',
+      label: 'Cut',
       icon: <Scissors className="h-3.5 w-3.5" />,
       shortcut: '⌘X',
       onClick: () => {
@@ -133,7 +133,7 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
     },
     {
       id: 'copy',
-      label: 'Copy clip',
+      label: 'Copy',
       icon: <Copy className="h-3.5 w-3.5" />,
       shortcut: '⌘C',
       onClick: () => {
@@ -149,7 +149,6 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         useClipboardStore.getState().pasteClips(track.id, clip.timelineStart + clip.timelineDuration);
       },
     },
-    { id: 'div-1', label: '', isDivider: true, onClick: () => {} },
     {
       id: 'duplicate',
       label: 'Duplicate',
@@ -157,9 +156,10 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
       shortcut: '⌘D',
       onClick: () => duplicateClips([clip.id]),
     },
+    { id: 'div-1', label: '', isDivider: true, onClick: () => {} },
     {
       id: 'split',
-      label: 'Split at playhead',
+      label: 'Split',
       icon: <Scissors className="h-3.5 w-3.5" />,
       shortcut: 'S',
       onClick: () => {
@@ -177,7 +177,63 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
       },
     },
     { id: 'div-2', label: '', isDivider: true, onClick: () => {} },
-    ...(clip.type === 'video' || clip.type === 'overlay'
+    {
+      id: 'bring-forward',
+      label: 'Bring forward',
+      icon: <ArrowUp className="h-3.5 w-3.5" />,
+      onClick: () => {
+        const tracks = useProjectStore.getState().currentProject?.tracks || [];
+        const idx = tracks.findIndex((t) => t.id === track.id);
+        if (idx > 0) {
+          useProjectStore.getState().reorderTracks(idx, idx - 1);
+        }
+      },
+    },
+    {
+      id: 'bring-backward',
+      label: 'Bring backward',
+      icon: <ArrowDown className="h-3.5 w-3.5" />,
+      onClick: () => {
+        const tracks = useProjectStore.getState().currentProject?.tracks || [];
+        const idx = tracks.findIndex((t) => t.id === track.id);
+        if (idx >= 0 && idx < tracks.length - 1) {
+          useProjectStore.getState().reorderTracks(idx, idx + 1);
+        }
+      },
+    },
+    {
+      id: 'lock',
+      label: track.locked ? 'Unlock' : 'Lock',
+      icon: <Lock className="h-3.5 w-3.5" />,
+      onClick: () => {
+        useProjectStore.setState((state) => {
+          if (state.currentProject) {
+            const t = state.currentProject.tracks.find((x) => x.id === track.id);
+            if (t) t.locked = !t.locked;
+          }
+        });
+      },
+    },
+    {
+      id: 'hide-mute',
+      label: clip.type === 'audio' || clip.audio ? (clip.audio?.muted ? 'Unmute' : 'Mute') : (track.hidden ? 'Show' : 'Hide'),
+      icon: clip.type === 'audio' || clip.audio ? (clip.audio?.muted ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />) : (track.hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />),
+      onClick: () => {
+        if (clip.type === 'audio' || clip.audio) {
+          updateClip(clip.id, {
+            audio: { ...clip.audio, volume: clip.audio?.volume ?? 1, fadeIn: 0, fadeOut: 0, muted: !clip.audio?.muted },
+          });
+        } else {
+          useProjectStore.setState((state) => {
+            if (state.currentProject) {
+              const t = state.currentProject.tracks.find((x) => x.id === track.id);
+              if (t) t.hidden = !t.hidden;
+            }
+          });
+        }
+      },
+    },
+    ...(clip.type === 'video'
       ? [
           {
             id: 'detach-audio',
@@ -187,22 +243,10 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
           },
         ]
       : []),
-    ...(clip.type === 'video' || clip.type === 'audio'
-      ? [
-          {
-            id: 'mute',
-            label: clip.audio?.muted ? 'Unmute clip' : 'Mute clip',
-            icon: clip.audio?.muted ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />,
-            onClick: () =>
-              updateClip(clip.id, {
-                audio: { ...clip.audio, volume: clip.audio?.volume ?? 1, fadeIn: 0, fadeOut: 0, muted: !clip.audio?.muted },
-              }),
-          },
-        ]
-      : []),
+    { id: 'div-3', label: '', isDivider: true, onClick: () => {} },
     {
       id: 'delete',
-      label: 'Delete clip',
+      label: 'Delete',
       icon: <Trash2 className="h-3.5 w-3.5 text-[#E45858]" />,
       shortcut: 'Del',
       onClick: () => deleteClips([clip.id]),

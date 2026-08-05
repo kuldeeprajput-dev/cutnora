@@ -10,6 +10,7 @@ import type {
   ExportQuality,
   ExportPhase,
 } from "@/modules/editor/store/useExportStore";
+import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 
 export interface ExportSettings {
   filename: string;
@@ -258,13 +259,17 @@ export async function runExportTask(
       exportUrl,
       `${settings.filename || "video-export"}.${fileExtension}`,
     );
+    useToastStore.getState().showToast("Export completed successfully", "success");
     onComplete(exportUrl);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "EXPORT_CANCELLED") {
       onProgress(0, 0, 0, "cancelled");
+      useToastStore.getState().showToast("Export cancelled", "info");
     } else {
       console.error("Export error:", err);
-      onError(err instanceof Error ? err.message : String(err));
+      const errMsg = err instanceof Error ? err.message : String(err);
+      useToastStore.getState().showToast(`Export failed: ${errMsg}`, "error");
+      onError(errMsg);
     }
   } finally {
     // Teardown Stream Tracks & Contexts

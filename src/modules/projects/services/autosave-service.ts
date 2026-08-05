@@ -1,4 +1,5 @@
 import { db } from '@/modules/core/db/database';
+import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
 import type { Project } from '../types';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -53,9 +54,11 @@ class AutosaveService {
       projectToSave.updatedAt = Date.now();
       await db.projects.put(projectToSave);
       this.setStatus('saved');
+      useToastStore.getState().showToast('Project saved', 'success');
     } catch (err) {
       console.error('Failed to autosave project:', err);
       this.setStatus('error');
+      useToastStore.getState().showToast('Failed to save project', 'error');
     }
   }
 
