@@ -55,6 +55,10 @@ export function ImageLayer({ clip }: ImageLayerProps) {
     sepia(${adjustments.sepia})
   `;
 
+  const clipPathStyle = transform.crop
+    ? `inset(${transform.crop.top}% ${transform.crop.right}% ${transform.crop.bottom}% ${transform.crop.left}%)`
+    : undefined;
+
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -65,6 +69,7 @@ export function ImageLayer({ clip }: ImageLayerProps) {
         objectFit,
         opacity: transform.opacity,
         filter: filterStyle,
+        clipPath: clipPathStyle,
         transform: `scaleX(${transform.scaleX}) scaleY(${transform.scaleY})`,
       }}
     />

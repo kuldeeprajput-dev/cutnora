@@ -91,6 +91,10 @@ export function VideoLayer({ clip }: VideoLayerProps) {
     sepia(${adjustments.sepia})
   `;
 
+  const clipPathStyle = transform.crop
+    ? `inset(${transform.crop.top}% ${transform.crop.right}% ${transform.crop.bottom}% ${transform.crop.left}%)`
+    : undefined;
+
   return (
     <video
       ref={videoRef}
@@ -103,6 +107,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
         objectFit,
         opacity: transform.opacity,
         filter: filterStyle,
+        clipPath: clipPathStyle,
         transform: `scaleX(${transform.scaleX}) scaleY(${transform.scaleY})`,
       }}
     />
