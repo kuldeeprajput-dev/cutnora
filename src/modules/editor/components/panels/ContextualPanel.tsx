@@ -6,7 +6,8 @@ import { useProjectStore } from '@/modules/projects';
 import { StudioPanel } from '@/shared/components/layout/StudioPanel';
 import { Button } from '@/shared/components/ui/Button';
 import { EmptyState } from '@/shared/components/ui/EmptyState';
-import { FolderPlus, Type, Music, Shapes, Mic, Plus } from 'lucide-react';
+import { MediaLibraryPanel } from '@/modules/editor/features/media-library';
+import { Type, Shapes, Mic } from 'lucide-react';
 
 export function ContextualPanel() {
   const { activeTool } = useEditorUIStore();
@@ -14,9 +15,15 @@ export function ContextualPanel() {
 
   const renderContent = () => {
     switch (activeTool) {
+      case 'media':
+      case 'videos':
+      case 'images':
+      case 'audio':
+        return <MediaLibraryPanel />;
+
       case 'text':
         return (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Text Presets</h3>
             <div className="flex flex-col gap-2">
               <Button variant="secondary" size="md" className="justify-start gap-2">
@@ -37,7 +44,7 @@ export function ContextualPanel() {
 
       case 'canvas':
         return (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Canvas Settings</h3>
             <div>
               <label className="text-xs font-medium text-[#9298A3] block mb-1.5">Aspect Ratio</label>
@@ -57,26 +64,9 @@ export function ContextualPanel() {
           </div>
         );
 
-      case 'audio':
-        return (
-          <div className="flex flex-col gap-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Audio Tracks</h3>
-            <EmptyState
-              title="No Audio Tracks"
-              description="Import audio files or voiceovers to add background music."
-              icon={<Music className="h-8 w-8 text-[#9298A3]" />}
-              action={
-                <Button size="sm" variant="secondary">
-                  <Plus className="h-3.5 w-3.5" /> Import Audio
-                </Button>
-              }
-            />
-          </div>
-        );
-
       case 'elements':
         return (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Shapes & Overlays</h3>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" size="sm" className="justify-start gap-2">
@@ -91,7 +81,7 @@ export function ContextualPanel() {
 
       case 'record':
         return (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Voiceover Recorder</h3>
             <EmptyState
               title="Record Voiceover"
@@ -106,23 +96,8 @@ export function ContextualPanel() {
           </div>
         );
 
-      case 'media':
       default:
-        return (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Media Library</h3>
-              <Button size="sm" variant="secondary">
-                <Plus className="h-3.5 w-3.5" /> Import
-              </Button>
-            </div>
-            <EmptyState
-              title="Your Media Library is Empty"
-              description="Drag and drop videos, images, or audio files here to start editing."
-              icon={<FolderPlus className="h-8 w-8 text-[#9298A3]" />}
-            />
-          </div>
-        );
+        return <MediaLibraryPanel />;
     }
   };
 
@@ -132,8 +107,6 @@ export function ContextualPanel() {
         return 'Text Layers';
       case 'canvas':
         return 'Canvas Settings';
-      case 'audio':
-        return 'Audio Tracks';
       case 'elements':
         return 'Shapes & Graphics';
       case 'record':
@@ -142,9 +115,11 @@ export function ContextualPanel() {
         return 'Video Assets';
       case 'images':
         return 'Image Assets';
+      case 'audio':
+        return 'Audio Tracks';
       case 'media':
       default:
-        return 'Media Assets';
+        return 'Media Library';
     }
   };
 

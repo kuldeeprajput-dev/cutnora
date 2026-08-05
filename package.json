@@ -20,6 +20,7 @@
     "@ffmpeg/util": "^0.12.2",
     "clsx": "^2.1.1",
     "dexie": "^4.0.11",
+    "dexie-react-hooks": "^4.4.0",
     "immer": "^10.1.1",
     "lucide-react": "^0.475.0",
     "nanoid": "^5.1.2",
