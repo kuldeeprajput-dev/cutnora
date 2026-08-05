@@ -60,6 +60,18 @@ export interface TextStyle {
   backgroundColor?: string;
   textAlign: 'left' | 'center' | 'right';
   fontWeight: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  lineHeight?: number;
+  letterSpacing?: number;
+  bgPadding?: number;
+  bgRadius?: number;
+  outlineColor?: string;
+  outlineWidth?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  maxWidth?: number;
 }
 
 export interface ElementStyle {
@@ -67,6 +79,23 @@ export interface ElementStyle {
   strokeColor?: string;
   strokeWidth?: number;
   borderRadius?: number;
+  shapeType?:
+    | 'rectangle'
+    | 'rounded-rect'
+    | 'circle'
+    | 'line'
+    | 'arrow'
+    | 'triangle'
+    | 'speech-bubble'
+    | 'progress-bar'
+    | 'divider';
+  lineStyle?: 'solid' | 'dashed' | 'dotted';
+  arrowHead?: 'none' | 'end' | 'both';
+  progress?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
 }
 
 export interface TimelineClip {
