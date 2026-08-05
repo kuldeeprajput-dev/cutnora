@@ -1,20 +1,41 @@
-import Link from 'next/link';
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useProjectStore } from '@/modules/projects';
+import { Spinner } from '@/shared/components/ui/Spinner';
 
 export default function NewProjectPage() {
+  const router = useRouter();
+  const { createProject } = useProjectStore();
+  const hasCreatedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasCreatedRef.current) return;
+    hasCreatedRef.current = true;
+
+    async function initializeNewProject() {
+      try {
+        const project = await createProject('Untitled video', {
+          width: 1920,
+          height: 1080,
+          aspectRatio: '16:9',
+          fps: 30,
+          backgroundColor: '#000000',
+        });
+        router.replace(`/studio/${project.id}`);
+      } catch (err) {
+        console.error('Failed to create project:', err);
+      }
+    }
+
+    initializeNewProject();
+  }, [createProject, router]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#121214] text-[#f4f4f5] px-6 text-center">
-      <h1 className="text-2xl font-bold">New Project Setup</h1>
-      <p className="mt-2 text-sm text-[#a1a1aa]">
-        Select resolution preset and project options.
-      </p>
-      <div className="mt-6 flex items-center gap-4">
-        <Link
-          href="/studio/demo-project"
-          className="rounded-lg bg-[#facc15] px-4 py-2.5 text-sm font-medium text-[#121214] transition-colors hover:bg-[#eab308]"
-        >
-          Open Editor Workspace
-        </Link>
-      </div>
-    </main>
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-[#101216] text-[#F4F5F7]">
+      <Spinner size="lg" label="Setting up new video project..." />
+      <p className="mt-4 text-sm text-[#9298A3]">Setting up workspace...</p>
+    </div>
   );
 }
