@@ -3,13 +3,11 @@
 import React from 'react';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { StudioPanel } from '@/shared/components/layout/StudioPanel';
-import { Button } from '@/shared/components/ui/Button';
-import { EmptyState } from '@/shared/components/ui/EmptyState';
 import { MediaLibraryPanel } from '@/modules/editor/features/media-library';
 import { InspectorPanel, CanvasSettingsPanel } from '@/modules/editor/features/inspector';
 import { TextPanel } from '@/modules/editor/features/text';
 import { ElementsPanel } from '@/modules/editor/features/elements';
-import { Mic } from 'lucide-react';
+import { RecordPanel } from '@/modules/editor/features/record/components/RecordPanel';
 
 export function ContextualPanel() {
   const { activeTool, selectedClipIds } = useEditorUIStore();
@@ -41,21 +39,7 @@ export function ContextualPanel() {
         );
 
       case 'record':
-        return (
-          <div className="flex flex-col gap-4 p-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#9298A3]">Voiceover Recorder</h3>
-            <EmptyState
-              title="Record Voiceover"
-              description="Click below to record narration directly into your project."
-              icon={<Mic className="h-8 w-8 text-[#FF5A36]" />}
-              action={
-                <Button size="sm" variant="primary">
-                  Start Recording
-                </Button>
-              }
-            />
-          </div>
-        );
+        return <RecordPanel />;
 
       default:
         return <MediaLibraryPanel />;

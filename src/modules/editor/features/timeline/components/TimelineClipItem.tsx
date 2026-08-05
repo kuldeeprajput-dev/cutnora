@@ -7,7 +7,9 @@ import { useProjectStore } from '@/modules/projects';
 import { db } from '@/modules/core/db/database';
 import { objectUrlManager } from '@/modules/core/db/object-url-manager';
 import { DropdownMenu, DropdownMenuItem } from '@/shared/components/ui/DropdownMenu';
-import { FileVideo, Image as ImageIcon, Music, Type, Shapes, AlertCircle, Scissors, Copy, Trash2 } from 'lucide-react';
+import { WaveformCanvas } from '@/modules/editor/features/audio/components/WaveformCanvas';
+import { detachAudioFromVideo } from '@/modules/editor/features/audio/utils/detachAudio';
+import { FileVideo, Image as ImageIcon, Music, Type, Shapes, AlertCircle, Scissors, Copy, Trash2, Volume2, VolumeX, Unlink } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 export interface TimelineClipItemProps {
@@ -19,8 +21,10 @@ export interface TimelineClipItemProps {
 
 export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineClipItemProps) {
   const { selectedClipIds, toggleClipSelection } = useEditorUIStore();
-  const { splitClip, duplicateClips, deleteClips } = useProjectStore();
+  const { splitClip, duplicateClips, deleteClips, updateClip } = useProjectStore();
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [waveformPeaks, setWaveformPeaks] = useState<number[] | null>(null);
+  const [assetDuration, setAssetDuration] = useState<number>(10);
   const [isMissingAsset, setIsMissingAsset] = useState(false);
 
   const isSelected = selectedClipIds.includes(clip.id);
@@ -36,6 +40,13 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         if (!asset) {
           if (isMounted) setIsMissingAsset(true);
           return;
+        }
+
+        if (isMounted) {
+          setAssetDuration(asset.duration || 10);
+          if (asset.waveformPeaks && asset.waveformPeaks.length > 0) {
+            setWaveformPeaks(asset.waveformPeaks);
+          }
         }
 
         if (asset.thumbnailBlobId) {
@@ -98,6 +109,8 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
     }
   };
 
+  const isAudioMuted = track.muted || clip.audio?.muted;
+
   return (
     <div
       id={`timeline-clip-${clip.id}`}
@@ -128,9 +141,22 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         />
       )}
 
-      {/* Clip Background Thumbnail / Waveform Pattern */}
+      {/* Clip Background Video Thumbnail */}
       {thumbUrl && clip.type === 'video' && (
         <div className="absolute inset-0 opacity-20 bg-repeat-x pointer-events-none" style={{ backgroundImage: `url(${thumbUrl})`, backgroundSize: 'contain' }} />
+      )}
+
+      {/* Waveform Canvas Layer for Audio & Video clips */}
+      {(clip.type === 'audio' || clip.type === 'video') && waveformPeaks && (
+        <div className="absolute inset-0 z-0 opacity-40 px-1 pt-3 pointer-events-none">
+          <WaveformCanvas
+            peaks={waveformPeaks}
+            sourceStart={clip.sourceStart}
+            sourceDuration={clip.sourceDuration}
+            totalAssetDuration={assetDuration}
+            isMuted={isAudioMuted}
+          />
+        </div>
       )}
 
       {/* Clip Content Label */}
@@ -139,6 +165,11 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         <span className="text-[11px] font-semibold truncate text-[#F4F5F7]">
           {clip.name}
         </span>
+        {isAudioMuted && (clip.type === 'audio' || clip.type === 'video') && (
+          <span title="Audio muted">
+            <VolumeX className="h-3 w-3 text-[#9298A3] shrink-0" />
+          </span>
+        )}
         {isMissingAsset && (
           <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#E45858] bg-[#E45858]/20 px-1 rounded" title="Missing asset file">
             <AlertCircle className="h-2.5 w-2.5" /> Missing
@@ -168,6 +199,26 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
         <DropdownMenuItem onClick={() => splitClip(clip.id, clip.timelineStart + clip.timelineDuration / 2)}>
           <Scissors className="h-3.5 w-3.5" /> Split clip
         </DropdownMenuItem>
+
+        {(clip.type === 'video' || clip.type === 'overlay') && (
+          <DropdownMenuItem onClick={() => detachAudioFromVideo(clip.id)}>
+            <Unlink className="h-3.5 w-3.5 text-[#FF5A36]" /> Detach audio
+          </DropdownMenuItem>
+        )}
+
+        {(clip.type === 'video' || clip.type === 'audio') && (
+          <DropdownMenuItem
+            onClick={() =>
+              updateClip(clip.id, {
+                audio: { ...clip.audio, volume: clip.audio?.volume ?? 1, fadeIn: 0, fadeOut: 0, muted: !clip.audio?.muted },
+              })
+            }
+          >
+            {clip.audio?.muted ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {clip.audio?.muted ? 'Unmute clip' : 'Mute clip'}
+          </DropdownMenuItem>
+        )}
+
         <DropdownMenuItem onClick={() => duplicateClips([clip.id])}>
           <Copy className="h-3.5 w-3.5" /> Duplicate
         </DropdownMenuItem>
