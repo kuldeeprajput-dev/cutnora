@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { db, type StoredBlob, type StoredThumbnail } from '@/modules/core/db/database';
 import { objectUrlManager } from '@/modules/core/db/object-url-manager';
 import type { MediaAsset } from '@/modules/projects/types';
+import { extractAudioPeaks } from '@/modules/editor/features/audio/utils/audio-peaks';
 
 export interface ImportResult {
   asset: MediaAsset;
@@ -50,6 +51,7 @@ export async function processAndStoreMediaFile(file: File, projectId: string): P
       height = metadata.height;
       duration = metadata.duration;
       thumbnailBlob = await generateVideoThumbnail(tempUrl, metadata.duration);
+      waveformPeaks = await extractAudioPeaks(file, 200);
     } else if (assetType === 'image') {
       const metadata = await extractImageMetadata(tempUrl);
       width = metadata.width;
@@ -59,7 +61,7 @@ export async function processAndStoreMediaFile(file: File, projectId: string): P
     } else if (assetType === 'audio') {
       const metadata = await extractAudioMetadata(tempUrl);
       duration = metadata.duration;
-      waveformPeaks = generateDummyWaveformPeaks(60);
+      waveformPeaks = await extractAudioPeaks(file, 200);
     }
 
     // Save main Blob to IndexedDB
@@ -281,10 +283,4 @@ function createFallbackThumbnailBlob(): Blob {
   return fallbackBlob;
 }
 
-function generateDummyWaveformPeaks(count: number): number[] {
-  const peaks: number[] = [];
-  for (let i = 0; i < count; i++) {
-    peaks.push(Math.round((0.2 + Math.random() * 0.8) * 100) / 100);
-  }
-  return peaks;
-}
+
