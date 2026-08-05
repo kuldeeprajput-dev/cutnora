@@ -7,6 +7,7 @@ import { ContextualPanel } from '../panels/ContextualPanel';
 import { PreviewStage } from '../stage/PreviewStage';
 import { TimelineShell } from '../timeline/TimelineShell';
 import { ResizableDivider } from '@/shared/components/layout/ResizableDivider';
+import { ExportModal } from '@/modules/editor/features/export';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { Monitor } from 'lucide-react';
 
@@ -79,6 +80,9 @@ export function StudioShell() {
 
         </div>
       </div>
+
+      {/* Global Export Modal */}
+      <ExportModal />
     </div>
   );
 }
