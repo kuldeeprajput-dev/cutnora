@@ -38,7 +38,7 @@ export function LandingHeader() {
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-3">
           <Link
-            href="/studio/new"
+            href="/studio"
             className="inline-flex h-9 items-center justify-center rounded-lg px-3.5 text-sm font-medium text-mkt-fg transition-colors hover:bg-mkt-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             Open Studio
@@ -103,7 +103,7 @@ export function LandingHeader() {
           </nav>
           <div className="mt-6 flex flex-col gap-3">
             <Link
-              href="/studio/new"
+              href="/studio"
               className="inline-flex h-10 items-center justify-center rounded-lg border border-mkt-border bg-mkt-surface text-sm font-medium text-mkt-fg"
             >
               Open Studio

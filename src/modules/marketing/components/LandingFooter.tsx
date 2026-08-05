@@ -24,7 +24,7 @@ export function LandingFooter() {
 
         {/* Product Links */}
         <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-mkt-fg">
-          <Link href="/studio/new" className="hover:underline">
+          <Link href="/studio" className="hover:underline">
             Open Studio
           </Link>
           <a href="#features" className="hover:underline">
