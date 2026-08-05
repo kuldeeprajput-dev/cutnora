@@ -36,6 +36,32 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
     }
   }, [x, y]);
 
+  const [adjustedPos, setAdjustedPos] = useState<{ x: number; y: number } | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (position && menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      let y = position.y;
+      let x = position.x;
+
+      // Prefer positioning above the click point when in lower half of screen / timeline area
+      if (y + rect.height > windowHeight - 20 || y > windowHeight * 0.35) {
+        y = Math.max(10, position.y - rect.height - 4);
+      } else {
+        y = Math.min(windowHeight - rect.height - 10, y);
+      }
+
+      if (x + rect.width > windowWidth - 10) {
+        x = Math.max(10, windowWidth - rect.width - 10);
+      }
+
+      setAdjustedPos({ x, y });
+    }
+  }, [position]);
+
   const handleContextMenu = (e: React.MouseEvent) => {
     if (children) {
       e.preventDefault();
@@ -45,6 +71,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
 
   const handleClose = React.useCallback(() => {
     setPosition(null);
+    setAdjustedPos(null);
     if (onClose) onClose();
   }, [onClose]);
 
@@ -68,6 +95,8 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
     };
   }, [position, handleClose]);
 
+  const renderPos = adjustedPos || position;
+
   return (
     <div onContextMenu={children ? handleContextMenu : undefined} className={cn(children && 'relative', className)}>
       {children}
@@ -75,8 +104,12 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
         <div
           ref={menuRef}
           role="menu"
-          style={{ top: `${position.y}px`, left: `${position.x}px` }}
-          className="fixed z-50 min-w-[170px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+          style={{
+            top: `${renderPos?.y ?? position.y}px`,
+            left: `${renderPos?.x ?? position.x}px`,
+            visibility: adjustedPos ? 'visible' : 'hidden',
+          }}
+          className="fixed z-[9999] min-w-[180px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
           onClick={handleClose}
         >
           {items ? (
