@@ -22,8 +22,18 @@ export function formatTimecode(seconds: number, fps = 30, includeFrames = false)
 }
 
 export function generateRulerTicks(duration: number, zoom: number, fps = 30): RulerTick[] {
+  if (duration <= 0) {
+    return [
+      {
+        time: 0,
+        label: formatTimecode(0, fps, false),
+        isMajor: true,
+      },
+    ];
+  }
+
   const ticks: RulerTick[] = [];
-  const maxDuration = Math.max(10, Math.ceil(duration));
+  const maxDuration = Math.ceil(duration);
 
   // Determine tick step in seconds based on zoom (px per second)
   let majorInterval = 5;

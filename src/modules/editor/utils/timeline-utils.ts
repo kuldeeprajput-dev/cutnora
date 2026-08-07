@@ -11,7 +11,7 @@ export function calculateProjectDuration(tracks: Track[]): number {
       }
     }
   }
-  return maxEnd > 0 ? Number(maxEnd.toFixed(2)) : 10;
+  return maxEnd > 0 ? Number(maxEnd.toFixed(2)) : 0;
 }
 
 export function preventClipOverlap(

@@ -31,12 +31,12 @@ export const usePlaybackStore = create<PlaybackState>()(
     isLooping: false,
     playbackRate: 1,
     fps: 30,
-    duration: 10,
+    duration: 0,
     wasTabHiddenPaused: false,
 
     setPlayhead: (time) =>
       set((state) => {
-        state.playhead = Math.max(0, Math.min(state.duration, time));
+        state.playhead = Math.max(0, Math.min(state.duration || 0, time));
       }),
 
     stepForward: () => {
@@ -133,9 +133,9 @@ export const usePlaybackStore = create<PlaybackState>()(
 
     setDuration: (duration) =>
       set((state) => {
-        state.duration = Math.max(1, duration);
-        if (state.playhead > state.duration) {
-          state.playhead = state.duration;
+        state.duration = Math.max(0, duration);
+        if (state.duration === 0 || state.playhead > state.duration) {
+          state.playhead = state.duration === 0 ? 0 : Math.min(state.playhead, state.duration);
         }
       }),
 

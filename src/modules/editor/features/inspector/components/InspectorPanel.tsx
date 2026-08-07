@@ -18,6 +18,8 @@ import { TextInspectorTab } from '@/modules/editor/features/text';
 import { ElementInspectorTab } from '@/modules/editor/features/elements';
 import { Trash2, Layers } from 'lucide-react';
 
+import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
+
 export function InspectorPanel() {
   const {
     selectedClipIds,
@@ -29,7 +31,7 @@ export function InspectorPanel() {
   } = useEditorUIStore();
   const { currentProject, deleteClips, updateClip } = useProjectStore();
 
-  // When selected clip changes, automatically switch to clip inspector mode
+  // When selected clip changes, automatically switch to clip inspector mode and seek playhead
   useEffect(() => {
     if (selectedClipIds.length > 0) {
       setInspectorMode('clip');
@@ -42,6 +44,13 @@ export function InspectorPanel() {
           setActiveInspectorTab('element');
         } else {
           setActiveInspectorTab('transform');
+        }
+
+        // Auto-seek playhead to selected clip start if playhead is out of bounds
+        const playhead = usePlaybackStore.getState().playhead;
+        const clipEnd = firstClip.timelineStart + firstClip.timelineDuration;
+        if (playhead < firstClip.timelineStart || playhead >= clipEnd) {
+          usePlaybackStore.getState().setPlayhead(firstClip.timelineStart);
         }
       }
     }

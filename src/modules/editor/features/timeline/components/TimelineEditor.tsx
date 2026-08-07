@@ -52,7 +52,7 @@ export function TimelineEditor() {
   );
 
   const tracks = currentProject?.tracks || [];
-  const projectDuration = currentProject?.settings.duration || 10;
+  const projectDuration = currentProject?.settings.duration ?? 0;
   const totalWidthPx = Math.max(100, projectDuration * zoom + 16 + 60);
   const playheadLeftPx = 16 + playhead * zoom;
 

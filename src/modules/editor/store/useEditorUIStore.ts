@@ -1,6 +1,25 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { EditorTool } from '../types';
+import { useProjectStore } from '@/modules/projects';
+import { usePlaybackStore } from './usePlaybackStore';
+
+function autoSeekToClipIfOutOfBounds(clipIds: string[]) {
+  if (clipIds.length === 0) return;
+  const project = useProjectStore.getState().currentProject;
+  if (!project) return;
+
+  const allClips = project.tracks.flatMap((t) => t.clips);
+  const targetClip = allClips.find((c) => c.id === clipIds[0]);
+
+  if (targetClip) {
+    const playhead = usePlaybackStore.getState().playhead;
+    const clipEnd = targetClip.timelineStart + targetClip.timelineDuration;
+    if (playhead < targetClip.timelineStart || playhead >= clipEnd) {
+      usePlaybackStore.getState().setPlayhead(targetClip.timelineStart);
+    }
+  }
+}
 
 interface EditorUIState {
   activeTool: EditorTool;
@@ -81,6 +100,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         if (ids.length > 0) {
           state.activeTool = 'canvas';
           state.inspectorMode = 'clip';
+          autoSeekToClipIfOutOfBounds(ids);
         }
       }),
 
@@ -98,6 +118,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         if (state.selectedClipIds.length > 0) {
           state.activeTool = 'canvas';
           state.inspectorMode = 'clip';
+          autoSeekToClipIfOutOfBounds(state.selectedClipIds);
         }
       }),
 

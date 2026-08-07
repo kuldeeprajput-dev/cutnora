@@ -23,7 +23,7 @@ class PlaybackClock {
       const newPlayhead = this.startPlayhead + elapsedSecs * store.playbackRate;
 
       const currentProject = useProjectStore.getState().currentProject;
-      let maxDuration = currentProject?.settings.duration || store.duration || 10;
+      let maxDuration = currentProject?.settings.duration ?? store.duration ?? 0;
       if (currentProject) {
         let maxClipEnd = 0;
         for (const track of currentProject.tracks) {
@@ -32,9 +32,7 @@ class PlaybackClock {
             if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
           }
         }
-        if (maxClipEnd > 0) {
-          maxDuration = maxClipEnd;
-        }
+        maxDuration = maxClipEnd;
       }
 
       if (newPlayhead >= maxDuration) {

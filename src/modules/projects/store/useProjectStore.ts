@@ -20,7 +20,11 @@ import { db } from "@/modules/core/db/database";
 
 function syncProjectDuration(project: Project) {
   const newDuration = calculateProjectDuration(project.tracks);
-  project.settings.duration = newDuration;
+  try {
+    project.settings.duration = newDuration;
+  } catch {
+    project.settings = { ...project.settings, duration: newDuration };
+  }
   usePlaybackStore.getState().setDuration(newDuration);
 }
 
@@ -98,6 +102,9 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.clear();
       set((state) => {
         state.currentProject = newProject;
+        if (state.currentProject) {
+          syncProjectDuration(state.currentProject);
+        }
       });
 
       return newProject;
@@ -116,6 +123,9 @@ export const useProjectStore = create<ProjectState>()(
           historyManager.clear();
           set((state) => {
             state.currentProject = project;
+            if (state.currentProject) {
+              syncProjectDuration(state.currentProject);
+            }
             state.isLoading = false;
           });
           return true;
@@ -272,9 +282,7 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = state.currentProject.tracks.filter(
             (t) => t.id !== trackId,
           );
-          state.currentProject.settings.duration = calculateProjectDuration(
-            state.currentProject.tracks,
-          );
+          syncProjectDuration(state.currentProject);
         }
       });
 

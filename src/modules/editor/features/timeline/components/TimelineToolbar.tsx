@@ -213,7 +213,7 @@ export function TimelineToolbar() {
           </IconButton>
 
           <span className="ml-2 font-mono text-[11px] font-semibold text-studio-fg whitespace-nowrap">
-            {formatTimecode(playhead, fps, true)} / {formatTimecode(duration, fps, false)}
+            {formatTimecode(playhead, fps, false)} / {formatTimecode(duration, fps, false)}
           </span>
 
           <IconButton
