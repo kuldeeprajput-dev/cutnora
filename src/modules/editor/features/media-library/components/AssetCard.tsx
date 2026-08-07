@@ -190,8 +190,12 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
                 onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameSubmit();
+                  if (e.key === 'Escape') setIsRenaming(false);
+                }}
                 autoFocus
-                className="h-6 rounded bg-studio-bg border border-brand px-1 text-xs text-studio-fg"
+                className="h-6 rounded bg-studio-bg border border-brand px-1.5 text-xs text-studio-fg focus:outline-none"
               />
             ) : (
               <p className="text-xs font-semibold text-studio-fg truncate">{asset.name}</p>
@@ -203,18 +207,29 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           <IconButton label="Add to timeline" size="sm" variant="ghost" onClick={handleAddToTimeline}>
             <Plus className="h-3.5 w-3.5" />
           </IconButton>
-          <DropdownMenu trigger={<IconButton label="More options" size="sm" variant="ghost"><MoreVertical className="h-3.5 w-3.5" /></IconButton>} align="right">
-            <DropdownMenuItem onClick={handleAddToTimeline}>
+          <DropdownMenu
+            trigger={
+              <button
+                type="button"
+                aria-label="Asset options"
+                className="p-1 rounded-md text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised transition-colors cursor-pointer"
+              >
+                <MoreVertical className="h-3.5 w-3.5" />
+              </button>
+            }
+            align="right"
+          >
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAddToTimeline(); }}>
               <Plus className="h-3.5 w-3.5" /> Add to timeline
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setIsRenaming(true); }}>
               <Edit2 className="h-3.5 w-3.5" /> Rename
             </DropdownMenuItem>
-            <DropdownMenuItem destructive onClick={handleDeleteAsset}>
+            <DropdownMenuItem destructive onClick={(e) => { e.stopPropagation(); handleDeleteAsset(); }}>
               <Trash2 className="h-3.5 w-3.5" /> Delete
             </DropdownMenuItem>
           </DropdownMenu>
@@ -226,7 +241,7 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
   return (
     <div
       onDoubleClick={handleAddToTimeline}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-all hover:border-brand select-none cursor-pointer"
+      className="group relative flex flex-col rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-all hover:border-brand select-none cursor-pointer"
     >
       {/* Thumbnail View Stage */}
       <div className="relative aspect-video w-full rounded-lg bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
@@ -259,8 +274,12 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={handleRenameSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRenameSubmit();
+                if (e.key === 'Escape') setIsRenaming(false);
+              }}
               autoFocus
-              className="h-5 w-full rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg"
+              className="h-5 w-full rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg focus:outline-none"
             />
           ) : (
             <p className="text-[11px] font-semibold text-studio-fg truncate">{asset.name}</p>
@@ -271,24 +290,30 @@ export function AssetCard({ asset, viewMode = 'grid' }: AssetCardProps) {
           </p>
         </div>
 
-        <DropdownMenu
-          trigger={
-            <button type="button" aria-label="Asset options" className="text-studio-muted hover:text-studio-fg p-0.5 rounded">
-              <MoreVertical className="h-3.5 w-3.5" />
-            </button>
-          }
-          align="right"
-        >
-          <DropdownMenuItem onClick={handleAddToTimeline}>
-            <Plus className="h-3.5 w-3.5" /> Add to timeline
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setIsRenaming(true)}>
-            <Edit2 className="h-3.5 w-3.5" /> Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem destructive onClick={handleDeleteAsset}>
-            <Trash2 className="h-3.5 w-3.5" /> Delete
-          </DropdownMenuItem>
-        </DropdownMenu>
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu
+            trigger={
+              <button
+                type="button"
+                aria-label="Asset options"
+                className="p-1 rounded-md text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised transition-colors cursor-pointer"
+              >
+                <MoreVertical className="h-3.5 w-3.5" />
+              </button>
+            }
+            align="right"
+          >
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAddToTimeline(); }}>
+              <Plus className="h-3.5 w-3.5" /> Add to timeline
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setIsRenaming(true); }}>
+              <Edit2 className="h-3.5 w-3.5" /> Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem destructive onClick={(e) => { e.stopPropagation(); handleDeleteAsset(); }}>
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

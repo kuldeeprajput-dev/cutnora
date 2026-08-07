@@ -235,7 +235,7 @@ export function MediaLibraryPanel() {
               key={cat}
               type="button"
               onClick={() => setFilter(cat)}
-              className={`flex-1 min-w-max rounded-md px-2.5 py-1 text-center text-[11px] font-semibold capitalize transition-all ${
+              className={`flex-1 min-w-max rounded-md px-2.5 py-1 text-center text-[11px] font-semibold capitalize transition-all cursor-pointer ${
                 filter === cat
                   ? "bg-brand text-white shadow-sm"
                   : "bg-studio-panel text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg"
@@ -256,7 +256,7 @@ export function MediaLibraryPanel() {
               trigger={
                 <button
                   type="button"
-                  className="flex h-7 items-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel px-2.5 text-[11px] font-semibold text-studio-fg hover:border-brand/60 hover:bg-studio-panel-raised transition-all select-none"
+                  className="group flex h-7 items-center gap-1.5 rounded-full border border-studio-border bg-studio-panel px-2.5 text-[11px] font-semibold text-studio-fg shadow-xs hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand active:scale-[0.97] transition-all select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
                 >
                   <span>
                     {sort === "newest"
