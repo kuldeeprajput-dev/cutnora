@@ -19,7 +19,7 @@ export function StudioPanel({
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden border border-studio-border text-studio-fg',
+        'flex flex-col overflow-hidden border border-studio-border text-studio-fg min-w-[280px]',
         raised ? 'bg-studio-panel-raised' : 'bg-studio-panel',
         className
       )}
@@ -33,7 +33,7 @@ export function StudioPanel({
           {actions && <div className="flex items-center gap-1">{actions}</div>}
         </div>
       )}
-      <div className="flex-1 overflow-auto p-3">{children}</div>
+      <div className="flex-1 overflow-hidden">{children}</div>
     </div>
   );
 }

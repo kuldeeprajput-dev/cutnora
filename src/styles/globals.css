@@ -144,6 +144,11 @@
     font: inherit;
   }
 
+  select option {
+    background-color: var(--studio-panel);
+    color: var(--studio-fg);
+  }
+
   button,
   [role="button"] {
     -webkit-tap-highlight-color: transparent;
