@@ -45,6 +45,8 @@
 @layer base {
   :root {
     color-scheme: light;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.22);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
     --brand: #c45100;
     --brand-hover: #a94400;
     --brand-soft: #f4e5d7;
@@ -73,6 +75,50 @@
     --destructive: #c43b30;
     --destructive-hover: #a92f27;
     --overlay: #777b82;
+  }
+
+  /* Firefox Custom Thin Scrollbar */
+  @supports (-moz-appearance: none) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+  }
+
+  /* WebKit Custom Thin Scrollbar (Chrome, Safari, Edge, Electron) */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  /* Permanently remove all scrollbar arrow buttons */
+  ::-webkit-scrollbar-button,
+  ::-webkit-scrollbar-button:single-button,
+  ::-webkit-scrollbar-button:vertical,
+  ::-webkit-scrollbar-button:horizontal,
+  ::-webkit-scrollbar-button:start,
+  ::-webkit-scrollbar-button:end {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent !important;
   }
 
   html {
@@ -122,8 +168,7 @@
   }
 
   .studio-scrollbar {
-    scrollbar-color: var(--studio-border) transparent;
-    scrollbar-width: thin;
+    /* Uses global custom webkit / firefox thin scrollbar */
   }
 
   .text-balance {

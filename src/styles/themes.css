@@ -1,6 +1,9 @@
 html[data-theme="dark"] {
   color-scheme: dark;
 
+  --scrollbar-thumb: rgba(255, 255, 255, 0.22);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+
   --color-brand: #cc5600;
   --color-brand-hover: #e06100;
   --color-brand-soft: #25160d;
