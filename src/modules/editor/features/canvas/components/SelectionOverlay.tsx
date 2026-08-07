@@ -34,13 +34,13 @@ export function SelectionOverlay({ clip, onStartTransform, isDragging = false }:
         <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-brand shadow-md z-40" />
       )}
 
-      {/* Rotation Handle */}
+      {/* Rotation Handle - Positioned below top selection line */}
       <div
         onPointerDown={(e) => onStartTransform(clip, 'rotate', e)}
-        className="pointer-events-auto absolute -top-7 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-studio-border bg-studio-topbar text-selection hover:scale-110 cursor-grab active:cursor-grabbing transition-transform z-40 shadow-sm"
+        className="pointer-events-auto absolute top-3 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-selection/40 bg-studio-topbar/90 backdrop-blur-sm text-selection hover:scale-110 cursor-grab active:cursor-grabbing transition-transform z-40 shadow-md"
         title="Click and drag to rotate"
       >
-        <RotateCw className="h-3 w-3" />
+        <RotateCw className="h-3.5 w-3.5" />
       </div>
 
       {/* 8 Resize Handles */}
