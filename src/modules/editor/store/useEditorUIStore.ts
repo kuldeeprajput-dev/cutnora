@@ -4,6 +4,8 @@ import type { EditorTool } from '../types';
 
 interface EditorUIState {
   activeTool: EditorTool;
+  activeInspectorTab: string;
+  inspectorMode: 'clip' | 'canvas';
   selectedClipIds: string[];
   activeTrackId: string | null;
   zoom: number; // Pixels per second
@@ -19,6 +21,8 @@ interface EditorUIState {
   isFullscreen: boolean;
 
   setActiveTool: (tool: EditorTool) => void;
+  setActiveInspectorTab: (tab: string) => void;
+  setInspectorMode: (mode: 'clip' | 'canvas') => void;
   setSelectedClipIds: (ids: string[]) => void;
   toggleClipSelection: (id: string, multiSelect?: boolean) => void;
   clearSelection: () => void;
@@ -40,6 +44,8 @@ interface EditorUIState {
 export const useEditorUIStore = create<EditorUIState>()(
   immer((set) => ({
     activeTool: 'media',
+    activeInspectorTab: 'transform',
+    inspectorMode: 'clip',
     selectedClipIds: [],
     activeTrackId: null,
     zoom: 50, // 50px per second default timeline zoom
@@ -59,11 +65,22 @@ export const useEditorUIStore = create<EditorUIState>()(
         state.activeTool = tool;
       }),
 
+    setActiveInspectorTab: (tab) =>
+      set((state) => {
+        state.activeInspectorTab = tab;
+      }),
+
+    setInspectorMode: (mode) =>
+      set((state) => {
+        state.inspectorMode = mode;
+      }),
+
     setSelectedClipIds: (ids) =>
       set((state) => {
         state.selectedClipIds = ids;
         if (ids.length > 0) {
           state.activeTool = 'canvas';
+          state.inspectorMode = 'clip';
         }
       }),
 
@@ -80,6 +97,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         }
         if (state.selectedClipIds.length > 0) {
           state.activeTool = 'canvas';
+          state.inspectorMode = 'clip';
         }
       }),
 

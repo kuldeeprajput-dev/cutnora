@@ -208,7 +208,7 @@ export function CanvasStage() {
           className="relative shadow-2xl transition-transform duration-75 rounded"
         >
           {/* Active Visual Layers */}
-          <CanvasRenderer stageScale={stageScale} onGuidesChange={handleGuidesChange} />
+          <CanvasRenderer stageScale={stageScale} isFullscreenActive={isFullscreenActive} onGuidesChange={handleGuidesChange} />
 
           {/* Snapping Guide Lines (hidden in Fullscreen mode) */}
           {!isFullscreenActive &&

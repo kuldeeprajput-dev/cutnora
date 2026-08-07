@@ -19,17 +19,33 @@ import { ElementInspectorTab } from '@/modules/editor/features/elements';
 import { Trash2, Layers } from 'lucide-react';
 
 export function InspectorPanel() {
-  const { selectedClipIds, clearSelection } = useEditorUIStore();
+  const {
+    selectedClipIds,
+    clearSelection,
+    activeInspectorTab,
+    setActiveInspectorTab,
+    inspectorMode,
+    setInspectorMode,
+  } = useEditorUIStore();
   const { currentProject, deleteClips, updateClip } = useProjectStore();
-  const [activeTab, setActiveTab] = useState('transform');
-  const [inspectorMode, setInspectorMode] = useState<'clip' | 'canvas'>('clip');
 
   // When selected clip changes, automatically switch to clip inspector mode
   useEffect(() => {
     if (selectedClipIds.length > 0) {
       setInspectorMode('clip');
+      const clips = currentProject?.tracks.flatMap((t) => t.clips) || [];
+      const firstClip = clips.find((c) => selectedClipIds.includes(c.id));
+      if (firstClip) {
+        if (firstClip.type === 'text') {
+          setActiveInspectorTab('text');
+        } else if (firstClip.type === 'overlay') {
+          setActiveInspectorTab('element');
+        } else {
+          setActiveInspectorTab('transform');
+        }
+      }
     }
-  }, [selectedClipIds]);
+  }, [selectedClipIds, currentProject, setInspectorMode, setActiveInspectorTab]);
 
   if (!currentProject) return null;
 
@@ -150,7 +166,7 @@ export function InspectorPanel() {
       className="h-full w-full"
     >
       <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
-        <Tabs defaultValue={isText ? 'text' : isElement ? 'element' : 'transform'} value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue={isText ? 'text' : isElement ? 'element' : 'transform'} value={activeInspectorTab} onValueChange={setActiveInspectorTab}>
           <TabList className="flex items-center gap-1 overflow-x-auto studio-scrollbar mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border shrink-0">
             {isText && <TabTrigger value="text" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Text</TabTrigger>}
             {isElement && <TabTrigger value="element" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Shape</TabTrigger>}

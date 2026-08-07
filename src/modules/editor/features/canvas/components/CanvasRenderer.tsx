@@ -19,13 +19,22 @@ import { Scissors, Copy, Trash2, ArrowUp, ArrowDown, Lock, EyeOff } from 'lucide
 
 export interface CanvasRendererProps {
   stageScale: number;
+  isFullscreenActive?: boolean;
   onGuidesChange?: (guides: GuideLine[]) => void;
 }
 
-export function CanvasRenderer({ stageScale, onGuidesChange }: CanvasRendererProps) {
+export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuidesChange }: CanvasRendererProps) {
   const { currentProject, duplicateClips, deleteClips, reorderTracks } = useProjectStore();
   const { playhead } = usePlaybackStore();
-  const { selectedClipIds, toggleClipSelection, setSelectedClipIds, activeTool } = useEditorUIStore();
+  const {
+    selectedClipIds,
+    toggleClipSelection,
+    setSelectedClipIds,
+    activeTool,
+    activeInspectorTab,
+    inspectorMode,
+    isFullscreen,
+  } = useEditorUIStore();
   const { startTransform, isDragging, activeGuides } = useTransformHandler(stageScale);
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; clip: TimelineClip; track: Track } | null>(null);
 
@@ -175,6 +184,22 @@ export function CanvasRenderer({ stageScale, onGuidesChange }: CanvasRendererPro
           cursor: track.locked ? 'default' : 'move',
         };
 
+        const isFull = isFullscreenActive || isFullscreen;
+        const isTransformTabActive =
+          activeInspectorTab === 'transform' ||
+          activeInspectorTab === 'text' ||
+          activeInspectorTab === 'element';
+        const isCanvasToolActive = activeTool === 'canvas' || activeTool === 'select';
+
+        const canShowCrop = isSelected && !track.locked && !isFull && activeTool === 'crop';
+        const canShowSelection =
+          isSelected &&
+          !track.locked &&
+          !isFull &&
+          inspectorMode === 'clip' &&
+          isCanvasToolActive &&
+          isTransformTabActive;
+
         return (
           <div
             key={clip.id}
@@ -187,20 +212,20 @@ export function CanvasRenderer({ stageScale, onGuidesChange }: CanvasRendererPro
             {renderClipContent(clip)}
 
             {/* Selection & Transform Overlays */}
-            {isSelected && !track.locked && (
-              activeTool === 'crop' ? (
-                <CropOverlay clip={clip} stageScale={stageScale} />
-              ) : (
-                <SelectionOverlay
-                  clip={clip}
-                  stageScale={stageScale}
-                  onStartTransform={(c, mode, e) => {
-                    if (mode === 'translate') handleClipPointerDown(clip, track, e);
-                    else startTransform(c, mode as TransformMode, e);
-                  }}
-                  isDragging={isDragging}
-                />
-              )
+            {canShowCrop && (
+              <CropOverlay clip={clip} stageScale={stageScale} />
+            )}
+
+            {canShowSelection && (
+              <SelectionOverlay
+                clip={clip}
+                stageScale={stageScale}
+                onStartTransform={(c, mode, e) => {
+                  if (mode === 'translate') handleClipPointerDown(clip, track, e);
+                  else startTransform(c, mode as TransformMode, e);
+                }}
+                isDragging={isDragging}
+              />
             )}
           </div>
         );

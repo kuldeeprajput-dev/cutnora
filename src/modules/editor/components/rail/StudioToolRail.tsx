@@ -34,7 +34,7 @@ const railItems: RailItem[] = [
 ];
 
 export function StudioToolRail() {
-  const { activeTool, setActiveTool } = useEditorUIStore();
+  const { activeTool, setActiveTool, clearSelection } = useEditorUIStore();
 
   return (
     <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-2 border-r border-studio-border bg-studio-topbar py-3 text-studio-muted select-none">
@@ -47,7 +47,10 @@ export function StudioToolRail() {
             <button
               type="button"
               aria-label={item.label}
-              onClick={() => setActiveTool(item.id as EditorTool)}
+              onClick={() => {
+                setActiveTool(item.id as EditorTool);
+                clearSelection();
+              }}
               className={cn(
                 'flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 focus-visible:ring-offset-studio-topbar',
