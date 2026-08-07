@@ -10,10 +10,9 @@ import { ElementsPanel } from '@/modules/editor/features/elements';
 import { RecordPanel } from '@/modules/editor/features/record/components/RecordPanel';
 
 export function ContextualPanel() {
-  const { activeTool, selectedClipIds } = useEditorUIStore();
+  const { activeTool } = useEditorUIStore();
 
-  // If clips are selected, priority goes to the Inspector Panel
-  if (selectedClipIds.length > 0) {
+  if (activeTool === 'canvas' || activeTool === 'crop' || activeTool === 'select') {
     return <InspectorPanel />;
   }
 
@@ -31,13 +30,6 @@ export function ContextualPanel() {
       case 'elements':
         return <ElementsPanel />;
 
-      case 'canvas':
-        return (
-          <div className="p-4">
-            <CanvasSettingsPanel />
-          </div>
-        );
-
       case 'record':
         return <RecordPanel />;
 
@@ -52,8 +44,6 @@ export function ContextualPanel() {
         return 'Text Layers';
       case 'elements':
         return 'Shapes & Graphics';
-      case 'canvas':
-        return 'Canvas Settings';
       case 'record':
         return 'Recorder';
       case 'videos':

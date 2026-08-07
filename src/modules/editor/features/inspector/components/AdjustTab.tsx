@@ -174,7 +174,12 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleResetAll} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleResetAll}
+        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+      >
         <RotateCcw className="h-3.5 w-3.5" /> Reset All Adjustments
       </Button>
     </div>

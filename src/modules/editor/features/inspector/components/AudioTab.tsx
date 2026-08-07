@@ -111,7 +111,12 @@ export function AudioTab({ clip }: AudioTabProps) {
       )}
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleReset}
+        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+      >
         <RotateCcw className="h-3.5 w-3.5" /> Reset Audio Controls
       </Button>
     </div>

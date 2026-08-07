@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import type { TimelineClip } from '@/modules/editor/types';
+import type { TimelineClip, CropSettings } from '@/modules/editor/types';
 import { useProjectStore } from '@/modules/projects';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { Button } from '@/shared/components/ui/Button';
@@ -15,7 +15,7 @@ export interface TransformTabProps {
 
 export function TransformTab({ clip }: TransformTabProps) {
   const { updateClip, currentProject } = useProjectStore();
-  const { setActiveTool } = useEditorUIStore();
+  const { activeTool, setActiveTool } = useEditorUIStore();
 
   const [x, setX] = useState(clip.transform.x);
   const [y, setY] = useState(clip.transform.y);
@@ -24,6 +24,10 @@ export function TransformTab({ clip }: TransformTabProps) {
   const [rotation, setRotation] = useState(clip.transform.rotation);
   const [opacity, setOpacity] = useState(clip.transform.opacity);
   const [isAspectLocked, setIsAspectLocked] = useState(true);
+
+  const isCropping = activeTool === 'crop';
+  const crop: CropSettings = clip.transform.crop || { top: 0, right: 0, bottom: 0, left: 0 };
+  const hasActiveCrop = crop.top > 0 || crop.right > 0 || crop.bottom > 0 || crop.left > 0;
 
   useEffect(() => {
     setX(clip.transform.x);
@@ -67,6 +71,23 @@ export function TransformTab({ clip }: TransformTabProps) {
     });
   };
 
+  const handleToggleCrop = () => {
+    setActiveTool(isCropping ? 'canvas' : 'crop');
+  };
+
+  const handleCropChange = (side: keyof CropSettings, value: number) => {
+    const newCrop = {
+      ...crop,
+      [side]: Math.max(0, Math.min(80, value)),
+    };
+    commitTransform({ crop: newCrop });
+  };
+
+  const handleResetCrop = () => {
+    commitTransform({ crop: { top: 0, right: 0, bottom: 0, left: 0 } });
+    if (isCropping) setActiveTool('canvas');
+  };
+
   const handleFlipH = () => {
     commitTransform({ scaleX: clip.transform.scaleX === -1 ? 1 : -1 });
   };
@@ -78,17 +99,37 @@ export function TransformTab({ clip }: TransformTabProps) {
   const handleReset = () => {
     const projW = currentProject?.settings.width || 1920;
     const projH = currentProject?.settings.height || 1080;
-    commitTransform({
-      x: 0,
-      y: 0,
-      width: projW,
-      height: projH,
-      scaleX: 1,
-      scaleY: 1,
-      rotation: 0,
-      opacity: 1,
-      fitMode: 'contain',
+    updateClip(clip.id, {
+      transform: {
+        x: 0,
+        y: 0,
+        width: projW,
+        height: projH,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        opacity: 1,
+        crop: { top: 0, right: 0, bottom: 0, left: 0 },
+        fitMode: 'contain',
+      },
+      adjustments: {
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+        blur: 0,
+        grayscale: 0,
+        sepia: 0,
+      },
+      audio: {
+        volume: 1,
+        muted: false,
+        fadeIn: 0,
+        fadeOut: 0,
+      },
+      speed: 1,
     });
+
+    if (isCropping) setActiveTool('canvas');
   };
 
   // Keyboard arrow key increment helper
@@ -109,27 +150,142 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
+    <div className="flex flex-col gap-4 text-studio-fg select-none">
       {/* Quick Layout Actions (Fit, Fill, Crop, Flips) */}
       <div className="grid grid-cols-3 gap-2">
-        <Button size="sm" variant="secondary" onClick={handleFit} className="gap-1 text-xs">
+        <button
+          type="button"
+          onClick={handleFit}
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+            clip.transform.fitMode === 'contain'
+              ? 'bg-brand text-white font-bold shadow-sm'
+              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+          }`}
+        >
           <Maximize2 className="h-3 w-3" /> Fit
-        </Button>
-        <Button size="sm" variant="secondary" onClick={handleFill} className="gap-1 text-xs">
+        </button>
+        <button
+          type="button"
+          onClick={handleFill}
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+            clip.transform.fitMode === 'cover'
+              ? 'bg-brand text-white font-bold shadow-sm'
+              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+          }`}
+        >
           Fill
-        </Button>
-        <Button size="sm" variant="secondary" onClick={() => setActiveTool('crop')} className="gap-1 text-xs">
-          <Crop className="h-3 w-3" /> Crop
-        </Button>
+        </button>
+        <button
+          type="button"
+          onClick={handleToggleCrop}
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+            isCropping || hasActiveCrop
+              ? 'bg-brand text-white font-bold shadow-sm'
+              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+          }`}
+        >
+          <Crop className="h-3 w-3" /> {isCropping ? 'Cropping' : 'Crop'}
+        </button>
       </div>
 
+      {/* Crop Controls Section (Visible when cropping or crop exists) */}
+      {(isCropping || hasActiveCrop) && (
+        <div className="rounded-xl border border-brand/40 bg-brand/5 p-3 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-brand flex items-center gap-1.5">
+              <Crop className="h-3.5 w-3.5" /> Clip Crop Offsets (%)
+            </span>
+            {hasActiveCrop && (
+              <button
+                type="button"
+                onClick={handleResetCrop}
+                className="text-[10px] text-studio-muted hover:text-brand underline cursor-pointer"
+              >
+                Reset Crop
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div>
+              <div className="flex justify-between mb-0.5 text-studio-muted">
+                <span>Top</span>
+                <span className="font-mono">{crop.top}%</span>
+              </div>
+              <Slider
+                value={crop.top}
+                min={0}
+                max={50}
+                step={1}
+                onValueChange={(val) => handleCropChange('top', val)}
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-0.5 text-studio-muted">
+                <span>Bottom</span>
+                <span className="font-mono">{crop.bottom}%</span>
+              </div>
+              <Slider
+                value={crop.bottom}
+                min={0}
+                max={50}
+                step={1}
+                onValueChange={(val) => handleCropChange('bottom', val)}
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-0.5 text-studio-muted">
+                <span>Left</span>
+                <span className="font-mono">{crop.left}%</span>
+              </div>
+              <Slider
+                value={crop.left}
+                min={0}
+                max={50}
+                step={1}
+                onValueChange={(val) => handleCropChange('left', val)}
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-0.5 text-studio-muted">
+                <span>Right</span>
+                <span className="font-mono">{crop.right}%</span>
+              </div>
+              <Slider
+                value={crop.right}
+                min={0}
+                max={50}
+                step={1}
+                onValueChange={(val) => handleCropChange('right', val)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2">
-        <Button size="sm" variant="secondary" onClick={handleFlipH} className="gap-1 text-xs">
+        <button
+          type="button"
+          onClick={handleFlipH}
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+            clip.transform.scaleX === -1
+              ? 'bg-brand text-white font-bold shadow-sm'
+              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+          }`}
+        >
           <FlipHorizontal className="h-3 w-3" /> Flip H
-        </Button>
-        <Button size="sm" variant="secondary" onClick={handleFlipV} className="gap-1 text-xs">
+        </button>
+        <button
+          type="button"
+          onClick={handleFlipV}
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+            clip.transform.scaleY === -1
+              ? 'bg-brand text-white font-bold shadow-sm'
+              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+          }`}
+        >
           <FlipVertical className="h-3 w-3" /> Flip V
-        </Button>
+        </button>
       </div>
 
       <div className="h-px bg-studio-border" />
@@ -165,7 +321,7 @@ export function TransformTab({ clip }: TransformTabProps) {
             <button
               type="button"
               onClick={() => setIsAspectLocked(!isAspectLocked)}
-              className="text-studio-muted hover:text-studio-fg"
+              className="text-studio-muted hover:text-studio-fg cursor-pointer"
               title={isAspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
             >
               {isAspectLocked ? <Lock className="h-3 w-3 text-brand" /> : <Unlock className="h-3 w-3" />}
@@ -248,8 +404,13 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Reset Action */}
-      <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive">
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Transform
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleReset}
+        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Reset Transform & Properties
       </Button>
     </div>
   );

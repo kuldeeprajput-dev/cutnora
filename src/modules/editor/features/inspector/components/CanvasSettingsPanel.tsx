@@ -1,24 +1,18 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 import { useProjectStore } from '@/modules/projects';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { Select } from '@/shared/components/ui/Select';
 import { Slider } from '@/shared/components/ui/Slider';
-import { Dialog } from '@/shared/components/ui/Dialog';
-import { Volume2, AlertTriangle } from 'lucide-react';
+import { Volume2, RotateCcw } from 'lucide-react';
 import type { AspectRatio } from '@/modules/projects/types';
 
 export function CanvasSettingsPanel() {
   const { currentProject, updateProjectSettings } = useProjectStore();
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [pendingResolution, setPendingResolution] = useState<{ width: number; height: number } | null>(null);
 
   if (!currentProject) return null;
 
   const settings = currentProject.settings;
-  const hasClips = currentProject.tracks.some((t) => t.clips.length > 0);
 
   const handleRatioChange = (ratio: AspectRatio) => {
     let w = 1920;
@@ -34,41 +28,43 @@ export function CanvasSettingsPanel() {
       h = 1350;
     }
 
-    if (hasClips) {
-      setPendingResolution({ width: w, height: h });
-      setIsConfirmOpen(true);
-    } else {
-      updateProjectSettings({ width: w, height: h, aspectRatio: ratio });
-    }
+    updateProjectSettings({ width: w, height: h, aspectRatio: ratio });
   };
 
-  const confirmResolutionChange = () => {
-    if (pendingResolution) {
-      updateProjectSettings({
-        width: pendingResolution.width,
-        height: pendingResolution.height,
-      });
-      setPendingResolution(null);
-    }
-    setIsConfirmOpen(false);
+  const handleResetCanvasSettings = () => {
+    updateProjectSettings({
+      width: 1920,
+      height: 1080,
+      aspectRatio: '16:9',
+      fps: 30,
+      backgroundColor: '#000000',
+      masterVolume: 1.0,
+    });
   };
 
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
+    <div className="flex flex-col gap-4 text-studio-fg select-none">
       {/* Aspect Ratio Presets */}
       <div>
         <label className="text-xs font-medium text-studio-muted block mb-2">Aspect Ratio Presets</label>
         <div className="grid grid-cols-2 gap-2">
-          {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
-            <Button
-              key={ratio}
-              size="sm"
-              variant={settings.aspectRatio === ratio ? 'selection' : 'secondary'}
-              onClick={() => handleRatioChange(ratio)}
-            >
-              {ratio}
-            </Button>
-          ))}
+          {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => {
+            const isActive = settings.aspectRatio === ratio;
+            return (
+              <button
+                key={ratio}
+                type="button"
+                onClick={() => handleRatioChange(ratio)}
+                className={`flex h-9 items-center justify-center rounded-lg text-xs transition-all select-none cursor-pointer ${
+                  isActive
+                    ? 'bg-brand text-white font-bold shadow-sm'
+                    : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+                }`}
+              >
+                {ratio}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -103,7 +99,7 @@ export function CanvasSettingsPanel() {
         <Select
           value={settings.fps}
           onChange={(e) => updateProjectSettings({ fps: parseInt(e.target.value, 10) || 30 })}
-          className="h-8 text-xs border-studio-border"
+          className="h-8 text-xs border-studio-border cursor-pointer"
         >
           <option value="24">24 FPS (Cinematic)</option>
           <option value="30">30 FPS (Standard Video)</option>
@@ -144,23 +140,18 @@ export function CanvasSettingsPanel() {
         />
       </div>
 
-      {/* Confirmation Dialog on Resolution Resize */}
-      <Dialog isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} title="Change Project Dimensions?">
-        <div className="flex items-start gap-3 p-4">
-          <AlertTriangle className="h-6 w-6 text-selection shrink-0" />
-          <div className="text-xs text-studio-muted">
-            Changing resolution will scale the project canvas dimensions. Existing clips on the timeline may require position adjustments.
-          </div>
-        </div>
-        <div className="flex items-center justify-end gap-2 p-4 border-t border-studio-border">
-          <Button size="sm" variant="ghost" onClick={() => setIsConfirmOpen(false)}>
-            Cancel
-          </Button>
-          <Button size="sm" variant="primary" onClick={confirmResolutionChange}>
-            Confirm Resize
-          </Button>
-        </div>
-      </Dialog>
+      <div className="h-px bg-studio-border mt-1" />
+
+      {/* Reset Canvas Settings Action */}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleResetCanvasSettings}
+        className="w-full h-8 gap-1.5 text-xs text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised cursor-pointer"
+      >
+        <RotateCcw className="h-3.5 w-3.5" />
+        <span>Reset Canvas Settings</span>
+      </Button>
     </div>
   );
 }

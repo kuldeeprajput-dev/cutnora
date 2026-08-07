@@ -62,6 +62,9 @@ export const useEditorUIStore = create<EditorUIState>()(
     setSelectedClipIds: (ids) =>
       set((state) => {
         state.selectedClipIds = ids;
+        if (ids.length > 0) {
+          state.activeTool = 'canvas';
+        }
       }),
 
     toggleClipSelection: (id, multiSelect = false) =>
@@ -74,6 +77,9 @@ export const useEditorUIStore = create<EditorUIState>()(
           }
         } else {
           state.selectedClipIds = [id];
+        }
+        if (state.selectedClipIds.length > 0) {
+          state.activeTool = 'canvas';
         }
       }),
 

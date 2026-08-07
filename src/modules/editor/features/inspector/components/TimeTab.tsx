@@ -6,7 +6,7 @@ import { useProjectStore } from '@/modules/projects';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
-import { Move, Scissors } from 'lucide-react';
+import { Move, Scissors, RotateCcw } from 'lucide-react';
 
 export interface TimeTabProps {
   clip: TimelineClip;
@@ -35,19 +35,23 @@ export function TimeTab({ clip }: TimeTabProps) {
     trimClip(clip.id, clip.timelineStart, newDuration, clip.sourceStart);
   };
 
+  const handleResetTiming = () => {
+    trimClip(clip.id, clip.timelineStart, clip.sourceDuration, 0);
+  };
+
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
+    <div className="flex flex-col gap-4 text-studio-fg select-none">
       {/* Playhead Actions */}
       <div>
         <label className="text-[11px] font-medium text-studio-muted block mb-2">Playhead Alignment</label>
         <div className="flex flex-col gap-1.5">
-          <Button size="sm" variant="secondary" onClick={handleMoveToPlayhead} className="justify-start gap-2 text-xs">
+          <Button size="sm" variant="secondary" onClick={handleMoveToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
             <Move className="h-3.5 w-3.5 text-brand" /> Move Clip Start to Playhead
           </Button>
-          <Button size="sm" variant="secondary" onClick={handleTrimStartToPlayhead} className="justify-start gap-2 text-xs">
+          <Button size="sm" variant="secondary" onClick={handleTrimStartToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
             <Scissors className="h-3.5 w-3.5 text-selection" /> Trim Start to Playhead
           </Button>
-          <Button size="sm" variant="secondary" onClick={handleTrimEndToPlayhead} className="justify-start gap-2 text-xs">
+          <Button size="sm" variant="secondary" onClick={handleTrimEndToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
             <Scissors className="h-3.5 w-3.5 text-mkt-info" /> Trim End to Playhead
           </Button>
         </div>
@@ -114,6 +118,18 @@ export function TimeTab({ clip }: TimeTabProps) {
           </div>
         </div>
       )}
+
+      <div className="h-px bg-studio-border mt-1" />
+
+      {/* Reset Action */}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleResetTiming}
+        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Reset Trims & Timing
+      </Button>
     </div>
   );
 }
