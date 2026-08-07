@@ -109,15 +109,17 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
         }
       }
 
-      // Update DOM element directly for 60fps smooth interaction without React re-render overhead
-      const targetElement = document.getElementById(`layer-${activeClipRef.current.id}`);
-      if (targetElement) {
-        targetElement.style.left = `${newX * stageScale}px`;
-        targetElement.style.top = `${newY * stageScale}px`;
-        targetElement.style.width = `${newW * stageScale}px`;
-        targetElement.style.height = `${newH * stageScale}px`;
-        targetElement.style.transform = `rotate(${newRotation}deg)`;
-      }
+      // Update clip transform directly in store for smooth, glitch-free dragging
+      updateClip(activeClipRef.current.id, {
+        transform: {
+          ...startT,
+          x: newX,
+          y: newY,
+          width: newW,
+          height: newH,
+          rotation: newRotation,
+        },
+      });
 
       activeClipRef.current = {
         ...activeClipRef.current,
@@ -137,14 +139,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
       window.removeEventListener('pointerup', handlePointerUp);
       setIsDragging(false);
       setActiveGuides([]);
-
-      if (activeClipRef.current) {
-        // Commit single history operation
-        updateClip(activeClipRef.current.id, {
-          transform: activeClipRef.current.transform,
-        });
-        activeClipRef.current = null;
-      }
+      activeClipRef.current = null;
     };
 
     window.addEventListener('pointermove', handlePointerMove);

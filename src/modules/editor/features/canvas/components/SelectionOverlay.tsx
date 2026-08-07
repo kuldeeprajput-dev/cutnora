@@ -12,14 +12,7 @@ export interface SelectionOverlayProps {
   isDragging?: boolean;
 }
 
-export function SelectionOverlay({ clip, stageScale, onStartTransform, isDragging = false }: SelectionOverlayProps) {
-  const { transform } = clip;
-
-  const left = transform.x * stageScale;
-  const top = transform.y * stageScale;
-  const width = transform.width * stageScale;
-  const height = transform.height * stageScale;
-
+export function SelectionOverlay({ clip, onStartTransform, isDragging = false }: SelectionOverlayProps) {
   const handles: { mode: TransformMode; className: string }[] = [
     { mode: 'resize-nw', className: '-top-1.5 -left-1.5 cursor-nwse-resize' },
     { mode: 'resize-n', className: '-top-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize' },
@@ -34,16 +27,7 @@ export function SelectionOverlay({ clip, stageScale, onStartTransform, isDraggin
   return (
     <div
       id={`overlay-${clip.id}`}
-      style={{
-        position: 'absolute',
-        left: `${left}px`,
-        top: `${top}px`,
-        width: `${width}px`,
-        height: `${height}px`,
-        transform: `rotate(${transform.rotation}deg)`,
-        transformOrigin: 'center center',
-      }}
-      className="pointer-events-none border-2 border-selection z-30 select-none"
+      className="absolute inset-0 pointer-events-none border-2 border-selection z-30 select-none"
     >
       {/* Center Dot Indicator during drag */}
       {isDragging && (

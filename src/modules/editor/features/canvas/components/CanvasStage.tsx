@@ -205,7 +205,7 @@ export function CanvasStage() {
             backgroundColor: projectSettings.backgroundColor || '#000000',
             transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
-          className="relative shadow-2xl transition-transform duration-75 overflow-hidden rounded"
+          className="relative shadow-2xl transition-transform duration-75 rounded"
         >
           {/* Active Visual Layers */}
           <CanvasRenderer stageScale={stageScale} onGuidesChange={handleGuidesChange} />

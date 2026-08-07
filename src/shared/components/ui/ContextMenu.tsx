@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
 
 export interface ContextMenuItemData {
@@ -28,7 +29,12 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
   const [position, setPosition] = useState<{ x: number; y: number } | null>(
     x !== undefined && y !== undefined ? { x, y } : null
   );
+  const [isMounted, setIsMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (x !== undefined && y !== undefined) {
@@ -97,23 +103,20 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
 
   const renderPos = adjustedPos || position;
 
-  return (
-    <div onContextMenu={children ? handleContextMenu : undefined} className={cn(children && 'relative', className)}>
-      {children}
-      {position && (
-        <div
-          ref={menuRef}
-          role="menu"
-          style={{
-            top: `${renderPos?.y ?? position.y}px`,
-            left: `${renderPos?.x ?? position.x}px`,
-            visibility: adjustedPos ? 'visible' : 'hidden',
-          }}
-          className="fixed z-[9999] min-w-[180px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
-          onClick={handleClose}
-        >
-          {items ? (
-            <div className="flex flex-col gap-0.5">
+  const menuContent = position ? (
+    <div
+      ref={menuRef}
+      role="menu"
+      style={{
+        top: `${renderPos?.y ?? position.y}px`,
+        left: `${renderPos?.x ?? position.x}px`,
+        visibility: adjustedPos ? 'visible' : 'hidden',
+      }}
+      className="fixed z-[99999] min-w-[180px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+      onClick={handleClose}
+    >
+      {items ? (
+        <div className="flex flex-col gap-0.5">
               {items.map((item, idx) => {
                 if (item.isDivider) {
                   return <div key={item.id || idx} className="my-1 h-px bg-studio-border" />;
@@ -153,8 +156,13 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
           ) : (
             menu
           )}
-        </div>
-      )}
+    </div>
+  ) : null;
+
+  return (
+    <div onContextMenu={children ? handleContextMenu : undefined} className={cn(children && 'relative', className)}>
+      {children}
+      {isMounted && menuContent ? createPortal(menuContent, document.body) : null}
     </div>
   );
 }
