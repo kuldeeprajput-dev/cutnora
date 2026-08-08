@@ -1,6 +1,6 @@
 import type { Track } from '@/modules/editor/types';
 
-export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5';
+export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5' | '2:3' | 'custom' | (string & {});
 
 export interface ProjectSettings {
   width: number;
