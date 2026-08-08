@@ -23,7 +23,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
   const seekFromPointer = (e: React.PointerEvent | PointerEvent) => {
     if (!rulerRef.current) return;
     const rect = rulerRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left + scrollLeft - RULER_OFFSET_X;
+    const clickX = e.clientX - rect.left - RULER_OFFSET_X;
     const targetTime = Math.max(0, Math.min(duration, clickX / zoom));
     setPlayhead(targetTime);
   };

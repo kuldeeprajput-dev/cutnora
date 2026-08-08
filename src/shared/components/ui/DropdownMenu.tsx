@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
 
 export interface DropdownMenuProps {
@@ -10,48 +11,93 @@ export interface DropdownMenuProps {
 
 export function DropdownMenu({ trigger, children, align = 'left', className }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + 4,
+        left: align === 'right' ? rect.right : rect.left,
+      });
+    }
+  };
+
+  const toggleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOpen) {
+      updateCoords();
+    }
+    setIsOpen((prev) => !prev);
+  };
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    updateCoords();
+
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsOpen(false);
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
+    const handleScroll = () => {
+      updateCoords();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
     };
-  }, [isOpen]);
+  }, [isOpen, align]);
 
   return (
-    <div className="relative inline-block text-left" ref={containerRef}>
-      <div onClick={() => setIsOpen((prev) => !prev)} className="inline-flex cursor-pointer">
+    <>
+      <div ref={triggerRef} onClick={toggleOpen} className="inline-flex cursor-pointer select-none">
         {trigger}
       </div>
 
-      {isOpen && (
-        <div
-          role="menu"
-          onClick={() => setIsOpen(false)}
-          className={cn(
-            'absolute z-50 mt-1 min-w-[160px] rounded-lg border border-studio-border bg-studio-panel p-1 text-studio-fg shadow-lg animate-in fade-in-80',
-            align === 'right' ? 'right-0' : 'left-0',
-            className
-          )}
-        >
-          {children}
-        </div>
-      )}
-    </div>
+      {isOpen &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: align === 'right' ? undefined : `${coords.left}px`,
+              right: align === 'right' ? `${window.innerWidth - coords.left}px` : undefined,
+              zIndex: 99999,
+            }}
+            className={cn(
+              'min-w-[160px] rounded-lg border border-studio-border bg-studio-panel p-1 text-studio-fg shadow-xl animate-in fade-in-80',
+              className
+            )}
+          >
+            {children}
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 

@@ -15,6 +15,11 @@ import {
   SkipForward,
   Repeat,
   Maximize2,
+  Video,
+  Music,
+  Image as ImageIcon,
+  Type,
+  ChevronDown,
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/modules/core/db/database';
@@ -25,6 +30,7 @@ import { IconButton } from '@/shared/components/ui/IconButton';
 import { Button } from '@/shared/components/ui/Button';
 import { Slider } from '@/shared/components/ui/Slider';
 import { Select } from '@/shared/components/ui/Select';
+import { DropdownMenu, DropdownMenuItem } from '@/shared/components/ui/DropdownMenu';
 import { formatTimecode } from '../utils/ruler-utils';
 
 function truncateFileName(name: string, maxLength = 22): string {
@@ -189,14 +195,34 @@ export function TimelineToolbar() {
 
         <div className="mx-1 h-3.5 w-px bg-studio-border" />
 
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-xs gap-1 cursor-pointer"
-          onClick={() => addTrack('video')}
+        <DropdownMenu
+          trigger={
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs gap-1 cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" /> Add Track <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
+            </Button>
+          }
         >
-          <Plus className="h-3.5 w-3.5" /> Add Track
-        </Button>
+          <DropdownMenuItem onClick={() => addTrack('video', 'Video Track')}>
+            <Video className="h-3.5 w-3.5 text-blue-400" />
+            <span>Video Track</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => addTrack('audio', 'Audio Track')}>
+            <Music className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Audio Track</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => addTrack('overlay', 'Image Track')}>
+            <ImageIcon className="h-3.5 w-3.5 text-purple-400" />
+            <span>Image Track</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => addTrack('text', 'Text Track')}>
+            <Type className="h-3.5 w-3.5 text-amber-400" />
+            <span>Text Track</span>
+          </DropdownMenuItem>
+        </DropdownMenu>
       </div>
 
       {/* Center: Stage Controls + Transport Playback Controls */}

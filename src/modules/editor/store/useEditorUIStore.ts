@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { persist } from 'zustand/middleware';
 import type { EditorTool } from '../types';
 import { useProjectStore } from '@/modules/projects';
 import { usePlaybackStore } from './usePlaybackStore';
@@ -61,135 +62,149 @@ interface EditorUIState {
 }
 
 export const useEditorUIStore = create<EditorUIState>()(
-  immer((set) => ({
-    activeTool: 'media',
-    activeInspectorTab: 'transform',
-    inspectorMode: 'clip',
-    selectedClipIds: [],
-    activeTrackId: null,
-    zoom: 50, // 50px per second default timeline zoom
-    scrollLeft: 0,
-    previewScale: 1,
-    snappingEnabled: true,
-    leftPanelWidth: 320,
-    timelineHeight: 220,
-    trackHeaderWidth: 180,
-    stageScale: 0.5,
-    zoomMode: 'fit',
-    resetViewCount: 0,
-    isFullscreen: false,
+  persist(
+    immer((set) => ({
+      activeTool: 'media',
+      activeInspectorTab: 'transform',
+      inspectorMode: 'clip',
+      selectedClipIds: [],
+      activeTrackId: null,
+      zoom: 50, // 50px per second default timeline zoom
+      scrollLeft: 0,
+      previewScale: 1,
+      snappingEnabled: true,
+      leftPanelWidth: 320,
+      timelineHeight: 220,
+      trackHeaderWidth: 180,
+      stageScale: 0.5,
+      zoomMode: 'fit',
+      resetViewCount: 0,
+      isFullscreen: false,
 
-    setActiveTool: (tool) =>
-      set((state) => {
-        state.activeTool = tool;
-      }),
+      setActiveTool: (tool) =>
+        set((state) => {
+          state.activeTool = tool;
+        }),
 
-    setActiveInspectorTab: (tab) =>
-      set((state) => {
-        state.activeInspectorTab = tab;
-      }),
+      setActiveInspectorTab: (tab) =>
+        set((state) => {
+          state.activeInspectorTab = tab;
+        }),
 
-    setInspectorMode: (mode) =>
-      set((state) => {
-        state.inspectorMode = mode;
-      }),
+      setInspectorMode: (mode) =>
+        set((state) => {
+          state.inspectorMode = mode;
+        }),
 
-    setSelectedClipIds: (ids) =>
-      set((state) => {
-        state.selectedClipIds = ids;
-        if (ids.length > 0) {
-          state.activeTool = 'canvas';
-          state.inspectorMode = 'clip';
-          autoSeekToClipIfOutOfBounds(ids);
-        }
-      }),
-
-    toggleClipSelection: (id, multiSelect = false) =>
-      set((state) => {
-        if (multiSelect) {
-          if (state.selectedClipIds.includes(id)) {
-            state.selectedClipIds = state.selectedClipIds.filter((clipId) => clipId !== id);
-          } else {
-            state.selectedClipIds.push(id);
+      setSelectedClipIds: (ids) =>
+        set((state) => {
+          state.selectedClipIds = ids;
+          if (ids.length > 0) {
+            state.activeTool = 'canvas';
+            state.inspectorMode = 'clip';
+            autoSeekToClipIfOutOfBounds(ids);
           }
-        } else {
-          state.selectedClipIds = [id];
-        }
-        if (state.selectedClipIds.length > 0) {
-          state.activeTool = 'canvas';
-          state.inspectorMode = 'clip';
-          autoSeekToClipIfOutOfBounds(state.selectedClipIds);
-        }
-      }),
+        }),
 
-    clearSelection: () =>
-      set((state) => {
-        state.selectedClipIds = [];
-      }),
+      toggleClipSelection: (id, multiSelect = false) =>
+        set((state) => {
+          if (multiSelect) {
+            if (state.selectedClipIds.includes(id)) {
+              state.selectedClipIds = state.selectedClipIds.filter((clipId) => clipId !== id);
+            } else {
+              state.selectedClipIds.push(id);
+            }
+          } else {
+            state.selectedClipIds = [id];
+          }
+          if (state.selectedClipIds.length > 0) {
+            state.activeTool = 'canvas';
+            state.inspectorMode = 'clip';
+            autoSeekToClipIfOutOfBounds(state.selectedClipIds);
+          }
+        }),
 
-    setActiveTrackId: (id) =>
-      set((state) => {
-        state.activeTrackId = id;
-      }),
+      clearSelection: () =>
+        set((state) => {
+          state.selectedClipIds = [];
+        }),
 
-    setZoom: (zoom) =>
-      set((state) => {
-        state.zoom = Math.min(200, Math.max(10, zoom));
-      }),
+      setActiveTrackId: (id) =>
+        set((state) => {
+          state.activeTrackId = id;
+        }),
 
-    setScrollLeft: (scrollLeft) =>
-      set((state) => {
-        state.scrollLeft = Math.max(0, scrollLeft);
-      }),
+      setZoom: (zoom) =>
+        set((state) => {
+          state.zoom = Math.min(200, Math.max(10, zoom));
+        }),
 
-    setPreviewScale: (scale) =>
-      set((state) => {
-        state.previewScale = Math.min(3, Math.max(0.1, scale));
-      }),
+      setScrollLeft: (scrollLeft) =>
+        set((state) => {
+          state.scrollLeft = Math.max(0, scrollLeft);
+        }),
 
-    setSnappingEnabled: (enabled) =>
-      set((state) => {
-        state.snappingEnabled = enabled;
-      }),
+      setPreviewScale: (scale) =>
+        set((state) => {
+          state.previewScale = Math.min(3, Math.max(0.1, scale));
+        }),
 
-    setLeftPanelWidth: (width) =>
-      set((state) => {
-        state.leftPanelWidth = Math.min(600, Math.max(280, width));
-      }),
+      setSnappingEnabled: (enabled) =>
+        set((state) => {
+          state.snappingEnabled = enabled;
+        }),
 
-    setTimelineHeight: (height) =>
-      set((state) => {
-        state.timelineHeight = Math.min(500, Math.max(120, height));
-      }),
+      setLeftPanelWidth: (width) =>
+        set((state) => {
+          state.leftPanelWidth = Math.min(600, Math.max(280, width));
+        }),
 
-    setTrackHeaderWidth: (width) =>
-      set((state) => {
-        state.trackHeaderWidth = Math.min(400, Math.max(180, width));
-      }),
+      setTimelineHeight: (height) =>
+        set((state) => {
+          state.timelineHeight = Math.min(500, Math.max(120, height));
+        }),
 
-    setStageScale: (scale) =>
-      set((state) => {
-        state.stageScale = scale;
-      }),
+      setTrackHeaderWidth: (width) =>
+        set((state) => {
+          state.trackHeaderWidth = Math.min(400, Math.max(180, width));
+        }),
 
-    setZoomMode: (mode) =>
-      set((state) => {
-        state.zoomMode = mode;
-      }),
+      setStageScale: (scale) =>
+        set((state) => {
+          state.stageScale = scale;
+        }),
 
-    triggerResetView: () =>
-      set((state) => {
-        state.resetViewCount += 1;
-      }),
+      setZoomMode: (mode) =>
+        set((state) => {
+          state.zoomMode = mode;
+        }),
 
-    setIsFullscreen: (full) =>
-      set((state) => {
-        state.isFullscreen = full;
-      }),
+      triggerResetView: () =>
+        set((state) => {
+          state.resetViewCount += 1;
+        }),
 
-    toggleFullscreen: () =>
-      set((state) => {
-        state.isFullscreen = !state.isFullscreen;
+      setIsFullscreen: (full) =>
+        set((state) => {
+          state.isFullscreen = full;
+        }),
+
+      toggleFullscreen: () =>
+        set((state) => {
+          state.isFullscreen = !state.isFullscreen;
+        }),
+    })),
+    {
+      name: 'cutframe-editor-ui-store',
+      partialize: (state) => ({
+        zoom: state.zoom,
+        zoomMode: state.zoomMode,
+        snappingEnabled: state.snappingEnabled,
+        leftPanelWidth: state.leftPanelWidth,
+        timelineHeight: state.timelineHeight,
+        trackHeaderWidth: state.trackHeaderWidth,
+        previewScale: state.previewScale,
       }),
-  }))
+    }
+  )
 );

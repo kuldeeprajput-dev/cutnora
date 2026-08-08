@@ -108,9 +108,29 @@ export function TimelineEditor() {
     };
   }, [selectedClipIds, playhead, togglePlay, splitClip, duplicateClips, deleteClips, clearSelection, stepBackward, stepForward]);
 
-  // Sync scrollLeft state with DOM scroll
+  const rulerContainerRef = useRef<HTMLDivElement>(null);
+  const trackHeadersContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sync scroll positions across TimeRuler (horizontal) and Track Headers (vertical)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrollLeft(e.currentTarget.scrollLeft);
+    const target = e.currentTarget;
+    const newScrollLeft = target.scrollLeft;
+    const newScrollTop = target.scrollTop;
+
+    setScrollLeft(newScrollLeft);
+
+    if (rulerContainerRef.current) {
+      rulerContainerRef.current.scrollLeft = newScrollLeft;
+    }
+    if (trackHeadersContainerRef.current) {
+      trackHeadersContainerRef.current.scrollTop = newScrollTop;
+    }
+  };
+
+  const handleHeadersWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop += e.deltaY;
+    }
   };
 
   // Auto-scroll playhead into view during playback
@@ -204,17 +224,53 @@ export function TimelineEditor() {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
+  // Compute dynamic scrubber line height: only extend down to the lowest track that has intersecting media
+  let maxIntersectingTrackIndex = -1;
+  tracks.forEach((track, index) => {
+    const isIntersecting = track.clips.some((clip) => {
+      // clip.timelineDuration might be a bit loose due to floating point, so add a tiny epsilon
+      return playhead >= clip.timelineStart && playhead < clip.timelineStart + clip.timelineDuration + 0.01;
+    });
+    if (isIntersecting) {
+      maxIntersectingTrackIndex = index;
+    }
+  });
+  
+  const playheadLineHeight = maxIntersectingTrackIndex >= 0 ? (maxIntersectingTrackIndex + 1) * 48 : 0;
+
   return (
-    <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none">
+    <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none overflow-hidden">
       {/* Top Timeline Toolbar */}
       <TimelineToolbar />
 
-      {/* Main Multi-track Workspace Layout */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left Column: Track Headers */}
+      {/* Fixed Time Ruler Header Row */}
+      <div className="flex h-6 w-full shrink-0 border-b border-studio-border bg-studio-topbar z-20">
+        {/* Left header corner over track headers */}
         <div
           style={{ width: `${trackHeaderWidth}px` }}
-          className="shrink-0 bg-studio-topbar z-20 flex flex-col pt-6 overflow-hidden"
+          className="shrink-0 border-r border-studio-border bg-studio-topbar"
+        />
+
+        {/* Resizer separator line */}
+        <div className="w-px bg-studio-border shrink-0" />
+
+        {/* Time Ruler Horizontal Scroll Area */}
+        <div
+          ref={rulerContainerRef}
+          className="flex-1 overflow-hidden relative"
+        >
+          <TimeRuler duration={projectDuration} zoom={zoom} scrollLeft={scrollLeft} />
+        </div>
+      </div>
+
+      {/* Main Multi-track Workspace Layout */}
+      <div className="flex flex-1 overflow-hidden relative min-h-0">
+        {/* Left Column: Track Headers (Vertical scroll synced with main container) */}
+        <div
+          ref={trackHeadersContainerRef}
+          onWheel={handleHeadersWheel}
+          style={{ width: `${trackHeaderWidth}px` }}
+          className="shrink-0 bg-studio-topbar border-r border-studio-border z-10 flex flex-col overflow-hidden"
         >
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={tracks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
@@ -228,11 +284,11 @@ export function TimelineEditor() {
         {/* Resizer Handle for Track Headers Width */}
         <div
           onPointerDown={handleStartResizeTrackHeader}
-          className="w-px bg-studio-border hover:bg-brand active:bg-brand hover:w-[3px] z-30 cursor-col-resize transition-all shrink-0"
+          className="w-px bg-studio-border hover:bg-brand active:bg-brand hover:w-[3px] z-30 cursor-col-resize transition-all shrink-0 h-full"
           title="Drag to resize track headers"
         />
 
-        {/* Right Area: Time Ruler & Track Canvas */}
+        {/* Right Area: Track Canvas Lanes */}
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
@@ -248,11 +304,8 @@ export function TimelineEditor() {
             const pasteTime = Math.max(0, clickX / zoom);
             setTimelineContextMenu({ x: e.clientX, y: e.clientY, pasteTime });
           }}
-          className="flex-1 overflow-x-auto overflow-y-auto relative"
+          className="flex-1 overflow-auto relative h-full timeline-bottom-scrollbar"
         >
-          {/* Time Ruler Row */}
-          <TimeRuler duration={projectDuration} zoom={zoom} scrollLeft={scrollLeft} />
-
           {/* Track Lanes */}
           {tracks.length === 0 ? (
             <div className="flex min-h-[220px] flex-1 flex-col items-center justify-center text-xs text-studio-muted py-12">
@@ -260,7 +313,7 @@ export function TimelineEditor() {
               <span>No tracks created yet</span>
             </div>
           ) : (
-            <div className="flex flex-col relative w-full" style={{ minWidth: `${totalWidthPx}px` }}>
+            <div className="flex flex-col relative w-full h-fit" style={{ minWidth: `${totalWidthPx}px` }}>
               {tracks.map((track) => (
                 <TrackLane
                   key={track.id}
@@ -273,15 +326,17 @@ export function TimelineEditor() {
 
               {/* Red Continuous Scrubber Line */}
               <div
-                style={{ left: `${playheadLeftPx}px` }}
-                className="absolute top-0 bottom-0 w-0.5 bg-brand z-30 pointer-events-none shadow-md"
+                style={{ left: `${playheadLeftPx}px`, height: playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0 }}
+                className={`absolute top-0 w-0.5 bg-brand z-30 pointer-events-none shadow-md -translate-x-1/2 ${
+                  playheadLineHeight === 0 ? 'hidden' : ''
+                }`}
               />
 
               {/* Active Snapping Guideline */}
               {activeSnapLine !== null && (
                 <div
                   style={{ left: `${16 + activeSnapLine * zoom}px` }}
-                  className="absolute top-0 bottom-0 w-0.5 bg-selection z-40 pointer-events-none"
+                  className="absolute top-0 bottom-0 w-0.5 bg-selection z-40 pointer-events-none -translate-x-1/2"
                 />
               )}
             </div>
