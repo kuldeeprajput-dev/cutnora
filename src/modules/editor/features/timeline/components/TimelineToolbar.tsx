@@ -14,9 +14,10 @@ import {
   SkipBack,
   SkipForward,
   Repeat,
-  Hand,
   Maximize2,
 } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/modules/core/db/database';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useProjectStore } from '@/modules/projects';
@@ -25,6 +26,20 @@ import { Button } from '@/shared/components/ui/Button';
 import { Slider } from '@/shared/components/ui/Slider';
 import { Select } from '@/shared/components/ui/Select';
 import { formatTimecode } from '../utils/ruler-utils';
+
+function truncateFileName(name: string, maxLength = 22): string {
+  if (!name || name.length <= maxLength) return name;
+  const lastDot = name.lastIndexOf('.');
+  if (lastDot > 0 && lastDot > name.length - 8) {
+    const ext = name.slice(lastDot);
+    const base = name.slice(0, lastDot);
+    const availableBaseLen = maxLength - ext.length - 3;
+    if (availableBaseLen > 3) {
+      return `${base.slice(0, availableBaseLen)}...${ext}`;
+    }
+  }
+  return `${name.slice(0, maxLength - 3)}...`;
+}
 
 export function TimelineToolbar() {
   const {
@@ -61,6 +76,56 @@ export function TimelineToolbar() {
   };
 
   const hasSelection = selectedClipIds.length > 0;
+
+  // Selected media properties logic
+  const selectedClips = (currentProject?.tracks || [])
+    .flatMap((t) => t.clips)
+    .filter((c) => selectedClipIds.includes(c.id));
+
+  const selectedClip = selectedClips.length === 1 ? selectedClips[0] : null;
+
+  const selectedAsset = useLiveQuery(
+    async () => {
+      if (!selectedClip?.assetId) return null;
+      return db.assets.get(selectedClip.assetId);
+    },
+    [selectedClip?.assetId],
+    null
+  );
+
+  let selectedMediaName: string | null = null;
+  let selectedMediaDetails: string | null = null;
+
+  if (selectedClips.length > 1) {
+    selectedMediaName = `${selectedClips.length} clips selected`;
+  } else if (selectedClip) {
+    const name = selectedClip.name;
+    const isVideo = selectedClip.type === 'video' || selectedAsset?.type === 'video';
+    const isImage = selectedClip.type === 'image' || selectedAsset?.type === 'image';
+    const isAudio = selectedClip.type === 'audio' || selectedAsset?.type === 'audio';
+
+    selectedMediaName = truncateFileName(name, 22);
+
+    const width = selectedAsset?.width || (selectedClip.transform?.width ? Math.round(selectedClip.transform.width) : null);
+    const height = selectedAsset?.height || (selectedClip.transform?.height ? Math.round(selectedClip.transform.height) : null);
+
+    const details: string[] = [];
+
+    if (width && height && (isVideo || isImage)) {
+      details.push(`${width}×${height}`);
+    }
+
+    // FPS only displayed for VIDEO clips
+    if (isVideo) {
+      const activeFps = (selectedAsset as any)?.fps || fps || projectSettings.fps;
+      details.push(`${activeFps} FPS`);
+    } else if (isAudio) {
+      const durationSecs = selectedClip.timelineDuration;
+      details.push(`${durationSecs.toFixed(1)}s`);
+    }
+
+    selectedMediaDetails = details.length > 0 ? details.join(' • ') : null;
+  }
 
   const handleSplit = () => {
     if (selectedClipIds.length > 0) {
@@ -136,18 +201,8 @@ export function TimelineToolbar() {
 
       {/* Center: Stage Controls + Transport Playback Controls */}
       <div className="flex items-center gap-2 shrink-0 px-2">
-        {/* Canvas Stage View Controls (Hand, Fit Stage, Reset View) */}
+        {/* Canvas Stage View Controls (Fit Stage) */}
         <div className="flex items-center gap-1">
-          <IconButton
-            label={activeTool === 'hand' ? 'Pan tool active' : 'Pan tool'}
-            size="sm"
-            variant={activeTool === 'hand' ? 'selection' : 'ghost'}
-            onClick={() => setActiveTool(activeTool === 'hand' ? 'select' : 'hand')}
-            className="cursor-pointer"
-          >
-            <Hand className="h-3.5 w-3.5" />
-          </IconButton>
-
           <Select
             value={zoomMode === 'fit' ? 'fit' : String(zoomMode)}
             onChange={(e) => {
@@ -164,16 +219,6 @@ export function TimelineToolbar() {
             <option value="150">150%</option>
             <option value="200">200%</option>
           </Select>
-
-          <IconButton
-            label="Reset canvas view"
-            size="sm"
-            variant="ghost"
-            onClick={triggerResetView}
-            className="cursor-pointer"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </IconButton>
         </div>
 
         <div className="h-3.5 w-px bg-studio-border" />
@@ -236,20 +281,22 @@ export function TimelineToolbar() {
         </div>
       </div>
 
-      {/* Right: Only Resolution & FPS Quality Info + Zoom Controls */}
+      {/* Right: Selected Media Info + Zoom Controls */}
       <div className="flex items-center gap-3 shrink-0">
-        {/* Quality Resolution & FPS Indicator */}
-        <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0">
-          <span>
-            {projectSettings.width}×{projectSettings.height}
-          </span>
-          <span>•</span>
-          <span>{projectSettings.fps} FPS</span>
-          <span>•</span>
-          <span className="font-semibold text-studio-fg">
-            {Math.round(stageScale * 100)}%
-          </span>
-        </div>
+        {/* Selected Media Indicator (Only displayed when media is selected) */}
+        {(selectedMediaName || selectedMediaDetails) && (
+          <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0">
+            <span className="font-medium text-studio-fg/90" title={selectedClip?.name || selectedMediaName || undefined}>
+              {selectedMediaName}
+            </span>
+            {selectedMediaDetails && (
+              <>
+                <span>•</span>
+                <span>{selectedMediaDetails}</span>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="h-3.5 w-px bg-studio-border" />
 
