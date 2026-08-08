@@ -3,12 +3,162 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { db } from "@/modules/core/db/database";
+import { objectUrlManager } from "@/modules/core/db/object-url-manager";
 import type { Project } from "@/modules/projects";
 import { Button } from "@/shared/components/ui/Button";
 import { Container } from "@/shared/components/layout/Container";
 import { Plus, Film, Trash2 } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+
+interface ProjectCardProps {
+  project: Project;
+  onDelete: (id: string, e: React.MouseEvent) => void;
+}
+
+function ProjectCard({ project, onDelete }: ProjectCardProps) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadThumb() {
+      try {
+        // 1. Direct project thumbnail if set
+        const customThumbId = (project as any).thumbnailBlobId;
+        if (customThumbId) {
+          const cached = objectUrlManager.getUrl(customThumbId);
+          if (cached) {
+            if (isMounted) setThumbUrl(cached);
+            return;
+          }
+          const thumbRecord = await db.thumbnails.get(customThumbId);
+          if (thumbRecord && isMounted) {
+            setThumbUrl(objectUrlManager.createUrl(customThumbId, thumbRecord.blob));
+            return;
+          }
+        }
+
+        // 2. Search assets belonging to this project
+        const projectAssets = await db.assets.where("projectId").equals(project.id).toArray();
+        const visualAsset = projectAssets.find((a) => a.type === "video" || a.type === "image");
+
+        if (visualAsset) {
+          if (visualAsset.thumbnailBlobId) {
+            const cached = objectUrlManager.getUrl(visualAsset.thumbnailBlobId);
+            if (cached) {
+              if (isMounted) setThumbUrl(cached);
+              return;
+            }
+            const thumbRecord = await db.thumbnails.get(visualAsset.thumbnailBlobId);
+            if (thumbRecord && isMounted) {
+              setThumbUrl(objectUrlManager.createUrl(visualAsset.thumbnailBlobId, thumbRecord.blob));
+              return;
+            }
+          }
+
+          if (visualAsset.blobId) {
+            const cached = objectUrlManager.getUrl(visualAsset.blobId);
+            if (cached) {
+              if (isMounted) setThumbUrl(cached);
+              return;
+            }
+            const thumbRecord = await db.thumbnails.get(visualAsset.blobId);
+            if (thumbRecord && isMounted) {
+              setThumbUrl(objectUrlManager.createUrl(visualAsset.blobId, thumbRecord.blob));
+              return;
+            }
+            const blobRecord = await db.blobs.get(visualAsset.blobId);
+            if (blobRecord && isMounted) {
+              setThumbUrl(objectUrlManager.createUrl(visualAsset.blobId, blobRecord.blob));
+              return;
+            }
+          }
+        }
+
+        // 3. Fallback: Search clip asset references in tracks
+        for (const track of project.tracks) {
+          for (const clip of track.clips) {
+            if (clip.assetId) {
+              const asset = await db.assets.get(clip.assetId);
+              if (asset && (asset.type === "video" || asset.type === "image")) {
+                if (asset.thumbnailBlobId) {
+                  const cached = objectUrlManager.getUrl(asset.thumbnailBlobId);
+                  if (cached) {
+                    if (isMounted) setThumbUrl(cached);
+                    return;
+                  }
+                  const thumbRecord = await db.thumbnails.get(asset.thumbnailBlobId);
+                  if (thumbRecord && isMounted) {
+                    setThumbUrl(objectUrlManager.createUrl(asset.thumbnailBlobId, thumbRecord.blob));
+                    return;
+                  }
+                }
+                if (asset.blobId) {
+                  const cached = objectUrlManager.getUrl(asset.blobId);
+                  if (cached) {
+                    if (isMounted) setThumbUrl(cached);
+                    return;
+                  }
+                  const blobRecord = await db.blobs.get(asset.blobId);
+                  if (blobRecord && isMounted) {
+                    setThumbUrl(objectUrlManager.createUrl(asset.blobId, blobRecord.blob));
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed loading project thumbnail:", err);
+      }
+    }
+
+    loadThumb();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [project]);
+
+  return (
+    <Link
+      href={`/studio/${project.id}`}
+      className="group relative rounded-xl border border-studio-border bg-studio-panel p-4 transition-all hover:border-brand"
+    >
+      <div className="aspect-video w-full rounded-lg bg-studio-bg border border-studio-border flex items-center justify-center mb-3 overflow-hidden relative">
+        {thumbUrl ? (
+          <img
+            src={thumbUrl}
+            alt={project.name}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <Film className="h-8 w-8 text-studio-muted group-hover:text-brand transition-colors" />
+        )}
+      </div>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-bold text-studio-fg group-hover:text-brand transition-colors truncate">
+            {project.name}
+          </h3>
+          <p className="text-[11px] font-mono text-studio-muted mt-0.5">
+            {project.settings.width}×{project.settings.height} ({project.settings.aspectRatio})
+          </p>
+        </div>
+        <button
+          type="button"
+          title="Delete project"
+          onClick={(e) => onDelete(project.id, e)}
+          className="p-1 text-studio-muted hover:text-destructive transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    </Link>
+  );
+}
 
 export default function StudioDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -93,34 +243,11 @@ export default function StudioDashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {projects.map((project) => (
-              <Link
+              <ProjectCard
                 key={project.id}
-                href={`/studio/${project.id}`}
-                className="group relative rounded-xl border border-studio-border bg-studio-panel p-4 transition-all hover:border-brand"
-              >
-                <div className="aspect-video w-full rounded-lg bg-studio-bg border border-studio-border flex items-center justify-center mb-3">
-                  <Film className="h-8 w-8 text-studio-muted group-hover:text-brand transition-colors" />
-                </div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-sm font-bold text-studio-fg group-hover:text-brand transition-colors truncate">
-                      {project.name}
-                    </h3>
-                    <p className="text-[11px] font-mono text-studio-muted mt-0.5">
-                      {project.settings.width}×{project.settings.height} (
-                      {project.settings.aspectRatio})
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    title="Delete project"
-                    onClick={(e) => handleDeleteProject(project.id, e)}
-                    className="p-1 text-studio-muted hover:text-destructive transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </Link>
+                project={project}
+                onDelete={handleDeleteProject}
+              />
             ))}
           </div>
         )}
