@@ -89,6 +89,8 @@ export function TextLayer({ clip }: TextLayerProps) {
           color: textStyle.color,
           fontWeight: textStyle.fontWeight,
           fontStyle: textStyle.fontStyle || 'normal',
+          textDecoration: textStyle.textDecoration,
+          textTransform: textStyle.textTransform,
           textAlign: textStyle.textAlign,
           lineHeight: textStyle.lineHeight || 1.2,
           letterSpacing: textStyle.letterSpacing ? `${textStyle.letterSpacing}px` : undefined,
@@ -112,6 +114,8 @@ export function TextLayer({ clip }: TextLayerProps) {
         color: textStyle.color,
         fontWeight: textStyle.fontWeight,
         fontStyle: textStyle.fontStyle || 'normal',
+        textDecoration: textStyle.textDecoration,
+        textTransform: textStyle.textTransform,
         backgroundColor: textStyle.backgroundColor,
         textAlign: textStyle.textAlign,
         lineHeight: textStyle.lineHeight || 1.2,
@@ -124,7 +128,7 @@ export function TextLayer({ clip }: TextLayerProps) {
         ...outlineStyle,
       }}
     >
-      <span className="w-full truncate whitespace-pre-wrap">{textStyle.text}</span>
+      <span className="w-full break-words whitespace-pre-wrap">{textStyle.text}</span>
 
       {/* Overflow Warning Badge */}
       {isOverflowing && (

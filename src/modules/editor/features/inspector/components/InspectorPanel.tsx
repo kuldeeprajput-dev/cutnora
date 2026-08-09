@@ -275,7 +275,7 @@ export function InspectorPanel() {
   const availableTabs: InspectorTabItem[] = [];
   if (isText) availableTabs.push({ value: 'text', label: 'Text', icon: <Type className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (isElement) availableTabs.push({ value: 'element', label: 'Shape', icon: <Sparkles className="h-3.5 w-3.5 text-brand shrink-0" /> });
-  if (clip.type !== 'audio') availableTabs.push({ value: 'transform', label: 'Transform', icon: <Move className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (clip.type !== 'audio' && clip.type !== 'text') availableTabs.push({ value: 'transform', label: 'Transform', icon: <Move className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (isVisual) availableTabs.push({ value: 'adjust', label: 'Adjust', icon: <Sliders className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (hasAudio) availableTabs.push({ value: 'audio', label: 'Audio', icon: <Volume2 className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (hasAudio) availableTabs.push({ value: 'speed', label: 'Speed', icon: <Gauge className="h-3.5 w-3.5 text-brand shrink-0" /> });
@@ -328,7 +328,7 @@ export function InspectorPanel() {
             </TabContent>
           )}
 
-          {clip.type !== 'audio' && (
+          {clip.type !== 'audio' && clip.type !== 'text' && (
             <TabContent value="transform">
               <TransformTab clip={clip} />
             </TabContent>

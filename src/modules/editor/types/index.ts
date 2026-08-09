@@ -61,6 +61,8 @@ export interface TextStyle {
   textAlign: 'left' | 'center' | 'right';
   fontWeight: 'normal' | 'bold';
   fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline' | 'line-through';
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
   lineHeight?: number;
   letterSpacing?: number;
   bgPadding?: number;

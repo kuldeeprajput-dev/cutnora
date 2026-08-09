@@ -20,6 +20,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
 
   const activeClipRef = useRef<TimelineClip | null>(null);
   const startPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const startTextStyleRef = useRef<TimelineClip['textStyle']>(undefined);
   const startTransformRef = useRef<TimelineClip['transform']>({
     x: 0,
     y: 0,
@@ -39,6 +40,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     modeRef.current = mode;
     startPointerRef.current = { x: e.clientX, y: e.clientY };
     startTransformRef.current = { ...clip.transform };
+    startTextStyleRef.current = clip.textStyle ? { ...clip.textStyle } : undefined;
     setIsDragging(true);
 
     const handlePointerMove = (moveEv: PointerEvent) => {
@@ -109,6 +111,20 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
         }
       }
 
+      // If text clip, scale font size proportionally with width change
+      let updatedTextStyle = activeClipRef.current.textStyle;
+      if (activeClipRef.current.type === 'text' && mode.startsWith('resize-')) {
+        const startFontSize = startTextStyleRef.current?.fontSize || 48;
+        const scaleFactor = newW / (startT.width || 1);
+        const newFontSize = Math.max(10, Math.min(400, Math.round(startFontSize * scaleFactor)));
+        if (updatedTextStyle) {
+          updatedTextStyle = {
+            ...updatedTextStyle,
+            fontSize: newFontSize,
+          };
+        }
+      }
+
       // Update clip transform directly in store for smooth, glitch-free dragging
       updateClip(activeClipRef.current.id, {
         transform: {
@@ -119,10 +135,12 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
           height: newH,
           rotation: newRotation,
         },
+        ...(updatedTextStyle ? { textStyle: updatedTextStyle } : {}),
       });
 
       activeClipRef.current = {
         ...activeClipRef.current,
+        ...(updatedTextStyle ? { textStyle: updatedTextStyle } : {}),
         transform: {
           ...activeClipRef.current.transform,
           x: newX,
