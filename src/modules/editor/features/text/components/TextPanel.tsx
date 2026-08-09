@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { useProjectStore } from '@/modules/projects';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import type { TimelineClip, TextStyle } from '@/modules/editor/types';
-import { Search, Sparkles } from 'lucide-react';
+import { Search, Sparkles, ChevronDown, Check, Type, Subtitles, Quote, Flame } from 'lucide-react';
 
 export interface TextPreset {
   id: string;
@@ -479,10 +479,113 @@ const textPresets: TextPreset[] = [
 
 type CategoryFilter = 'all' | 'basic' | 'captions' | 'creative' | 'effects';
 
+interface CategoryOption {
+  id: CategoryFilter;
+  label: string;
+  icon: React.ElementType;
+}
+
+const CATEGORY_OPTIONS: CategoryOption[] = [
+  { id: 'all', label: 'All Categories', icon: Sparkles },
+  { id: 'basic', label: 'Basic Text', icon: Type },
+  { id: 'captions', label: 'Captions & Badges', icon: Subtitles },
+  { id: 'creative', label: 'Creative & Script', icon: Quote },
+  { id: 'effects', label: 'Effects & Memes', icon: Flame },
+];
+
+function CategoryDropdown({
+  activeCategory,
+  onCategoryChange,
+}: {
+  activeCategory: CategoryFilter;
+  onCategoryChange: (category: CategoryFilter) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const selectedObj = CATEGORY_OPTIONS.find((c) => c.id === activeCategory) || CATEGORY_OPTIONS[0];
+  const Icon = selectedObj.icon;
+
+  return (
+    <div ref={dropdownRef} className="relative w-full shrink-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`flex h-9 w-full items-center justify-between rounded-lg border bg-studio-panel px-3 text-xs transition-all cursor-pointer select-none ${
+          isOpen
+            ? 'border-brand ring-1 ring-brand/50 shadow-md bg-studio-panel-raised'
+            : 'border-studio-border hover:border-brand/50 hover:bg-studio-panel-raised'
+        }`}
+      >
+        <span className="flex items-center gap-2 font-semibold text-studio-fg">
+          <Icon className="h-3.5 w-3.5 text-brand shrink-0" />
+          <span className="truncate">{selectedObj.label}</span>
+        </span>
+        <ChevronDown className={`h-4 w-4 text-studio-muted shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-brand' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-lg border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in-80 text-studio-fg">
+          <div className="flex flex-col gap-1">
+            {CATEGORY_OPTIONS.map((cat) => {
+              const CatIcon = cat.icon;
+              const isSelected = cat.id === activeCategory;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    onCategoryChange(cat.id);
+                    setIsOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-brand/20 text-brand font-bold border border-brand/40'
+                      : 'text-studio-fg hover:bg-studio-panel-raised hover:text-brand'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 font-medium truncate">
+                    <CatIcon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-brand' : 'text-studio-muted'}`} />
+                    <span className="truncate">{cat.label}</span>
+                  </div>
+                  {isSelected && <Check className="h-4 w-4 text-brand shrink-0 ml-2" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TextPanel() {
   const { currentProject, addClip, addTrack } = useProjectStore();
   const { playhead } = usePlaybackStore();
-  const { setSelectedClipIds } = useEditorUIStore();
+  const { setSelectedClipIds, leftPanelWidth } = useEditorUIStore();
+  const isNarrow = leftPanelWidth < 360;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
@@ -591,31 +694,38 @@ export function TextPanel() {
         />
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto studio-scrollbar pb-1 text-[11px]">
-        {(
-          [
-            { id: 'all', label: 'All' },
-            { id: 'basic', label: 'Basic' },
-            { id: 'captions', label: 'Captions' },
-            { id: 'creative', label: 'Creative' },
-            { id: 'effects', label: 'Effects' },
-          ] as const
-        ).map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-2.5 py-1 rounded-md min-w-max cursor-pointer font-medium transition-colors ${
-              activeCategory === cat.id
-                ? 'bg-brand text-white font-bold shadow-sm'
-                : 'bg-studio-panel hover:bg-studio-panel-raised text-studio-muted hover:text-studio-fg border border-studio-border'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
+      {/* Category Filter: Custom Dropdown for mini width (< 360px), Horizontal Tabs for wider width (>= 360px) */}
+      {isNarrow ? (
+        <CategoryDropdown
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
+      ) : (
+        <div className="flex items-center gap-1.5 overflow-x-auto studio-scrollbar py-1 text-[11px] shrink-0 min-h-[36px]">
+          {(
+            [
+              { id: 'all', label: 'All' },
+              { id: 'basic', label: 'Basic' },
+              { id: 'captions', label: 'Captions' },
+              { id: 'creative', label: 'Creative' },
+              { id: 'effects', label: 'Effects' },
+            ] as const
+          ).map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id)}
+              className={`h-7 px-3 rounded-md min-w-max shrink-0 cursor-pointer font-medium text-xs flex items-center justify-center transition-all ${
+                activeCategory === cat.id
+                  ? 'bg-brand text-white font-bold shadow-sm'
+                  : 'bg-studio-panel hover:bg-studio-panel-raised text-studio-muted hover:text-studio-fg border border-studio-border'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Grid of Text Style Cards (3 Columns) */}
       <div className="grid grid-cols-3 gap-2 pt-1">
@@ -624,17 +734,17 @@ export function TextPanel() {
             key={preset.id}
             type="button"
             onClick={() => handleAddPreset(preset)}
-            className="group relative flex h-20 flex-col items-center justify-between rounded-lg border border-studio-border bg-[#18191c] p-2 text-center cursor-pointer transition-all duration-150 hover:border-brand hover:bg-[#202226] hover:scale-[1.03] active:scale-[0.98] shadow-sm overflow-hidden"
+            className="group relative flex h-20 flex-col items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-1.5 text-center cursor-pointer transition-all duration-150 hover:border-brand hover:bg-studio-panel-raised hover:scale-[1.03] active:scale-[0.98] shadow-sm overflow-hidden"
           >
             {/* Visual Preview Container */}
-            <div className="flex flex-1 w-full items-center justify-center overflow-hidden">
+            <div className="flex flex-1 w-full items-center justify-center overflow-hidden rounded bg-[#141518] p-1">
               <span style={preset.previewInlineStyle} className="truncate max-w-full leading-tight">
                 {preset.previewText}
               </span>
             </div>
 
             {/* Tiny Label Badge at Bottom */}
-            <span className="text-[9px] font-semibold text-studio-muted group-hover:text-brand transition-colors truncate max-w-full">
+            <span className="text-[9px] font-semibold text-studio-muted group-hover:text-brand transition-colors truncate max-w-full pt-1">
               {preset.name}
             </span>
           </button>
