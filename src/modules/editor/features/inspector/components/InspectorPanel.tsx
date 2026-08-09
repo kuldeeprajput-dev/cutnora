@@ -152,6 +152,8 @@ export function InspectorPanel() {
           setActiveInspectorTab('text');
         } else if (firstClip.type === 'overlay') {
           setActiveInspectorTab('element');
+        } else if (firstClip.type === 'audio') {
+          setActiveInspectorTab('audio');
         } else {
           setActiveInspectorTab('transform');
         }
@@ -273,7 +275,7 @@ export function InspectorPanel() {
   const availableTabs: InspectorTabItem[] = [];
   if (isText) availableTabs.push({ value: 'text', label: 'Text', icon: <Type className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (isElement) availableTabs.push({ value: 'element', label: 'Shape', icon: <Sparkles className="h-3.5 w-3.5 text-brand shrink-0" /> });
-  availableTabs.push({ value: 'transform', label: 'Transform', icon: <Move className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (clip.type !== 'audio') availableTabs.push({ value: 'transform', label: 'Transform', icon: <Move className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (isVisual) availableTabs.push({ value: 'adjust', label: 'Adjust', icon: <Sliders className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (hasAudio) availableTabs.push({ value: 'audio', label: 'Audio', icon: <Volume2 className="h-3.5 w-3.5 text-brand shrink-0" /> });
   if (hasAudio) availableTabs.push({ value: 'speed', label: 'Speed', icon: <Gauge className="h-3.5 w-3.5 text-brand shrink-0" /> });
@@ -304,15 +306,13 @@ export function InspectorPanel() {
               onTabChange={setActiveInspectorTab}
             />
           ) : (
-            /* Horizontal Tabs Bar when panel width is wide (>= 290px) */
+            /* Horizontal Tabs Bar when panel width is wide (>= 360px) */
             <TabList className="flex items-center gap-0.5 overflow-x-auto studio-scrollbar mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border shrink-0">
-              {isText && <TabTrigger value="text" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Text</TabTrigger>}
-              {isElement && <TabTrigger value="element" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Shape</TabTrigger>}
-              <TabTrigger value="transform" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Transform</TabTrigger>
-              {isVisual && <TabTrigger value="adjust" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Adjust</TabTrigger>}
-              {hasAudio && <TabTrigger value="audio" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Audio</TabTrigger>}
-              {hasAudio && <TabTrigger value="speed" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Speed</TabTrigger>}
-              <TabTrigger value="time" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Time</TabTrigger>
+              {availableTabs.map((t) => (
+                <TabTrigger key={t.value} value={t.value} className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">
+                  {t.label}
+                </TabTrigger>
+              ))}
             </TabList>
           )}
 
@@ -328,9 +328,11 @@ export function InspectorPanel() {
             </TabContent>
           )}
 
-          <TabContent value="transform">
-            <TransformTab clip={clip} />
-          </TabContent>
+          {clip.type !== 'audio' && (
+            <TabContent value="transform">
+              <TransformTab clip={clip} />
+            </TabContent>
+          )}
 
           {isVisual && (
             <TabContent value="adjust">

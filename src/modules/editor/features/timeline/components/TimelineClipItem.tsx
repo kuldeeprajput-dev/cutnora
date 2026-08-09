@@ -177,30 +177,34 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
       },
     },
     { id: 'div-2', label: '', isDivider: true, onClick: () => {} },
-    {
-      id: 'bring-forward',
-      label: 'Bring forward',
-      icon: <ArrowUp className="h-3.5 w-3.5" />,
-      onClick: () => {
-        const tracks = useProjectStore.getState().currentProject?.tracks || [];
-        const idx = tracks.findIndex((t) => t.id === track.id);
-        if (idx >= 0 && idx < tracks.length - 1) {
-          useProjectStore.getState().reorderTracks(idx, idx + 1);
-        }
-      },
-    },
-    {
-      id: 'bring-backward',
-      label: 'Send backward',
-      icon: <ArrowDown className="h-3.5 w-3.5" />,
-      onClick: () => {
-        const tracks = useProjectStore.getState().currentProject?.tracks || [];
-        const idx = tracks.findIndex((t) => t.id === track.id);
-        if (idx > 0) {
-          useProjectStore.getState().reorderTracks(idx, idx - 1);
-        }
-      },
-    },
+    ...(clip.type !== 'audio'
+      ? [
+          {
+            id: 'bring-forward',
+            label: 'Bring forward',
+            icon: <ArrowUp className="h-3.5 w-3.5" />,
+            onClick: () => {
+              const tracks = useProjectStore.getState().currentProject?.tracks || [];
+              const idx = tracks.findIndex((t) => t.id === track.id);
+              if (idx >= 0 && idx < tracks.length - 1) {
+                useProjectStore.getState().reorderTracks(idx, idx + 1);
+              }
+            },
+          },
+          {
+            id: 'bring-backward',
+            label: 'Send backward',
+            icon: <ArrowDown className="h-3.5 w-3.5" />,
+            onClick: () => {
+              const tracks = useProjectStore.getState().currentProject?.tracks || [];
+              const idx = tracks.findIndex((t) => t.id === track.id);
+              if (idx > 0) {
+                useProjectStore.getState().reorderTracks(idx, idx - 1);
+              }
+            },
+          },
+        ]
+      : []),
     {
       id: 'lock',
       label: track.locked ? 'Unlock' : 'Lock',

@@ -54,7 +54,9 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
     if (track.hidden) continue;
     for (const clip of track.clips) {
       if (playhead >= clip.timelineStart && playhead < clip.timelineStart + clip.timelineDuration) {
-        activeClipsWithTrack.push({ clip, track });
+        if (clip.type !== 'audio') {
+          activeClipsWithTrack.push({ clip, track });
+        }
       }
     }
   }

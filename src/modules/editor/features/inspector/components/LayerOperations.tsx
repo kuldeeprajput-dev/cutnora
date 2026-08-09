@@ -76,21 +76,23 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
     <div className="flex flex-col gap-3 text-studio-fg border-t border-studio-border pt-4 mt-4">
       <label className="text-[11px] font-medium text-studio-muted">Layer Operations</label>
 
-      {/* Z-Index / Track Reorder */}
-      <div className="grid grid-cols-2 gap-2">
-        <Button size="sm" variant="secondary" onClick={handleBringForward} disabled={trackIndex >= totalTracks - 1} className="text-xs justify-start gap-1.5">
-          <ArrowUp className="h-3.5 w-3.5 text-brand" /> Bring Forward
-        </Button>
-        <Button size="sm" variant="secondary" onClick={handleSendBackward} disabled={trackIndex <= 0} className="text-xs justify-start gap-1.5">
-          <ArrowDown className="h-3.5 w-3.5 text-mkt-info" /> Send Backward
-        </Button>
-        <Button size="sm" variant="secondary" onClick={handleBringToFront} disabled={trackIndex >= totalTracks - 1} className="text-xs justify-start gap-1.5">
-          <ChevronsUp className="h-3.5 w-3.5 text-brand" /> Bring to Front
-        </Button>
-        <Button size="sm" variant="secondary" onClick={handleSendToBack} disabled={trackIndex <= 0} className="text-xs justify-start gap-1.5">
-          <ChevronsDown className="h-3.5 w-3.5 text-mkt-info" /> Send to Back
-        </Button>
-      </div>
+      {/* Z-Index / Track Reorder (only for non-audio clips) */}
+      {clip.type !== 'audio' && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button size="sm" variant="secondary" onClick={handleBringForward} disabled={trackIndex >= totalTracks - 1} className="text-xs justify-start gap-1.5">
+            <ArrowUp className="h-3.5 w-3.5 text-brand" /> Bring Forward
+          </Button>
+          <Button size="sm" variant="secondary" onClick={handleSendBackward} disabled={trackIndex <= 0} className="text-xs justify-start gap-1.5">
+            <ArrowDown className="h-3.5 w-3.5 text-mkt-info" /> Send Backward
+          </Button>
+          <Button size="sm" variant="secondary" onClick={handleBringToFront} disabled={trackIndex >= totalTracks - 1} className="text-xs justify-start gap-1.5">
+            <ChevronsUp className="h-3.5 w-3.5 text-brand" /> Bring to Front
+          </Button>
+          <Button size="sm" variant="secondary" onClick={handleSendToBack} disabled={trackIndex <= 0} className="text-xs justify-start gap-1.5">
+            <ChevronsDown className="h-3.5 w-3.5 text-mkt-info" /> Send to Back
+          </Button>
+        </div>
+      )}
 
       {/* Duplicate, Lock, Hide, Delete */}
       <div className="grid grid-cols-2 gap-2">
@@ -100,9 +102,11 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
         <Button size="sm" variant="secondary" onClick={handleToggleLockTrack} className="text-xs justify-start gap-1.5">
           <Lock className="h-3.5 w-3.5" /> {track?.locked ? 'Unlock Track' : 'Lock Track'}
         </Button>
-        <Button size="sm" variant="secondary" onClick={handleToggleHideTrack} className="text-xs justify-start gap-1.5">
-          <Eye className="h-3.5 w-3.5" /> {track?.hidden ? 'Show Track' : 'Hide Track'}
-        </Button>
+        {clip.type !== 'audio' && (
+          <Button size="sm" variant="secondary" onClick={handleToggleHideTrack} className="text-xs justify-start gap-1.5">
+            <Eye className="h-3.5 w-3.5" /> {track?.hidden ? 'Show Track' : 'Hide Track'}
+          </Button>
+        )}
         <Button size="sm" variant="ghost" onClick={handleDelete} className="text-xs justify-start gap-1.5 text-destructive hover:bg-destructive/10">
           <Trash2 className="h-3.5 w-3.5" /> Delete Clip
         </Button>
