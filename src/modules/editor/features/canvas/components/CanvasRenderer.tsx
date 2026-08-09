@@ -118,7 +118,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
       onClick: () => {
         const tracks = currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === contextMenu.track.id);
-        if (idx > 0) reorderTracks(idx, idx - 1);
+        if (idx >= 0 && idx < tracks.length - 1) reorderTracks(idx, idx + 1);
       },
     },
     {
@@ -128,7 +128,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
       onClick: () => {
         const tracks = currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === contextMenu.track.id);
-        if (idx >= 0 && idx < tracks.length - 1) reorderTracks(idx, idx + 1);
+        if (idx > 0) reorderTracks(idx, idx - 1);
       },
     },
     {

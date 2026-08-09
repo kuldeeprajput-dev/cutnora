@@ -184,20 +184,20 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
       onClick: () => {
         const tracks = useProjectStore.getState().currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === track.id);
-        if (idx > 0) {
-          useProjectStore.getState().reorderTracks(idx, idx - 1);
+        if (idx >= 0 && idx < tracks.length - 1) {
+          useProjectStore.getState().reorderTracks(idx, idx + 1);
         }
       },
     },
     {
       id: 'bring-backward',
-      label: 'Bring backward',
+      label: 'Send backward',
       icon: <ArrowDown className="h-3.5 w-3.5" />,
       onClick: () => {
         const tracks = useProjectStore.getState().currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === track.id);
-        if (idx >= 0 && idx < tracks.length - 1) {
-          useProjectStore.getState().reorderTracks(idx, idx + 1);
+        if (idx > 0) {
+          useProjectStore.getState().reorderTracks(idx, idx - 1);
         }
       },
     },
