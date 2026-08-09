@@ -156,7 +156,7 @@ export const useEditorUIStore = create<EditorUIState>()(
 
       setLeftPanelWidth: (width) =>
         set((state) => {
-          state.leftPanelWidth = Math.min(600, Math.max(280, width));
+          state.leftPanelWidth = Math.min(600, Math.max(310, width));
         }),
 
       setTimelineHeight: (height) =>

@@ -17,11 +17,13 @@ export function TransformTab({ clip }: TransformTabProps) {
   const { updateClip, currentProject } = useProjectStore();
   const { activeTool, setActiveTool } = useEditorUIStore();
 
-  const [x, setX] = useState(clip.transform.x);
-  const [y, setY] = useState(clip.transform.y);
-  const [width, setWidth] = useState(clip.transform.width);
-  const [height, setHeight] = useState(clip.transform.height);
-  const [rotation, setRotation] = useState(clip.transform.rotation);
+  const formatNum = (num: number) => Math.round(num * 10) / 10;
+
+  const [x, setX] = useState(formatNum(clip.transform.x));
+  const [y, setY] = useState(formatNum(clip.transform.y));
+  const [width, setWidth] = useState(formatNum(clip.transform.width));
+  const [height, setHeight] = useState(formatNum(clip.transform.height));
+  const [rotation, setRotation] = useState(formatNum(clip.transform.rotation));
   const [opacity, setOpacity] = useState(clip.transform.opacity);
   const [isAspectLocked, setIsAspectLocked] = useState(true);
 
@@ -30,11 +32,11 @@ export function TransformTab({ clip }: TransformTabProps) {
   const hasActiveCrop = crop.top > 0 || crop.right > 0 || crop.bottom > 0 || crop.left > 0;
 
   useEffect(() => {
-    setX(clip.transform.x);
-    setY(clip.transform.y);
-    setWidth(clip.transform.width);
-    setHeight(clip.transform.height);
-    setRotation(clip.transform.rotation);
+    setX(formatNum(clip.transform.x));
+    setY(formatNum(clip.transform.y));
+    setWidth(formatNum(clip.transform.width));
+    setHeight(formatNum(clip.transform.height));
+    setRotation(formatNum(clip.transform.rotation));
     setOpacity(clip.transform.opacity);
   }, [clip.transform]);
 
@@ -316,17 +318,7 @@ export function TransformTab({ clip }: TransformTabProps) {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-studio-muted">Width (px)</label>
-            <button
-              type="button"
-              onClick={() => setIsAspectLocked(!isAspectLocked)}
-              className="text-studio-muted hover:text-studio-fg cursor-pointer"
-              title={isAspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
-            >
-              {isAspectLocked ? <Lock className="h-3 w-3 text-brand" /> : <Unlock className="h-3 w-3" />}
-            </button>
-          </div>
+          <label className="text-[11px] font-medium text-studio-muted block mb-1">Width (px)</label>
           <Input
             type="number"
             value={width}

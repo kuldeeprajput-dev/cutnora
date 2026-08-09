@@ -42,7 +42,7 @@ export function StudioShell() {
   useEffect(() => {
     const savedWidth = localStorage.getItem("cutframe_panel_width");
     const savedHeight = localStorage.getItem("cutframe_timeline_height");
-    if (savedWidth) setLeftPanelWidth(Math.max(280, parseInt(savedWidth, 10)));
+    if (savedWidth) setLeftPanelWidth(Math.max(310, parseInt(savedWidth, 10)));
     if (savedHeight) setTimelineHeight(parseInt(savedHeight, 10));
   }, [setLeftPanelWidth, setTimelineHeight]);
 

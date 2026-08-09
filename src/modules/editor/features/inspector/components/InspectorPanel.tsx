@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { useProjectStore } from '@/modules/projects';
 import { StudioPanel } from '@/shared/components/layout/StudioPanel';
@@ -16,9 +16,100 @@ import { CanvasSettingsPanel } from './CanvasSettingsPanel';
 import { LayerOperations } from './LayerOperations';
 import { TextInspectorTab } from '@/modules/editor/features/text';
 import { ElementInspectorTab } from '@/modules/editor/features/elements';
-import { Trash2, Layers } from 'lucide-react';
-
+import { Trash2, Layers, ChevronDown, Check, Type, Sparkles, Move, Sliders, Volume2, Gauge, Clock } from 'lucide-react';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
+
+interface InspectorTabItem {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+function InspectorTabDropdown({
+  tabs,
+  activeTab,
+  onTabChange,
+}: {
+  tabs: InspectorTabItem[];
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const activeTabObj = tabs.find((t) => t.value === activeTab) || tabs[0];
+
+  return (
+    <div ref={dropdownRef} className="relative w-full mb-4">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`flex h-9 w-full items-center justify-between rounded-lg border bg-studio-panel px-3 text-xs transition-all cursor-pointer select-none ${
+          isOpen ? 'border-brand ring-1 ring-brand/50 shadow-md' : 'border-studio-border hover:border-brand/50'
+        }`}
+      >
+        <span className="flex items-center gap-2 font-semibold text-studio-fg">
+          {activeTabObj?.icon}
+          <span>{activeTabObj?.label}</span>
+        </span>
+        <ChevronDown className={`h-4 w-4 text-studio-muted shrink-0 transition-transform ${isOpen ? 'rotate-180 text-brand' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in-80">
+          <div className="flex flex-col gap-1">
+            {tabs.map((t) => {
+              const isSelected = t.value === activeTab;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => {
+                    onTabChange(t.value);
+                    setIsOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-brand/20 text-brand font-bold border border-brand/40'
+                      : 'text-studio-fg hover:bg-studio-panel-raised hover:text-brand'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 font-medium">
+                    {t.icon}
+                    <span>{t.label}</span>
+                  </div>
+                  {isSelected && <Check className="h-4 w-4 text-brand shrink-0 ml-2" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function InspectorPanel() {
   const {
@@ -28,8 +119,27 @@ export function InspectorPanel() {
     setActiveInspectorTab,
     inspectorMode,
     setInspectorMode,
+    leftPanelWidth,
   } = useEditorUIStore();
   const { currentProject, deleteClips, updateClip } = useProjectStore();
+
+  const [isNarrow, setIsNarrow] = useState(leftPanelWidth < 360);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsNarrow(leftPanelWidth < 360);
+  }, [leftPanelWidth]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setIsNarrow(entry.contentRect.width < 360);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // When selected clip changes, automatically switch to clip inspector mode and seek playhead
   useEffect(() => {
@@ -74,7 +184,7 @@ export function InspectorPanel() {
               size="sm"
               variant="outline"
               onClick={() => setInspectorMode('clip')}
-              className="h-7 px-2.5 text-[11px] font-semibold cursor-pointer"
+              className="h-7 px-2.5 text-[11px] font-semibold cursor-pointer shrink-0 whitespace-nowrap"
             >
               Clip Properties
             </Button>
@@ -115,7 +225,7 @@ export function InspectorPanel() {
             size="sm"
             variant="outline"
             onClick={() => setInspectorMode('canvas')}
-            className="h-7 px-2 text-[10px] font-semibold cursor-pointer"
+            className="h-7 px-2 text-[10px] font-semibold cursor-pointer shrink-0 whitespace-nowrap"
           >
             Canvas Settings
           </Button>
@@ -159,6 +269,16 @@ export function InspectorPanel() {
   const isText = clip.type === 'text';
   const isElement = clip.type === 'overlay';
 
+  // Build available inspector tabs
+  const availableTabs: InspectorTabItem[] = [];
+  if (isText) availableTabs.push({ value: 'text', label: 'Text', icon: <Type className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (isElement) availableTabs.push({ value: 'element', label: 'Shape', icon: <Sparkles className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  availableTabs.push({ value: 'transform', label: 'Transform', icon: <Move className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (isVisual) availableTabs.push({ value: 'adjust', label: 'Adjust', icon: <Sliders className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (hasAudio) availableTabs.push({ value: 'audio', label: 'Audio', icon: <Volume2 className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  if (hasAudio) availableTabs.push({ value: 'speed', label: 'Speed', icon: <Gauge className="h-3.5 w-3.5 text-brand shrink-0" /> });
+  availableTabs.push({ value: 'time', label: 'Time', icon: <Clock className="h-3.5 w-3.5 text-brand shrink-0" /> });
+
   return (
     <StudioPanel
       title={clip.name}
@@ -167,24 +287,34 @@ export function InspectorPanel() {
           size="sm"
           variant="outline"
           onClick={() => setInspectorMode('canvas')}
-          className="h-7 px-2 text-[10px] font-semibold cursor-pointer"
+          className="h-7 px-2 text-[10px] font-semibold cursor-pointer shrink-0 whitespace-nowrap"
         >
           Canvas Settings
         </Button>
       }
       className="h-full w-full"
     >
-      <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
+      <div ref={containerRef} className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
         <Tabs defaultValue={isText ? 'text' : isElement ? 'element' : 'transform'} value={activeInspectorTab} onValueChange={setActiveInspectorTab}>
-          <TabList className="flex items-center gap-1 overflow-x-auto studio-scrollbar mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border shrink-0">
-            {isText && <TabTrigger value="text" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Text</TabTrigger>}
-            {isElement && <TabTrigger value="element" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Shape</TabTrigger>}
-            <TabTrigger value="transform" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Transform</TabTrigger>
-            {isVisual && <TabTrigger value="adjust" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Adjust</TabTrigger>}
-            {hasAudio && <TabTrigger value="audio" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Audio</TabTrigger>}
-            {hasAudio && <TabTrigger value="speed" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Speed</TabTrigger>}
-            <TabTrigger value="time" className="flex-1 min-w-max text-xs py-1 px-2.5 cursor-pointer">Time</TabTrigger>
-          </TabList>
+          {isNarrow ? (
+            /* Custom Responsive Dropdown when panel is narrow (< 340px) */
+            <InspectorTabDropdown
+              tabs={availableTabs}
+              activeTab={activeInspectorTab}
+              onTabChange={setActiveInspectorTab}
+            />
+          ) : (
+            /* Horizontal Tabs Bar when panel width is wide (>= 290px) */
+            <TabList className="flex items-center gap-0.5 overflow-x-auto studio-scrollbar mb-4 bg-studio-topbar p-1 rounded-lg border border-studio-border shrink-0">
+              {isText && <TabTrigger value="text" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Text</TabTrigger>}
+              {isElement && <TabTrigger value="element" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Shape</TabTrigger>}
+              <TabTrigger value="transform" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Transform</TabTrigger>
+              {isVisual && <TabTrigger value="adjust" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Adjust</TabTrigger>}
+              {hasAudio && <TabTrigger value="audio" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Audio</TabTrigger>}
+              {hasAudio && <TabTrigger value="speed" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Speed</TabTrigger>}
+              <TabTrigger value="time" className="flex-1 text-[11px] py-1 px-1 justify-center whitespace-nowrap cursor-pointer">Time</TabTrigger>
+            </TabList>
+          )}
 
           {isText && (
             <TabContent value="text">
