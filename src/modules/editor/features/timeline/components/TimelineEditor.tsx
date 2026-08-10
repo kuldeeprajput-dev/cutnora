@@ -479,13 +479,41 @@ export function TimelineEditor() {
     };
 
     const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+
+      if (mode === "move" && latestMovePreview?.valid) {
+        if (latestMovePreview.createTrack) {
+          moveClipToNewTrack(
+            clip.id,
+            latestMovePreview.targetTrackType,
+            latestMovePreview.targetStart,
+            latestMovePreview.targetTrackName,
+          );
+        } else if (
+          latestMovePreview.targetTrackId &&
+          (latestMovePreview.targetTrackId !== clip.trackId ||
+            Math.abs(latestMovePreview.targetStart - clip.timelineStart) >
+              0.001)
+        ) {
+          moveClip(
+            clip.id,
+            latestMovePreview.targetTrackId,
+            latestMovePreview.targetStart,
+          );
+        }
+      }
+
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      setClipDragPreview(null);
       setActiveSnapLine(null);
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   // Compute dynamic scrubber line height: only extend down to the lowest track that has intersecting media
@@ -493,14 +521,18 @@ export function TimelineEditor() {
   tracks.forEach((track, index) => {
     const isIntersecting = track.clips.some((clip) => {
       // clip.timelineDuration might be a bit loose due to floating point, so add a tiny epsilon
-      return playhead >= clip.timelineStart && playhead < clip.timelineStart + clip.timelineDuration + 0.01;
+      return (
+        playhead >= clip.timelineStart &&
+        playhead < clip.timelineStart + clip.timelineDuration + 0.01
+      );
     });
     if (isIntersecting) {
       maxIntersectingTrackIndex = index;
     }
   });
-  
-  const playheadLineHeight = maxIntersectingTrackIndex >= 0 ? (maxIntersectingTrackIndex + 1) * 48 : 0;
+
+  const playheadLineHeight =
+    maxIntersectingTrackIndex >= 0 ? (maxIntersectingTrackIndex + 1) * 48 : 0;
 
   return (
     <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none overflow-hidden">
@@ -523,7 +555,11 @@ export function TimelineEditor() {
           ref={rulerContainerRef}
           className="flex-1 overflow-hidden relative"
         >
-          <TimeRuler duration={projectDuration} zoom={zoom} scrollLeft={scrollLeft} />
+          <TimeRuler
+            duration={projectDuration}
+            zoom={zoom}
+            scrollLeft={scrollLeft}
+          />
         </div>
       </div>
 
