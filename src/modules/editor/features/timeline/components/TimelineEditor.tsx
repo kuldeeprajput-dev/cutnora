@@ -572,13 +572,94 @@ export function TimelineEditor() {
           style={{ width: `${trackHeaderWidth}px` }}
           className="shrink-0 bg-studio-topbar border-r border-studio-border z-10 flex flex-col overflow-hidden"
         >
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={tracks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-              {tracks.map((track) => (
-                <TrackHeader key={track.id} track={track} />
-              ))}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleTrackDragStart}
+            onDragOver={handleTrackDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={resetTrackDrag}
+          >
+            <SortableContext
+              items={tracks.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {tracks.map((track) => {
+                const reorderState =
+                  activeTrackDragId === track.id
+                    ? "active"
+                    : overTrackDragId === track.id &&
+                        overTrackDragId !== activeTrackDragId
+                      ? "over"
+                      : null;
+
+                return (
+                  <TrackHeader
+                    key={track.id}
+                    track={track}
+                    reorderState={reorderState}
+                    reorderDropPosition={trackDropPosition}
+                  />
+                );
+              })}
             </SortableContext>
+            {typeof document !== "undefined" &&
+              createPortal(
+                <DragOverlay
+                  zIndex={1000}
+                  dropAnimation={{
+                    duration: 180,
+                    easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+                  }}
+                >
+                  {activeTrackDrag && (
+                    <div
+                      style={{
+                        width: `${Math.max(176, trackHeaderWidth - 8)}px`,
+                      }}
+                      className="pointer-events-none flex h-12 items-center gap-2 rounded-lg border border-brand/70 bg-studio-panel-raised/95 px-2 text-studio-fg shadow-2xl ring-1 ring-brand/30 backdrop-blur-md"
+                    >
+                      <span className="flex h-7 w-6 shrink-0 items-center justify-center rounded bg-brand/15 text-brand">
+                        <GripVertical className="h-4 w-4" />
+                      </span>
+                      <span className="shrink-0">
+                        {renderDragClipIcon(activeTrackDrag.type)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-semibold">
+                          {activeTrackDrag.name}
+                        </div>
+                        <div className="text-[9px] text-studio-muted">
+                          {activeTrackDrag.clips.length}{" "}
+                          {activeTrackDrag.clips.length === 1
+                            ? "clip"
+                            : "clips"}
+                        </div>
+                      </div>
+                      <span className="shrink-0 rounded bg-brand/15 px-1.5 py-0.5 text-[9px] font-semibold text-brand">
+                        Moving
+                      </span>
+                    </div>
+                  )}
+                </DragOverlay>,
+                document.body,
+              )}
           </DndContext>
+          {clipDragPreview?.createTrack && (
+            <div className="flex h-12 shrink-0 items-center gap-2 border-y border-dashed border-brand/60 bg-brand/10 px-3 text-brand">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand/20">
+                <Plus className="h-3.5 w-3.5" />
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[11px] font-semibold">
+                  Create {clipDragPreview.targetTrackName}
+                </div>
+                <div className="truncate text-[9px] text-studio-muted">
+                  Release to add this track
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Resizer Handle for Track Headers Width */}
@@ -595,12 +676,21 @@ export function TimelineEditor() {
           onContextMenu={(e) => {
             // Right-click on empty timeline area
             const target = e.target as HTMLElement | null;
-            if (target && (target.id.startsWith('timeline-clip-') || target.closest('[id^="timeline-clip-"]'))) {
+            if (
+              target &&
+              (target.id.startsWith("timeline-clip-") ||
+                target.closest('[id^="timeline-clip-"]'))
+            ) {
               return; // Clip right-click handled inside TimelineClipItem
             }
             e.preventDefault();
             const rect = scrollContainerRef.current?.getBoundingClientRect();
-            const clickX = rect ? e.clientX - rect.left + (scrollContainerRef.current?.scrollLeft || 0) - 16 : 0;
+            const clickX = rect
+              ? e.clientX -
+                rect.left +
+                (scrollContainerRef.current?.scrollLeft || 0) -
+                16
+              : 0;
             const pasteTime = Math.max(0, clickX / zoom);
             setTimelineContextMenu({ x: e.clientX, y: e.clientY, pasteTime });
           }}
