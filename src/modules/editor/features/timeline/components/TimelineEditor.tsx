@@ -173,7 +173,11 @@ export function TimelineEditor() {
 
   const tracks = currentProject?.tracks || [];
   const projectDuration = currentProject?.settings.duration ?? 0;
-  const totalWidthPx = Math.max(100, projectDuration * zoom + 16 + 60);
+  const dragPreviewEnd = clipDragPreview
+    ? clipDragPreview.targetStart + clipDragPreview.duration
+    : 0;
+  const visibleTimelineDuration = Math.max(projectDuration, dragPreviewEnd);
+  const totalWidthPx = Math.max(100, visibleTimelineDuration * zoom + 16 + 60);
   const playheadLeftPx = 16 + playhead * zoom;
   const activeTrackDrag = tracks.find(
     (track) => track.id === activeTrackDragId,
@@ -556,7 +560,7 @@ export function TimelineEditor() {
           className="flex-1 overflow-hidden relative"
         >
           <TimeRuler
-            duration={projectDuration}
+            duration={visibleTimelineDuration}
             zoom={zoom}
             scrollLeft={scrollLeft}
           />
