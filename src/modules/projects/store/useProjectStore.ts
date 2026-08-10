@@ -409,6 +409,62 @@ export const useProjectStore = create<ProjectState>()(
       if (updated) autosaveService.scheduleSave(updated);
     },
 
+    moveClipToNewTrack: (clipId, trackType, newStart, trackName) => {
+      const current = get().currentProject;
+      if (!current) return;
+
+      const sourceClip = current.tracks
+        .flatMap((track) => track.clips)
+        .find((clip) => clip.id === clipId);
+      if (!sourceClip) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (!state.currentProject) return;
+
+        let movedClip: TimelineClip | undefined;
+        state.currentProject.tracks.forEach((track) => {
+          const clip = track.clips.find((item) => item.id === clipId);
+          if (clip) movedClip = { ...clip } as TimelineClip;
+          track.clips = track.clips.filter((item) => item.id !== clipId);
+        });
+
+        if (!movedClip) return;
+
+        state.currentProject.tracks = state.currentProject.tracks.filter(
+          (track) => track.clips.length > 0,
+        );
+        state.currentProject.tracks.forEach((track, index) => {
+          track.order = index;
+        });
+
+        const trackId = nanoid();
+        const trackCount = state.currentProject.tracks.length;
+        const newTrack: Track = {
+          id: trackId,
+          type: trackType,
+          name: trackName,
+          order: trackCount,
+          hidden: false,
+          locked: false,
+          muted: false,
+          clips: [
+            {
+              ...movedClip,
+              trackId,
+              timelineStart: Number(Math.max(0, newStart).toFixed(3)),
+            },
+          ],
+        };
+
+        state.currentProject.tracks.push(newTrack);
+        syncProjectDuration(state.currentProject);
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
     trimClip: (clipId, newStart, newDuration, newSourceStart) => {
       const current = get().currentProject;
       if (!current) return;
