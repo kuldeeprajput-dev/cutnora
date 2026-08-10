@@ -211,6 +211,10 @@ export const useProjectStore = create<ProjectState>()(
       for (const assetId of current.assetIds) {
         const asset = await db.assets.get(assetId);
         if (asset) {
+          if (asset.remoteUrl) {
+            validAssetIds.add(assetId);
+            continue;
+          }
           const blob = await db.blobs.get(asset.blobId);
           if (blob) {
             validAssetIds.add(assetId);

@@ -1,6 +1,7 @@
-import type { Track } from '@/modules/editor/types';
+import type { Track } from "@/modules/editor/types";
 
-export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5' | '2:3' | 'custom' | (string & {});
+export type AspectRatio =
+  "16:9" | "9:16" | "1:1" | "4:5" | "2:3" | "custom" | (string & {});
 
 export interface ProjectSettings {
   width: number;
@@ -15,7 +16,7 @@ export interface ProjectSettings {
 export interface MediaAsset {
   id: string;
   projectId: string;
-  type: 'video' | 'image' | 'audio';
+  type: "video" | "image" | "audio";
   name: string;
   mimeType: string;
   size: number;
@@ -26,7 +27,13 @@ export interface MediaAsset {
   blobId: string;
   thumbnailBlobId?: string;
   waveformPeaks?: number[];
-  metadataStatus: 'pending' | 'ready' | 'error';
+  metadataStatus: "pending" | "ready" | "error";
+  sourceUrl?: string;
+  sourceName?: string;
+  license?: string;
+  attribution?: string;
+  remoteUrl?: string;
+  remotePreviewUrl?: string;
 }
 
 export interface Project {

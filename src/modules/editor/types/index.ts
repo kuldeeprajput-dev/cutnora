@@ -1,20 +1,20 @@
-export type TrackType = 'video' | 'overlay' | 'text' | 'audio';
-export type ClipType = 'video' | 'overlay' | 'text' | 'audio' | 'image';
+export type TrackType = "video" | "overlay" | "text" | "audio";
+export type ClipType = "video" | "overlay" | "text" | "audio" | "image";
 export type EditorTool =
-  | 'media'
-  | 'canvas'
-  | 'text'
-  | 'audio'
-  | 'videos'
-  | 'images'
-  | 'elements'
-  | 'record'
-  | 'select'
-  | 'split'
-  | 'crop'
-  | 'hand';
+  | "media"
+  | "canvas"
+  | "text"
+  | "audio"
+  | "videos"
+  | "images"
+  | "elements"
+  | "record"
+  | "select"
+  | "split"
+  | "crop"
+  | "hand";
 
-export type FitMode = 'contain' | 'cover' | 'fill';
+export type FitMode = "contain" | "cover" | "fill";
 
 export interface CropSettings {
   top: number;
@@ -58,11 +58,11 @@ export interface TextStyle {
   fontFamily: string;
   color: string;
   backgroundColor?: string;
-  textAlign: 'left' | 'center' | 'right';
-  fontWeight: 'normal' | 'bold';
-  fontStyle?: 'normal' | 'italic';
-  textDecoration?: 'none' | 'underline' | 'line-through';
-  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  textAlign: "left" | "center" | "right";
+  fontWeight: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline" | "line-through";
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
   lineHeight?: number;
   letterSpacing?: number;
   bgPadding?: number;
@@ -82,17 +82,19 @@ export interface ElementStyle {
   strokeWidth?: number;
   borderRadius?: number;
   shapeType?:
-    | 'rectangle'
-    | 'rounded-rect'
-    | 'circle'
-    | 'line'
-    | 'arrow'
-    | 'triangle'
-    | 'speech-bubble'
-    | 'progress-bar'
-    | 'divider';
-  lineStyle?: 'solid' | 'dashed' | 'dotted';
-  arrowHead?: 'none' | 'end' | 'both';
+    | "rectangle"
+    | "rounded-rect"
+    | "circle"
+    | "line"
+    | "arrow"
+    | "triangle"
+    | "flag"
+    | "chat-bubble"
+    | "speech-bubble"
+    | "progress-bar"
+    | "divider";
+  lineStyle?: "solid" | "dashed" | "dotted";
+  arrowHead?: "none" | "end" | "both";
   progress?: number;
   shadowColor?: string;
   shadowBlur?: number;
