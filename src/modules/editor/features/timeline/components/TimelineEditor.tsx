@@ -703,22 +703,93 @@ export function TimelineEditor() {
               <span>No tracks created yet</span>
             </div>
           ) : (
-            <div className="flex flex-col relative w-full h-fit" style={{ minWidth: `${totalWidthPx}px` }}>
-              {tracks.map((track) => (
-                <TrackLane
-                  key={track.id}
-                  track={track}
-                  zoom={zoom}
-                  totalWidthPx={totalWidthPx}
-                  onStartDragClip={handleStartDragClip}
+            <div
+              className="flex flex-col relative w-full h-fit"
+              style={{ minWidth: `${totalWidthPx}px` }}
+            >
+              {tracks.map((track) => {
+                const isDropTarget = Boolean(
+                  clipDragPreview &&
+                  !clipDragPreview.createTrack &&
+                  clipDragPreview.targetTrackId === track.id,
+                );
+
+                return (
+                  <TrackLane
+                    key={track.id}
+                    track={track}
+                    zoom={zoom}
+                    totalWidthPx={totalWidthPx}
+                    draggingClipId={clipDragPreview?.clipId}
+                    reorderState={
+                      activeTrackDragId === track.id
+                        ? "active"
+                        : overTrackDragId === track.id &&
+                            overTrackDragId !== activeTrackDragId
+                          ? "over"
+                          : null
+                    }
+                    reorderDropPosition={trackDropPosition}
+                    dropState={
+                      isDropTarget
+                        ? clipDragPreview?.valid
+                          ? "valid"
+                          : "invalid"
+                        : null
+                    }
+                    onStartDragClip={handleStartDragClip}
+                  />
+                );
+              })}
+
+              {clipDragPreview?.createTrack && (
+                <div
+                  style={{ minWidth: `${totalWidthPx}px` }}
+                  aria-hidden="true"
+                  className="relative h-12 w-full border-y border-dashed border-brand/60 bg-brand/[0.07] shadow-[inset_0_0_18px_rgba(234,88,12,0.06)]"
                 />
-              ))}
+              )}
+
+              {clipDragPreview && (
+                <div
+                  style={{
+                    left: `${16 + clipDragPreview.targetStart * zoom}px`,
+                    top: `${clipDragPreview.targetTrackIndex * TRACK_HEIGHT + 4}px`,
+                    width: `${Math.max(12, clipDragPreview.duration * zoom)}px`,
+                    height: "40px",
+                  }}
+                  className={cn(
+                    "pointer-events-none absolute z-50 flex items-center justify-between overflow-hidden rounded-lg border-2 border-dashed px-2 shadow-xl backdrop-blur-sm",
+                    clipDragPreview.valid
+                      ? getDragClipColor(clipDragPreview.clipType)
+                      : "border-destructive bg-destructive/20 text-destructive",
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    {renderDragClipIcon(clipDragPreview.clipType)}
+                    <span className="truncate text-[11px] font-semibold text-studio-fg">
+                      {clipDragPreview.clipName}
+                    </span>
+                  </div>
+                  <span className="ml-2 shrink-0 rounded bg-studio-bg/70 px-1 text-[9px] font-medium text-studio-fg">
+                    {clipDragPreview.createTrack
+                      ? "New track"
+                      : clipDragPreview.valid
+                        ? "Move"
+                        : "Not allowed"}
+                  </span>
+                </div>
+              )}
 
               {/* Red Continuous Scrubber Line */}
               <div
-                style={{ left: `${playheadLeftPx}px`, height: playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0 }}
+                style={{
+                  left: `${playheadLeftPx}px`,
+                  height:
+                    playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0,
+                }}
                 className={`absolute top-0 w-0.5 bg-brand z-30 pointer-events-none shadow-md -translate-x-1/2 ${
-                  playheadLineHeight === 0 ? 'hidden' : ''
+                  playheadLineHeight === 0 ? "hidden" : ""
                 }`}
               />
 

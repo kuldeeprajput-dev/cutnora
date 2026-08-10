@@ -14,9 +14,11 @@ import { CSS } from '@dnd-kit/utilities';
 
 export interface TrackHeaderProps {
   track: Track;
+  reorderState?: 'active' | 'over' | null;
+  reorderDropPosition?: 'before' | 'after';
 }
 
-export function TrackHeader({ track }: TrackHeaderProps) {
+export function TrackHeader({ track, reorderState, reorderDropPosition = 'before' }: TrackHeaderProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(track.name);
   const { currentProject } = useProjectStore();
@@ -27,7 +29,8 @@ export function TrackHeader({ track }: TrackHeaderProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.25 : 1,
+    zIndex: isDragging ? 20 : undefined,
   };
 
   const isSelected = activeTrackId === track.id;
@@ -112,10 +115,23 @@ export function TrackHeader({ track }: TrackHeaderProps) {
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          'flex h-12 w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-2 text-studio-fg select-none',
-          isSelected && 'bg-studio-panel-raised border-l-2 border-l-brand'
+          'relative flex h-12 w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-2 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow]',
+          isSelected && 'bg-studio-panel-raised border-l-2 border-l-brand',
+          reorderState === 'active' && 'border-y border-dashed border-brand/50 bg-brand/5',
+          reorderState === 'over' && 'bg-brand/10'
         )}
       >
+        {reorderState === 'over' && (
+          <div
+            className={cn(
+              'pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-brand shadow-[0_0_8px_rgba(234,88,12,0.8)]',
+              reorderDropPosition === 'before' ? '-top-px' : '-bottom-px',
+            )}
+          >
+            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-brand" />
+          </div>
+        )}
+
         {/* Left: Drag Handle & Track Name */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <button
