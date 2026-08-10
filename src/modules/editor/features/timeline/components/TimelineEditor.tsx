@@ -143,27 +143,71 @@ export function TimelineEditor() {
     };
 
     const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
   };
 
   const [isAltPressed, setIsAltPressed] = useState(false);
   const [activeSnapLine, setActiveSnapLine] = useState<number | null>(null);
-  const [timelineContextMenu, setTimelineContextMenu] = useState<{ x: number; y: number; pasteTime: number } | null>(null);
+  const [clipDragPreview, setClipDragPreview] =
+    useState<ClipDragPreview | null>(null);
+  const [activeTrackDragId, setActiveTrackDragId] = useState<string | null>(
+    null,
+  );
+  const [overTrackDragId, setOverTrackDragId] = useState<string | null>(null);
+  const trackDragCursorRef = useRef("");
+  const [timelineContextMenu, setTimelineContextMenu] = useState<{
+    x: number;
+    y: number;
+    pasteTime: number;
+  } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const tracks = currentProject?.tracks || [];
   const projectDuration = currentProject?.settings.duration ?? 0;
   const totalWidthPx = Math.max(100, projectDuration * zoom + 16 + 60);
   const playheadLeftPx = 16 + playhead * zoom;
+  const activeTrackDrag = tracks.find(
+    (track) => track.id === activeTrackDragId,
+  );
+  const activeTrackDragIndex = tracks.findIndex(
+    (track) => track.id === activeTrackDragId,
+  );
+  const overTrackDragIndex = tracks.findIndex(
+    (track) => track.id === overTrackDragId,
+  );
+  const trackDropPosition: "before" | "after" =
+    activeTrackDragIndex >= 0 &&
+    overTrackDragIndex >= 0 &&
+    activeTrackDragIndex < overTrackDragIndex
+      ? "after"
+      : "before";
+
+  const resetTrackDrag = () => {
+    setActiveTrackDragId(null);
+    setOverTrackDragId(null);
+    document.body.style.cursor = trackDragCursorRef.current;
+  };
+
+  const handleTrackDragStart = (event: DragStartEvent) => {
+    const trackId = String(event.active.id);
+    trackDragCursorRef.current = document.body.style.cursor;
+    document.body.style.cursor = "grabbing";
+    setActiveTrackDragId(trackId);
+    setOverTrackDragId(trackId);
+  };
+
+  const handleTrackDragOver = (event: DragOverEvent) => {
+    setOverTrackDragId(event.over ? String(event.over.id) : null);
+  };
 
   // Track reorder end handler
   const handleDragEnd = (event: DragEndEvent) => {
@@ -171,51 +215,64 @@ export function TimelineEditor() {
     if (over && active.id !== over.id) {
       const oldIndex = tracks.findIndex((t) => t.id === active.id);
       const newIndex = tracks.findIndex((t) => t.id === over.id);
-      reorderTracks(oldIndex, newIndex);
+      if (oldIndex >= 0 && newIndex >= 0) reorderTracks(oldIndex, newIndex);
     }
+    resetTrackDrag();
   };
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '');
+      const isInput = ["INPUT", "TEXTAREA"].includes(
+        document.activeElement?.tagName || "",
+      );
       if (isInput) return;
 
-      if (e.key === 'Alt') setIsAltPressed(true);
+      if (e.key === "Alt") setIsAltPressed(true);
 
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
-      } else if (e.code === 'KeyS') {
+      } else if (e.code === "KeyS") {
         if (selectedClipIds.length > 0) {
           selectedClipIds.forEach((id) => splitClip(id, playhead));
         }
-      } else if (e.code === 'KeyD' && (e.ctrlKey || e.metaKey)) {
+      } else if (e.code === "KeyD" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         if (selectedClipIds.length > 0) duplicateClips(selectedClipIds);
-      } else if (e.code === 'Delete' || e.code === 'Backspace') {
+      } else if (e.code === "Delete" || e.code === "Backspace") {
         if (selectedClipIds.length > 0) {
           deleteClips(selectedClipIds);
           clearSelection();
         }
-      } else if (e.code === 'ArrowLeft') {
+      } else if (e.code === "ArrowLeft") {
         stepBackward();
-      } else if (e.code === 'ArrowRight') {
+      } else if (e.code === "ArrowRight") {
         stepForward();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Alt') setIsAltPressed(false);
+      if (e.key === "Alt") setIsAltPressed(false);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedClipIds, playhead, togglePlay, splitClip, duplicateClips, deleteClips, clearSelection, stepBackward, stepForward]);
+  }, [
+    selectedClipIds,
+    playhead,
+    togglePlay,
+    splitClip,
+    duplicateClips,
+    deleteClips,
+    clearSelection,
+    stepBackward,
+    stepForward,
+  ]);
 
   const rulerContainerRef = useRef<HTMLDivElement>(null);
   const trackHeadersContainerRef = useRef<HTMLDivElement>(null);
