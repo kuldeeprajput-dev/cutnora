@@ -139,7 +139,11 @@ export function TrackHeader({ track, reorderState, reorderDropPosition = 'before
             aria-label="Reorder track"
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-studio-muted hover:text-studio-fg p-0.5"
+            title="Drag to reorder track"
+            className={cn(
+              'flex h-7 w-5 touch-none cursor-grab items-center justify-center rounded text-studio-muted outline-none transition-[color,background-color,transform] hover:bg-studio-panel-raised hover:text-studio-fg focus-visible:ring-1 focus-visible:ring-brand active:cursor-grabbing active:scale-95',
+              isDragging && 'bg-brand/15 text-brand',
+            )}
           >
             <GripVertical className="h-3.5 w-3.5" />
           </button>

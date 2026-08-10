@@ -53,6 +53,12 @@ interface ProjectState {
   updateClip: (clipId: string, updates: Partial<TimelineClip>) => void;
   renameClip: (clipId: string, name: string) => void;
   moveClip: (clipId: string, targetTrackId: string, newStart: number) => void;
+  moveClipToNewTrack: (
+    clipId: string,
+    trackType: Track["type"],
+    newStart: number,
+    trackName: string,
+  ) => void;
   trimClip: (
     clipId: string,
     newStart: number,
@@ -383,12 +389,18 @@ export const useProjectStore = create<ProjectState>()(
       historyManager.pushState(current);
       set((state) => {
         if (state.currentProject) {
-          state.currentProject.tracks = moveClipInTimeline(
+          let updatedTracks = moveClipInTimeline(
             state.currentProject.tracks,
             clipId,
             targetTrackId,
             newStart,
           );
+
+          updatedTracks = updatedTracks
+            .filter((track) => track.clips.length > 0)
+            .map((track, index) => ({ ...track, order: index }));
+
+          state.currentProject.tracks = updatedTracks;
           syncProjectDuration(state.currentProject);
         }
       });
