@@ -1,29 +1,64 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import type { TimelineClip, Track } from '@/modules/editor/types';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { useProjectStore } from '@/modules/projects';
-import { db } from '@/modules/core/db/database';
-import { objectUrlManager } from '@/modules/core/db/object-url-manager';
-import { ContextMenu, type ContextMenuItemData } from '@/shared/components/ui/ContextMenu';
-import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
-import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
-import { WaveformCanvas } from '@/modules/editor/features/audio/components/WaveformCanvas';
-import { detachAudioFromVideo } from '@/modules/editor/features/audio/utils/detachAudio';
-import { FileVideo, Image as ImageIcon, Music, Type, Shapes, AlertCircle, Scissors, Copy, Trash2, Volume2, VolumeX, Unlink, Clipboard, MoveLeft, ArrowUp, ArrowDown, Lock, Eye, EyeOff } from 'lucide-react';
-import { cn } from '@/shared/utils/cn';
+import React, { useState, useEffect } from "react";
+import type { TimelineClip, Track } from "@/modules/editor/types";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { useProjectStore } from "@/modules/projects";
+import { db } from "@/modules/core/db/database";
+import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import {
+  ContextMenu,
+  type ContextMenuItemData,
+} from "@/shared/components/ui/ContextMenu";
+import { useClipboardStore } from "@/modules/editor/store/useClipboardStore";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { WaveformCanvas } from "@/modules/editor/features/audio/components/WaveformCanvas";
+import { detachAudioFromVideo } from "@/modules/editor/features/audio/utils/detachAudio";
+import {
+  FileVideo,
+  Image as ImageIcon,
+  Music,
+  Type,
+  Shapes,
+  AlertCircle,
+  Scissors,
+  Copy,
+  Trash2,
+  Volume2,
+  VolumeX,
+  Unlink,
+  Clipboard,
+  MoveLeft,
+  ArrowUp,
+  ArrowDown,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { cn } from "@/shared/utils/cn";
 
 export interface TimelineClipItemProps {
   clip: TimelineClip;
   track: Track;
   zoom: number; // Px per second
-  onStartDrag: (clip: TimelineClip, mode: 'move' | 'trim-start' | 'trim-end', e: React.PointerEvent) => void;
+  isDragging?: boolean;
+  onStartDrag: (
+    clip: TimelineClip,
+    mode: "move" | "trim-start" | "trim-end",
+    e: React.PointerEvent,
+  ) => void;
 }
 
-export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineClipItemProps) {
+export function TimelineClipItem({
+  clip,
+  track,
+  zoom,
+  isDragging = false,
+  onStartDrag,
+}: TimelineClipItemProps) {
   const { selectedClipIds, toggleClipSelection } = useEditorUIStore();
-  const { splitClip, duplicateClips, deleteClips, updateClip } = useProjectStore();
+  const { splitClip, duplicateClips, deleteClips, updateClip } =
+    useProjectStore();
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [waveformPeaks, setWaveformPeaks] = useState<number[] | null>(null);
   const [assetDuration, setAssetDuration] = useState<number>(10);
@@ -60,7 +95,10 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
 
           const thumbRecord = await db.thumbnails.get(asset.thumbnailBlobId);
           if (thumbRecord && isMounted) {
-            const url = objectUrlManager.createUrl(asset.thumbnailBlobId, thumbRecord.blob);
+            const url = objectUrlManager.createUrl(
+              asset.thumbnailBlobId,
+              thumbRecord.blob,
+            );
             setThumbUrl(url);
           }
         }
@@ -76,44 +114,48 @@ export function TimelineClipItem({ clip, track, zoom, onStartDrag }: TimelineCli
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (track.locked) return;
+    e.preventDefault();
     e.stopPropagation();
     toggleClipSelection(clip.id, e.shiftKey);
-    onStartDrag(clip, 'move', e);
+    onStartDrag(clip, "move", e);
   };
 
   const getBgColor = () => {
     switch (clip.type) {
-      case 'video':
-        return 'bg-brand/20 border-brand/50 text-brand';
-      case 'image':
-        return 'bg-selection/20 border-selection/50 text-selection';
-      case 'audio':
-        return 'bg-mkt-success/20 border-mkt-success/50 text-mkt-success';
-      case 'text':
-        return 'bg-mkt-info/20 border-mkt-info/50 text-mkt-info';
-      case 'overlay':
-        return 'bg-overlay/20 border-overlay/50 text-overlay';
+      case "video":
+        return "bg-brand/20 border-brand/50 text-brand";
+      case "image":
+        return "bg-selection/20 border-selection/50 text-selection";
+      case "audio":
+        return "bg-mkt-success/20 border-mkt-success/50 text-mkt-success";
+      case "text":
+        return "bg-mkt-info/20 border-mkt-info/50 text-mkt-info";
+      case "overlay":
+        return "bg-overlay/20 border-overlay/50 text-overlay";
     }
   };
 
   const renderIcon = () => {
     switch (clip.type) {
-      case 'video':
+      case "video":
         return <FileVideo className="h-3 w-3 shrink-0" />;
-      case 'image':
+      case "image":
         return <ImageIcon className="h-3 w-3 shrink-0" />;
-      case 'audio':
+      case "audio":
         return <Music className="h-3 w-3 shrink-0" />;
-      case 'text':
+      case "text":
         return <Type className="h-3 w-3 shrink-0" />;
-      case 'overlay':
+      case "overlay":
         return <Shapes className="h-3 w-3 shrink-0" />;
     }
   };
 
   const isAudioMuted = track.muted || clip.audio?.muted;
 
-  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
