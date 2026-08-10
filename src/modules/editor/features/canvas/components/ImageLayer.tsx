@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { db } from '@/modules/core/db/database';
-import { objectUrlManager } from '@/modules/core/db/object-url-manager';
-import type { TimelineClip } from '@/modules/editor/types';
+import React, { useEffect, useState } from "react";
+import { db } from "@/modules/core/db/database";
+import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import type { TimelineClip } from "@/modules/editor/types";
 
 export interface ImageLayerProps {
   clip: TimelineClip;
@@ -19,7 +19,12 @@ export function ImageLayer({ clip }: ImageLayerProps) {
       if (!clip.assetId) return;
 
       const asset = await db.assets.get(clip.assetId);
-      if (!asset || !asset.blobId) return;
+      if (!asset) return;
+
+      if (asset.remoteUrl) {
+        if (isMounted) setImageUrl(asset.remoteUrl);
+        return;
+      }
 
       const cached = objectUrlManager.getUrl(asset.blobId);
       if (cached) {
@@ -44,7 +49,12 @@ export function ImageLayer({ clip }: ImageLayerProps) {
   if (!imageUrl) return null;
 
   const { transform, adjustments } = clip;
-  const objectFit = transform.fitMode === 'cover' ? 'cover' : transform.fitMode === 'fill' ? 'fill' : 'contain';
+  const objectFit =
+    transform.fitMode === "cover"
+      ? "cover"
+      : transform.fitMode === "fill"
+        ? "fill"
+        : "contain";
 
   const filterStyle = `
     brightness(${adjustments.brightness})

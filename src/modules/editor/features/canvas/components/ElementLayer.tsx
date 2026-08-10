@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { TimelineClip, ElementStyle } from '@/modules/editor/types';
+import React from "react";
+import type { TimelineClip, ElementStyle } from "@/modules/editor/types";
 
 export interface ElementLayerProps {
   clip: TimelineClip;
@@ -9,20 +9,24 @@ export interface ElementLayerProps {
 
 export function ElementLayer({ clip }: ElementLayerProps) {
   const style: ElementStyle = clip.elementStyle || {
-    fillColor: '#FF5A36',
+    fillColor: "#FF5A36",
     borderRadius: 8,
-    shapeType: 'rectangle',
+    shapeType: "rectangle",
   };
 
-  const shapeType = style.shapeType || 'rectangle';
-  const fillColor = style.fillColor || '#FF5A36';
-  const strokeColor = style.strokeColor || 'transparent';
+  const shapeType = style.shapeType || "rectangle";
+  const fillColor = style.fillColor || "#FF5A36";
+  const strokeColor = style.strokeColor || "transparent";
   const strokeWidth = style.strokeWidth || 0;
   const borderRadius = style.borderRadius || 0;
-  const lineStyle = style.lineStyle || 'solid';
+  const lineStyle = style.lineStyle || "solid";
 
   const strokeDasharray =
-    lineStyle === 'dashed' ? '12 6' : lineStyle === 'dotted' ? '3 3' : undefined;
+    lineStyle === "dashed"
+      ? "12 6"
+      : lineStyle === "dotted"
+        ? "3 3"
+        : undefined;
 
   const shadowCss = style.shadowColor
     ? `${style.shadowOffsetX || 0}px ${style.shadowOffsetY || 0}px ${style.shadowBlur || 0}px ${style.shadowColor}`
@@ -30,7 +34,7 @@ export function ElementLayer({ clip }: ElementLayerProps) {
 
   const renderSvgShape = () => {
     switch (shapeType) {
-      case 'circle':
+      case "circle":
         return (
           <ellipse
             cx="50%"
@@ -44,21 +48,21 @@ export function ElementLayer({ clip }: ElementLayerProps) {
           />
         );
 
-      case 'line':
+      case "line":
         return (
           <line
             x1="0"
             y1="50%"
             x2="100%"
             y2="50%"
-            stroke={fillColor !== 'transparent' ? fillColor : strokeColor}
+            stroke={fillColor !== "transparent" ? fillColor : strokeColor}
             strokeWidth={strokeWidth || 4}
             strokeDasharray={strokeDasharray}
             strokeLinecap="round"
           />
         );
 
-      case 'arrow':
+      case "arrow":
         return (
           <g>
             <line
@@ -66,21 +70,21 @@ export function ElementLayer({ clip }: ElementLayerProps) {
               y1="50%"
               x2="90%"
               y2="50%"
-              stroke={fillColor !== 'transparent' ? fillColor : strokeColor}
+              stroke={fillColor !== "transparent" ? fillColor : strokeColor}
               strokeWidth={strokeWidth || 6}
               strokeDasharray={strokeDasharray}
               strokeLinecap="round"
             />
-            {(style.arrowHead === 'end' || style.arrowHead === 'both') && (
+            {(style.arrowHead === "end" || style.arrowHead === "both") && (
               <polygon points="85%,25% 100%,50% 85%,75%" fill={fillColor} />
             )}
-            {style.arrowHead === 'both' && (
+            {style.arrowHead === "both" && (
               <polygon points="15%,25% 0%,50% 15%,75%" fill={fillColor} />
             )}
           </g>
         );
 
-      case 'triangle':
+      case "triangle":
         return (
           <polygon
             points="50%,5% 95%,95% 5%,95%"
@@ -92,7 +96,30 @@ export function ElementLayer({ clip }: ElementLayerProps) {
           />
         );
 
-      case 'speech-bubble':
+      case "flag":
+        return (
+          <path
+            d="M 18 8 H 88 V 62 H 35 L 18 82 Z"
+            fill={fillColor}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={strokeDasharray}
+            strokeLinejoin="round"
+          />
+        );
+
+      case "chat-bubble":
+        return (
+          <path
+            d="M 50 5 C 75 5 95 23 95 48 C 95 72 75 90 50 90 C 42 90 34 88 28 84 L 12 93 L 17 75 C 9 68 5 59 5 48 C 5 23 25 5 50 5 Z"
+            fill={fillColor}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            vectorEffect="non-scaling-stroke"
+          />
+        );
+
+      case "speech-bubble":
         return (
           <path
             d="M 10 10 H 90 Q 95 10 95 15 V 70 Q 95 75 90 75 H 40 L 25 90 L 28 75 H 10 Q 5 75 5 70 V 15 Q 5 10 10 10 Z"
@@ -103,7 +130,7 @@ export function ElementLayer({ clip }: ElementLayerProps) {
           />
         );
 
-      case 'progress-bar': {
+      case "progress-bar": {
         const pct = Math.min(100, Math.max(0, style.progress ?? 65));
         return (
           <g>
@@ -113,7 +140,7 @@ export function ElementLayer({ clip }: ElementLayerProps) {
               width="100%"
               height="100%"
               rx={borderRadius}
-              fill={strokeColor !== 'transparent' ? strokeColor : '#1D2027'}
+              fill={strokeColor !== "transparent" ? strokeColor : "#1D2027"}
             />
             <rect
               x="0"
@@ -127,7 +154,7 @@ export function ElementLayer({ clip }: ElementLayerProps) {
         );
       }
 
-      case 'divider':
+      case "divider":
         return (
           <rect
             x="0"
@@ -139,8 +166,8 @@ export function ElementLayer({ clip }: ElementLayerProps) {
           />
         );
 
-      case 'rounded-rect':
-      case 'rectangle':
+      case "rounded-rect":
+      case "rectangle":
       default:
         return (
           <rect
@@ -166,7 +193,11 @@ export function ElementLayer({ clip }: ElementLayerProps) {
         boxShadow: shadowCss,
       }}
     >
-      <svg className="h-full w-full overflow-visible">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="h-full w-full overflow-visible"
+      >
         {renderSvgShape()}
       </svg>
     </div>

@@ -142,10 +142,11 @@ export function InspectorPanel() {
   }, []);
 
   // When selected clip changes, automatically switch to clip inspector mode and seek playhead
+  const selectedClipKey = selectedClipIds.join(',');
   useEffect(() => {
     if (selectedClipIds.length > 0) {
       setInspectorMode('clip');
-      const clips = currentProject?.tracks.flatMap((t) => t.clips) || [];
+      const clips = useProjectStore.getState().currentProject?.tracks.flatMap((t) => t.clips) || [];
       const firstClip = clips.find((c) => selectedClipIds.includes(c.id));
       if (firstClip) {
         if (firstClip.type === 'text') {
@@ -166,7 +167,7 @@ export function InspectorPanel() {
         }
       }
     }
-  }, [selectedClipIds, currentProject, setInspectorMode, setActiveInspectorTab]);
+  }, [selectedClipKey, setInspectorMode, setActiveInspectorTab]);
 
   if (!currentProject) return null;
 

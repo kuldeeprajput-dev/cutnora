@@ -1,36 +1,43 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { StudioPanel } from '@/shared/components/layout/StudioPanel';
-import { MediaLibraryPanel } from '@/modules/editor/features/media-library';
-import { InspectorPanel, CanvasSettingsPanel } from '@/modules/editor/features/inspector';
-import { TextPanel } from '@/modules/editor/features/text';
-import { ElementsPanel } from '@/modules/editor/features/elements';
-import { RecordPanel } from '@/modules/editor/features/record/components/RecordPanel';
+import React from "react";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { StudioPanel } from "@/shared/components/layout/StudioPanel";
+import { MediaLibraryPanel } from "@/modules/editor/features/media-library";
+import {
+  InspectorPanel,
+  CanvasSettingsPanel,
+} from "@/modules/editor/features/inspector";
+import { TextPanel } from "@/modules/editor/features/text";
+import { ElementsPanel } from "@/modules/editor/features/elements";
+import { RecordPanel } from "@/modules/editor/features/record/components/RecordPanel";
 
 export function ContextualPanel() {
   const { activeTool } = useEditorUIStore();
 
-  if (activeTool === 'canvas' || activeTool === 'crop' || activeTool === 'select') {
+  if (
+    activeTool === "canvas" ||
+    activeTool === "crop" ||
+    activeTool === "select"
+  ) {
     return <InspectorPanel />;
   }
 
   const renderContent = () => {
     switch (activeTool) {
-      case 'media':
-      case 'videos':
-      case 'images':
-      case 'audio':
+      case "media":
+      case "videos":
+      case "images":
+      case "audio":
         return <MediaLibraryPanel />;
 
-      case 'text':
+      case "text":
         return <TextPanel />;
 
-      case 'elements':
+      case "elements":
         return <ElementsPanel />;
 
-      case 'record':
+      case "record":
         return <RecordPanel />;
 
       default:
@@ -40,26 +47,29 @@ export function ContextualPanel() {
 
   const getPanelTitle = () => {
     switch (activeTool) {
-      case 'text':
-        return 'Text Layers';
-      case 'elements':
-        return 'Shapes & Graphics';
-      case 'record':
-        return 'Recorder';
-      case 'videos':
-        return 'Video Assets';
-      case 'images':
-        return 'Image Assets';
-      case 'audio':
-        return 'Audio Tracks';
-      case 'media':
+      case "text":
+        return "Text Layers";
+      case "elements":
+        return "Elements";
+      case "record":
+        return "Recorder";
+      case "videos":
+        return "Video Assets";
+      case "images":
+        return "Image Assets";
+      case "audio":
+        return "Audio Tracks";
+      case "media":
       default:
-        return 'Media Library';
+        return "Media Library";
     }
   };
 
   return (
-    <StudioPanel title={getPanelTitle()} className="h-full w-full border-r-0 border-t-0 border-b-0">
+    <StudioPanel
+      title={getPanelTitle()}
+      className="h-full w-full border-r-0 border-t-0 border-b-0"
+    >
       {renderContent()}
     </StudioPanel>
   );
