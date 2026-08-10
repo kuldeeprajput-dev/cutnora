@@ -336,19 +336,20 @@ export function TimelineClipItem({
       <div
         id={`timeline-clip-${clip.id}`}
         style={{
-          position: 'absolute',
+          position: "absolute",
           left: `${leftPx}px`,
           width: `${widthPx}px`,
-          top: '4px',
-          height: '40px',
+          top: "4px",
+          height: "40px",
         }}
         onPointerDown={handlePointerDown}
         onContextMenu={handleContextMenu}
         className={cn(
-          'group relative flex items-center justify-between rounded-lg border px-2 select-none overflow-hidden cursor-pointer transition-colors',
+          "group relative flex touch-none items-center justify-between rounded-lg border px-2 select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
           getBgColor(),
-          isSelected && 'ring-2 ring-selection border-selection',
-          track.locked && 'opacity-60 cursor-not-allowed'
+          isSelected && "ring-2 ring-selection border-selection",
+          isDragging && "opacity-20 ring-1 ring-brand/40",
+          track.locked && "opacity-60 cursor-not-allowed",
         )}
       >
         {/* Left Trim Handle */}
@@ -356,7 +357,7 @@ export function TimelineClipItem({
           <div
             onPointerDown={(e) => {
               e.stopPropagation();
-              onStartDrag(clip, 'trim-start', e);
+              onStartDrag(clip, "trim-start", e);
             }}
             className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip start"
@@ -364,18 +365,24 @@ export function TimelineClipItem({
         )}
 
         {/* Clip Background Video Thumbnail */}
-        {thumbUrl && clip.type === 'video' && (
-          <div className="absolute inset-0 opacity-20 bg-repeat-x pointer-events-none" style={{ backgroundImage: `url(${thumbUrl})`, backgroundSize: 'contain' }} />
+        {thumbUrl && clip.type === "video" && (
+          <div
+            className="absolute inset-0 opacity-20 bg-repeat-x pointer-events-none"
+            style={{
+              backgroundImage: `url(${thumbUrl})`,
+              backgroundSize: "contain",
+            }}
+          />
         )}
 
         {/* Waveform Canvas Layer for Audio & Video clips */}
-        {(clip.type === 'audio' || clip.type === 'video') && waveformPeaks && (
+        {(clip.type === "audio" || clip.type === "video") && waveformPeaks && (
           <div className="absolute inset-0 z-0 opacity-40 px-1 pt-3 pointer-events-none">
             <WaveformCanvas
               peaks={waveformPeaks}
               sourceStart={clip.sourceStart}
               sourceDuration={clip.sourceDuration}
-totalAssetDuration={assetDuration}
+              totalAssetDuration={assetDuration}
               isMuted={isAudioMuted}
             />
           </div>
@@ -387,13 +394,16 @@ totalAssetDuration={assetDuration}
           <span className="text-[11px] font-semibold truncate text-studio-fg">
             {clip.name}
           </span>
-          {isAudioMuted && (clip.type === 'audio' || clip.type === 'video') && (
+          {isAudioMuted && (clip.type === "audio" || clip.type === "video") && (
             <span title="Audio muted">
               <VolumeX className="h-3 w-3 text-studio-muted shrink-0" />
             </span>
           )}
           {isMissingAsset && (
-            <span className="flex items-center gap-0.5 text-[9px] font-bold text-destructive bg-destructive/20 px-1 rounded" title="Missing asset file">
+            <span
+              className="flex items-center gap-0.5 text-[9px] font-bold text-destructive bg-destructive/20 px-1 rounded"
+              title="Missing asset file"
+            >
               <AlertCircle className="h-2.5 w-2.5" /> Missing
             </span>
           )}
@@ -409,7 +419,7 @@ totalAssetDuration={assetDuration}
           <div
             onPointerDown={(e) => {
               e.stopPropagation();
-              onStartDrag(clip, 'trim-end', e);
+              onStartDrag(clip, "trim-end", e);
             }}
             className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip end"
