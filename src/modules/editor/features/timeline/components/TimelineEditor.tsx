@@ -1,26 +1,135 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useProjectStore } from '@/modules/projects';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
-import type { TimelineClip } from '@/modules/editor/types';
-import { TimelineToolbar } from './TimelineToolbar';
-import { TimeRuler } from './TimeRuler';
-import { TrackHeader } from './TrackHeader';
-import { TrackLane } from './TrackLane';
-import { TimelineContextMenu } from './TimelineContextMenu';
-import { snapTimelineTime } from '../utils/timeline-snap-utils';
-import { preventClipOverlap } from '@/modules/editor/utils/timeline-utils';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Film } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useProjectStore } from "@/modules/projects";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import type { TimelineClip, TrackType } from "@/modules/editor/types";
+import { TimelineToolbar } from "./TimelineToolbar";
+import { TimeRuler } from "./TimeRuler";
+import { TrackHeader } from "./TrackHeader";
+import { TrackLane } from "./TrackLane";
+import { TimelineContextMenu } from "./TimelineContextMenu";
+import { snapTimelineTime } from "../utils/timeline-snap-utils";
+import { preventClipOverlap } from "@/modules/editor/utils/timeline-utils";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
+  FileVideo,
+  Film,
+  GripVertical,
+  Image as ImageIcon,
+  Music,
+  Plus,
+  Shapes,
+  Type,
+} from "lucide-react";
+import { cn } from "@/shared/utils/cn";
+
+const TRACK_HEIGHT = 48;
+const NEW_TRACK_DROP_THRESHOLD = 10;
+
+interface ClipDragPreview {
+  clipId: string;
+  clipName: string;
+  clipType: TimelineClip["type"];
+  targetStart: number;
+  targetTrackId: string | null;
+  targetTrackIndex: number;
+  targetTrackType: TrackType;
+  targetTrackName: string;
+  createTrack: boolean;
+  valid: boolean;
+  duration: number;
+}
+
+function getPreferredTrack(clipType: TimelineClip["type"]): {
+  type: TrackType;
+  name: string;
+} {
+  switch (clipType) {
+    case "video":
+      return { type: "video", name: "Video Track" };
+    case "audio":
+      return { type: "audio", name: "Audio Track" };
+    case "text":
+      return { type: "text", name: "Text Track" };
+    case "image":
+      return { type: "overlay", name: "Image Track" };
+    case "overlay":
+      return { type: "overlay", name: "Overlay Track" };
+  }
+}
+
+function getDragClipColor(clipType: TimelineClip["type"]) {
+  switch (clipType) {
+    case "video":
+      return "bg-brand/30 border-brand text-brand";
+    case "image":
+      return "bg-selection/30 border-selection text-selection";
+    case "audio":
+      return "bg-mkt-success/30 border-mkt-success text-mkt-success";
+    case "text":
+      return "bg-mkt-info/30 border-mkt-info text-mkt-info";
+    case "overlay":
+      return "bg-overlay/30 border-overlay text-overlay";
+  }
+}
+
+function renderDragClipIcon(clipType: TimelineClip["type"]) {
+  switch (clipType) {
+    case "video":
+      return <FileVideo className="h-3 w-3 shrink-0" />;
+    case "image":
+      return <ImageIcon className="h-3 w-3 shrink-0" />;
+    case "audio":
+      return <Music className="h-3 w-3 shrink-0" />;
+    case "text":
+      return <Type className="h-3 w-3 shrink-0" />;
+    case "overlay":
+      return <Shapes className="h-3 w-3 shrink-0" />;
+  }
+}
 
 export function TimelineEditor() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { currentProject, moveClip, trimClip, reorderTracks, splitClip, duplicateClips, deleteClips } = useProjectStore();
-  const { zoom, scrollLeft, setScrollLeft, snappingEnabled, selectedClipIds, clearSelection, trackHeaderWidth = 180, setTrackHeaderWidth } = useEditorUIStore();
-  const { playhead, isPlaying, togglePlay, stepForward, stepBackward } = usePlaybackStore();
+  const {
+    currentProject,
+    moveClip,
+    moveClipToNewTrack,
+    trimClip,
+    reorderTracks,
+    splitClip,
+    duplicateClips,
+    deleteClips,
+  } = useProjectStore();
+  const {
+    zoom,
+    scrollLeft,
+    setScrollLeft,
+    snappingEnabled,
+    selectedClipIds,
+    clearSelection,
+    trackHeaderWidth = 180,
+    setTrackHeaderWidth,
+  } = useEditorUIStore();
+  const { playhead, isPlaying, togglePlay, stepForward, stepBackward } =
+    usePlaybackStore();
 
   const handleStartResizeTrackHeader = (e: React.PointerEvent) => {
     e.preventDefault();
