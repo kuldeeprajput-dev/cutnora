@@ -165,68 +165,71 @@ export function TimelineClipItem({
 
   const clipMenuItems: ContextMenuItemData[] = [
     {
-      id: 'cut',
-      label: 'Cut',
+      id: "cut",
+      label: "Cut",
       icon: <Scissors className="h-3.5 w-3.5" />,
-      shortcut: '⌘X',
+      shortcut: "⌘X",
       onClick: () => {
         useClipboardStore.getState().cutSelectedClips();
       },
     },
     {
-      id: 'copy',
-      label: 'Copy',
+      id: "copy",
+      label: "Copy",
       icon: <Copy className="h-3.5 w-3.5" />,
-      shortcut: '⌘C',
+      shortcut: "⌘C",
       onClick: () => {
         useClipboardStore.getState().copySelectedClips();
       },
     },
     {
-      id: 'paste-after',
-      label: 'Paste after',
+      id: "paste-after",
+      label: "Paste after",
       icon: <Clipboard className="h-3.5 w-3.5" />,
-      shortcut: '⌘V',
+      shortcut: "⌘V",
       onClick: () => {
-        useClipboardStore.getState().pasteClips(track.id, clip.timelineStart + clip.timelineDuration);
+        useClipboardStore
+          .getState()
+          .pasteClips(track.id, clip.timelineStart + clip.timelineDuration);
       },
     },
     {
-      id: 'duplicate',
-      label: 'Duplicate',
+      id: "duplicate",
+      label: "Duplicate",
       icon: <Copy className="h-3.5 w-3.5" />,
-      shortcut: '⌘D',
+      shortcut: "⌘D",
       onClick: () => duplicateClips([clip.id]),
     },
-    { id: 'div-1', label: '', isDivider: true, onClick: () => {} },
+    { id: "div-1", label: "", isDivider: true, onClick: () => {} },
     {
-      id: 'split',
-      label: 'Split',
+      id: "split",
+      label: "Split",
       icon: <Scissors className="h-3.5 w-3.5" />,
-      shortcut: 'S',
+      shortcut: "S",
       onClick: () => {
         const playhead = usePlaybackStore.getState().playhead;
         splitClip(clip.id, playhead);
       },
     },
     {
-      id: 'move-playhead',
-      label: 'Move to playhead',
+      id: "move-playhead",
+      label: "Move to playhead",
       icon: <MoveLeft className="h-3.5 w-3.5" />,
       onClick: () => {
         const playhead = usePlaybackStore.getState().playhead;
         updateClip(clip.id, { timelineStart: playhead });
       },
     },
-    { id: 'div-2', label: '', isDivider: true, onClick: () => {} },
-    ...(clip.type !== 'audio'
+    { id: "div-2", label: "", isDivider: true, onClick: () => {} },
+    ...(clip.type !== "audio"
       ? [
           {
-            id: 'bring-forward',
-            label: 'Bring forward',
+            id: "bring-forward",
+            label: "Bring forward",
             icon: <ArrowUp className="h-3.5 w-3.5" />,
             onClick: () => {
-              const tracks = useProjectStore.getState().currentProject?.tracks || [];
+              const tracks =
+                useProjectStore.getState().currentProject?.tracks || [];
               const idx = tracks.findIndex((t) => t.id === track.id);
               if (idx >= 0 && idx < tracks.length - 1) {
                 useProjectStore.getState().reorderTracks(idx, idx + 1);
@@ -234,11 +237,12 @@ export function TimelineClipItem({
             },
           },
           {
-            id: 'bring-backward',
-            label: 'Send backward',
+            id: "bring-backward",
+            label: "Send backward",
             icon: <ArrowDown className="h-3.5 w-3.5" />,
             onClick: () => {
-              const tracks = useProjectStore.getState().currentProject?.tracks || [];
+              const tracks =
+                useProjectStore.getState().currentProject?.tracks || [];
               const idx = tracks.findIndex((t) => t.id === track.id);
               if (idx > 0) {
                 useProjectStore.getState().reorderTracks(idx, idx - 1);
@@ -248,53 +252,81 @@ export function TimelineClipItem({
         ]
       : []),
     {
-      id: 'lock',
-      label: track.locked ? 'Unlock' : 'Lock',
+      id: "lock",
+      label: track.locked ? "Unlock" : "Lock",
       icon: <Lock className="h-3.5 w-3.5" />,
       onClick: () => {
         useProjectStore.setState((state) => {
           if (state.currentProject) {
-            const t = state.currentProject.tracks.find((x) => x.id === track.id);
+            const t = state.currentProject.tracks.find(
+              (x) => x.id === track.id,
+            );
             if (t) t.locked = !t.locked;
           }
         });
       },
     },
     {
-      id: 'hide-mute',
-      label: clip.type === 'audio' || clip.audio ? (clip.audio?.muted ? 'Unmute' : 'Mute') : (track.hidden ? 'Show' : 'Hide'),
-      icon: clip.type === 'audio' || clip.audio ? (clip.audio?.muted ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />) : (track.hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />),
+      id: "hide-mute",
+      label:
+        clip.type === "audio" || clip.audio
+          ? clip.audio?.muted
+            ? "Unmute"
+            : "Mute"
+          : track.hidden
+            ? "Show"
+            : "Hide",
+      icon:
+        clip.type === "audio" || clip.audio ? (
+          clip.audio?.muted ? (
+            <Volume2 className="h-3.5 w-3.5" />
+          ) : (
+            <VolumeX className="h-3.5 w-3.5" />
+          )
+        ) : track.hidden ? (
+          <Eye className="h-3.5 w-3.5" />
+        ) : (
+          <EyeOff className="h-3.5 w-3.5" />
+        ),
       onClick: () => {
-        if (clip.type === 'audio' || clip.audio) {
+        if (clip.type === "audio" || clip.audio) {
           updateClip(clip.id, {
-            audio: { ...clip.audio, volume: clip.audio?.volume ?? 1, fadeIn: 0, fadeOut: 0, muted: !clip.audio?.muted },
+            audio: {
+              ...clip.audio,
+              volume: clip.audio?.volume ?? 1,
+              fadeIn: 0,
+              fadeOut: 0,
+              muted: !clip.audio?.muted,
+            },
           });
         } else {
           useProjectStore.setState((state) => {
             if (state.currentProject) {
-              const t = state.currentProject.tracks.find((x) => x.id === track.id);
+              const t = state.currentProject.tracks.find(
+                (x) => x.id === track.id,
+              );
               if (t) t.hidden = !t.hidden;
             }
           });
         }
       },
     },
-    ...(clip.type === 'video'
+    ...(clip.type === "video"
       ? [
           {
-            id: 'detach-audio',
-            label: 'Detach audio',
+            id: "detach-audio",
+            label: "Detach audio",
             icon: <Unlink className="h-3.5 w-3.5 text-brand" />,
             onClick: () => detachAudioFromVideo(clip.id),
           },
         ]
       : []),
-    { id: 'div-3', label: '', isDivider: true, onClick: () => {} },
+    { id: "div-3", label: "", isDivider: true, onClick: () => {} },
     {
-      id: 'delete',
-      label: 'Delete',
+      id: "delete",
+      label: "Delete",
       icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
-      shortcut: 'Del',
+      shortcut: "Del",
       onClick: () => deleteClips([clip.id]),
     },
   ];
