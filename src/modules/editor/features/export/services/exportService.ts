@@ -58,18 +58,20 @@ export async function runExportTask(
       const asset = await db.assets.get(assetId);
       if (!asset) continue;
 
-      const blobRecord = await db.blobs.get(asset.blobId);
-      if (!blobRecord) continue;
-
-      const blobUrl = objectUrlManager.createUrl(asset.blobId, blobRecord.blob);
-      objectUrlsToRevoke.push(blobUrl);
+      let mediaUrl = asset.remoteUrl;
+      if (!mediaUrl) {
+        const blobRecord = await db.blobs.get(asset.blobId);
+        if (!blobRecord) continue;
+        mediaUrl = objectUrlManager.createUrl(asset.blobId, blobRecord.blob);
+        objectUrlsToRevoke.push(mediaUrl);
+      }
 
       if (asset.type === "video") {
         const videoEl = document.createElement("video");
         videoEl.muted = true;
         videoEl.playsInline = true;
         videoEl.preload = "auto";
-        videoEl.src = blobUrl;
+        videoEl.src = mediaUrl;
 
         await new Promise<void>((resolve) => {
           videoEl.onloadedmetadata = () => resolve();
@@ -79,7 +81,7 @@ export async function runExportTask(
       } else if (asset.type === "audio") {
         const audioEl = document.createElement("audio");
         audioEl.preload = "auto";
-        audioEl.src = blobUrl;
+        audioEl.src = mediaUrl;
 
         await new Promise<void>((resolve) => {
           audioEl.onloadedmetadata = () => resolve();
@@ -88,7 +90,8 @@ export async function runExportTask(
         mediaElementsMap.set(asset.id, audioEl);
       } else if (asset.type === "image") {
         const imgEl = new Image();
-        imgEl.src = blobUrl;
+        if (asset.remoteUrl) imgEl.crossOrigin = "anonymous";
+        imgEl.src = mediaUrl;
 
         await new Promise<void>((resolve) => {
           imgEl.onload = () => resolve();
@@ -109,7 +112,10 @@ export async function runExportTask(
     if (settings.resolution === "720p" || settings.resolution === "1280x720") {
       exportW = 1280;
       exportH = 720;
-    } else if (settings.resolution === "1080p" || settings.resolution === "1920x1080") {
+    } else if (
+      settings.resolution === "1080p" ||
+      settings.resolution === "1920x1080"
+    ) {
       exportW = 1920;
       exportH = 1080;
     }
@@ -259,7 +265,9 @@ export async function runExportTask(
       exportUrl,
       `${settings.filename || "video-export"}.${fileExtension}`,
     );
-    useToastStore.getState().showToast("Export completed successfully", "success");
+    useToastStore
+      .getState()
+      .showToast("Export completed successfully", "success");
     onComplete(exportUrl);
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "EXPORT_CANCELLED") {
