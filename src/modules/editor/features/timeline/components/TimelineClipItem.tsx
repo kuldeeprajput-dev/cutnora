@@ -67,6 +67,12 @@ export function TimelineClipItem({
   const isSelected = selectedClipIds.includes(clip.id);
   const widthPx = Math.max(12, clip.timelineDuration * zoom);
   const leftPx = 16 + clip.timelineStart * zoom;
+  const durationLabel = `${clip.timelineDuration.toFixed(1)}s`;
+  const showDuration = widthPx >= 36;
+  const showIcon = widthPx >= 58;
+  const showName = widthPx >= 96;
+  const showStatusDetails = widthPx >= 150;
+  const durationOnly = showDuration && !showIcon;
 
   useEffect(() => {
     let isMounted = true;
@@ -342,10 +348,12 @@ export function TimelineClipItem({
           top: "4px",
           height: "40px",
         }}
+        title={`${clip.name} • ${durationLabel}`}
         onPointerDown={handlePointerDown}
         onContextMenu={handleContextMenu}
         className={cn(
           "group relative flex touch-none items-center justify-between rounded-lg border px-2 select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
+          widthPx < 64 && "px-1",
           getBgColor(),
           isSelected && "ring-2 ring-selection border-selection",
           isDragging && "opacity-20 ring-1 ring-brand/40",
@@ -389,30 +397,44 @@ export function TimelineClipItem({
         )}
 
         {/* Clip Content Label */}
-        <div className="flex items-center gap-1.5 min-w-0 z-10">
-          {renderIcon()}
-          <span className="text-[11px] font-semibold truncate text-studio-fg">
-            {clip.name}
-          </span>
-          {isAudioMuted && (clip.type === "audio" || clip.type === "video") && (
-            <span title="Audio muted">
-              <VolumeX className="h-3 w-3 text-studio-muted shrink-0" />
-            </span>
-          )}
-          {isMissingAsset && (
-            <span
-              className="flex items-center gap-0.5 text-[9px] font-bold text-destructive bg-destructive/20 px-1 rounded"
-              title="Missing asset file"
-            >
-              <AlertCircle className="h-2.5 w-2.5" /> Missing
-            </span>
-          )}
-        </div>
+        {(showIcon || showName) && (
+          <div className="z-10 flex min-w-0 items-center gap-1.5">
+            {showIcon && renderIcon()}
+            {showName && (
+              <span className="truncate text-[11px] font-semibold text-studio-fg">
+                {clip.name}
+              </span>
+            )}
+            {showStatusDetails &&
+              isAudioMuted &&
+              (clip.type === "audio" || clip.type === "video") && (
+                <span title="Audio muted">
+                  <VolumeX className="h-3 w-3 shrink-0 text-studio-muted" />
+                </span>
+              )}
+            {showStatusDetails && isMissingAsset && (
+              <span
+                className="flex items-center gap-0.5 rounded bg-destructive/20 px-1 text-[9px] font-bold text-destructive"
+                title="Missing asset file"
+              >
+                <AlertCircle className="h-2.5 w-2.5" /> Missing
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Duration Badge */}
-        <span className="text-[9px] font-mono text-studio-muted shrink-0 ml-1 z-10">
-          {clip.timelineDuration.toFixed(1)}s
-        </span>
+        {showDuration && (
+          <span
+            className={cn(
+              "z-10 ml-1 shrink-0 font-mono text-[9px] text-studio-muted",
+              durationOnly &&
+                "pointer-events-none absolute inset-0 ml-0 flex items-center justify-center text-studio-fg",
+            )}
+          >
+            {durationLabel}
+          </span>
+        )}
 
         {/* Right Trim Handle */}
         {!track.locked && (
