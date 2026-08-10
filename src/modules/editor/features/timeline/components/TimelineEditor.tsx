@@ -304,74 +304,172 @@ export function TimelineEditor() {
     if (isPlaying && scrollContainerRef.current) {
       const el = scrollContainerRef.current;
       const playheadPx = playhead * zoom;
-      if (playheadPx > el.scrollLeft + el.clientWidth - 100 || playheadPx < el.scrollLeft) {
+      if (
+        playheadPx > el.scrollLeft + el.clientWidth - 100 ||
+        playheadPx < el.scrollLeft
+      ) {
         el.scrollLeft = Math.max(0, playheadPx - 100);
       }
     }
   }, [playhead, isPlaying, zoom]);
 
   // Pointer drag & trim handler
-  const handleStartDragClip = (clip: TimelineClip, mode: 'move' | 'trim-start' | 'trim-end', e: React.PointerEvent) => {
+  const handleStartDragClip = (
+    clip: TimelineClip,
+    mode: "move" | "trim-start" | "trim-end",
+    e: React.PointerEvent,
+  ) => {
     const startX = e.clientX;
     const startY = e.clientY;
+    const initialScrollLeft = scrollContainerRef.current?.scrollLeft ?? 0;
     const initialStart = clip.timelineStart;
     const initialDuration = clip.timelineDuration;
     const initialSourceStart = clip.sourceStart;
     const isSnapping = snappingEnabled && !isAltPressed;
+    const preferredTrack = getPreferredTrack(clip.type);
+    const previousCursor = document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+    let latestMovePreview: ClipDragPreview | null = null;
+
+    if (mode === "move") {
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+    }
 
     const handlePointerMove = (moveEv: PointerEvent) => {
-      const deltaX = moveEv.clientX - startX;
+      moveEv.preventDefault();
+
+      const scroller = scrollContainerRef.current;
+      const scrollerRect = scroller?.getBoundingClientRect();
+      if (mode === "move" && scroller && scrollerRect) {
+        const edge = 36;
+        if (moveEv.clientY > scrollerRect.bottom - edge)
+          scroller.scrollTop += 8;
+        if (moveEv.clientY < scrollerRect.top + edge) scroller.scrollTop -= 8;
+        if (moveEv.clientX > scrollerRect.right - edge)
+          scroller.scrollLeft += 12;
+        if (moveEv.clientX < scrollerRect.left + edge)
+          scroller.scrollLeft -= 12;
+      }
+
+      const scrollDeltaX =
+        (scroller?.scrollLeft ?? initialScrollLeft) - initialScrollLeft;
+      const deltaX =
+        moveEv.clientX - startX + (mode === "move" ? scrollDeltaX : 0);
       const deltaY = moveEv.clientY - startY;
       const deltaSecs = deltaX / zoom;
 
-      if (mode === 'move') {
+      if (mode === "move") {
         const rawStart = Math.max(0, initialStart + deltaSecs);
-        const snapRes = snapTimelineTime(rawStart, tracks, playhead, clip.id, zoom, isSnapping);
+        const snapRes = snapTimelineTime(
+          rawStart,
+          tracks,
+          playhead,
+          clip.id,
+          zoom,
+          isSnapping,
+        );
         const targetStart = snapRes.snappedTime;
         setActiveSnapLine(snapRes.isSnapped ? snapRes.snappedTime : null);
 
-        // Detect target track by vertical displacement
-        const trackHeight = 48;
-        const trackIndexOffset = Math.round(deltaY / trackHeight);
-        const currentTrackIndex = tracks.findIndex((t) => t.id === clip.trackId);
-        const targetTrackIndex = Math.max(0, Math.min(tracks.length - 1, currentTrackIndex + trackIndexOffset));
-        const targetTrack = tracks[targetTrackIndex];
-        const safeStart = preventClipOverlap(targetTrack.clips, clip.id, targetStart, clip.timelineDuration);
+        const rect = scroller?.getBoundingClientRect();
+        const currentTrackIndex = tracks.findIndex(
+          (track) => track.id === clip.trackId,
+        );
+        const pointerY =
+          rect && scroller
+            ? moveEv.clientY - rect.top + scroller.scrollTop
+            : (currentTrackIndex + 0.5) * TRACK_HEIGHT + deltaY;
+        const isClearlyBelowLastTrack =
+          pointerY >= tracks.length * TRACK_HEIGHT + NEW_TRACK_DROP_THRESHOLD;
+        const pointerTrackIndex = Math.floor(pointerY / TRACK_HEIGHT);
+        const createTrack = isClearlyBelowLastTrack;
+        const requestedTrackIndex = createTrack
+          ? tracks.length
+          : Math.max(0, Math.min(tracks.length - 1, pointerTrackIndex));
+        const targetTrackIndex = createTrack
+          ? tracks.length
+          : requestedTrackIndex;
+        const targetTrack = createTrack ? null : tracks[targetTrackIndex];
+        const valid =
+          createTrack || Boolean(targetTrack && !targetTrack.locked);
+        const safeStart = targetTrack
+          ? preventClipOverlap(
+              targetTrack.clips,
+              clip.id,
+              targetStart,
+              clip.timelineDuration,
+            )
+          : targetStart;
 
-        // Update DOM element directly for 60fps smooth timeline drag
-        const el = document.getElementById(`timeline-clip-${clip.id}`);
-        if (el) {
-          el.style.left = `${16 + safeStart * zoom}px`;
-        }
-
-        moveClip(clip.id, targetTrack.id, safeStart);
-      } else if (mode === 'trim-start') {
+        latestMovePreview = {
+          clipId: clip.id,
+          clipName: clip.name,
+          clipType: clip.type,
+          targetStart: safeStart,
+          targetTrackId: targetTrack?.id ?? null,
+          targetTrackIndex,
+          targetTrackType: preferredTrack.type,
+          targetTrackName: preferredTrack.name,
+          createTrack,
+          valid,
+          duration: clip.timelineDuration,
+        };
+        setClipDragPreview(latestMovePreview);
+      } else if (mode === "trim-start") {
         const rawStart = Math.max(0, initialStart + deltaSecs);
-        const snapRes = snapTimelineTime(rawStart, tracks, playhead, clip.id, zoom, isSnapping);
+        const snapRes = snapTimelineTime(
+          rawStart,
+          tracks,
+          playhead,
+          clip.id,
+          zoom,
+          isSnapping,
+        );
 
         // Cannot trim left past the start of the source video (sourceStart >= 0)
-        const minTimelineStart = (clip.type === 'video' || clip.type === 'audio')
-          ? initialStart - initialSourceStart
-          : 0;
+        const minTimelineStart =
+          clip.type === "video" || clip.type === "audio"
+            ? initialStart - initialSourceStart
+            : 0;
 
         let newStart = Math.max(minTimelineStart, snapRes.snappedTime);
         newStart = Math.min(initialStart + initialDuration - 0.1, newStart);
 
-        const newDuration = Math.max(0.1, initialDuration + (initialStart - newStart));
-        const newSourceStart = Math.max(0, initialSourceStart + (newStart - initialStart));
+        const newDuration = Math.max(
+          0.1,
+          initialDuration + (initialStart - newStart),
+        );
+        const newSourceStart = Math.max(
+          0,
+          initialSourceStart + (newStart - initialStart),
+        );
 
         setActiveSnapLine(snapRes.isSnapped ? snapRes.snappedTime : null);
         trimClip(clip.id, newStart, newDuration, newSourceStart);
-      } else if (mode === 'trim-end') {
+      } else if (mode === "trim-end") {
         const rawDuration = Math.max(0.1, initialDuration + deltaSecs);
         const rawEnd = initialStart + rawDuration;
-        const snapRes = snapTimelineTime(rawEnd, tracks, playhead, clip.id, zoom, isSnapping);
+        const snapRes = snapTimelineTime(
+          rawEnd,
+          tracks,
+          playhead,
+          clip.id,
+          zoom,
+          isSnapping,
+        );
         const newEnd = snapRes.snappedTime;
         let newDuration = Math.max(0.1, newEnd - initialStart);
 
         // Clamp duration so clip duration does not exceed remaining source video/audio file length
-        if ((clip.type === 'video' || clip.type === 'audio') && clip.sourceDuration) {
-          const maxAvailable = Math.max(0.1, (clip.sourceDuration - initialSourceStart) / (clip.speed || 1));
+        if (
+          (clip.type === "video" || clip.type === "audio") &&
+          clip.sourceDuration
+        ) {
+          const maxAvailable = Math.max(
+            0.1,
+            (clip.sourceDuration - initialSourceStart) / (clip.speed || 1),
+          );
           newDuration = Math.min(maxAvailable, newDuration);
         }
 
