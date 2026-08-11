@@ -99,7 +99,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
 
   return (
     <header className="flex h-[56px] w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-4 text-studio-fg select-none">
-      {/* Left: Cutframe Logo & Title & Autosave Status */}
+      {/* Left: Cutnora Logo & Title & Autosave Status */}
       <div className="flex items-center gap-4">
         <Link
           href="/"
@@ -111,7 +111,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
             className="transition-transform group-hover:-rotate-3"
           />
           <span className="text-base font-bold tracking-tight text-studio-fg">
-            Cutframe
+            Cutnora
           </span>
         </Link>
 

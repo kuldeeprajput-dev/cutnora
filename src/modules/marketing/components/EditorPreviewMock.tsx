@@ -199,7 +199,7 @@ export function EditorPreviewMock() {
                     {/* Text Overlay Element with Selection Handle */}
                     <div className="absolute border-2 border-selection p-2 rounded bg-black/40 text-center select-none shadow-md">
                       <span className="text-sm font-bold tracking-wider text-white">
-                        CUTFRAME EDIT
+                        CUTNORA EDIT
                       </span>
                       <div className="absolute -top-1.5 -left-1.5 h-3 w-3 bg-selection rounded-full" />
                       <div className="absolute -top-1.5 -right-1.5 h-3 w-3 bg-selection rounded-full" />
@@ -326,7 +326,7 @@ export function EditorPreviewMock() {
                   </div>
                   <div className="flex-1 h-7 rounded bg-studio-topbar relative flex items-center overflow-hidden border border-studio-border">
                     <div className="absolute left-[20%] w-[35%] h-full rounded bg-selection border border-selection-hover px-2 flex items-center text-[10px] font-semibold text-studio-bg truncate">
-                      CUTFRAME EDIT
+                      CUTNORA EDIT
                     </div>
                   </div>
                 </div>

@@ -197,7 +197,7 @@ export default function StudioDashboardPage() {
             <Link href="/" className="flex items-center gap-2 mb-2">
               <BrandMark size={24} />
               <span className="text-sm font-bold tracking-tight text-studio-muted">
-                Cutframe Studio
+                Cutnora Studio
               </span>
             </Link>
             <h1 className="text-3xl font-extrabold tracking-tight text-studio-fg">

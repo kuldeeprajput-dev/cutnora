@@ -22,12 +22,12 @@ export function LandingHeaderNav() {
       <div className="mx-auto flex h-[72px] max-w-[1120px] items-center justify-between px-5 sm:px-8">
         <Link
           href="/"
-          aria-label="Cutframe home"
+          aria-label="Cutnora home"
           className="flex items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <BrandMark size={30} />
           <span className="hidden text-[13px] font-bold tracking-[0.18em] uppercase min-[480px]:inline">
-            Cutframe
+            Cutnora
           </span>
         </Link>
 

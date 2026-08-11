@@ -40,8 +40,8 @@ export function StudioShell() {
   useKeyboardShortcuts(() => setIsShortcutsOpen(true));
 
   useEffect(() => {
-    const savedWidth = localStorage.getItem("cutframe_panel_width");
-    const savedHeight = localStorage.getItem("cutframe_timeline_height");
+    const savedWidth = localStorage.getItem("cutnora_panel_width");
+    const savedHeight = localStorage.getItem("cutnora_timeline_height");
     if (savedWidth) setLeftPanelWidth(Math.max(310, parseInt(savedWidth, 10)));
     if (savedHeight) setTimelineHeight(parseInt(savedHeight, 10));
   }, [setLeftPanelWidth, setTimelineHeight]);
@@ -64,13 +64,13 @@ export function StudioShell() {
   const handleWidthResize = (delta: number) => {
     const newWidth = leftPanelWidth + delta;
     setLeftPanelWidth(newWidth);
-    localStorage.setItem("cutframe_panel_width", String(newWidth));
+    localStorage.setItem("cutnora_panel_width", String(newWidth));
   };
 
   const handleHeightResize = (delta: number) => {
     const newHeight = timelineHeight - delta;
     setTimelineHeight(newHeight);
-    localStorage.setItem("cutframe_timeline_height", String(newHeight));
+    localStorage.setItem("cutnora_timeline_height", String(newHeight));
   };
 
   return (
@@ -81,7 +81,7 @@ export function StudioShell() {
           <Monitor className="h-6 w-6 text-brand" aria-hidden="true" />
         </div>
         <h1 className="mt-5 max-w-sm text-3xl font-black tracking-[-0.04em]">
-          Cutframe needs a larger canvas.
+          Cutnora needs a larger canvas.
         </h1>
         <p className="mt-3 max-w-sm text-sm leading-6 text-mkt-muted">
           The multitrack studio is designed for desktop screens at least 1024px

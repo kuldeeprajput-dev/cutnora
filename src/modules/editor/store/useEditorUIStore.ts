@@ -195,7 +195,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         }),
     })),
     {
-      name: 'cutframe-editor-ui-store',
+      name: 'cutnora-editor-ui-store',
       partialize: (state) => ({
         zoom: state.zoom,
         zoomMode: state.zoomMode,

@@ -10,14 +10,14 @@ interface FaqItem {
 
 const faqs: FaqItem[] = [
   {
-    question: 'Does Cutframe upload my files?',
+    question: 'Does Cutnora upload my files?',
     answer:
       'No. Your video clips, audio tracks, and images are processed entirely on your local machine inside your browser. Nothing is uploaded to external servers or cloud storage.',
   },
   {
     question: 'Which media formats are supported?',
     answer:
-      'Cutframe supports widely used web video formats (MP4, WebM), audio formats (MP3, WAV, AAC), and image formats (PNG, JPEG, WebP). Exact codec playback depends on your browser’s HTML5 media engine.',
+      'Cutnora supports widely used web video formats (MP4, WebM), audio formats (MP3, WAV, AAC), and image formats (PNG, JPEG, WebP). Exact codec playback depends on your browser’s HTML5 media engine.',
   },
   {
     question: 'Can I save a project?',
@@ -32,7 +32,7 @@ const faqs: FaqItem[] = [
   {
     question: 'Can I export MP4?',
     answer:
-      'Yes. Cutframe offers instant WebM export using native HTML5 Canvas capture streams, as well as optional client-side MP4 conversion powered by WebAssembly (FFmpeg.wasm).',
+      'Yes. Cutnora offers instant WebM export using native HTML5 Canvas capture streams, as well as optional client-side MP4 conversion powered by WebAssembly (FFmpeg.wasm).',
   },
   {
     question: 'Is an account required?',
@@ -59,7 +59,7 @@ export function FaqSection() {
             <span>Frequently Asked Questions</span>
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-mkt-fg">
-            Everything you need to know about Cutframe.
+            Everything you need to know about Cutnora.
           </h2>
           <p className="mt-4 text-base text-mkt-muted">
             Transparent answers regarding privacy, browser capabilities, and video export.

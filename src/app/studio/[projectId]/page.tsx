@@ -38,7 +38,7 @@ export default function StudioEditorPage({ params }: StudioEditorPageProps) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
         <Spinner size="lg" label="Loading project..." />
-        <p className="mt-4 text-sm text-studio-muted">Opening Cutframe Studio...</p>
+        <p className="mt-4 text-sm text-studio-muted">Opening Cutnora Studio...</p>
       </div>
     );
   }

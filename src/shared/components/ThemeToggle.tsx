@@ -3,7 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
-const THEME_STORAGE_KEY = "cutframe_theme";
+const THEME_STORAGE_KEY = "cutnora_theme";
 
 function applyTheme(theme: "light" | "dark") {
   document.documentElement.dataset.theme = theme;
