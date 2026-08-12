@@ -19,7 +19,7 @@ export function StudioPanel({
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden border border-studio-border text-studio-fg min-w-[310px]',
+        'flex flex-col overflow-hidden border border-studio-border text-studio-fg min-w-0 lg:min-w-[310px]',
         raised ? 'bg-studio-panel-raised' : 'bg-studio-panel',
         className
       )}

@@ -5,12 +5,18 @@ class PlaybackClock {
   private animFrameId: number | null = null;
   private startPerfTime: number = 0;
   private startPlayhead: number = 0;
+  private lastPublishedAt: number = 0;
+  private publishInterval: number = 0;
 
   public start(): void {
     if (this.animFrameId !== null) return;
 
     this.startPerfTime = performance.now();
     this.startPlayhead = usePlaybackStore.getState().playhead;
+    this.lastPublishedAt = 0;
+    this.publishInterval = window.matchMedia("(max-width: 1023px)").matches
+      ? 1000 / 30
+      : 0;
 
     const tick = () => {
       const store = usePlaybackStore.getState();
@@ -19,7 +25,8 @@ class PlaybackClock {
         return;
       }
 
-      const elapsedSecs = (performance.now() - this.startPerfTime) / 1000;
+      const now = performance.now();
+      const elapsedSecs = (now - this.startPerfTime) / 1000;
       const newPlayhead = this.startPlayhead + elapsedSecs * store.playbackRate;
 
       const currentProject = useProjectStore.getState().currentProject;
@@ -47,7 +54,10 @@ class PlaybackClock {
           this.stop();
         }
       } else {
-        store.setPlayhead(newPlayhead);
+        if (this.publishInterval === 0 || now - this.lastPublishedAt >= this.publishInterval) {
+          this.lastPublishedAt = now;
+          store.setPlayhead(newPlayhead);
+        }
         this.animFrameId = requestAnimationFrame(tick);
       }
     };

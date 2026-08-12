@@ -37,10 +37,11 @@ export function SelectionOverlay({ clip, onStartTransform, isDragging = false }:
       {/* Rotation Handle - Positioned below top selection line */}
       <div
         onPointerDown={(e) => onStartTransform(clip, 'rotate', e)}
-        className="pointer-events-auto absolute top-3 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-selection/40 bg-studio-topbar/90 backdrop-blur-sm text-selection hover:scale-110 cursor-grab active:cursor-grabbing transition-transform z-40 shadow-md"
-        title="Click and drag to rotate"
+        className="pointer-events-auto absolute left-1/2 top-2 z-40 flex h-10 w-10 -translate-x-1/2 touch-none items-center justify-center rounded-full border border-selection/50 bg-studio-topbar/95 text-selection shadow-lg transition-transform active:scale-95 active:cursor-grabbing lg:top-3 lg:h-6 lg:w-6 lg:cursor-grab lg:border-selection/40 lg:bg-studio-topbar/90 lg:shadow-md lg:backdrop-blur-sm lg:hover:scale-110"
+        title="Drag to rotate"
+        aria-label="Rotate selected media"
       >
-        <RotateCw className="h-3.5 w-3.5" />
+        <RotateCw className="h-4.5 w-4.5 lg:h-3.5 lg:w-3.5" />
       </div>
 
       {/* 8 Resize Handles */}
@@ -48,7 +49,7 @@ export function SelectionOverlay({ clip, onStartTransform, isDragging = false }:
         <div
           key={h.mode}
           onPointerDown={(e) => onStartTransform(clip, h.mode, e)}
-          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border-2 border-studio-bg bg-selection shadow-sm z-40 hover:scale-125 transition-transform ${h.className}`}
+          className={`pointer-events-auto absolute hidden h-3 w-3 lg:block rounded-sm border-2 border-studio-bg bg-selection shadow-sm z-40 hover:scale-125 transition-transform ${h.className}`}
         />
       ))}
     </div>

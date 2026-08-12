@@ -18,8 +18,17 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
   const updateCoords = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const menuHeight = menuRef.current?.offsetHeight || 130;
+      const viewportHeight = window.innerHeight;
+
+      // Determine if menu would be cut off at bottom of viewport
+      const openUpwards = rect.bottom + menuHeight > viewportHeight - 12 && rect.top > menuHeight;
+
+      let top = openUpwards ? rect.top - menuHeight - 4 : rect.bottom + 4;
+      top = Math.max(10, Math.min(top, viewportHeight - menuHeight - 10));
+
       setCoords({
-        top: rect.bottom + 4,
+        top,
         left: align === 'right' ? rect.right : rect.left,
       });
     }
@@ -36,7 +45,8 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
   useEffect(() => {
     if (!isOpen) return;
 
-    updateCoords();
+    // First frame update to measure exact menu DOM height
+    const rafId = requestAnimationFrame(updateCoords);
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -62,6 +72,7 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
     window.addEventListener('resize', handleScroll);
 
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll, true);
