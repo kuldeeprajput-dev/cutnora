@@ -7,6 +7,7 @@ import { objectUrlManager } from "@/modules/core/db/object-url-manager";
 import type { MediaAsset } from "@/modules/projects/types";
 import { useProjectStore } from "@/modules/projects";
 import type { TimelineClip, Track } from "@/modules/editor/types";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { ensureHighQualityThumbnail } from "../services/media-import-service";
 import {
   DropdownMenu,
@@ -126,6 +127,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
     }
 
     const duration = asset.type === "image" ? 5 : asset.duration;
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
     const newClip: TimelineClip = {
       id: nanoid(),
@@ -141,8 +143,10 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
       transform: {
         x: 0,
         y: 0,
-        width: asset.width || 1920,
-        height: asset.height || 1080,
+        width: isMobile ? currentProject.settings.width : asset.width || 1920,
+        height: isMobile
+          ? currentProject.settings.height
+          : asset.height || 1080,
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
@@ -167,37 +171,40 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
     };
 
     addClip(targetTrack.id, newClip);
+    if (isMobile) {
+      useEditorUIStore.getState().setSelectedClipIds([newClip.id]);
+    }
   };
 
   const handleDeleteAsset = async () => {
-    const isUsedInTimeline = currentProject?.tracks.some((t) =>
-      t.clips.some((c) => c.assetId === asset.id),
-    );
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
-    const promptMessage = isUsedInTimeline
-      ? `Warning: Asset "${asset.name}" is currently used by clips in your timeline. Deleting it will also remove those clips from the timeline. Are you sure you want to delete it?`
-      : `Delete asset "${asset.name}"?`;
-
-    if (confirm(promptMessage)) {
-      await db.transaction(
-        "rw",
-        db.assets,
-        db.blobs,
-        db.thumbnails,
-        async () => {
-          await db.assets.delete(asset.id);
-          if (asset.blobId) await db.blobs.delete(asset.blobId);
-          if (asset.thumbnailBlobId) {
-            await db.thumbnails.delete(asset.thumbnailBlobId);
-          }
-        },
+    if (!isMobile) {
+      const isUsedInTimeline = currentProject?.tracks.some((t) =>
+        t.clips.some((c) => c.assetId === asset.id),
       );
-      if (asset.blobId) objectUrlManager.revokeUrl(asset.blobId);
-      if (asset.thumbnailBlobId) {
-        objectUrlManager.revokeUrl(asset.thumbnailBlobId);
+
+      const promptMessage = isUsedInTimeline
+        ? `Warning: Asset "${asset.name}" is currently used by clips in your timeline. Deleting it will also remove those clips from the timeline. Are you sure you want to delete it?`
+        : `Delete asset "${asset.name}"?`;
+
+      if (!confirm(promptMessage)) {
+        return;
       }
-      useProjectStore.getState().removeAsset(asset.id);
     }
+
+    await db.transaction("rw", db.assets, db.blobs, db.thumbnails, async () => {
+      await db.assets.delete(asset.id);
+      if (asset.blobId) await db.blobs.delete(asset.blobId);
+      if (asset.thumbnailBlobId) {
+        await db.thumbnails.delete(asset.thumbnailBlobId);
+      }
+    });
+    if (asset.blobId) objectUrlManager.revokeUrl(asset.blobId);
+    if (asset.thumbnailBlobId) {
+      objectUrlManager.revokeUrl(asset.thumbnailBlobId);
+    }
+    useProjectStore.getState().removeAsset(asset.id);
   };
 
   const handleRenameSubmit = () => {
@@ -287,7 +294,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
         </div>
 
         <div
-          className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="flex items-center gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
           onClick={(e) => e.stopPropagation()}
         >
           <IconButton
@@ -343,6 +350,11 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
 
   return (
     <div
+      onClick={() => {
+        if (window.matchMedia("(max-width: 1023px)").matches) {
+          handleAddToTimeline();
+        }
+      }}
       onDoubleClick={handleAddToTimeline}
       className="group relative flex flex-col rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-all hover:border-brand select-none cursor-pointer"
     >
@@ -371,7 +383,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
         </span>
 
         {/* Hover Quick Add Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <div className="absolute inset-0 hidden items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 lg:flex">
           <IconButton
             label="Add to timeline"
             size="sm"
@@ -384,8 +396,8 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
       </div>
 
       {/* Asset Info Footer */}
-      <div className="mt-1.5 flex items-start justify-between gap-1 px-1">
-        <div className="min-w-0 flex-1">
+      <div className="mt-1.5 flex items-start justify-between gap-1 px-0.5">
+        <div className="min-w-0 flex-1 pr-1">
           {isRenaming ? (
             <input
               type="text"
@@ -400,11 +412,11 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
               className="h-5 w-full rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg focus:outline-none"
             />
           ) : (
-            <p className="text-[11px] font-semibold text-studio-fg truncate">
+            <p className="text-[11px] sm:text-xs font-semibold text-studio-fg truncate">
               {asset.name}
             </p>
           )}
-          <p className="text-[9px] font-mono text-studio-muted">
+          <p className="text-[9px] font-mono text-studio-muted mt-0.5">
             {asset.width && asset.height
               ? `${asset.width}×${asset.height} • `
               : ""}
@@ -412,7 +424,10 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
           </p>
         </div>
 
-        <div onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex shrink-0 items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DropdownMenu
             trigger={
               <button
@@ -420,7 +435,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
                 aria-label="Asset options"
                 className="p-1 rounded-md text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised transition-colors cursor-pointer"
               >
-                <MoreVertical className="h-3.5 w-3.5" />
+                <MoreVertical className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
               </button>
             }
             align="right"

@@ -47,7 +47,7 @@ export function MediaDropzone({ onFilesSelected, isImporting = false }: MediaDro
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        'relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all select-none',
+        'relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-2.5 sm:p-4 lg:p-6 text-center transition-all select-none',
         isDragOver
           ? 'border-brand bg-brand/10 scale-[0.99]'
           : 'border-studio-border bg-studio-panel hover:border-studio-muted'
@@ -62,35 +62,39 @@ export function MediaDropzone({ onFilesSelected, isImporting = false }: MediaDro
         className="hidden"
       />
 
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-studio-panel-raised text-brand mb-3">
-        <UploadCloud className="h-6 w-6" />
+      <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl lg:rounded-2xl bg-studio-panel-raised text-brand mb-1.5 sm:mb-2 lg:mb-3">
+        <UploadCloud className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
       </div>
 
-      <h4 className="text-xs font-bold text-studio-fg">Drag and drop media files</h4>
-      <p className="mt-1 text-[11px] text-studio-muted">Support for videos, images, and audio tracks</p>
+      <h4 className="text-xs font-bold text-studio-fg">
+        <span className="lg:hidden">Choose media from device</span>
+        <span className="hidden lg:inline">Drag and drop media files</span>
+      </h4>
+      <p className="mt-0.5 sm:mt-1 text-[10px] lg:text-[11px] text-studio-muted">Videos, images, and audio</p>
 
-      <div className="mt-4">
+      <div className="mt-2 sm:mt-3 lg:mt-4">
         <Button
           size="sm"
           variant="primary"
           disabled={isImporting}
           onClick={() => fileInputRef.current?.click()}
+          className="h-7 sm:h-8 px-3 text-xs"
         >
           Choose files
         </Button>
       </div>
 
       {/* Formats Badges */}
-      <div className="mt-4 flex items-center gap-3 text-[10px] text-studio-muted">
-        <span className="flex items-center gap-1"><FileVideo className="h-3 w-3 text-brand" /> MP4, WebM, MOV</span>
-        <span className="flex items-center gap-1"><ImageIcon className="h-3 w-3 text-selection" /> PNG, JPG, WebP</span>
-        <span className="flex items-center gap-1"><Music className="h-3 w-3 text-mkt-info" /> MP3, WAV, M4A</span>
+      <div className="mt-2 sm:mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 sm:gap-y-1 text-[9px] sm:text-[10px] text-studio-muted min-w-0 w-full">
+        <span className="flex items-center gap-1 whitespace-nowrap"><FileVideo className="h-3 w-3 text-brand shrink-0" /> MP4, WebM, MOV</span>
+        <span className="flex items-center gap-1 whitespace-nowrap"><ImageIcon className="h-3 w-3 text-selection shrink-0" /> PNG, JPG, WebP</span>
+        <span className="flex items-center gap-1 whitespace-nowrap"><Music className="h-3 w-3 text-mkt-info shrink-0" /> MP3, WAV, M4A</span>
       </div>
 
       {/* Local-first Security Assurance */}
-      <div className="mt-4 flex items-center gap-1 text-[10px] text-mkt-success font-medium">
-        <ShieldCheck className="h-3.5 w-3.5" />
-        <span>Files stay 100% private on your device</span>
+      <div className="mt-2 sm:mt-3 lg:mt-4 flex items-center gap-1 text-[9px] sm:text-[10px] text-mkt-success font-medium">
+        <ShieldCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+        <span>100% private on your device</span>
       </div>
     </div>
   );
