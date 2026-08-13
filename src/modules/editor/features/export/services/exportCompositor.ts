@@ -1,6 +1,6 @@
-import type { Project } from '@/modules/projects/types';
-import type { TimelineClip } from '@/modules/editor/types';
-import { renderClipTo2DCanvas } from '../utils/exportCanvasRenderer';
+import type { Project } from "@/modules/projects/types";
+import type { TimelineClip } from "@/modules/editor/types";
+import { renderClipTo2DCanvas } from "../utils/exportCanvasRenderer";
 
 export interface RenderFrameOptions {
   canvas: HTMLCanvasElement;
@@ -9,7 +9,10 @@ export interface RenderFrameOptions {
   currentTime: number;
   exportWidth: number;
   exportHeight: number;
-  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement | HTMLAudioElement>;
+  mediaElementsMap: Map<
+    string,
+    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
+  >;
 }
 
 export function renderExportFrame({
@@ -34,7 +37,7 @@ export function renderExportFrame({
 
   // Clear & Draw Background
   ctx.save();
-  ctx.fillStyle = project.settings.backgroundColor || '#000000';
+  ctx.fillStyle = project.settings.backgroundColor || "#000000";
   ctx.fillRect(0, 0, exportWidth, exportHeight);
 
   // Sort visible tracks by order
@@ -46,7 +49,10 @@ export function renderExportFrame({
     for (const clip of track.clips) {
       if ((clip as { hidden?: boolean }).hidden) continue;
       // Check active timeframe
-      if (currentTime >= clip.timelineStart && currentTime < clip.timelineStart + clip.timelineDuration) {
+      if (
+        currentTime >= clip.timelineStart &&
+        currentTime < clip.timelineStart + clip.timelineDuration
+      ) {
         renderClipOnExportCanvas({
           ctx,
           clip,
@@ -78,7 +84,10 @@ function renderClipOnExportCanvas({
   scaleX: number;
   scaleY: number;
   stageScale: number;
-  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement | HTMLAudioElement>;
+  mediaElementsMap: Map<
+    string,
+    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
+  >;
 }) {
   ctx.save();
 
@@ -98,7 +107,7 @@ function renderClipOnExportCanvas({
   ctx.translate(-w / 2, -h / 2);
 
   // Apply CSS Filters (brightness, contrast, saturation, grayscale, sepia, blur)
-  if (type === 'video' || type === 'image') {
+  if (type === "video" || type === "image") {
     const b = adjustments?.brightness ?? 1;
     const c = adjustments?.contrast ?? 1;
     const s = adjustments?.saturation ?? 1;
@@ -110,23 +119,24 @@ function renderClipOnExportCanvas({
   }
 
   // Draw Media (Video or Image)
-  if (assetId && (type === 'video' || type === 'image')) {
+  if (assetId && (type === "video" || type === "image")) {
     const mediaEl = mediaElementsMap.get(assetId);
-    if (mediaEl && (mediaEl instanceof HTMLVideoElement || mediaEl instanceof HTMLImageElement)) {
-      if (type === 'video' && mediaEl instanceof HTMLVideoElement) {
-        // Seek video element to sourceStart + (currentTime - timelineStart) * speed
-        const clipElapsed = currentTime - clip.timelineStart;
-        const targetSourceTime = clip.sourceStart + clipElapsed * (clip.speed || 1);
-        if (Math.abs(mediaEl.currentTime - targetSourceTime) > 0.05) {
-          mediaEl.currentTime = targetSourceTime;
-        }
-      }
-
+    if (
+      mediaEl &&
+      (mediaEl instanceof HTMLVideoElement ||
+        mediaEl instanceof HTMLImageElement)
+    ) {
       // Handle Crop if specified
       if (transform.crop) {
         const { top, right, bottom, left } = transform.crop;
-        const naturalW = mediaEl instanceof HTMLImageElement ? mediaEl.naturalWidth : mediaEl.videoWidth;
-        const naturalH = mediaEl instanceof HTMLImageElement ? mediaEl.naturalHeight : mediaEl.videoHeight;
+        const naturalW =
+          mediaEl instanceof HTMLImageElement
+            ? mediaEl.naturalWidth
+            : mediaEl.videoWidth;
+        const naturalH =
+          mediaEl instanceof HTMLImageElement
+            ? mediaEl.naturalHeight
+            : mediaEl.videoHeight;
 
         const srcX = (left / 100) * naturalW;
         const srcY = (top / 100) * naturalH;
@@ -142,7 +152,7 @@ function renderClipOnExportCanvas({
         ctx.drawImage(mediaEl, 0, 0, w, h);
       }
     }
-  } else if (type === 'text' || type === 'overlay') {
+  } else if (type === "text" || type === "overlay") {
     // Render text or SVG element using exportCanvasRenderer
     renderClipTo2DCanvas(ctx, clip, stageScale);
   }
