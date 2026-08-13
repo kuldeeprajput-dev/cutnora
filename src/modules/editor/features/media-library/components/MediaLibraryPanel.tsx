@@ -37,8 +37,10 @@ export function MediaLibraryPanel() {
   const {
     isImporting,
     importProgress,
+    importStatus,
     importErrors,
     importFiles,
+    cancelImport,
     clearErrors,
   } = useMediaImporter();
 
@@ -170,15 +172,32 @@ export function MediaLibraryPanel() {
         {isImporting && (
           <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
             <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
-              <span className="flex items-center gap-1.5 text-brand">
+              <span className="flex min-w-0 items-center gap-1.5 text-brand">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing
-                media assets...
+                <span className="truncate">
+                  {importStatus?.fileName || "media assets..."}
+                </span>
               </span>
-              <span className="font-mono text-[11px] text-studio-muted">
-                {importProgress}%
-              </span>
+              <div className="ml-2 flex shrink-0 items-center gap-2">
+                <span className="font-mono text-[11px] text-studio-muted">
+                  {importStatus?.phase || "validating"} · {importProgress}%
+                </span>
+                <button
+                  type="button"
+                  onClick={cancelImport}
+                  className="text-[10px] font-semibold text-destructive hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
             <ProgressBar value={importProgress} />
+            {importStatus?.phase === "copying" && (
+              <p className="mt-1 text-right font-mono text-[10px] text-studio-muted">
+                {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
+                {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
+              </p>
+            )}
           </div>
         )}
 

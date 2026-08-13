@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { db } from "@/modules/core/db/database";
 import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
 import type { MediaAsset } from "@/modules/projects/types";
 import { useProjectStore } from "@/modules/projects";
 import type { TimelineClip, Track } from "@/modules/editor/types";
@@ -65,13 +66,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
 
       let thumbnailBlob: Blob | null = null;
       try {
-        thumbnailBlob = await ensureHighQualityThumbnail({
-          type: assetType,
-          thumbnailBlobId,
-          blobId,
-          remoteUrl,
-          duration,
-        });
+        thumbnailBlob = await ensureHighQualityThumbnail(asset);
       } catch {
         const existing = await db.thumbnails.get(thumbnailBlobId);
         thumbnailBlob = existing?.blob ?? null;
@@ -90,6 +85,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
     };
   }, [
     assetType,
+    asset,
     blobId,
     duration,
     remotePreviewUrl,
@@ -177,34 +173,18 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
   };
 
   const handleDeleteAsset = async () => {
-    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
-
-    if (!isMobile) {
-      const isUsedInTimeline = currentProject?.tracks.some((t) =>
-        t.clips.some((c) => c.assetId === asset.id),
-      );
-
-      const promptMessage = isUsedInTimeline
-        ? `Warning: Asset "${asset.name}" is currently used by clips in your timeline. Deleting it will also remove those clips from the timeline. Are you sure you want to delete it?`
-        : `Delete asset "${asset.name}"?`;
-
-      if (!confirm(promptMessage)) {
-        return;
-      }
-    }
-
-    await db.transaction("rw", db.assets, db.blobs, db.thumbnails, async () => {
-      await db.assets.delete(asset.id);
-      if (asset.blobId) await db.blobs.delete(asset.blobId);
-      if (asset.thumbnailBlobId) {
-        await db.thumbnails.delete(asset.thumbnailBlobId);
-      }
-    });
-    if (asset.blobId) objectUrlManager.revokeUrl(asset.blobId);
-    if (asset.thumbnailBlobId) {
-      objectUrlManager.revokeUrl(asset.thumbnailBlobId);
-    }
+    const removedClipIds = new Set(
+      currentProject?.tracks
+        .flatMap((track) => track.clips)
+        .filter((clip) => clip.assetId === asset.id)
+        .map((clip) => clip.id) ?? [],
+    );
+    await deleteStoredMediaAsset(asset);
     useProjectStore.getState().removeAsset(asset.id);
+    const editorState = useEditorUIStore.getState();
+    editorState.setSelectedClipIds(
+      editorState.selectedClipIds.filter((id) => !removedClipIds.has(id)),
+    );
   };
 
   const handleRenameSubmit = () => {

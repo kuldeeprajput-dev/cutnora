@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { db } from "@/modules/core/db/database";
 import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
 import type { Project } from "@/modules/projects";
 import { Button } from "@/shared/components/ui/Button";
 import { Container } from "@/shared/components/layout/Container";
@@ -34,14 +35,21 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
           }
           const thumbRecord = await db.thumbnails.get(customThumbId);
           if (thumbRecord && isMounted) {
-            setThumbUrl(objectUrlManager.createUrl(customThumbId, thumbRecord.blob));
+            setThumbUrl(
+              objectUrlManager.createUrl(customThumbId, thumbRecord.blob),
+            );
             return;
           }
         }
 
         // 2. Search assets belonging to this project
-        const projectAssets = await db.assets.where("projectId").equals(project.id).toArray();
-        const visualAsset = projectAssets.find((a) => a.type === "video" || a.type === "image");
+        const projectAssets = await db.assets
+          .where("projectId")
+          .equals(project.id)
+          .toArray();
+        const visualAsset = projectAssets.find(
+          (a) => a.type === "video" || a.type === "image",
+        );
 
         if (visualAsset) {
           if (visualAsset.thumbnailBlobId) {
@@ -50,9 +58,16 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
               if (isMounted) setThumbUrl(cached);
               return;
             }
-            const thumbRecord = await db.thumbnails.get(visualAsset.thumbnailBlobId);
+            const thumbRecord = await db.thumbnails.get(
+              visualAsset.thumbnailBlobId,
+            );
             if (thumbRecord && isMounted) {
-              setThumbUrl(objectUrlManager.createUrl(visualAsset.thumbnailBlobId, thumbRecord.blob));
+              setThumbUrl(
+                objectUrlManager.createUrl(
+                  visualAsset.thumbnailBlobId,
+                  thumbRecord.blob,
+                ),
+              );
               return;
             }
           }
@@ -65,12 +80,19 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
             }
             const thumbRecord = await db.thumbnails.get(visualAsset.blobId);
             if (thumbRecord && isMounted) {
-              setThumbUrl(objectUrlManager.createUrl(visualAsset.blobId, thumbRecord.blob));
+              setThumbUrl(
+                objectUrlManager.createUrl(
+                  visualAsset.blobId,
+                  thumbRecord.blob,
+                ),
+              );
               return;
             }
             const blobRecord = await db.blobs.get(visualAsset.blobId);
             if (blobRecord && isMounted) {
-              setThumbUrl(objectUrlManager.createUrl(visualAsset.blobId, blobRecord.blob));
+              setThumbUrl(
+                objectUrlManager.createUrl(visualAsset.blobId, blobRecord.blob),
+              );
               return;
             }
           }
@@ -88,9 +110,16 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
                     if (isMounted) setThumbUrl(cached);
                     return;
                   }
-                  const thumbRecord = await db.thumbnails.get(asset.thumbnailBlobId);
+                  const thumbRecord = await db.thumbnails.get(
+                    asset.thumbnailBlobId,
+                  );
                   if (thumbRecord && isMounted) {
-                    setThumbUrl(objectUrlManager.createUrl(asset.thumbnailBlobId, thumbRecord.blob));
+                    setThumbUrl(
+                      objectUrlManager.createUrl(
+                        asset.thumbnailBlobId,
+                        thumbRecord.blob,
+                      ),
+                    );
                     return;
                   }
                 }
@@ -102,7 +131,9 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
                   }
                   const blobRecord = await db.blobs.get(asset.blobId);
                   if (blobRecord && isMounted) {
-                    setThumbUrl(objectUrlManager.createUrl(asset.blobId, blobRecord.blob));
+                    setThumbUrl(
+                      objectUrlManager.createUrl(asset.blobId, blobRecord.blob),
+                    );
                     return;
                   }
                 }
@@ -144,7 +175,8 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
             {project.name}
           </h3>
           <p className="text-[11px] font-mono text-studio-muted mt-0.5">
-            {project.settings.width}×{project.settings.height} ({project.settings.aspectRatio})
+            {project.settings.width}×{project.settings.height} (
+            {project.settings.aspectRatio})
           </p>
         </div>
         <button
@@ -182,10 +214,12 @@ export default function StudioDashboardPage() {
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (confirm("Are you sure you want to delete this local project?")) {
-      await db.projects.delete(id);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
+    const assets = await db.assets.where("projectId").equals(id).toArray();
+    for (const asset of assets) {
+      await deleteStoredMediaAsset(asset);
     }
+    await db.projects.delete(id);
+    setProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
