@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useProjectStore } from "@/modules/projects";
 import {
   useExportStore,
@@ -9,6 +9,11 @@ import {
   type ExportQuality,
 } from "@/modules/editor/store/useExportStore";
 import { runExportTask } from "../services/exportService";
+import {
+  buildExportPreflight,
+  type ExportPreflightResult,
+  getNativeMp4MimeType,
+} from "../services/export-preflight";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -55,6 +60,9 @@ export function ExportModal() {
   } = useExportStore();
 
   const isCancelRef = useRef(false);
+  const [preflight, setPreflight] = useState<ExportPreflightResult | null>(
+    null,
+  );
 
   useEffect(() => {
     detectCapabilities();
@@ -68,12 +76,48 @@ export function ExportModal() {
       setFilename(sanitized || "video-export");
     }
   }, [currentProject, filename, setFilename]);
+  useEffect(() => {
+    if (!isExportModalOpen || !currentProject) {
+      setPreflight(null);
+      return;
+    }
+    let active = true;
+    setPreflight(null);
+    void buildExportPreflight(currentProject, {
+      filename,
+      format: exportFormat,
+      resolution: exportResolution,
+      fps: exportFps,
+      quality: exportQuality,
+    }).then((result) => {
+      if (active) setPreflight(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [
+    currentProject,
+    exportFormat,
+    exportFps,
+    exportQuality,
+    exportResolution,
+    filename,
+    isExportModalOpen,
+  ]);
 
   if (!isExportModalOpen || !currentProject) return null;
 
   const totalDuration = currentProject.settings.duration || 10;
 
+  const hasNativeMp4Export = Boolean(getNativeMp4MimeType());
   const handleStartExport = () => {
+    if (
+      !preflight ||
+      preflight.isMobileBlocked ||
+      !preflight.hasEnoughStorage
+    ) {
+      return;
+    }
     isCancelRef.current = false;
     resetExport();
 
@@ -101,6 +145,7 @@ export function ExportModal() {
         },
         checkIsCancelled: () => isCancelRef.current,
       },
+      preflight,
     );
   };
 
@@ -121,6 +166,11 @@ export function ExportModal() {
     const s = Math.floor(sec % 60);
     const ms = Math.floor((sec % 1) * 10);
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${ms}`;
+  };
+  const formatBytes = (bytes: number) => {
+    if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+    if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(0)} MB`;
+    return `${Math.ceil(bytes / 1024)} KB`;
   };
 
   return (
@@ -215,7 +265,9 @@ export function ExportModal() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 text-destructive">
               <XCircle className="h-6 w-6" />
             </div>
-            <h4 className="text-sm font-bold text-destructive">Export Failed</h4>
+            <h4 className="text-sm font-bold text-destructive">
+              Export Failed
+            </h4>
             <p className="text-xs text-studio-muted max-w-xs">
               {exportError || "An unexpected error occurred during rendering."}
             </p>
@@ -252,10 +304,17 @@ export function ExportModal() {
                   className="h-8 text-xs border-studio-border"
                 >
                   <option value="webm">WebM</option>
-                  <option value="mp4" disabled={!capabilities.hasFFmpegSupport}>
-                    {capabilities.hasFFmpegSupport
-                      ? "MP4 (FFmpeg conversion)"
-                      : "MP4 (Not supported on device)"}
+                  <option
+                    value="mp4"
+                    disabled={
+                      !capabilities.hasFFmpegSupport && !hasNativeMp4Export
+                    }
+                  >
+                    {hasNativeMp4Export
+                      ? "MP4 (Native)"
+                      : capabilities.hasFFmpegSupport
+                        ? "MP4 (FFmpeg conversion)"
+                        : "MP4 (Not supported on device)"}
                   </option>
                 </Select>
               </div>
@@ -328,11 +387,39 @@ export function ExportModal() {
                   {formatSeconds(totalDuration)}
                 </span>
               </div>
+              {preflight && (
+                <div className="mt-1 text-[11px] text-studio-muted">
+                  <div className="flex items-center justify-between">
+                    <span>Estimated output</span>
+                    <span className="font-mono">
+                      {formatBytes(preflight.estimatedBytes)} ·{" "}
+                      {preflight.extension.toUpperCase()}
+                    </span>
+                  </div>
+                  {preflight.isLongExport && (
+                    <p className="mt-1 text-brand">
+                      Long export streams to local storage in real time. Keep
+                      this tab open until it finishes.
+                    </p>
+                  )}
+                </div>
+              )}
               <p className="text-[11px] text-studio-muted mt-1">
                 Local export performance depends on project length, resolution
                 and device performance.
               </p>
             </div>
+            {preflight?.isMobileBlocked && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-[11px] text-destructive">
+                Long exports require a desktop browser. Mobile editing and
+                preview remain available.
+              </div>
+            )}
+            {preflight && !preflight.hasEnoughStorage && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-[11px] text-destructive">
+                Not enough local storage for this export.
+              </div>
+            )}
           </div>
         )}
 
@@ -390,6 +477,11 @@ export function ExportModal() {
                 size="sm"
                 variant="primary"
                 onClick={handleStartExport}
+                disabled={
+                  !preflight ||
+                  preflight.isMobileBlocked ||
+                  !preflight.hasEnoughStorage
+                }
                 className="gap-1.5"
               >
                 <Download className="h-3.5 w-3.5" /> Start Export
