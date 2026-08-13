@@ -7,6 +7,14 @@ import {
 import { objectUrlManager } from "@/modules/core/db/object-url-manager";
 import type { MediaAsset } from "@/modules/projects/types";
 import { extractAudioPeaks } from "@/modules/editor/features/audio/utils/audio-peaks";
+import {
+  assertStorageCapacity,
+  createMediaOpfsPath,
+  deleteOpfsFile,
+  supportsOpfs,
+  writeFileToOpfs,
+} from "@/modules/core/storage/opfs-media-storage";
+import { resolveMediaAssetBlob } from "@/modules/core/storage/media-source-service";
 
 export interface ImportResult {
   asset: MediaAsset;
@@ -14,9 +22,28 @@ export interface ImportResult {
   thumbnailUrl?: string;
 }
 
+export type ImportPhase =
+  "validating" | "copying" | "analyzing" | "ready" | "error";
+
+export interface ImportProgress {
+  phase: ImportPhase;
+  fileName: string;
+  bytesProcessed: number;
+  totalBytes: number;
+  percentage: number;
+}
+
+export interface ImportOptions {
+  signal?: AbortSignal;
+  onProgress?: (progress: ImportProgress) => void;
+}
+
 const THUMBNAIL_WIDTH = 640;
 const THUMBNAIL_HEIGHT = 360;
 const IMAGE_THUMBNAIL_RENDER_VERSION = 2;
+const INDEXEDDB_FALLBACK_LIMIT = 256 * 1024 * 1024;
+const WAVEFORM_SIZE_LIMIT = 128 * 1024 * 1024;
+const WAVEFORM_DURATION_LIMIT = 20 * 60;
 const verifiedThumbnailIds = new Set<string>();
 
 export function detectAssetType(
@@ -48,7 +75,18 @@ export function detectAssetType(
 export async function processAndStoreMediaFile(
   file: File,
   projectId: string,
+  options: ImportOptions = {},
 ): Promise<ImportResult> {
+  const report = (phase: ImportPhase, percentage: number, bytesProcessed = 0) =>
+    options.onProgress?.({
+      phase,
+      fileName: file.name,
+      bytesProcessed,
+      totalBytes: file.size,
+      percentage,
+    });
+
+  report("validating", 0);
   if (file.size === 0) {
     throw new Error(`File "${file.name}" is empty (0 bytes).`);
   }
@@ -58,16 +96,47 @@ export async function processAndStoreMediaFile(
     throw new Error(`Unsupported file format for "${file.name}".`);
   }
 
-  const blobId = nanoid();
+  if (options.signal?.aborted) {
+    throw new DOMException("Import cancelled", "AbortError");
+  }
+
+  const assetId = nanoid();
+  const blobId = assetId;
   const thumbnailBlobId = assetType === "audio" ? undefined : nanoid();
+  const useOpfs = supportsOpfs();
+  if (!useOpfs && file.size > INDEXEDDB_FALLBACK_LIMIT) {
+    throw new Error(
+      "This browser cannot store files over 256 MB locally. Use a current browser with OPFS support.",
+    );
+  }
+
+  let opfsPath: string | undefined;
+  if (useOpfs) {
+    await assertStorageCapacity(file.size);
+    opfsPath = createMediaOpfsPath(projectId, assetId);
+    report("copying", 1);
+    await writeFileToOpfs(opfsPath, file, {
+      signal: options.signal,
+      onProgress: ({ bytesWritten, totalBytes }) => {
+        const percentage =
+          totalBytes > 0
+            ? 1 + Math.round((bytesWritten / totalBytes) * 74)
+            : 75;
+        report("copying", percentage, bytesWritten);
+      },
+    });
+  }
+
   const tempUrl = URL.createObjectURL(file);
 
   try {
+    report("analyzing", 78, file.size);
     let width: number | undefined;
     let height: number | undefined;
     let duration = 5; // Default 5s for images
     let thumbnailBlob: Blob | undefined;
     let waveformPeaks: number[] | undefined;
+    let waveformStatus: MediaAsset["waveformStatus"];
 
     if (assetType === "video") {
       const metadata = await extractVideoMetadata(tempUrl);
@@ -75,7 +144,15 @@ export async function processAndStoreMediaFile(
       height = metadata.height;
       duration = metadata.duration;
       thumbnailBlob = await generateVideoThumbnail(tempUrl, metadata.duration);
-      waveformPeaks = await extractAudioPeaks(file, 200);
+      if (
+        file.size <= WAVEFORM_SIZE_LIMIT &&
+        duration <= WAVEFORM_DURATION_LIMIT
+      ) {
+        waveformPeaks = await extractAudioPeaks(file, 200);
+        waveformStatus = "ready";
+      } else {
+        waveformStatus = "deferred";
+      }
     } else if (assetType === "image") {
       const metadata = await extractImageMetadata(tempUrl);
       width = metadata.width;
@@ -85,19 +162,28 @@ export async function processAndStoreMediaFile(
     } else if (assetType === "audio") {
       const metadata = await extractAudioMetadata(tempUrl);
       duration = metadata.duration;
-      waveformPeaks = await extractAudioPeaks(file, 200);
+      if (
+        file.size <= WAVEFORM_SIZE_LIMIT &&
+        duration <= WAVEFORM_DURATION_LIMIT
+      ) {
+        waveformPeaks = await extractAudioPeaks(file, 200);
+        waveformStatus = "ready";
+      } else {
+        waveformStatus = "deferred";
+      }
     }
 
-    // Save main Blob to IndexedDB
-    const storedBlob: StoredBlob = {
-      id: blobId,
-      blob: file,
-      mimeType: file.type || getFallbackMimeType(assetType),
-      createdAt: Date.now(),
-    };
-    await db.blobs.put(storedBlob);
+    report("analyzing", 92, file.size);
+    if (!useOpfs) {
+      const storedBlob: StoredBlob = {
+        id: blobId,
+        blob: file,
+        mimeType: file.type || getFallbackMimeType(assetType),
+        createdAt: Date.now(),
+      };
+      await db.blobs.put(storedBlob);
+    }
 
-    // Save thumbnail Blob if generated
     if (thumbnailBlobId && thumbnailBlob) {
       const storedThumbnail: StoredThumbnail = {
         id: thumbnailBlobId,
@@ -110,7 +196,7 @@ export async function processAndStoreMediaFile(
     }
 
     const asset: MediaAsset = {
-      id: nanoid(),
+      id: assetId,
       projectId,
       type: assetType,
       name: file.name,
@@ -121,15 +207,19 @@ export async function processAndStoreMediaFile(
       height,
       createdAt: Date.now(),
       blobId,
+      source: opfsPath
+        ? { kind: "opfs", path: opfsPath }
+        : { kind: "indexeddb", blobId },
       thumbnailBlobId,
       waveformPeaks,
+      waveformStatus,
       metadataStatus: "ready",
     };
 
     await db.assets.put(asset);
 
-    // Register persistent Object URLs
-    const persistentBlobUrl = objectUrlManager.createUrl(blobId, file);
+    const mediaUrlKey = opfsPath ? "opfs:" + opfsPath : blobId;
+    const persistentBlobUrl = objectUrlManager.createUrl(mediaUrlKey, file);
     let persistentThumbnailUrl: string | undefined;
     if (thumbnailBlobId && thumbnailBlob) {
       persistentThumbnailUrl = objectUrlManager.createUrl(
@@ -138,20 +228,30 @@ export async function processAndStoreMediaFile(
       );
     }
 
+    report("ready", 100, file.size);
     return {
       asset,
       blobUrl: persistentBlobUrl,
       thumbnailUrl: persistentThumbnailUrl,
     };
+  } catch (error) {
+    report("error", 0);
+    if (opfsPath) await deleteOpfsFile(opfsPath).catch(() => undefined);
+    await Promise.all([
+      db.assets.delete(assetId),
+      db.blobs.delete(blobId),
+      thumbnailBlobId
+        ? db.thumbnails.delete(thumbnailBlobId)
+        : Promise.resolve(),
+    ]).catch(() => undefined);
+    objectUrlManager.revokeUrl(opfsPath ? "opfs:" + opfsPath : blobId);
+    throw error;
   } finally {
     URL.revokeObjectURL(tempUrl);
   }
 }
 export async function ensureHighQualityThumbnail(
-  asset: Pick<
-    MediaAsset,
-    "type" | "thumbnailBlobId" | "blobId" | "remoteUrl" | "duration"
-  >,
+  asset: MediaAsset,
 ): Promise<Blob | null> {
   if (
     asset.type === "audio" ||
@@ -186,10 +286,10 @@ export async function ensureHighQualityThumbnail(
     }
   }
 
-  const original = await db.blobs.get(asset.blobId);
+  const original = await resolveMediaAssetBlob(asset).catch(() => null);
   if (!original) return existing?.blob ?? null;
 
-  const sourceUrl = URL.createObjectURL(original.blob);
+  const sourceUrl = URL.createObjectURL(original);
   try {
     const upgraded =
       asset.type === "video"
@@ -304,15 +404,15 @@ function extractImageMetadata(
 }
 
 function extractAudioMetadata(audioUrl: string): Promise<{ duration: number }> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const audio = document.createElement("audio");
     audio.preload = "metadata";
     audio.src = audioUrl;
 
     const timeout = setTimeout(() => {
       cleanup();
-      resolve({ duration: 10 });
-    }, 5000);
+      reject(new Error("Audio metadata reading timed out."));
+    }, 10000);
 
     const cleanup = () => {
       clearTimeout(timeout);
@@ -329,7 +429,9 @@ function extractAudioMetadata(audioUrl: string): Promise<{ duration: number }> {
 
     audio.onerror = () => {
       cleanup();
-      resolve({ duration: 10 });
+      reject(
+        new Error("This browser cannot decode the selected audio format."),
+      );
     };
   });
 }
