@@ -1,4 +1,4 @@
-import type { Project } from '@/modules/projects/types';
+import type { Project } from "@/modules/projects/types";
 
 export interface AudioExporterSession {
   audioCtx: AudioContext;
@@ -9,12 +9,16 @@ export interface AudioExporterSession {
 
 export function createAudioExporterSession(
   project: Project,
-  mediaElementsMap: Map<string, HTMLVideoElement | HTMLImageElement | HTMLAudioElement>
+  mediaElementsMap: Map<
+    string,
+    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
+  >,
 ): AudioExporterSession | null {
   try {
     const AudioCtx =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
     if (!AudioCtx) return null;
 
     const audioCtx = new AudioCtx();
@@ -39,7 +43,8 @@ export function createAudioExporterSession(
 
         if (
           mediaEl &&
-          (mediaEl instanceof HTMLVideoElement || mediaEl instanceof HTMLAudioElement)
+          (mediaEl instanceof HTMLVideoElement ||
+            mediaEl instanceof HTMLAudioElement)
         ) {
           try {
             const gainNode = audioCtx.createGain();
@@ -49,14 +54,14 @@ export function createAudioExporterSession(
 
             clipNodesMap.set(clip.id, { gainNode, mediaSource: sourceNode });
           } catch (e) {
-            console.warn('Audio node connection notice:', e);
+            console.warn("Audio node connection notice:", e);
           }
         }
       }
     }
 
     const updateAudioFrame = (currentTime: number) => {
-      if (audioCtx.state === 'suspended') {
+      if (audioCtx.state === "suspended") {
         audioCtx.resume().catch(() => {});
       }
 
@@ -67,7 +72,9 @@ export function createAudioExporterSession(
           const nodes = clipNodesMap.get(clip.id);
           if (!nodes) continue;
 
-          const mediaEl = clip.assetId ? mediaElementsMap.get(clip.assetId) : null;
+          const mediaEl = clip.assetId
+            ? mediaElementsMap.get(clip.assetId)
+            : null;
           const isActive =
             currentTime >= clip.timelineStart &&
             currentTime < clip.timelineStart + clip.timelineDuration;
@@ -77,7 +84,8 @@ export function createAudioExporterSession(
             nodes.gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
             if (
               mediaEl &&
-              (mediaEl instanceof HTMLVideoElement || mediaEl instanceof HTMLAudioElement)
+              (mediaEl instanceof HTMLVideoElement ||
+                mediaEl instanceof HTMLAudioElement)
             ) {
               if (!mediaEl.paused) {
                 mediaEl.pause();
@@ -88,11 +96,13 @@ export function createAudioExporterSession(
 
           if (
             mediaEl &&
-            (mediaEl instanceof HTMLVideoElement || mediaEl instanceof HTMLAudioElement)
+            (mediaEl instanceof HTMLVideoElement ||
+              mediaEl instanceof HTMLAudioElement)
           ) {
             const clipElapsed = currentTime - clip.timelineStart;
-            const targetSourceTime = clip.sourceStart + clipElapsed * (clip.speed || 1);
-            if (Math.abs(mediaEl.currentTime - targetSourceTime) > 0.08) {
+            const targetSourceTime =
+              clip.sourceStart + clipElapsed * (clip.speed || 1);
+            if (Math.abs(mediaEl.currentTime - targetSourceTime) > 0.5) {
               mediaEl.currentTime = targetSourceTime;
             }
             if (mediaEl.paused) {
@@ -112,7 +122,10 @@ export function createAudioExporterSession(
             gain *= clipElapsed / fadeIn;
           }
           // Fade Out Envelope
-          else if (fadeOut > 0 && clipElapsed > clip.timelineDuration - fadeOut) {
+          else if (
+            fadeOut > 0 &&
+            clipElapsed > clip.timelineDuration - fadeOut
+          ) {
             const fadeOutElapsed = clip.timelineDuration - clipElapsed;
             gain *= Math.max(0, fadeOutElapsed / fadeOut);
           }
@@ -130,7 +143,7 @@ export function createAudioExporterSession(
       });
       try {
         masterGainNode.disconnect();
-        if (audioCtx.state !== 'closed') {
+        if (audioCtx.state !== "closed") {
           audioCtx.close();
         }
       } catch {}
@@ -143,7 +156,7 @@ export function createAudioExporterSession(
       cleanup,
     };
   } catch (err) {
-    console.warn('Failed to create audio export session:', err);
+    console.warn("Failed to create audio export session:", err);
     return null;
   }
 }
