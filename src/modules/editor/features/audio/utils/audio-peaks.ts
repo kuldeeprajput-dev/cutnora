@@ -50,9 +50,5 @@ export async function extractAudioPeaks(
 }
 
 function generateFallbackPeaks(count: number): number[] {
-  const peaks: number[] = [];
-  for (let i = 0; i < count; i++) {
-    peaks.push(Math.round((0.2 + Math.sin(i * 0.2) * 0.4 + Math.random() * 0.3) * 100) / 100);
-  }
-  return peaks;
+  return Array.from({ length: count }, () => 0.18);
 }

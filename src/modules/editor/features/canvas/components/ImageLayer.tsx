@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { db } from "@/modules/core/db/database";
-import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import { resolveMediaAssetUrl } from "@/modules/core/storage/media-source-service";
 import type { TimelineClip } from "@/modules/editor/types";
 
 export interface ImageLayerProps {
@@ -26,17 +26,8 @@ export function ImageLayer({ clip }: ImageLayerProps) {
         return;
       }
 
-      const cached = objectUrlManager.getUrl(asset.blobId);
-      if (cached) {
-        if (isMounted) setImageUrl(cached);
-        return;
-      }
-
-      const blobRecord = await db.blobs.get(asset.blobId);
-      if (blobRecord && isMounted) {
-        const url = objectUrlManager.createUrl(asset.blobId, blobRecord.blob);
-        setImageUrl(url);
-      }
+      const url = await resolveMediaAssetUrl(asset);
+      if (isMounted) setImageUrl(url);
     }
 
     loadImageBlob();

@@ -19,7 +19,7 @@ import { useProjectStore } from "@/modules/projects";
 import { cn } from "@/shared/utils/cn";
 
 const MAX_PIXELS_PER_SECOND = 48;
-const MIN_PIXELS_PER_SECOND = 26;
+const MIN_PIXELS_PER_SECOND = 0.05;
 const TIMELINE_GUTTER = 24;
 const MIN_CLIP_DURATION = 0.1;
 const MIN_TIMELINE_ZOOM = 0.75;

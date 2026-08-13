@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { db } from '@/modules/core/db/database';
-import { objectUrlManager } from '@/modules/core/db/object-url-manager';
-import type { TimelineClip } from '@/modules/editor/types';
-import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
+import React, { useEffect, useRef, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/modules/core/db/database";
+import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import { resolveMediaAssetUrl } from "@/modules/core/storage/media-source-service";
+import type { TimelineClip } from "@/modules/editor/types";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 
 export interface VideoLayerProps {
   clip: TimelineClip;
@@ -12,21 +14,20 @@ export interface VideoLayerProps {
 
 export function VideoLayer({ clip }: VideoLayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(() => {
-    if (!clip.assetId) return null;
-    return objectUrlManager.getUrl(clip.assetId) || null;
-  });
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [posterUrl, setPosterUrl] = useState<string | null>(null);
   const { playhead, isPlaying } = usePlaybackStore();
+  const asset = useLiveQuery(
+    () => (clip.assetId ? db.assets.get(clip.assetId) : undefined),
+    [clip.assetId],
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadVideoBlob() {
-      if (!clip.assetId) return;
-
-      const asset = await db.assets.get(clip.assetId);
-      if (!asset || !asset.blobId) return;
+      if (!asset) return;
 
       if (asset.remotePreviewUrl) {
         if (isMounted) setPosterUrl(asset.remotePreviewUrl);
@@ -44,33 +45,26 @@ export function VideoLayer({ clip }: VideoLayerProps) {
         }
       }
 
-      const cached = objectUrlManager.getUrl(asset.blobId) || objectUrlManager.getUrl(clip.assetId);
-      if (cached) {
-        if (isMounted) setVideoUrl(cached);
-        return;
-      }
-
-      const blobRecord = await db.blobs.get(asset.blobId);
-      if (blobRecord && isMounted) {
-        const url = objectUrlManager.createUrl(asset.blobId, blobRecord.blob);
-        objectUrlManager.createUrl(clip.assetId, blobRecord.blob);
-        setVideoUrl(url);
-      }
+      const url = await resolveMediaAssetUrl(asset);
+      if (isMounted) setVideoUrl(url);
     }
 
-    loadVideoBlob();
+    void loadVideoBlob();
 
     return () => {
       isMounted = false;
     };
-  }, [clip.assetId]);
+  }, [asset, clip.assetId]);
 
   // Synchronize playback time and play/pause state without video decoding stutters
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoUrl) return;
 
-    const targetTime = Math.max(0, clip.sourceStart + (playhead - clip.timelineStart) * clip.speed);
+    const targetTime = Math.max(
+      0,
+      clip.sourceStart + (playhead - clip.timelineStart) * clip.speed,
+    );
 
     const synchronizeVideo = () => {
       if (video.readyState < HTMLMediaElement.HAVE_METADATA) return;
@@ -103,21 +97,35 @@ export function VideoLayer({ clip }: VideoLayerProps) {
     };
 
     synchronizeVideo();
-    video.addEventListener('loadedmetadata', synchronizeVideo);
-    video.addEventListener('loadeddata', synchronizeVideo);
-    video.addEventListener('canplay', synchronizeVideo);
+    video.addEventListener("loadedmetadata", synchronizeVideo);
+    video.addEventListener("loadeddata", synchronizeVideo);
+    video.addEventListener("canplay", synchronizeVideo);
 
     return () => {
-      video.removeEventListener('loadedmetadata', synchronizeVideo);
-      video.removeEventListener('loadeddata', synchronizeVideo);
-      video.removeEventListener('canplay', synchronizeVideo);
+      video.removeEventListener("loadedmetadata", synchronizeVideo);
+      video.removeEventListener("loadeddata", synchronizeVideo);
+      video.removeEventListener("canplay", synchronizeVideo);
     };
-  }, [playhead, isPlaying, videoUrl, clip.speed, clip.audio?.muted, clip.audio?.volume, clip.sourceStart, clip.timelineStart]);
+  }, [
+    playhead,
+    isPlaying,
+    videoUrl,
+    clip.speed,
+    clip.audio?.muted,
+    clip.audio?.volume,
+    clip.sourceStart,
+    clip.timelineStart,
+  ]);
 
   if (!videoUrl) return null;
 
   const { transform, adjustments } = clip;
-  const objectFit = transform.fitMode === 'cover' ? 'cover' : transform.fitMode === 'fill' ? 'fill' : 'contain';
+  const objectFit =
+    transform.fitMode === "cover"
+      ? "cover"
+      : transform.fitMode === "fill"
+        ? "fill"
+        : "contain";
 
   const hasVisualAdjustments =
     adjustments.brightness !== 1 ||
@@ -145,7 +153,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
       ref={videoRef}
       src={videoUrl}
       poster={posterUrl ?? undefined}
-      preload="auto"
+      preload="metadata"
       controls={false}
       muted={clip.audio?.muted}
       playsInline
