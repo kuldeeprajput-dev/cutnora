@@ -64,7 +64,7 @@ export function Dialog({ isOpen, onClose, title, description, children, classNam
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-2 sm:p-4">
       <div
         ref={dialogRef}
         tabIndex={-1}
@@ -73,7 +73,7 @@ export function Dialog({ isOpen, onClose, title, description, children, classNam
         aria-labelledby={title ? 'dialog-title' : undefined}
         aria-describedby={description ? 'dialog-description' : undefined}
         className={cn(
-          'relative w-full max-w-lg rounded-xl border border-studio-border bg-studio-panel p-6 text-studio-fg shadow-xl transition-all',
+          'relative max-h-[calc(100dvh-16px)] w-full max-w-lg overflow-y-auto rounded-xl border border-studio-border bg-studio-panel p-4 text-studio-fg shadow-xl transition-all studio-scrollbar sm:max-h-[calc(100dvh-32px)] sm:p-6',
           'focus-visible:outline-none',
           className
         )}

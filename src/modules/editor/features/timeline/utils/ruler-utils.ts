@@ -4,24 +4,32 @@ export interface RulerTick {
   isMajor: boolean;
 }
 
-export function formatTimecode(seconds: number, fps = 30, includeFrames = false): string {
+export function formatTimecode(
+  seconds: number,
+  fps = 30,
+  includeFrames = false,
+): string {
   const s = Math.max(0, seconds);
   const mins = Math.floor(s / 60);
   const secs = Math.floor(s % 60);
   const frames = Math.floor((s % 1) * fps);
 
-  const mm = String(mins).padStart(2, '0');
-  const ss = String(secs).padStart(2, '0');
+  const mm = String(mins).padStart(2, "0");
+  const ss = String(secs).padStart(2, "0");
 
   if (includeFrames) {
-    const ff = String(frames).padStart(2, '0');
+    const ff = String(frames).padStart(2, "0");
     return `${mm}:${ss}:${ff}`;
   }
 
   return `${mm}:${ss}`;
 }
 
-export function generateRulerTicks(duration: number, zoom: number, fps = 30): RulerTick[] {
+export function generateRulerTicks(
+  duration: number,
+  zoom: number,
+  fps = 30,
+): RulerTick[] {
   if (duration <= 0) {
     return [
       {
@@ -41,7 +49,12 @@ export function generateRulerTicks(duration: number, zoom: number, fps = 30): Ru
   else if (zoom >= 80) majorInterval = 2;
   else if (zoom >= 40) majorInterval = 5;
   else if (zoom >= 20) majorInterval = 10;
-  else majorInterval = 30;
+  else if (zoom >= 10) majorInterval = 30;
+  else if (zoom >= 5) majorInterval = 60;
+  else if (zoom >= 2) majorInterval = 120;
+  else if (zoom >= 1) majorInterval = 300;
+  else if (zoom >= 0.5) majorInterval = 600;
+  else majorInterval = 900;
 
   const minorInterval = majorInterval / 5;
 
@@ -52,7 +65,7 @@ export function generateRulerTicks(duration: number, zoom: number, fps = 30): Ru
 
     ticks.push({
       time: roundedTime,
-      label: isMajor ? formatTimecode(roundedTime, fps, isPrecise) : '',
+      label: isMajor ? formatTimecode(roundedTime, fps, isPrecise) : "",
       isMajor,
     });
   }

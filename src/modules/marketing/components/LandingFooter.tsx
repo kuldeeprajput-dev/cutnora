@@ -13,7 +13,7 @@ export function LandingFooter() {
           <Link href="/" className="flex items-center gap-2.5">
             <BrandMark size={28} />
             <span className="text-lg font-black tracking-[-0.03em] text-mkt-fg">
-              Cutframe
+              Cutnora
             </span>
           </Link>
           <p className="text-xs text-mkt-muted max-w-sm">
@@ -43,7 +43,7 @@ export function LandingFooter() {
 
         {/* Copyright */}
         <div className="text-xs text-mkt-muted">
-          © {currentYear} Cutframe. All media processed locally on device.
+          © {currentYear} Cutnora. All media processed locally on device.
         </div>
       </div>
     </footer>

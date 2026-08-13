@@ -27,24 +27,41 @@ export function MinimalFeaturesSection() {
         id="showcase"
         className="mx-auto max-w-[1120px] px-5 pt-12 sm:px-8 sm:pt-16"
       >
-        <div className="landing-showcase-reveal overflow-hidden rounded-3xl border border-mkt-border bg-mkt-surface p-3 shadow-[0_24px_70px_rgb(0_0_0_/_0.08)] sm:p-5">
-          <div className="flex h-9 items-center gap-2 border-b border-mkt-border/70 px-3 pb-3">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f56]" />
-            <span className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#27c93f]" />
-            <span className="ml-2 font-mono text-[11px] font-medium text-mkt-muted">
-              cutframe.app/studio
+        <div className="landing-showcase-reveal overflow-hidden rounded-[28px] border border-mkt-border bg-mkt-surface p-2 shadow-[0_28px_80px_rgb(0_0_0_/_0.10)] ring-1 ring-black/[0.02] sm:p-4">
+          <div className="flex h-10 items-center gap-2 border-b border-mkt-border/70 px-2 pb-3 sm:px-3">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f56] shadow-[inset_0_0_0_0.5px_rgb(0_0_0_/_0.14)]" />
+            <span className="h-3 w-3 rounded-full bg-[#ffbd2e] shadow-[inset_0_0_0_0.5px_rgb(0_0_0_/_0.14)]" />
+            <span className="h-3 w-3 rounded-full bg-[#27c93f] shadow-[inset_0_0_0_0.5px_rgb(0_0_0_/_0.14)]" />
+            <div className="ml-2 flex min-w-0 items-center gap-2 font-mono text-[11px] font-medium text-mkt-muted">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-mkt-success" />
+              <span className="truncate">
+                cutnora.app/studio/golden-hour-stories
+              </span>
+            </div>
+            <span className="ml-auto hidden rounded-full border border-mkt-border bg-mkt-surface-secondary px-2 py-0.5 font-mono text-[9px] font-semibold tracking-wide text-mkt-muted uppercase sm:inline-flex">
+              Local project
             </span>
           </div>
-          <div className="relative mt-3 aspect-[16/10] w-full overflow-hidden rounded-2xl border border-mkt-border/80 bg-mkt-surface-secondary">
+          <div className="relative mt-3 aspect-[1672/941] w-full overflow-hidden rounded-2xl border border-mkt-border/80 bg-mkt-surface-secondary shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.03)]">
             <Image
-              src="/images/cutframe-editor-showcase.png"
-              alt="Cutframe video editor workspace preview"
+              src="/images/landing-page-showcase-light.webp"
+              alt="Cutnora editor with real travel footage, media assets, and a five-track timeline"
               fill
               priority
-              className="object-cover object-top"
+              draggable={false}
+              className="landing-showcase-image--light object-cover object-top"
               sizes="(max-width: 1200px) 100vw, 1120px"
             />
+            <Image
+              src="/images/landing-page-showcase-dark.webp"
+              alt="Cutnora dark editor with real travel footage, media assets, and a five-track timeline"
+              fill
+              priority
+              draggable={false}
+              className="landing-showcase-image--dark object-cover object-top"
+              sizes="(max-width: 1200px) 100vw, 1120px"
+            />
+            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/10" />
           </div>
         </div>
       </section>

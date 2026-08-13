@@ -18,6 +18,15 @@ import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { autosaveService } from "../services/autosave-service";
 import { db } from "@/modules/core/db/database";
 
+import { mediaAssetSourceExists } from "@/modules/core/storage/media-source-service";
+
+function removeEmptyTracks(project: Project) {
+  project.tracks = project.tracks.filter((track) => track.clips.length > 0);
+  project.tracks.forEach((track, index) => {
+    track.order = index;
+  });
+}
+
 function syncProjectDuration(project: Project) {
   const newDuration = calculateProjectDuration(project.tracks);
   try {
@@ -125,7 +134,7 @@ export const useProjectStore = create<ProjectState>()(
       try {
         const project = await db.projects.get(id);
         if (project) {
-          project.tracks = project.tracks.filter((t) => t.clips.length > 0);
+          removeEmptyTracks(project);
           historyManager.clear();
           set((state) => {
             state.currentProject = project;
@@ -200,6 +209,8 @@ export const useProjectStore = create<ProjectState>()(
               (clip) => clip.assetId !== assetId,
             );
           });
+          removeEmptyTracks(state.currentProject);
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -216,15 +227,8 @@ export const useProjectStore = create<ProjectState>()(
 
       for (const assetId of current.assetIds) {
         const asset = await db.assets.get(assetId);
-        if (asset) {
-          if (asset.remoteUrl) {
-            validAssetIds.add(assetId);
-            continue;
-          }
-          const blob = await db.blobs.get(asset.blobId);
-          if (blob) {
-            validAssetIds.add(assetId);
-          }
+        if (asset && (await mediaAssetSourceExists(asset))) {
+          validAssetIds.add(assetId);
         }
       }
 
@@ -246,6 +250,8 @@ export const useProjectStore = create<ProjectState>()(
           });
 
           repairedCount += origAssets - state.currentProject.assetIds.length;
+          removeEmptyTracks(state.currentProject);
+          syncProjectDuration(state.currentProject);
         }
       });
 
@@ -292,6 +298,7 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = state.currentProject.tracks.filter(
             (t) => t.id !== trackId,
           );
+          removeEmptyTracks(state.currentProject);
           syncProjectDuration(state.currentProject);
         }
       });
@@ -517,7 +524,8 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = deleteClipsFromTracks(
             state.currentProject.tracks,
             clipIds,
-          ).filter((t) => t.clips.length > 0);
+          );
+          removeEmptyTracks(state.currentProject);
           syncProjectDuration(state.currentProject);
         }
       });
@@ -553,6 +561,10 @@ export const useProjectStore = create<ProjectState>()(
       if (previous) {
         set((state) => {
           state.currentProject = previous;
+          if (state.currentProject) {
+            removeEmptyTracks(state.currentProject);
+            syncProjectDuration(state.currentProject);
+          }
         });
         autosaveService.scheduleSave(previous);
       }
@@ -566,6 +578,10 @@ export const useProjectStore = create<ProjectState>()(
       if (next) {
         set((state) => {
           state.currentProject = next;
+          if (state.currentProject) {
+            removeEmptyTracks(state.currentProject);
+            syncProjectDuration(state.currentProject);
+          }
         });
         autosaveService.scheduleSave(next);
       }

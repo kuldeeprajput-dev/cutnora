@@ -37,8 +37,10 @@ export function MediaLibraryPanel() {
   const {
     isImporting,
     importProgress,
+    importStatus,
     importErrors,
     importFiles,
+    cancelImport,
     clearErrors,
   } = useMediaImporter();
 
@@ -126,7 +128,7 @@ export function MediaLibraryPanel() {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative flex h-full w-full flex-col p-3 overflow-hidden select-none"
+      className="relative flex h-full w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-2 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:overflow-hidden lg:overscroll-auto lg:p-3"
     >
       {/* Hidden File Input for triggering file picker anywhere */}
       <input
@@ -157,7 +159,7 @@ export function MediaLibraryPanel() {
       )}
 
       {/* FIXED TOP CONTROLS & HEADER SECTION (NON-SCROLLING) */}
-      <div className="flex shrink-0 flex-col gap-2 min-w-0 w-full pb-3 border-b border-studio-border/50">
+      <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-studio-border/50 pb-2 lg:pb-3">
         {/* Show full dropzone box only when project has NO media assets */}
         {!hasAssets && (
           <MediaDropzone
@@ -170,15 +172,32 @@ export function MediaLibraryPanel() {
         {isImporting && (
           <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
             <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
-              <span className="flex items-center gap-1.5 text-brand">
+              <span className="flex min-w-0 items-center gap-1.5 text-brand">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing
-                media assets...
+                <span className="truncate">
+                  {importStatus?.fileName || "media assets..."}
+                </span>
               </span>
-              <span className="font-mono text-[11px] text-studio-muted">
-                {importProgress}%
-              </span>
+              <div className="ml-2 flex shrink-0 items-center gap-2">
+                <span className="font-mono text-[11px] text-studio-muted">
+                  {importStatus?.phase || "validating"} · {importProgress}%
+                </span>
+                <button
+                  type="button"
+                  onClick={cancelImport}
+                  className="text-[10px] font-semibold text-destructive hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
             <ProgressBar value={importProgress} />
+            {importStatus?.phase === "copying" && (
+              <p className="mt-1 text-right font-mono text-[10px] text-studio-muted">
+                {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
+                {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
+              </p>
+            )}
           </div>
         )}
 
@@ -229,7 +248,7 @@ export function MediaLibraryPanel() {
         </div>
 
         {/* Row 2: Category Filter Tabs */}
-        <div className="flex items-center gap-1 w-full overflow-x-auto studio-scrollbar py-0.5">
+        <div className="flex w-full items-center gap-1 overflow-x-auto py-0.5 touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {(["all", "video", "image", "audio"] as const).map((cat) => (
             <button
               key={cat}
@@ -333,7 +352,7 @@ export function MediaLibraryPanel() {
       </div>
 
       {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 pt-3 pr-2 studio-scrollbar">
+      <div className="shrink-0 overflow-visible pt-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden lg:pt-3 lg:pr-2 lg:pb-0 studio-scrollbar">
         {filteredAssets.length === 0 ? (
           <div className="py-8 text-center text-xs text-studio-muted">
             {!hasAssets
@@ -344,7 +363,7 @@ export function MediaLibraryPanel() {
           <div
             className={
               viewMode === "grid"
-                ? "grid grid-cols-2 gap-2 max-[210px]:grid-cols-1"
+                ? "grid grid-cols-2 gap-2 max-[300px]:grid-cols-1 min-[560px]:grid-cols-3 lg:grid-cols-2"
                 : "flex flex-col gap-2"
             }
           >

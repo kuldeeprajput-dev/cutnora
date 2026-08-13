@@ -89,6 +89,8 @@ export function TimelineClipItem({
           setAssetDuration(asset.duration || 10);
           if (asset.waveformPeaks && asset.waveformPeaks.length > 0) {
             setWaveformPeaks(asset.waveformPeaks);
+          } else if (asset.waveformStatus === "deferred") {
+            setWaveformPeaks(Array.from({ length: 80 }, () => 0.18));
           }
         }
 

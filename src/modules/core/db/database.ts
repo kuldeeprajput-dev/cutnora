@@ -15,14 +15,14 @@ export interface StoredThumbnail {
   renderVersion?: number;
 }
 
-export class CutframeDatabase extends Dexie {
+export class CutnoraDatabase extends Dexie {
   projects!: Table<Project, string>;
   assets!: Table<MediaAsset, string>;
   blobs!: Table<StoredBlob, string>;
   thumbnails!: Table<StoredThumbnail, string>;
 
   constructor() {
-    super("CutframeDatabase");
+    super("CutnoraDatabase");
 
     this.version(1).stores({
       projects: "id, name, createdAt, updatedAt",
@@ -33,4 +33,4 @@ export class CutframeDatabase extends Dexie {
   }
 }
 
-export const db = new CutframeDatabase();
+export const db = new CutnoraDatabase();

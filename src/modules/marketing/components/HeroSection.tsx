@@ -19,7 +19,7 @@ export function HeroSection() {
 
           <div className="mt-8 flex max-w-3xl flex-col gap-7 border-l-2 border-mkt-fg pl-5 sm:flex-row sm:items-end sm:justify-between sm:pl-7">
             <p className="max-w-xl text-base leading-7 text-mkt-muted sm:text-lg">
-              Cutframe gives you a precise multitrack timeline, canvas controls,
+              Cutnora gives you a precise multitrack timeline, canvas controls,
               audio mixing, and local export—without sending your footage to a
               server.
             </p>

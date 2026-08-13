@@ -1,14 +1,14 @@
-# Cutframe — Browser Video Editor
+# Cutnora — Browser Video Editor
 
-Cutframe is a production-quality, browser-based, local-first video editor built with Next.js, TypeScript, and Web APIs.
+Cutnora is a production-quality, browser-based, local-first video editor built with Next.js, TypeScript, and Web APIs.
 
 ## Product Purpose
 
-Cutframe allows users to edit multi-track videos, trim clips, adjust audio/text overlays, and export high-quality WebM and MP4 videos directly inside the web browser—without requiring cloud uploads or server-side video processing.
+Cutnora allows users to edit multi-track videos, trim clips, adjust audio/text overlays, and export high-quality WebM and MP4 videos directly inside the web browser—without requiring cloud uploads or server-side video processing.
 
 ## Architecture
 
-Cutframe runs entirely on the client side using modern Web APIs and local browser persistence:
+Cutnora runs entirely on the client side using modern Web APIs and local browser persistence:
 
 - **Framework**: Next.js App Router with TypeScript (strict mode) & Tailwind CSS
 - **State Management**: Zustand & Immer

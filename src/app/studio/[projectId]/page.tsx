@@ -3,7 +3,7 @@
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useProjectStore } from '@/modules/projects';
-import { StudioShell } from '@/modules/editor/components/shell/StudioShell';
+import { ResponsiveStudioShell } from '@/modules/editor/components/shell/ResponsiveStudioShell';
 import { Spinner } from '@/shared/components/ui/Spinner';
 import { Button } from '@/shared/components/ui/Button';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -38,7 +38,7 @@ export default function StudioEditorPage({ params }: StudioEditorPageProps) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
         <Spinner size="lg" label="Loading project..." />
-        <p className="mt-4 text-sm text-studio-muted">Opening Cutframe Studio...</p>
+        <p className="mt-4 text-sm text-studio-muted">Opening Cutnora Studio...</p>
       </div>
     );
   }
@@ -69,5 +69,5 @@ export default function StudioEditorPage({ params }: StudioEditorPageProps) {
     );
   }
 
-  return <StudioShell />;
+  return <ResponsiveStudioShell />;
 }

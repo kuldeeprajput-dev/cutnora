@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import { persist } from 'zustand/middleware';
-import type { EditorTool } from '../types';
-import { useProjectStore } from '@/modules/projects';
-import { usePlaybackStore } from './usePlaybackStore';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { persist } from "zustand/middleware";
+import type { EditorTool } from "../types";
+import { useProjectStore } from "@/modules/projects";
+import { usePlaybackStore } from "./usePlaybackStore";
 
 function autoSeekToClipIfOutOfBounds(clipIds: string[]) {
   if (clipIds.length === 0) return;
@@ -25,7 +25,7 @@ function autoSeekToClipIfOutOfBounds(clipIds: string[]) {
 interface EditorUIState {
   activeTool: EditorTool;
   activeInspectorTab: string;
-  inspectorMode: 'clip' | 'canvas';
+  inspectorMode: "clip" | "canvas";
   selectedClipIds: string[];
   activeTrackId: string | null;
   zoom: number; // Pixels per second
@@ -36,13 +36,13 @@ interface EditorUIState {
   timelineHeight: number;
   trackHeaderWidth: number;
   stageScale: number;
-  zoomMode: 'fit' | number;
+  zoomMode: "fit" | number;
   resetViewCount: number;
   isFullscreen: boolean;
 
   setActiveTool: (tool: EditorTool) => void;
   setActiveInspectorTab: (tab: string) => void;
-  setInspectorMode: (mode: 'clip' | 'canvas') => void;
+  setInspectorMode: (mode: "clip" | "canvas") => void;
   setSelectedClipIds: (ids: string[]) => void;
   toggleClipSelection: (id: string, multiSelect?: boolean) => void;
   clearSelection: () => void;
@@ -55,7 +55,7 @@ interface EditorUIState {
   setTimelineHeight: (height: number) => void;
   setTrackHeaderWidth: (width: number) => void;
   setStageScale: (scale: number) => void;
-  setZoomMode: (mode: 'fit' | number) => void;
+  setZoomMode: (mode: "fit" | number) => void;
   triggerResetView: () => void;
   setIsFullscreen: (full: boolean) => void;
   toggleFullscreen: () => void;
@@ -64,9 +64,9 @@ interface EditorUIState {
 export const useEditorUIStore = create<EditorUIState>()(
   persist(
     immer((set) => ({
-      activeTool: 'media',
-      activeInspectorTab: 'transform',
-      inspectorMode: 'clip',
+      activeTool: "media",
+      activeInspectorTab: "transform",
+      inspectorMode: "clip",
       selectedClipIds: [],
       activeTrackId: null,
       zoom: 50, // 50px per second default timeline zoom
@@ -77,7 +77,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       timelineHeight: 220,
       trackHeaderWidth: 180,
       stageScale: 0.5,
-      zoomMode: 'fit',
+      zoomMode: "fit",
       resetViewCount: 0,
       isFullscreen: false,
 
@@ -100,8 +100,8 @@ export const useEditorUIStore = create<EditorUIState>()(
         set((state) => {
           state.selectedClipIds = ids;
           if (ids.length > 0) {
-            state.activeTool = 'canvas';
-            state.inspectorMode = 'clip';
+            state.activeTool = "canvas";
+            state.inspectorMode = "clip";
             autoSeekToClipIfOutOfBounds(ids);
           }
         }),
@@ -110,7 +110,9 @@ export const useEditorUIStore = create<EditorUIState>()(
         set((state) => {
           if (multiSelect) {
             if (state.selectedClipIds.includes(id)) {
-              state.selectedClipIds = state.selectedClipIds.filter((clipId) => clipId !== id);
+              state.selectedClipIds = state.selectedClipIds.filter(
+                (clipId) => clipId !== id,
+              );
             } else {
               state.selectedClipIds.push(id);
             }
@@ -118,8 +120,8 @@ export const useEditorUIStore = create<EditorUIState>()(
             state.selectedClipIds = [id];
           }
           if (state.selectedClipIds.length > 0) {
-            state.activeTool = 'canvas';
-            state.inspectorMode = 'clip';
+            state.activeTool = "canvas";
+            state.inspectorMode = "clip";
             autoSeekToClipIfOutOfBounds(state.selectedClipIds);
           }
         }),
@@ -136,7 +138,7 @@ export const useEditorUIStore = create<EditorUIState>()(
 
       setZoom: (zoom) =>
         set((state) => {
-          state.zoom = Math.min(200, Math.max(10, zoom));
+          state.zoom = Math.min(200, Math.max(0.05, zoom));
         }),
 
       setScrollLeft: (scrollLeft) =>
@@ -195,7 +197,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         }),
     })),
     {
-      name: 'cutframe-editor-ui-store',
+      name: "cutnora-editor-ui-store",
       partialize: (state) => ({
         zoom: state.zoom,
         zoomMode: state.zoomMode,
@@ -205,6 +207,6 @@ export const useEditorUIStore = create<EditorUIState>()(
         trackHeaderWidth: state.trackHeaderWidth,
         previewScale: state.previewScale,
       }),
-    }
-  )
+    },
+  ),
 );

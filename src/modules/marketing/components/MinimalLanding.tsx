@@ -9,7 +9,7 @@ import { MinimalFeaturesSection } from "./MinimalFeaturesSection";
 
 const questions = [
   {
-    question: "Does Cutframe upload my media?",
+    question: "Does Cutnora upload my media?",
     answer:
       "No. Imported media and project data stay in your browser on this device.",
   },
@@ -20,7 +20,7 @@ const questions = [
   {
     question: "What can I edit?",
     answer:
-      "Cutframe supports multitrack video, audio, text, graphic layers, canvas transforms, and local export.",
+      "Cutnora supports multitrack video, audio, text, graphic layers, canvas transforms, and local export.",
   },
   {
     question: "Will the editor work on a phone?",
@@ -88,7 +88,7 @@ export function MinimalLanding() {
                 nothing to upload.
               </p>
               <div className="mt-7">
-                <PrimaryLink>Open Cutframe</PrimaryLink>
+                <PrimaryLink>Open Cutnora</PrimaryLink>
               </div>
             </div>
           </div>
@@ -100,11 +100,11 @@ export function MinimalLanding() {
           <div className="flex items-center gap-2">
             <BrandMark size={24} />
             <span className="font-bold tracking-[0.16em] uppercase text-mkt-fg">
-              Cutframe
+              Cutnora
             </span>
           </div>
           <p>
-            © {new Date().getFullYear()} Cutframe. Browser-native video editing.
+            © {new Date().getFullYear()} Cutnora. Browser-native video editing.
           </p>
         </div>
       </footer>

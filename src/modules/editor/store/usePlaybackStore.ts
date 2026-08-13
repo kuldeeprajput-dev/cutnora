@@ -1,7 +1,6 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import { useProjectStore } from '@/modules/projects';
-
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { useProjectStore } from "@/modules/projects";
 interface PlaybackState {
   playhead: number; // In seconds
   isPlaying: boolean;
@@ -68,7 +67,8 @@ export const usePlaybackStore = create<PlaybackState>()(
             if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
           }
         }
-        maxDuration = maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
+        maxDuration =
+          maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
       }
 
       set((state) => {
@@ -95,7 +95,8 @@ export const usePlaybackStore = create<PlaybackState>()(
             if (clipEnd > maxClipEnd) maxClipEnd = clipEnd;
           }
         }
-        maxDuration = maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
+        maxDuration =
+          maxClipEnd > 0 ? maxClipEnd : currentProject.settings.duration;
       }
 
       const willPlay = !isPlaying;
@@ -135,7 +136,8 @@ export const usePlaybackStore = create<PlaybackState>()(
       set((state) => {
         state.duration = Math.max(0, duration);
         if (state.duration === 0 || state.playhead > state.duration) {
-          state.playhead = state.duration === 0 ? 0 : Math.min(state.playhead, state.duration);
+          state.playhead =
+            state.duration === 0 ? 0 : Math.min(state.playhead, state.duration);
         }
       }),
 
@@ -143,5 +145,5 @@ export const usePlaybackStore = create<PlaybackState>()(
       set((state) => {
         state.wasTabHiddenPaused = paused;
       }),
-  }))
+  })),
 );

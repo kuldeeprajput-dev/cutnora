@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Scissors,
   Copy,
@@ -20,22 +20,31 @@ import {
   Image as ImageIcon,
   Type,
   ChevronDown,
-} from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/modules/core/db/database';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
-import { useProjectStore } from '@/modules/projects';
-import { IconButton } from '@/shared/components/ui/IconButton';
-import { Button } from '@/shared/components/ui/Button';
-import { Slider } from '@/shared/components/ui/Slider';
-import { Select } from '@/shared/components/ui/Select';
-import { DropdownMenu, DropdownMenuItem } from '@/shared/components/ui/DropdownMenu';
-import { formatTimecode } from '../utils/ruler-utils';
+} from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/modules/core/db/database";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { useProjectStore } from "@/modules/projects";
+import { IconButton } from "@/shared/components/ui/IconButton";
+import { Button } from "@/shared/components/ui/Button";
+import { Slider } from "@/shared/components/ui/Slider";
+import { Select } from "@/shared/components/ui/Select";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+} from "@/shared/components/ui/DropdownMenu";
+import { formatTimecode } from "../utils/ruler-utils";
+import {
+  MAX_TIMELINE_ZOOM,
+  getNextTimelineZoom,
+  sliderValueToTimelineZoom,
+  timelineZoomToSliderValue,
+} from "../utils/timeline-zoom-utils";
 
 function truncateFileName(name: string, maxLength = 22): string {
   if (!name || name.length <= maxLength) return name;
-  const lastDot = name.lastIndexOf('.');
+  const lastDot = name.lastIndexOf(".");
   if (lastDot > 0 && lastDot > name.length - 8) {
     const ext = name.slice(lastDot);
     const base = name.slice(0, lastDot);
@@ -47,7 +56,15 @@ function truncateFileName(name: string, maxLength = 22): string {
   return `${name.slice(0, maxLength - 3)}...`;
 }
 
-export function TimelineToolbar() {
+export interface TimelineToolbarProps {
+  fitTimelineZoom?: number;
+  minimumTimelineZoom?: number;
+}
+
+export function TimelineToolbar({
+  fitTimelineZoom = 50,
+  minimumTimelineZoom = 10,
+}: TimelineToolbarProps) {
   const {
     selectedClipIds,
     zoom,
@@ -72,7 +89,8 @@ export function TimelineToolbar() {
     stepBackward,
   } = usePlaybackStore();
 
-  const { currentProject, splitClip, duplicateClips, deleteClips, addTrack } = useProjectStore();
+  const { currentProject, splitClip, duplicateClips, deleteClips, addTrack } =
+    useProjectStore();
 
   const projectSettings = currentProject?.settings || {
     width: 1920,
@@ -82,6 +100,9 @@ export function TimelineToolbar() {
   };
 
   const hasSelection = selectedClipIds.length > 0;
+  const hasTimelineMedia = (currentProject?.tracks ?? []).some(
+    (track) => track.clips.length > 0,
+  );
 
   // Selected media properties logic
   const selectedClips = (currentProject?.tracks || [])
@@ -96,7 +117,7 @@ export function TimelineToolbar() {
       return db.assets.get(selectedClip.assetId);
     },
     [selectedClip?.assetId],
-    null
+    null,
   );
 
   let selectedMediaName: string | null = null;
@@ -106,14 +127,25 @@ export function TimelineToolbar() {
     selectedMediaName = `${selectedClips.length} clips selected`;
   } else if (selectedClip) {
     const name = selectedClip.name;
-    const isVideo = selectedClip.type === 'video' || selectedAsset?.type === 'video';
-    const isImage = selectedClip.type === 'image' || selectedAsset?.type === 'image';
-    const isAudio = selectedClip.type === 'audio' || selectedAsset?.type === 'audio';
+    const isVideo =
+      selectedClip.type === "video" || selectedAsset?.type === "video";
+    const isImage =
+      selectedClip.type === "image" || selectedAsset?.type === "image";
+    const isAudio =
+      selectedClip.type === "audio" || selectedAsset?.type === "audio";
 
     selectedMediaName = truncateFileName(name, 22);
 
-    const width = selectedAsset?.width || (selectedClip.transform?.width ? Math.round(selectedClip.transform.width) : null);
-    const height = selectedAsset?.height || (selectedClip.transform?.height ? Math.round(selectedClip.transform.height) : null);
+    const width =
+      selectedAsset?.width ||
+      (selectedClip.transform?.width
+        ? Math.round(selectedClip.transform.width)
+        : null);
+    const height =
+      selectedAsset?.height ||
+      (selectedClip.transform?.height
+        ? Math.round(selectedClip.transform.height)
+        : null);
 
     const details: string[] = [];
 
@@ -123,14 +155,15 @@ export function TimelineToolbar() {
 
     // FPS only displayed for VIDEO clips
     if (isVideo) {
-      const activeFps = (selectedAsset as any)?.fps || fps || projectSettings.fps;
+      const activeFps =
+        (selectedAsset as any)?.fps || fps || projectSettings.fps;
       details.push(`${activeFps} FPS`);
     } else if (isAudio) {
       const durationSecs = selectedClip.timelineDuration;
       details.push(`${durationSecs.toFixed(1)}s`);
     }
 
-    selectedMediaDetails = details.length > 0 ? details.join(' • ') : null;
+    selectedMediaDetails = details.length > 0 ? details.join(" • ") : null;
   }
 
   const handleSplit = () => {
@@ -153,7 +186,7 @@ export function TimelineToolbar() {
   };
 
   const handleResetZoom = () => {
-    setZoom(50);
+    setZoom(fitTimelineZoom);
   };
 
   return (
@@ -202,23 +235,24 @@ export function TimelineToolbar() {
               variant="ghost"
               className="h-7 text-xs gap-1 cursor-pointer"
             >
-              <Plus className="h-3.5 w-3.5" /> Add Track <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
+              <Plus className="h-3.5 w-3.5" /> Add Track{" "}
+              <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
             </Button>
           }
         >
-          <DropdownMenuItem onClick={() => addTrack('video', 'Video Track')}>
+          <DropdownMenuItem onClick={() => addTrack("video", "Video Track")}>
             <Video className="h-3.5 w-3.5 text-blue-400" />
             <span>Video Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack('audio', 'Audio Track')}>
+          <DropdownMenuItem onClick={() => addTrack("audio", "Audio Track")}>
             <Music className="h-3.5 w-3.5 text-emerald-400" />
             <span>Audio Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack('overlay', 'Image Track')}>
+          <DropdownMenuItem onClick={() => addTrack("overlay", "Image Track")}>
             <ImageIcon className="h-3.5 w-3.5 text-purple-400" />
             <span>Image Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack('text', 'Text Track')}>
+          <DropdownMenuItem onClick={() => addTrack("text", "Text Track")}>
             <Type className="h-3.5 w-3.5 text-amber-400" />
             <span>Text Track</span>
           </DropdownMenuItem>
@@ -230,10 +264,10 @@ export function TimelineToolbar() {
         {/* Canvas Stage View Controls (Fit Stage) */}
         <div className="flex items-center gap-1">
           <Select
-            value={zoomMode === 'fit' ? 'fit' : String(zoomMode)}
+            value={zoomMode === "fit" ? "fit" : String(zoomMode)}
             onChange={(e) => {
               const val = e.target.value;
-              setZoomMode(val === 'fit' ? 'fit' : parseInt(val, 10));
+              setZoomMode(val === "fit" ? "fit" : parseInt(val, 10));
             }}
             className="h-6 text-[11px] w-24 py-0 pl-1.5 pr-5 border-studio-border bg-studio-bg rounded-md cursor-pointer"
           >
@@ -251,12 +285,18 @@ export function TimelineToolbar() {
 
         {/* Transport Playback Controls & Timecode */}
         <div className="flex items-center gap-1.5">
-          <IconButton label="Step 1 frame backward" size="sm" variant="ghost" onClick={stepBackward} className="cursor-pointer">
+          <IconButton
+            label="Step 1 frame backward"
+            size="sm"
+            variant="ghost"
+            onClick={stepBackward}
+            className="cursor-pointer"
+          >
             <SkipBack className="h-3.5 w-3.5" />
           </IconButton>
 
           <IconButton
-            label={isPlaying ? 'Pause' : 'Play'}
+            label={isPlaying ? "Pause" : "Play"}
             size="sm"
             variant="primary"
             onClick={togglePlay}
@@ -269,14 +309,20 @@ export function TimelineToolbar() {
             )}
           </IconButton>
 
-          <IconButton label="Step 1 frame forward" size="sm" variant="ghost" onClick={stepForward} className="cursor-pointer">
+          <IconButton
+            label="Step 1 frame forward"
+            size="sm"
+            variant="ghost"
+            onClick={stepForward}
+            className="cursor-pointer"
+          >
             <SkipForward className="h-3.5 w-3.5" />
           </IconButton>
 
           <IconButton
-            label={isLooping ? 'Disable loop' : 'Enable loop'}
+            label={isLooping ? "Disable loop" : "Enable loop"}
             size="sm"
-            variant={isLooping ? 'selection' : 'ghost'}
+            variant={isLooping ? "selection" : "ghost"}
             onClick={toggleLooping}
             className="cursor-pointer"
           >
@@ -284,7 +330,8 @@ export function TimelineToolbar() {
           </IconButton>
 
           <span className="ml-2 font-mono text-[11px] font-semibold text-studio-fg whitespace-nowrap">
-            {formatTimecode(playhead, fps, false)} / {formatTimecode(duration, fps, false)}
+            {formatTimecode(playhead, fps, false)} /{" "}
+            {formatTimecode(duration, fps, false)}
           </span>
 
           <IconButton
@@ -292,7 +339,9 @@ export function TimelineToolbar() {
             size="sm"
             variant="ghost"
             onClick={() => {
-              const stageContainer = document.getElementById('stage-fullscreen-container') || document.documentElement;
+              const stageContainer =
+                document.getElementById("stage-fullscreen-container") ||
+                document.documentElement;
               if (!document.fullscreenElement) {
                 stageContainer.requestFullscreen().catch(() => {});
               } else {
@@ -312,7 +361,10 @@ export function TimelineToolbar() {
         {/* Selected Media Indicator (Only displayed when media is selected) */}
         {(selectedMediaName || selectedMediaDetails) && (
           <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0">
-            <span className="font-medium text-studio-fg/90" title={selectedClip?.name || selectedMediaName || undefined}>
+            <span
+              className="font-medium text-studio-fg/90"
+              title={selectedClip?.name || selectedMediaName || undefined}
+            >
               {selectedMediaName}
             </span>
             {selectedMediaDetails && (
@@ -334,6 +386,7 @@ export function TimelineToolbar() {
             title="Reset zoom"
             className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
             onClick={handleResetZoom}
+            disabled={!hasTimelineMedia}
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
@@ -344,17 +397,32 @@ export function TimelineToolbar() {
               aria-label="Zoom out"
               title="Zoom out"
               className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
-              onClick={() => setZoom(Math.max(10, zoom - 10))}
+              onClick={() =>
+                setZoom(getNextTimelineZoom(zoom, "out", minimumTimelineZoom))
+              }
+              disabled={!hasTimelineMedia || zoom <= minimumTimelineZoom}
             >
               <ZoomOut className="h-3.5 w-3.5" />
             </button>
-            <Slider value={zoom} min={10} max={200} step={5} onValueChange={setZoom} />
+            <Slider
+              value={timelineZoomToSliderValue(zoom, minimumTimelineZoom)}
+              min={0}
+              max={100}
+              step={1}
+              disabled={!hasTimelineMedia}
+              onValueChange={(value) =>
+                setZoom(sliderValueToTimelineZoom(value, minimumTimelineZoom))
+              }
+            />
             <button
               type="button"
               aria-label="Zoom in"
               title="Zoom in"
               className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
-              onClick={() => setZoom(Math.min(200, zoom + 10))}
+              onClick={() =>
+                setZoom(getNextTimelineZoom(zoom, "in", minimumTimelineZoom))
+              }
+              disabled={!hasTimelineMedia || zoom >= MAX_TIMELINE_ZOOM}
             >
               <ZoomIn className="h-3.5 w-3.5" />
             </button>

@@ -15,7 +15,7 @@ export function LandingHeader() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <BrandMark className="transition-transform group-hover:-rotate-3" />
           <span className="text-lg font-black tracking-[-0.03em] text-mkt-fg">
-            Cutframe
+            Cutnora
           </span>
         </Link>
 

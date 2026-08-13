@@ -11,11 +11,11 @@ export function MarketingFooter() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
             <Film className="h-4 w-4" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-mkt-fg">Cutframe</span>
+          <span className="text-lg font-bold tracking-tight text-mkt-fg">Cutnora</span>
         </div>
 
         <p className="text-xs text-mkt-muted">
-          © {new Date().getFullYear()} Cutframe. Local-first browser video editor. All media files remain strictly on your device.
+          © {new Date().getFullYear()} Cutnora. Local-first browser video editor. All media files remain strictly on your device.
         </p>
 
         <div className="flex items-center gap-6 text-xs font-medium text-mkt-fg">

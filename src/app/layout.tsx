@@ -3,8 +3,8 @@ import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Cutframe — Private browser video editor",
-    template: "%s · Cutframe",
+    default: "Cutnora — Private browser video editor",
+    template: "%s · Cutnora",
   },
   description:
     "A private, multitrack video editor that keeps projects and media on your device.",
@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     "webm export",
     "mp4 export",
     "multitrack timeline",
-    "cutframe",
+    "cutnora",
   ],
-  authors: [{ name: "Cutframe Team" }],
+  authors: [{ name: "Cutnora Team" }],
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Cutframe — Private browser video editor",
+    title: "Cutnora — Private browser video editor",
     description:
       "Edit, mix, and export video locally in your browser. No account or upload required.",
     type: "website",
@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 
 const themeScript = `
   try {
-    const storedTheme = localStorage.getItem("cutframe_theme");
+    const storedTheme = localStorage.getItem("cutnora_theme");
     const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : systemTheme;
     document.documentElement.dataset.theme = theme;

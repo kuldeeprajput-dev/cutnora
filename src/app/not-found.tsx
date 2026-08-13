@@ -11,7 +11,7 @@ export default function NotFound() {
       <h1 className="text-4xl font-bold tracking-tight text-studio-fg">404</h1>
       <h2 className="mt-2 text-lg font-semibold text-studio-fg">Page Not Found</h2>
       <p className="mt-1 text-xs text-studio-muted max-w-sm">
-        The requested URL was not found on Cutframe studio.
+        The requested URL was not found on Cutnora studio.
       </p>
       <div className="mt-6">
         <Link href="/">

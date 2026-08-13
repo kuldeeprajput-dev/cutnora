@@ -39,7 +39,7 @@ export function PrivacySection() {
             Your media files never leave your device.
           </h2>
           <p className="mt-4 text-base text-studio-muted">
-            Cutframe is built from the ground up to operate locally. Video footage is processed in client memory and stored in local browser storage.
+            Cutnora is built from the ground up to operate locally. Video footage is processed in client memory and stored in local browser storage.
           </p>
         </div>
 

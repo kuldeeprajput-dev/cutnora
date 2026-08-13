@@ -13,6 +13,16 @@ export interface ProjectSettings {
   masterVolume: number;
 }
 
+export type MediaSourceRef =
+  | { kind: "opfs"; path: string }
+  | { kind: "indexeddb"; blobId: string }
+  | { kind: "remote"; url: string };
+
+export type MediaProcessingStatus =
+  "pending" | "copying" | "analyzing" | "ready" | "error";
+
+export type WaveformStatus = "ready" | "deferred" | "error";
+
 export interface MediaAsset {
   id: string;
   projectId: string;
@@ -25,9 +35,11 @@ export interface MediaAsset {
   height?: number;
   createdAt: number;
   blobId: string;
+  source?: MediaSourceRef;
   thumbnailBlobId?: string;
   waveformPeaks?: number[];
-  metadataStatus: "pending" | "ready" | "error";
+  metadataStatus: MediaProcessingStatus;
+  waveformStatus?: WaveformStatus;
   sourceUrl?: string;
   sourceName?: string;
   license?: string;

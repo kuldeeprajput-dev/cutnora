@@ -64,6 +64,9 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
   const handleClipPointerDown = (clip: TimelineClip, track: Track, e: React.PointerEvent) => {
     if (track.locked) return; // Locked tracks cannot be selected from stage
     e.stopPropagation();
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      useEditorUIStore.getState().setActiveInspectorTab('transform');
+    }
     toggleClipSelection(clip.id, e.shiftKey);
     startTransform(clip, 'translate', e);
   };

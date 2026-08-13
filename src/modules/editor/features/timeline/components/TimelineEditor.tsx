@@ -40,6 +40,11 @@ import {
   Type,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import {
+  DEFAULT_TIMELINE_ZOOM,
+  getFitTimelineZoom,
+  getMinimumTimelineZoom,
+} from "../utils/timeline-zoom-utils";
 
 const TRACK_HEIGHT = 48;
 const NEW_TRACK_DROP_THRESHOLD = 10;
@@ -120,6 +125,7 @@ export function TimelineEditor() {
   } = useProjectStore();
   const {
     zoom,
+    setZoom,
     scrollLeft,
     setScrollLeft,
     snappingEnabled,
@@ -152,6 +158,12 @@ export function TimelineEditor() {
   };
 
   const [isAltPressed, setIsAltPressed] = useState(false);
+  const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
+  const previousTimelineRef = useRef({
+    projectId: "",
+    duration: 0,
+    clipCount: 0,
+  });
   const [activeSnapLine, setActiveSnapLine] = useState<number | null>(null);
   const [clipDragPreview, setClipDragPreview] =
     useState<ClipDragPreview | null>(null);
@@ -173,11 +185,27 @@ export function TimelineEditor() {
 
   const tracks = currentProject?.tracks || [];
   const projectDuration = currentProject?.settings.duration ?? 0;
+  const timelineClipCount = tracks.reduce(
+    (count, track) => count + track.clips.length,
+    0,
+  );
+  const fitTimelineZoom = getFitTimelineZoom(
+    projectDuration,
+    timelineViewportWidth,
+  );
+  const minimumTimelineZoom = getMinimumTimelineZoom(
+    projectDuration,
+    timelineViewportWidth,
+  );
   const dragPreviewEnd = clipDragPreview
     ? clipDragPreview.targetStart + clipDragPreview.duration
     : 0;
   const visibleTimelineDuration = Math.max(projectDuration, dragPreviewEnd);
-  const totalWidthPx = Math.max(100, visibleTimelineDuration * zoom + 16 + 60);
+  const totalWidthPx = Math.max(
+    100,
+    timelineViewportWidth,
+    visibleTimelineDuration * zoom + 16 + 60,
+  );
   const playheadLeftPx = 16 + playhead * zoom;
   const activeTrackDrag = tracks.find(
     (track) => track.id === activeTrackDragId,
@@ -198,8 +226,65 @@ export function TimelineEditor() {
   const resetTrackDrag = () => {
     setActiveTrackDragId(null);
     setOverTrackDragId(null);
+
     document.body.style.cursor = trackDragCursorRef.current;
   };
+  useEffect(() => {
+    const element = scrollContainerRef.current;
+    if (!element) return;
+
+    const updateViewportWidth = () => {
+      setTimelineViewportWidth(element.clientWidth);
+    };
+    updateViewportWidth();
+
+    const observer = new ResizeObserver(updateViewportWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (timelineViewportWidth <= 0) return;
+
+    const previous = previousTimelineRef.current;
+    const projectId = currentProject?.id ?? "";
+
+    if (timelineClipCount === 0) {
+      if (zoom !== DEFAULT_TIMELINE_ZOOM) setZoom(DEFAULT_TIMELINE_ZOOM);
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollLeft = 0;
+      if (scrollLeft !== 0) setScrollLeft(0);
+    } else {
+      const openedProject = previous.projectId !== projectId;
+      const addedFirstClip = previous.clipCount === 0;
+      const durationGrewSignificantly =
+        previous.duration > 0 && projectDuration > previous.duration * 2;
+
+      if (openedProject || addedFirstClip || durationGrewSignificantly) {
+        setZoom(fitTimelineZoom);
+        if (scrollContainerRef.current)
+          scrollContainerRef.current.scrollLeft = 0;
+        setScrollLeft(0);
+      } else if (zoom < minimumTimelineZoom) {
+        setZoom(minimumTimelineZoom);
+      }
+    }
+
+    previousTimelineRef.current = {
+      projectId,
+      duration: projectDuration,
+      clipCount: timelineClipCount,
+    };
+  }, [
+    currentProject?.id,
+    fitTimelineZoom,
+    minimumTimelineZoom,
+    projectDuration,
+    setScrollLeft,
+    setZoom,
+    timelineClipCount,
+    timelineViewportWidth,
+    zoom,
+  ]);
 
   const handleTrackDragStart = (event: DragStartEvent) => {
     const trackId = String(event.active.id);
@@ -541,7 +626,10 @@ export function TimelineEditor() {
   return (
     <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none overflow-hidden">
       {/* Top Timeline Toolbar */}
-      <TimelineToolbar />
+      <TimelineToolbar
+        fitTimelineZoom={fitTimelineZoom}
+        minimumTimelineZoom={minimumTimelineZoom}
+      />
 
       {/* Fixed Time Ruler Header Row */}
       <div className="flex h-6 w-full shrink-0 border-b border-studio-border bg-studio-topbar z-20">

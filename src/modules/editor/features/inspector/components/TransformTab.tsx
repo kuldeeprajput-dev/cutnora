@@ -154,7 +154,7 @@ export function TransformTab({ clip }: TransformTabProps) {
   return (
     <div className="flex flex-col gap-4 text-studio-fg select-none">
       {/* Quick Layout Actions (Fit, Fill, Crop, Flips) */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
         <button
           type="button"
           onClick={handleFit}
@@ -180,7 +180,7 @@ export function TransformTab({ clip }: TransformTabProps) {
         <button
           type="button"
           onClick={handleToggleCrop}
-          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+          className={`hidden lg:flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
             isCropping || hasActiveCrop
               ? 'bg-brand text-white font-bold shadow-sm'
               : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
@@ -192,7 +192,7 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Crop Controls Section (Visible when cropping or crop exists) */}
       {(isCropping || hasActiveCrop) && (
-        <div className="rounded-xl border border-brand/40 bg-brand/5 p-3 flex flex-col gap-3">
+        <div className="hidden flex-col gap-3 rounded-xl border border-brand/40 bg-brand/5 p-3 lg:flex">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-brand flex items-center gap-1.5">
               <Crop className="h-3.5 w-3.5" /> Clip Crop Offsets (%)

@@ -11,7 +11,7 @@ export function MarketingHeader() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-sm transition-transform group-hover:scale-105">
             <Film className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-mkt-fg">Cutframe</span>
+          <span className="text-xl font-bold tracking-tight text-mkt-fg">Cutnora</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-mkt-muted">
