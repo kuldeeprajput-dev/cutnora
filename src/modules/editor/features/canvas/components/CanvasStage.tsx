@@ -33,25 +33,21 @@ function formatTime(seconds: number): string {
 
 export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { currentProject } = useProjectStore();
-  const {
-    clearSelection,
-    activeTool,
-    zoomMode,
-    setZoomMode,
-    setStageScale,
-    resetViewCount,
-    isFullscreen,
-    setIsFullscreen,
-  } = useEditorUIStore();
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const clearSelection = useEditorUIStore((state) => state.clearSelection);
+  const activeTool = useEditorUIStore((state) => state.activeTool);
+  const zoomMode = useEditorUIStore((state) => state.zoomMode);
+  const setZoomMode = useEditorUIStore((state) => state.setZoomMode);
+  const setStageScale = useEditorUIStore((state) => state.setStageScale);
+  const resetViewCount = useEditorUIStore((state) => state.resetViewCount);
+  const isFullscreen = useEditorUIStore((state) => state.isFullscreen);
+  const setIsFullscreen = useEditorUIStore((state) => state.setIsFullscreen);
 
-  const {
-    playhead,
-    setPlayhead,
-    duration,
-    isPlaying,
-    togglePlay,
-  } = usePlaybackStore();
+  const playhead = usePlaybackStore((state) => state.playhead);
+  const setPlayhead = usePlaybackStore((state) => state.setPlayhead);
+  const duration = usePlaybackStore((state) => state.duration);
+  const isPlaying = usePlaybackStore((state) => state.isPlaying);
+  const togglePlay = usePlaybackStore((state) => state.togglePlay);
 
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ width: 800, height: 450 });
@@ -175,15 +171,15 @@ export function CanvasStage() {
 
   const isFullscreenActive = isFullscreen || isNativeFullscreen;
 
-  // Fit scale calculation (minimal 16px total padding for maximum video view)
+  // Keep only a small safety gutter so the canvas uses nearly all stage height.
   const fitScale = calculateFitScale(
     {
-      width: Math.max(100, isFullscreenActive ? window.innerWidth : containerSize.width - 16),
+      width: Math.max(100, isFullscreenActive ? window.innerWidth : containerSize.width - 12),
       height: Math.max(
         100,
         isFullscreenActive
           ? (mobileViewportHeight ?? window.innerHeight) - (mobileViewportHeight ? 112 : 80)
-          : containerSize.height - 16,
+          : containerSize.height - 12,
       ),
     },
     { width: projectSettings.width, height: projectSettings.height }
@@ -439,7 +435,7 @@ export function CanvasStage() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative flex flex-1 items-center justify-center overflow-hidden p-1.5 w-full h-full touch-none lg:p-2 lg:touch-auto ${
+        className={`relative flex flex-1 items-center justify-center overflow-hidden p-1 w-full h-full touch-none lg:p-1.5 lg:touch-auto ${
           isSpacePressed || activeTool === 'hand'
             ? isPanning
               ? 'cursor-grabbing'
@@ -447,6 +443,13 @@ export function CanvasStage() {
             : 'cursor-default'
         }`}
       >
+        {!isFullscreenActive && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:24px_24px]"
+          />
+        )}
+
         {/* Centered Canvas Box */}
         <div
           id="stage-canvas-box"
@@ -456,7 +459,7 @@ export function CanvasStage() {
             backgroundColor: projectSettings.backgroundColor || '#000000',
             transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
-          className="relative rounded shadow-2xl transition-none lg:transition-transform lg:duration-75"
+          className="relative overflow-hidden rounded-sm border border-white/10 shadow-[0_18px_55px_rgba(0,0,0,0.55)] ring-1 ring-black/40 transition-none lg:transition-transform lg:duration-75"
         >
           {/* Active Visual Layers */}
           <CanvasRenderer stageScale={stageScale} isFullscreenActive={isFullscreenActive} onGuidesChange={handleGuidesChange} />

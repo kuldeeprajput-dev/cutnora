@@ -31,14 +31,24 @@ export function TransformTab({ clip }: TransformTabProps) {
   const crop: CropSettings = clip.transform.crop || { top: 0, right: 0, bottom: 0, left: 0 };
   const hasActiveCrop = crop.top > 0 || crop.right > 0 || crop.bottom > 0 || crop.left > 0;
 
+  // IMPORTANT: depend on individual primitives, NOT the object reference.
+  // Depending on clip.transform (object) causes an infinite update loop because
+  // every updateClip() call creates a new object reference.
+  const tX = clip.transform.x;
+  const tY = clip.transform.y;
+  const tW = clip.transform.width;
+  const tH = clip.transform.height;
+  const tRot = clip.transform.rotation;
+  const tOp = clip.transform.opacity;
+
   useEffect(() => {
-    setX(formatNum(clip.transform.x));
-    setY(formatNum(clip.transform.y));
-    setWidth(formatNum(clip.transform.width));
-    setHeight(formatNum(clip.transform.height));
-    setRotation(formatNum(clip.transform.rotation));
-    setOpacity(clip.transform.opacity);
-  }, [clip.transform]);
+    setX(formatNum(tX));
+    setY(formatNum(tY));
+    setWidth(formatNum(tW));
+    setHeight(formatNum(tH));
+    setRotation(formatNum(tRot));
+    setOpacity(tOp);
+  }, [tX, tY, tW, tH, tRot, tOp]);
 
   const commitTransform = (updates: Partial<TimelineClip['transform']>) => {
     updateClip(clip.id, {
@@ -78,11 +88,12 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   const handleCropChange = (side: keyof CropSettings, value: number) => {
-    const newCrop = {
-      ...crop,
-      [side]: Math.max(0, Math.min(80, value)),
-    };
-    commitTransform({ crop: newCrop });
+    commitTransform({
+      crop: {
+        ...crop,
+        [side]: Math.max(0, Math.min(80, value)),
+      },
+    });
   };
 
   const handleResetCrop = () => {
@@ -130,38 +141,35 @@ export function TransformTab({ clip }: TransformTabProps) {
       },
       speed: 1,
     });
-
     if (isCropping) setActiveTool('canvas');
   };
 
-  // Keyboard arrow key increment helper
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     currentVal: number,
     setter: (v: number) => void,
-    fieldKey: keyof TimelineClip['transform']
+    field: keyof TimelineClip['transform']
   ) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      const step = e.shiftKey ? 10 : 1;
-      const delta = e.key === 'ArrowUp' ? step : -step;
-      const newVal = Math.round((currentVal + delta) * 10) / 10;
-      setter(newVal);
-      commitTransform({ [fieldKey]: newVal });
-    }
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const step = e.shiftKey ? 10 : 1;
+    const delta = e.key === 'ArrowUp' ? step : -step;
+    const newVal = Math.round((currentVal + delta) * 10) / 10;
+    setter(newVal);
+    commitTransform({ [field]: newVal });
   };
 
   return (
-    <div className="flex flex-col gap-4 text-studio-fg select-none">
-      {/* Quick Layout Actions (Fit, Fill, Crop, Flips) */}
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
+    <div className="flex flex-col gap-4 text-xs select-none">
+      {/* Quick Layout Actions */}
+      <div className="grid grid-cols-3 gap-1.5 p-1 bg-studio-panel rounded-xl border border-studio-border">
         <button
           type="button"
           onClick={handleFit}
           className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
             clip.transform.fitMode === 'contain'
               ? 'bg-brand text-white font-bold shadow-sm'
-              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+              : 'text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium'
           }`}
         >
           <Maximize2 className="h-3 w-3" /> Fit
@@ -172,7 +180,7 @@ export function TransformTab({ clip }: TransformTabProps) {
           className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
             clip.transform.fitMode === 'cover'
               ? 'bg-brand text-white font-bold shadow-sm'
-              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+              : 'text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium'
           }`}
         >
           Fill
@@ -180,10 +188,10 @@ export function TransformTab({ clip }: TransformTabProps) {
         <button
           type="button"
           onClick={handleToggleCrop}
-          className={`hidden lg:flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
+          className={`flex h-8 items-center justify-center gap-1 rounded-lg text-xs transition-all select-none cursor-pointer ${
             isCropping || hasActiveCrop
               ? 'bg-brand text-white font-bold shadow-sm'
-              : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
+              : 'text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium'
           }`}
         >
           <Crop className="h-3 w-3" /> {isCropping ? 'Cropping' : 'Crop'}
@@ -192,7 +200,7 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Crop Controls Section (Visible when cropping or crop exists) */}
       {(isCropping || hasActiveCrop) && (
-        <div className="hidden flex-col gap-3 rounded-xl border border-brand/40 bg-brand/5 p-3 lg:flex">
+        <div className="flex flex-col gap-3 rounded-xl border border-brand/40 bg-brand/5 p-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-brand flex items-center gap-1.5">
               <Crop className="h-3.5 w-3.5" /> Clip Crop Offsets (%)
@@ -318,7 +326,17 @@ export function TransformTab({ clip }: TransformTabProps) {
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1">Width (px)</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-[11px] font-medium text-studio-muted">Width (px)</label>
+            <button
+              type="button"
+              onClick={() => setIsAspectLocked(!isAspectLocked)}
+              className="text-studio-muted hover:text-brand transition-colors"
+              title={isAspectLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
+            >
+              {isAspectLocked ? <Lock className="h-3 w-3 text-brand" /> : <Unlock className="h-3 w-3" />}
+            </button>
+          </div>
           <Input
             type="number"
             value={width}

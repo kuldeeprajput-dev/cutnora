@@ -45,6 +45,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     centerX: 0,
     centerY: 0,
     startAngle: 0,
+    startRotation: 0,
   });
 
   const flushMobileUpdate = () => {
@@ -89,16 +90,35 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     isMobileGestureRef.current = window.matchMedia('(max-width: 1023px)').matches;
     mobileHistoryCapturedRef.current = false;
     pendingMobileUpdateRef.current = null;
-    if (mode === 'rotate' && isMobileGestureRef.current) {
-      const overlayBounds = e.currentTarget.parentElement?.getBoundingClientRect();
-      const centerX = overlayBounds ? overlayBounds.left + overlayBounds.width / 2 : e.clientX;
-      const centerY = overlayBounds ? overlayBounds.top + overlayBounds.height / 2 : e.clientY;
+    if (mode === 'rotate') {
+      // For BOTH desktop and mobile: capture the element's center in screen coords
+      // and the starting angle from center → initial pointer position.
+      // The center of the axis-aligned bounding box of a rotated rect equals the
+      // geometric center of the rect, so getBoundingClientRect().center is correct.
+      const overlayEl = (e.currentTarget as HTMLElement).closest('[id^="layer-"]') ||
+        (e.currentTarget as HTMLElement).parentElement;
+      const overlayBounds = overlayEl?.getBoundingClientRect();
+      const centerX = overlayBounds
+        ? overlayBounds.left + overlayBounds.width / 2
+        : e.clientX;
+      const centerY = overlayBounds
+        ? overlayBounds.top + overlayBounds.height / 2
+        : e.clientY;
       rotationGestureRef.current = {
         centerX,
         centerY,
         startAngle: Math.atan2(e.clientY - centerY, e.clientX - centerX),
+        startRotation: clip.transform.rotation,
       };
     }
+
+    // Push history ONCE at the start of a desktop drag (not mobile — mobile uses
+    // its own RAF-batched path that captures history on first flush).
+    if (!isMobileGestureRef.current) {
+      const project = useProjectStore.getState().currentProject;
+      if (project) historyManager.pushState(project);
+    }
+
     setIsDragging(true);
 
     const handlePointerMove = (moveEv: PointerEvent) => {
@@ -148,22 +168,14 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
         newY = snapResult.y;
         if (!isMobileGestureRef.current) setActiveGuides(snapResult.guides);
       } else if (mode === 'rotate') {
-        if (isMobileGestureRef.current) {
-          const rotationGesture = rotationGestureRef.current;
-          const currentAngle = Math.atan2(
-            moveEv.clientY - rotationGesture.centerY,
-            moveEv.clientX - rotationGesture.centerX,
-          );
-          const angleDelta = (currentAngle - rotationGesture.startAngle) * (180 / Math.PI);
-          newRotation = Math.round(startT.rotation + angleDelta);
-        } else {
-          const centerX = startT.x + startT.width / 2;
-          const centerY = startT.y + startT.height / 2;
-          const pointerProjX = startT.x + deltaProjectX;
-          const pointerProjY = startT.y + deltaProjectY;
-          const rad = Math.atan2(pointerProjY - centerY, pointerProjX - centerX);
-          newRotation = Math.round((rad * (180 / Math.PI)) % 360);
-        }
+        // Both mobile and desktop: use angular delta from start angle to current angle
+        const { centerX, centerY, startAngle, startRotation } = rotationGestureRef.current;
+        const currentAngle = Math.atan2(
+          moveEv.clientY - centerY,
+          moveEv.clientX - centerX,
+        );
+        const angleDelta = (currentAngle - startAngle) * (180 / Math.PI);
+        newRotation = Math.round(startRotation + angleDelta);
       } else if (mode.startsWith('resize-')) {
         if (mode.includes('e')) newW = Math.max(20, startT.width + deltaProjectX);
         if (mode.includes('s')) newH = Math.max(20, startT.height + deltaProjectY);
@@ -208,7 +220,10 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
       if (isMobileGestureRef.current) {
         queueMobileUpdate(activeClipRef.current.id, updates);
       } else {
-        updateClip(activeClipRef.current.id, updates);
+        // skipHistory:true — history was already captured once at pointerdown.
+        // Calling pushState every frame floods history and triggers "Maximum update
+        // depth exceeded" via cascading re-renders.
+        updateClip(activeClipRef.current.id, updates, { skipHistory: true });
       }
 
       activeClipRef.current = {
@@ -233,6 +248,10 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
         flushMobileUpdate();
       }
       if (isMobileGestureRef.current && mobileHistoryCapturedRef.current) {
+        const project = useProjectStore.getState().currentProject;
+        if (project) autosaveService.scheduleSave(project);
+      } else if (!isMobileGestureRef.current) {
+        // Desktop: schedule autosave after drag ends.
         const project = useProjectStore.getState().currentProject;
         if (project) autosaveService.scheduleSave(project);
       }
