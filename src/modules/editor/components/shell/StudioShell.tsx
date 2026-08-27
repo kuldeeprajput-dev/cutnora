@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowLeft, Monitor } from "lucide-react";
+import { PanelLeftClose } from "lucide-react";
 import { StudioTopBar } from "../header/StudioTopBar";
 import { StudioToolRail } from "../rail/StudioToolRail";
 import { ContextualPanel } from "../panels/ContextualPanel";
@@ -14,7 +13,6 @@ import { KeyboardShortcutsModal } from "../modals/KeyboardShortcutsModal";
 import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
 import { useKeyboardShortcuts } from "@/modules/editor/commands/useKeyboardShortcuts";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
-import { BrandMark } from "@/shared/components/BrandMark";
 
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { useExportStore } from "@/modules/editor/store/useExportStore";
@@ -28,13 +26,16 @@ const ExportModal = dynamic(
 );
 
 export function StudioShell() {
-  const {
-    leftPanelWidth,
-    setLeftPanelWidth,
-    timelineHeight,
-    setTimelineHeight,
-  } = useEditorUIStore();
+  const leftPanelWidth = useEditorUIStore((state) => state.leftPanelWidth);
+  const setLeftPanelWidth = useEditorUIStore(
+    (state) => state.setLeftPanelWidth,
+  );
+  const timelineHeight = useEditorUIStore((state) => state.timelineHeight);
+  const setTimelineHeight = useEditorUIStore(
+    (state) => state.setTimelineHeight,
+  );
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const isExportModalOpen = useExportStore((state) => state.isExportModalOpen);
 
   useKeyboardShortcuts(() => setIsShortcutsOpen(true));
@@ -42,9 +43,32 @@ export function StudioShell() {
   useEffect(() => {
     const savedWidth = localStorage.getItem("cutnora_panel_width");
     const savedHeight = localStorage.getItem("cutnora_timeline_height");
-    if (savedWidth) setLeftPanelWidth(Math.max(310, parseInt(savedWidth, 10)));
+    if (savedWidth) {
+      const responsiveMaximum = Math.max(
+        350,
+        Math.min(560, Math.floor(window.innerWidth * 0.40)),
+      );
+      setLeftPanelWidth(
+        Math.min(responsiveMaximum, Math.max(350, parseInt(savedWidth, 10))),
+      );
+    }
     if (savedHeight) setTimelineHeight(parseInt(savedHeight, 10));
   }, [setLeftPanelWidth, setTimelineHeight]);
+
+  useEffect(() => {
+    const clampPanelToViewport = () => {
+      const maximumWidth = Math.max(
+        350,
+        Math.min(560, Math.floor(window.innerWidth * 0.40)),
+      );
+      const currentWidth = useEditorUIStore.getState().leftPanelWidth;
+      if (currentWidth > maximumWidth) setLeftPanelWidth(maximumWidth);
+    };
+
+    clampPanelToViewport();
+    window.addEventListener("resize", clampPanelToViewport, { passive: true });
+    return () => window.removeEventListener("resize", clampPanelToViewport);
+  }, [setLeftPanelWidth]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -75,58 +99,56 @@ export function StudioShell() {
 
   return (
     <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
-      <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-mkt-bg px-6 text-center text-mkt-fg lg:hidden">
-        <BrandMark size={44} />
-        <div className="mt-8 flex h-12 w-12 items-center justify-center rounded-2xl border border-mkt-border bg-mkt-surface">
-          <Monitor className="h-6 w-6 text-brand" aria-hidden="true" />
-        </div>
-        <h1 className="mt-5 max-w-sm text-3xl font-black tracking-[-0.04em]">
-          Cutnora needs a larger canvas.
-        </h1>
-        <p className="mt-3 max-w-sm text-sm leading-6 text-mkt-muted">
-          The multitrack studio is designed for desktop screens at least 1024px
-          wide. Your project is safe in this browser—open it again on a larger
-          display.
-        </p>
-        <Link
-          href="/"
-          className="mt-7 inline-flex h-11 items-center gap-2 rounded-full bg-mkt-fg px-5 text-sm font-bold text-mkt-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to home
-        </Link>
-      </div>
-
       {/* Top 56px Bar */}
       <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
       {/* Main Workspace Area (Fills Remaining Height) */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left 64px Tool Rail */}
-        <StudioToolRail />
+        <StudioToolRail onToolSelect={() => setIsPanelCollapsed(false)} />
 
         {/* Outer Split Container: Upper Stage + Bottom Timeline */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Upper Workspace: Contextual Panel + Preview Stage */}
           <div className="flex flex-1 overflow-hidden">
             {/* Left Contextual Panel */}
-            <div
-              style={{ width: `${leftPanelWidth}px` }}
-              className="shrink-0 h-full overflow-hidden"
-            >
-              <ErrorBoundary
-                fallbackTitle="Panel Error"
-                fallbackMessage="Contextual panel encountered an error."
-              >
-                <ContextualPanel />
-              </ErrorBoundary>
-            </div>
+            {!isPanelCollapsed ? (
+              <>
+                <div
+                  data-studio-sidebar
+                  style={{
+                    width: `${leftPanelWidth}px`,
+                    minWidth: "350px",
+                    maxWidth: "40vw",
+                  }}
+                  className="h-full shrink-0 overflow-hidden"
+                >
+                  <ErrorBoundary
+                    fallbackTitle="Panel Error"
+                    fallbackMessage="Contextual panel encountered an error."
+                  >
+                    <ContextualPanel />
+                  </ErrorBoundary>
+                </div>
 
-            {/* Panel Width Resizable Divider */}
-            <ResizableDivider
-              orientation="vertical"
-              onResize={handleWidthResize}
-            />
+                {/* Panel Width Resizable Divider */}
+                <div className="relative shrink-0">
+                  <ResizableDivider
+                    orientation="vertical"
+                    onResize={handleWidthResize}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsPanelCollapsed(true)}
+                    aria-label="Collapse side panel"
+                    title="Collapse side panel"
+                    className="absolute left-1/2 top-2 z-30 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-md border border-studio-border bg-studio-topbar text-studio-muted shadow-sm transition-colors hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  >
+                    <PanelLeftClose className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </>
+            ) : null}
 
             {/* Center Preview Stage */}
             <div className="flex-1 h-full overflow-hidden">
@@ -147,7 +169,10 @@ export function StudioShell() {
 
           {/* Bottom Timeline */}
           <div
-            style={{ height: `${timelineHeight}px` }}
+            style={{
+              height: `${timelineHeight}px`,
+              maxHeight: "45dvh",
+            }}
             className="shrink-0 w-full overflow-hidden"
           >
             <ErrorBoundary

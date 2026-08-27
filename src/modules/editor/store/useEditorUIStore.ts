@@ -73,7 +73,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       scrollLeft: 0,
       previewScale: 1,
       snappingEnabled: true,
-      leftPanelWidth: 320,
+      leftPanelWidth: 350,
       timelineHeight: 220,
       trackHeaderWidth: 180,
       stageScale: 0.5,
@@ -158,7 +158,7 @@ export const useEditorUIStore = create<EditorUIState>()(
 
       setLeftPanelWidth: (width) =>
         set((state) => {
-          state.leftPanelWidth = Math.min(600, Math.max(310, width));
+          state.leftPanelWidth = Math.min(600, Math.max(350, width));
         }),
 
       setTimelineHeight: (height) =>

@@ -33,7 +33,11 @@ const railItems: RailItem[] = [
   { id: 'record', label: 'Record', icon: Mic },
 ];
 
-export function StudioToolRail() {
+export interface StudioToolRailProps {
+  onToolSelect?: () => void;
+}
+
+export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
   const { activeTool, setActiveTool, clearSelection } = useEditorUIStore();
 
   return (
@@ -47,18 +51,27 @@ export function StudioToolRail() {
             <button
               type="button"
               aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
               onClick={() => {
+                onToolSelect?.();
                 setActiveTool(item.id as EditorTool);
                 clearSelection();
               }}
               className={cn(
-                'flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors',
+                'relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 focus-visible:ring-offset-studio-topbar',
                 isActive
                   ? 'bg-brand/15 text-brand font-semibold'
                   : 'hover:bg-studio-panel-raised hover:text-studio-fg'
               )}
             >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'absolute -left-1.5 h-5 w-0.5 rounded-full bg-brand transition-opacity',
+                  isActive ? 'opacity-100' : 'opacity-0'
+                )}
+              />
               <Icon className="h-4 w-4" />
               <span>{item.label}</span>
             </button>
