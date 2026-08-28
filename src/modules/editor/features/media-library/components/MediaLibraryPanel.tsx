@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/modules/core/db/database";
 import { useProjectStore } from "@/modules/projects";
@@ -8,6 +14,8 @@ import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { useMediaImporter } from "../hooks/useMediaImporter";
 import { MediaDropzone } from "./MediaDropzone";
 import { AssetCard } from "./AssetCard";
+import { MediaPreviewDialog } from "./MediaPreviewDialog";
+import { addMediaAssetToTimeline } from "../utils/add-media-asset-to-timeline";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import {
@@ -24,6 +32,9 @@ import {
   UploadCloud,
   ChevronDown,
   Check,
+  FolderOpen,
+  Search,
+  X,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import type { MediaAsset } from "@/modules/projects/types";
@@ -32,8 +43,8 @@ export type FilterCategory = "all" | "video" | "image" | "audio";
 export type SortOption = "newest" | "name" | "duration";
 
 export function MediaLibraryPanel() {
-  const { currentProject } = useProjectStore();
-  const { activeTool } = useEditorUIStore();
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const activeTool = useEditorUIStore((state) => state.activeTool);
   const {
     isImporting,
     importProgress,
@@ -49,6 +60,8 @@ export function MediaLibraryPanel() {
   const [sort, setSort] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [previewAsset, setPreviewAsset] = useState<MediaAsset | null>(null);
+  const deferredSearch = useDeferredValue(search);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -108,8 +121,8 @@ export function MediaLibraryPanel() {
     }
 
     // Search query
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.toLowerCase();
       list = list.filter((a) => a.name.toLowerCase().includes(q));
     }
 
@@ -121,13 +134,14 @@ export function MediaLibraryPanel() {
     });
 
     return list;
-  }, [rawAssets, filter, search, sort]);
+  }, [deferredSearch, filter, rawAssets, sort]);
 
   return (
     <div
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      aria-busy={isImporting}
       className="relative flex h-full w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-2 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:overflow-hidden lg:overscroll-auto lg:p-3"
     >
       {/* Hidden File Input for triggering file picker anywhere */}
@@ -226,13 +240,28 @@ export function MediaLibraryPanel() {
 
         {/* Filter & View Mode Controls Bar (Stacked 3-Row Layout) */}
         {/* Row 1: Search Input & Import Action */}
-        <div className="flex items-center gap-2 min-w-0 w-full">
-          <Input
-            placeholder="Search by filename..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 min-w-0 h-8 text-xs"
-          />
+        <div className="flex w-full min-w-0 items-center gap-2">
+          <label className="relative min-w-0 flex-1">
+            <span className="sr-only">Search media by filename</span>
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
+            <Input
+              type="search"
+              placeholder="Search by filename…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="h-8 min-w-0 pl-8 pr-8 text-xs"
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear media search"
+                className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            ) : null}
+          </label>
           {hasAssets && (
             <Button
               size="sm"
@@ -254,7 +283,8 @@ export function MediaLibraryPanel() {
               key={cat}
               type="button"
               onClick={() => setFilter(cat)}
-              className={`flex-1 min-w-max rounded-md px-2.5 py-1 text-center text-[11px] font-semibold capitalize transition-all cursor-pointer ${
+              aria-pressed={filter === cat}
+              className={`flex-1 min-w-max rounded-md px-2.5 py-1.5 text-center text-[11px] font-semibold capitalize transition-[background-color,color,transform] cursor-pointer active:scale-[0.98] ${
                 filter === cat
                   ? "bg-brand text-white shadow-sm"
                   : "bg-studio-panel text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg"
@@ -275,7 +305,7 @@ export function MediaLibraryPanel() {
               trigger={
                 <button
                   type="button"
-                  className="group flex h-7 items-center gap-1.5 rounded-full border border-studio-border bg-studio-panel px-2.5 text-[11px] font-semibold text-studio-fg shadow-xs hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand active:scale-[0.97] transition-all select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                  className="group flex h-7 items-center gap-1.5 rounded-md border border-studio-border bg-studio-panel px-2.5 text-[11px] font-semibold text-studio-fg shadow-xs transition-[border-color,background-color,color,transform] hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand active:scale-[0.97] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
                 >
                   <span>
                     {sort === "newest"
@@ -354,10 +384,27 @@ export function MediaLibraryPanel() {
       {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
       <div className="shrink-0 overflow-visible pt-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden lg:pt-3 lg:pr-2 lg:pb-0 studio-scrollbar">
         {filteredAssets.length === 0 ? (
-          <div className="py-8 text-center text-xs text-studio-muted">
-            {!hasAssets
-              ? "No media imported yet."
-              : "No assets match your search or filter."}
+          <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">
+              <FolderOpen className="h-5 w-5" />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-studio-fg">
+              {!hasAssets ? "No media imported yet" : "No matching media"}
+            </p>
+            <p className="mt-1 max-w-48 text-[10px] leading-4 text-studio-muted">
+              {!hasAssets
+                ? "Drop files above or choose files to start building your timeline."
+                : "Try another filename or clear the active media filter."}
+            </p>
+            {!hasAssets ? (
+              <button
+                type="button"
+                onClick={triggerUpload}
+                className="mt-2 text-[11px] font-semibold text-brand transition-colors hover:text-brand-hover focus-visible:outline-none focus-visible:underline"
+              >
+                Choose files
+              </button>
+            ) : null}
           </div>
         ) : (
           <div
@@ -368,11 +415,27 @@ export function MediaLibraryPanel() {
             }
           >
             {filteredAssets.map((asset) => (
-              <AssetCard key={asset.id} asset={asset} viewMode={viewMode} />
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                viewMode={viewMode}
+                onPreview={setPreviewAsset}
+              />
             ))}
           </div>
         )}
       </div>
+
+      <MediaPreviewDialog
+        asset={previewAsset}
+        assets={filteredAssets}
+        onClose={() => setPreviewAsset(null)}
+        onSelect={setPreviewAsset}
+        onAddToTimeline={(asset) => {
+          addMediaAssetToTimeline(asset);
+          setPreviewAsset(null);
+        }}
+      />
     </div>
   );
 }

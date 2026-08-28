@@ -1,23 +1,51 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
-import { MobileStudioShell } from "../mobile/MobileStudioShell";
-import { StudioShell } from "./StudioShell";
+import dynamic from "next/dynamic";
+import { useSyncExternalStore } from "react";
 
 const mobileEditorQuery = "(max-width: 1023px)";
+let mobileEditorMediaQuery: MediaQueryList | null = null;
+
+const StudioShell = dynamic(
+  () => import("./StudioShell").then((module) => module.StudioShell),
+  { ssr: false, loading: StudioShellLoading },
+);
+
+const MobileStudioShell = dynamic(
+  () =>
+    import("../mobile/MobileStudioShell").then(
+      (module) => module.MobileStudioShell,
+    ),
+  { ssr: false, loading: StudioShellLoading },
+);
+
+function getMobileEditorMediaQuery() {
+  if (!mobileEditorMediaQuery) {
+    mobileEditorMediaQuery = window.matchMedia(mobileEditorQuery);
+  }
+  return mobileEditorMediaQuery;
+}
 
 function subscribeToMobileEditor(callback: () => void) {
-  const query = window.matchMedia(mobileEditorQuery);
+  const query = getMobileEditorMediaQuery();
   query.addEventListener("change", callback);
   return () => query.removeEventListener("change", callback);
 }
 
 function getMobileEditorSnapshot() {
-  return window.matchMedia(mobileEditorQuery).matches;
+  return getMobileEditorMediaQuery().matches;
 }
 
 function getMobileEditorServerSnapshot() {
   return false;
+}
+
+function StudioShellLoading() {
+  return (
+    <div className="flex h-dvh w-screen items-center justify-center bg-studio-bg text-xs font-medium text-studio-muted">
+      Opening workspace…
+    </div>
+  );
 }
 
 export function ResponsiveStudioShell() {
