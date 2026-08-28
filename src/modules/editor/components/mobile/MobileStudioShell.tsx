@@ -87,28 +87,26 @@ export function MobileStudioShell() {
   const splitClip = useProjectStore((state) => state.splitClip);
   const duplicateClips = useProjectStore((state) => state.duplicateClips);
   const deleteClips = useProjectStore((state) => state.deleteClips);
-  const {
-    activeTool,
-    selectedClipIds,
-    setActiveTool,
-    setActiveInspectorTab,
-    setInspectorMode,
-    zoomMode,
-    clearSelection,
-    isFullscreen,
-    setIsFullscreen,
-    setZoomMode,
-    triggerResetView,
-  } = useEditorUIStore();
-  const {
-    isPlaying,
-    isLooping,
-    togglePlay,
-    stepBackward,
-    stepForward,
-    setDuration,
-    toggleLooping,
-  } = usePlaybackStore();
+  const activeTool = useEditorUIStore((state) => state.activeTool);
+  const selectedClipIds = useEditorUIStore((state) => state.selectedClipIds);
+  const setActiveTool = useEditorUIStore((state) => state.setActiveTool);
+  const setActiveInspectorTab = useEditorUIStore(
+    (state) => state.setActiveInspectorTab,
+  );
+  const setInspectorMode = useEditorUIStore((state) => state.setInspectorMode);
+  const zoomMode = useEditorUIStore((state) => state.zoomMode);
+  const clearSelection = useEditorUIStore((state) => state.clearSelection);
+  const isFullscreen = useEditorUIStore((state) => state.isFullscreen);
+  const setIsFullscreen = useEditorUIStore((state) => state.setIsFullscreen);
+  const setZoomMode = useEditorUIStore((state) => state.setZoomMode);
+  const triggerResetView = useEditorUIStore((state) => state.triggerResetView);
+  const isPlaying = usePlaybackStore((state) => state.isPlaying);
+  const isLooping = usePlaybackStore((state) => state.isLooping);
+  const togglePlay = usePlaybackStore((state) => state.togglePlay);
+  const stepBackward = usePlaybackStore((state) => state.stepBackward);
+  const stepForward = usePlaybackStore((state) => state.stepForward);
+  const setDuration = usePlaybackStore((state) => state.setDuration);
+  const toggleLooping = usePlaybackStore((state) => state.toggleLooping);
   const setExportModalOpen = useExportStore(
     (state) => state.setExportModalOpen,
   );
@@ -117,11 +115,13 @@ export function MobileStudioShell() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
 
+  const projectName = currentProject?.name ?? "Untitled video";
+
   useEffect(() => {
-    if (currentProject) {
-      setNameInput(currentProject.name);
-    }
-  }, [currentProject]);
+    setNameInput((currentName) =>
+      currentName === projectName ? currentName : projectName,
+    );
+  }, [projectName]);
 
   const handleNameBlur = () => {
     setIsEditingName(false);
@@ -144,7 +144,7 @@ export function MobileStudioShell() {
       handleNameBlur();
     } else if (e.key === "Escape") {
       setIsEditingName(false);
-      if (currentProject) setNameInput(currentProject.name);
+      setNameInput(projectName);
     }
   };
 
@@ -205,7 +205,11 @@ export function MobileStudioShell() {
     if (!selectedClip) return;
     const currentPlayhead = usePlaybackStore.getState().playhead;
     const clipEnd = selectedClip.timelineStart + selectedClip.timelineDuration;
-    if (currentPlayhead <= selectedClip.timelineStart || currentPlayhead >= clipEnd) return;
+    if (
+      currentPlayhead <= selectedClip.timelineStart ||
+      currentPlayhead >= clipEnd
+    )
+      return;
     splitClip(selectedClip.id, currentPlayhead);
   };
 
@@ -276,7 +280,7 @@ export function MobileStudioShell() {
               title="Click to rename project"
               className="truncate rounded-md px-2 py-1 text-xs font-bold text-studio-fg transition-colors hover:bg-studio-hover active:bg-studio-hover"
             >
-              {currentProject?.name || "Untitled video"}
+              {projectName}
             </button>
           )}
         </div>
@@ -343,7 +347,10 @@ export function MobileStudioShell() {
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
             </label>
 
-            <span className="mx-1 h-6 w-px shrink-0 bg-studio-border" aria-hidden="true" />
+            <span
+              className="mx-1 h-6 w-px shrink-0 bg-studio-border"
+              aria-hidden="true"
+            />
 
             <button
               type="button"
@@ -376,11 +383,15 @@ export function MobileStudioShell() {
             <button
               type="button"
               onClick={toggleLooping}
-              aria-label={isLooping ? "Disable loop playback" : "Enable loop playback"}
+              aria-label={
+                isLooping ? "Disable loop playback" : "Enable loop playback"
+              }
               aria-pressed={isLooping}
               className={cn(
                 "flex h-9 w-8 shrink-0 touch-manipulation items-center justify-center rounded-lg active:bg-studio-hover",
-                isLooping ? "text-brand" : "text-studio-muted active:text-studio-fg",
+                isLooping
+                  ? "text-brand"
+                  : "text-studio-muted active:text-studio-fg",
               )}
             >
               <Repeat2 className="h-4 w-4" />
@@ -467,7 +478,11 @@ export function MobileStudioShell() {
           <div className="flex h-11 shrink-0 items-center gap-3 border-b border-studio-border px-4">
             <span className="h-1 w-8 rounded-full bg-studio-border" />
             <h2 className="flex-1 text-xs font-bold uppercase tracking-wider text-studio-fg">
-              {sheet === "inspector" ? "Clip settings" : "Add to project"}
+              {sheet === "inspector"
+                ? selectedClip
+                  ? "Clip settings"
+                  : "Canvas settings"
+                : "Add to project"}
             </h2>
             <button
               type="button"
@@ -479,7 +494,7 @@ export function MobileStudioShell() {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden [&_[data-studio-panel-header]]:hidden">
             <ErrorBoundary fallbackTitle="Panel Error">
               <ContextualPanel />
             </ErrorBoundary>
@@ -514,6 +529,7 @@ function MobileNavButton({
   return (
     <button
       type="button"
+      aria-label={label}
       onClick={onClick}
       className={cn(
         "flex w-[72px] min-w-[72px] shrink-0 flex-col items-center justify-center gap-1 text-[9px] font-medium transition-colors",

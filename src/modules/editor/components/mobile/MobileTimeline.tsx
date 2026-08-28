@@ -95,10 +95,11 @@ export function MobileTimeline() {
     ),
   );
   const pixelsPerSecond = basePixelsPerSecond * timelineZoom;
-  const contentWidth = Math.max(
-    viewportWidth,
-    Math.ceil(duration * pixelsPerSecond) + TIMELINE_GUTTER * 2,
-  );
+  const calculatedWidth =
+    Math.ceil(duration * pixelsPerSecond) + TIMELINE_GUTTER * 2;
+  const isOverflowing =
+    viewportWidth > 0 && calculatedWidth > viewportWidth;
+  const contentWidth = isOverflowing ? calculatedWidth : 0;
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -351,7 +352,7 @@ export function MobileTimeline() {
       >
         <div
           className="relative h-full min-h-[108px]"
-          style={{ width: clips.length > 0 ? `${contentWidth}px` : "100%" }}
+          style={{ width: contentWidth > 0 ? `${contentWidth}px` : "100%" }}
           onPointerDown={handleTimelinePointerDown}
         >
           <div className="absolute inset-x-0 top-0 h-7 border-b border-studio-border bg-studio-panel/40">

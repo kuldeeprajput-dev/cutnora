@@ -32,7 +32,7 @@ export function TrackLane({
 }: TrackLaneProps) {
   return (
     <div
-      style={{ minWidth: `${totalWidthPx}px` }}
+      style={totalWidthPx > 0 ? { minWidth: `${totalWidthPx}px` } : undefined}
       className={cn(
         "relative h-12 w-full bg-timeline-bg select-none transition-[background-color,opacity,box-shadow]",
         dropState === "valid" && "bg-brand/10 ring-1 ring-inset ring-brand/50",
