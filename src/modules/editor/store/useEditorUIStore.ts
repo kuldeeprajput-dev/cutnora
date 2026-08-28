@@ -35,6 +35,7 @@ interface EditorUIState {
   leftPanelWidth: number;
   timelineHeight: number;
   trackHeaderWidth: number;
+  showTrackHeaders: boolean;
   stageScale: number;
   zoomMode: "fit" | number;
   resetViewCount: number;
@@ -54,6 +55,8 @@ interface EditorUIState {
   setLeftPanelWidth: (width: number) => void;
   setTimelineHeight: (height: number) => void;
   setTrackHeaderWidth: (width: number) => void;
+  setShowTrackHeaders: (show: boolean) => void;
+  toggleTrackHeaders: () => void;
   setStageScale: (scale: number) => void;
   setZoomMode: (mode: "fit" | number) => void;
   triggerResetView: () => void;
@@ -76,6 +79,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       leftPanelWidth: 350,
       timelineHeight: 220,
       trackHeaderWidth: 180,
+      showTrackHeaders: true,
       stageScale: 0.5,
       zoomMode: "fit",
       resetViewCount: 0,
@@ -168,7 +172,17 @@ export const useEditorUIStore = create<EditorUIState>()(
 
       setTrackHeaderWidth: (width) =>
         set((state) => {
-          state.trackHeaderWidth = Math.min(400, Math.max(180, width));
+          state.trackHeaderWidth = Math.min(400, Math.max(170, width));
+        }),
+
+      setShowTrackHeaders: (show) =>
+        set((state) => {
+          state.showTrackHeaders = show;
+        }),
+
+      toggleTrackHeaders: () =>
+        set((state) => {
+          state.showTrackHeaders = !state.showTrackHeaders;
         }),
 
       setStageScale: (scale) =>
@@ -205,6 +219,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         leftPanelWidth: state.leftPanelWidth,
         timelineHeight: state.timelineHeight,
         trackHeaderWidth: state.trackHeaderWidth,
+        showTrackHeaders: state.showTrackHeaders,
         previewScale: state.previewScale,
       }),
     },
