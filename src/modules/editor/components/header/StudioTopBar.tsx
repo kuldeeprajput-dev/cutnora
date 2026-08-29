@@ -30,8 +30,19 @@ export interface StudioTopBarProps {
 }
 
 export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
-  const { currentProject, undo, redo, repairProjectReferences } =
-    useProjectStore();
+  const projectName = useProjectStore(
+    (state) => state.currentProject?.name ?? "Untitled video",
+  );
+  const hasClips = useProjectStore(
+    (state) =>
+      state.currentProject?.tracks.some((track) => track.clips.length > 0) ??
+      false,
+  );
+  const undo = useProjectStore((state) => state.undo);
+  const redo = useProjectStore((state) => state.redo);
+  const repairProjectReferences = useProjectStore(
+    (state) => state.repairProjectReferences,
+  );
 
   const handleRepair = async () => {
     if (
@@ -62,13 +73,14 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   }, []);
 
   useEffect(() => {
-    if (currentProject) {
-      setNameInput(currentProject.name);
-    }
-  }, [currentProject]);
+    setNameInput((currentName) =>
+      currentName === projectName ? currentName : projectName,
+    );
+  }, [projectName]);
 
   const handleNameBlur = () => {
     setIsEditingName(false);
+    const currentProject = useProjectStore.getState().currentProject;
     if (
       currentProject &&
       nameInput.trim() &&
@@ -79,7 +91,8 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
           state.currentProject.name = nameInput.trim();
         }
       });
-      autosaveService.scheduleSave(currentProject);
+      const updatedProject = useProjectStore.getState().currentProject;
+      if (updatedProject) autosaveService.scheduleSave(updatedProject);
     }
   };
 
@@ -88,19 +101,17 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
       handleNameBlur();
     } else if (e.key === "Escape") {
       setIsEditingName(false);
-      if (currentProject) setNameInput(currentProject.name);
+      setNameInput(projectName);
     }
   };
 
-  const hasClips =
-    currentProject?.tracks.some((track) => track.clips.length > 0) ?? false;
   const canUndo = historyManager.canUndo();
   const canRedo = historyManager.canRedo();
 
   return (
-    <header className="flex h-[56px] w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-4 text-studio-fg select-none">
+    <header className="flex h-[56px] w-full shrink-0 items-center justify-between gap-3 border-b border-studio-border bg-studio-topbar px-3 text-studio-fg select-none xl:px-4">
       {/* Left: Cutnora Logo & Title & Autosave Status */}
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 items-center gap-3 xl:gap-4">
         <Link
           href="/"
           className="flex items-center gap-2 group"
@@ -110,15 +121,15 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
             size={28}
             className="transition-transform group-hover:-rotate-3"
           />
-          <span className="text-base font-bold tracking-tight text-studio-fg">
+          <span className="text-base font-bold tracking-tight text-studio-fg max-[1120px]:hidden">
             Cutnora
           </span>
         </Link>
 
-        <div className="h-4 w-px bg-studio-border" />
+        <div className="h-4 w-px shrink-0 bg-studio-border max-[1120px]:hidden" />
 
         {/* Editable Project Name */}
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {isEditingName ? (
             <input
               type="text"
@@ -134,14 +145,17 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
               type="button"
               onClick={() => setIsEditingName(true)}
               title="Click to rename project"
-              className="rounded px-1.5 py-0.5 text-xs font-semibold text-studio-fg hover:bg-studio-panel-raised transition-colors"
+              className="max-w-52 truncate rounded-md px-2 py-1 text-xs font-semibold text-studio-fg transition-colors hover:bg-studio-panel-raised max-[1180px]:max-w-36"
             >
-              {currentProject?.name || "Untitled video"}
+              {projectName}
             </button>
           )}
 
           {/* Autosave Status Indicator */}
-          <div className="flex items-center gap-1 text-[11px] text-studio-muted">
+          <div
+            aria-live="polite"
+            className="flex items-center gap-1 text-[11px] text-studio-muted max-[1180px]:hidden"
+          >
             {saveStatus === "saving" && (
               <span className="inline-flex items-center gap-1 text-selection">
                 <Loader2 className="h-3 w-3 animate-spin" /> Saving...
@@ -168,7 +182,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
       </div>
 
       {/* Middle: Undo & Redo Controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-transparent px-0.5">
         <IconButton
           label="Undo (Ctrl+Z)"
           size="sm"
@@ -190,7 +204,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
       </div>
 
       {/* Right: Help & Export Action Button */}
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5">
         <ThemeToggle className="border-studio-border bg-studio-topbar text-studio-fg hover:bg-studio-hover" />
 
         <IconButton
