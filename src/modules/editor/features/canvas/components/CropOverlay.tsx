@@ -1,19 +1,26 @@
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
-import type { TimelineClip, CropSettings } from '@/modules/editor/types';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { useProjectStore } from '@/modules/projects';
-import { Button } from '@/shared/components/ui/Button';
-import { Check, X, RotateCcw, Move, ArrowUpDown, ArrowLeftRight, Crop } from 'lucide-react';
-import { cn } from '@/shared/utils/cn';
+import React, { useState, useRef } from "react";
+import type { TimelineClip, CropSettings } from "@/modules/editor/types";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { useProjectStore } from "@/modules/projects";
+import {
+  Check,
+  X,
+  RotateCcw,
+  Move,
+  ArrowUpDown,
+  ArrowLeftRight,
+  Crop,
+} from "lucide-react";
+import { cn } from "@/shared/utils/cn";
 
 export interface CropOverlayProps {
   clip: TimelineClip;
   stageScale: number;
 }
 
-type DragHandleType = 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
+type DragHandleType = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se";
 
 export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
   const { setActiveTool } = useEditorUIStore();
@@ -26,7 +33,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
   const crop = clip.transform.crop || { top: 0, right: 0, bottom: 0, left: 0 };
 
   const handleApplyCrop = () => {
-    setActiveTool('canvas');
+    setActiveTool("canvas");
   };
 
   const handleCancelCrop = () => {
@@ -36,7 +43,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         crop: initialCropRef.current,
       },
     });
-    setActiveTool('canvas');
+    setActiveTool("canvas");
   };
 
   const handleResetCrop = () => {
@@ -104,9 +111,15 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
   const cropBottomPx = (crop.bottom / 100) * fullHeight;
   const cropWidthPx = Math.max(20, fullWidth - cropLeftPx - cropRightPx);
   const cropHeightPx = Math.max(20, fullHeight - cropTopPx - cropBottomPx);
+  const isCompactToolbar = fullWidth < 680;
+  const isNarrowToolbar = fullWidth < 420;
+  const toolbarHeight = isNarrowToolbar ? 76 : 44;
 
   // Pointer drag handler for crop edge & corner handles
-  const handleStartDragHandle = (handleType: DragHandleType, e: React.PointerEvent) => {
+  const handleStartDragHandle = (
+    handleType: DragHandleType,
+    e: React.PointerEvent,
+  ) => {
     e.stopPropagation();
     e.preventDefault();
 
@@ -130,16 +143,16 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
       let newLeft = startLeft;
       let newRight = startRight;
 
-      if (handleType.includes('n')) {
+      if (handleType.includes("n")) {
         newTop = Math.max(0, Math.min(100 - startBottom - 5, startTop + deltaTopPct));
       }
-      if (handleType.includes('s')) {
+      if (handleType.includes("s")) {
         newBottom = Math.max(0, Math.min(100 - startTop - 5, startBottom - deltaTopPct));
       }
-      if (handleType.includes('w')) {
+      if (handleType.includes("w")) {
         newLeft = Math.max(0, Math.min(100 - startRight - 5, startLeft + deltaLeftPct));
       }
-      if (handleType.includes('e')) {
+      if (handleType.includes("e")) {
         newRight = Math.max(0, Math.min(100 - startLeft - 5, startRight - deltaLeftPct));
       }
 
@@ -157,17 +170,17 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     };
 
     const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
   };
 
   // Pan active crop window by dragging inside the box
   const handleStartPanCrop = (e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest('.crop-handle')) return;
+    if ((e.target as HTMLElement).closest(".crop-handle")) return;
     e.stopPropagation();
     e.preventDefault();
 
@@ -190,7 +203,6 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
       let newLeft = Math.max(0, Math.min(100 - cropW, startLeft + deltaLeftPct));
       let newRight = 100 - newLeft - cropW;
-
       let newTop = Math.max(0, Math.min(100 - cropH, startTop + deltaTopPct));
       let newBottom = 100 - newTop - cropH;
 
@@ -208,28 +220,29 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     };
 
     const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
   };
 
   const getRatioBtnClass = (rKey: string) =>
     cn(
-      'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none',
+      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none",
       activeRatio === rKey
-        ? 'bg-brand text-white shadow-md font-bold'
-        : 'bg-studio-panel hover:bg-studio-border text-studio-fg border border-studio-border/60'
+        ? "bg-brand text-white shadow-md font-bold"
+        : "bg-studio-panel hover:bg-studio-border text-studio-fg border border-studio-border/60",
     );
 
   const isNearTop = top + cropTopPx < 55;
+  const toolbarTop = isNearTop ? cropTopPx + 8 : cropTopPx - toolbarHeight - 8;
 
   return (
     <div
       style={{
-        position: 'absolute',
+        position: "absolute",
         left: `${left}px`,
         top: `${top}px`,
         width: `${fullWidth}px`,
@@ -239,18 +252,139 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     >
       {/* Dimmed Dark Overlay Outside Cropped Area */}
       {/* Top Dim */}
-      <div className="absolute left-0 top-0 right-0 bg-black/65" style={{ height: `${cropTopPx}px` }} />
+      <div
+        className="absolute left-0 top-0 right-0 bg-black/65"
+        style={{ height: `${cropTopPx}px` }}
+      />
       {/* Bottom Dim */}
-      <div className="absolute left-0 bottom-0 right-0 bg-black/65" style={{ height: `${cropBottomPx}px` }} />
+      <div
+        className="absolute left-0 bottom-0 right-0 bg-black/65"
+        style={{ height: `${cropBottomPx}px` }}
+      />
       {/* Left Dim */}
-      <div className="absolute left-0 bg-black/65" style={{ top: `${cropTopPx}px`, height: `${cropHeightPx}px`, width: `${cropLeftPx}px` }} />
+      <div
+        className="absolute left-0 bg-black/65"
+        style={{
+          top: `${cropTopPx}px`,
+          height: `${cropHeightPx}px`,
+          width: `${cropLeftPx}px`,
+        }}
+      />
       {/* Right Dim */}
-      <div className="absolute right-0 bg-black/65" style={{ top: `${cropTopPx}px`, height: `${cropHeightPx}px`, width: `${cropRightPx}px` }} />
+      <div
+        className="absolute right-0 bg-black/65"
+        style={{
+          top: `${cropTopPx}px`,
+          height: `${cropHeightPx}px`,
+          width: `${cropRightPx}px`,
+        }}
+      />
+
+      {/* Canvas-bound crop controls stay inside the rendered canvas at every zoom. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 z-[60] flex justify-center px-1.5"
+        style={{ top: `${toolbarTop}px` }}
+      >
+        <div
+          data-crop-toolbar
+          onPointerDown={(event) => event.stopPropagation()}
+          className={cn(
+            "pointer-events-auto flex max-w-full items-center justify-center border border-studio-border bg-studio-topbar/95 shadow-2xl backdrop-blur-xl select-none",
+            isNarrowToolbar
+              ? "flex-wrap gap-x-1.5 gap-y-1 rounded-xl px-2 py-1.5"
+              : "gap-2 rounded-xl px-2.5 py-1.5",
+          )}
+          style={{ width: "max-content" }}
+        >
+          <span className="flex shrink-0 items-center gap-1.5 px-0.5 text-xs font-bold text-brand">
+            <Crop className="h-4 w-4" />
+            <span className={cn(isNarrowToolbar && "sr-only")}>Crop Mode</span>
+          </span>
+          <div className="h-4 w-px shrink-0 bg-studio-border" />
+
+          <div className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              onClick={() => applyAspectRatio("16:9", 16 / 9)}
+              className={getRatioBtnClass("16:9")}
+            >
+              16:9
+            </button>
+            <button
+              type="button"
+              onClick={() => applyAspectRatio("9:16", 9 / 16)}
+              className={getRatioBtnClass("9:16")}
+            >
+              9:16
+            </button>
+            <button
+              type="button"
+              onClick={() => applyAspectRatio("4:3", 4 / 3)}
+              className={getRatioBtnClass("4:3")}
+            >
+              4:3
+            </button>
+            <button
+              type="button"
+              onClick={() => applyAspectRatio("1:1", 1)}
+              className={getRatioBtnClass("1:1")}
+            >
+              1:1
+            </button>
+          </div>
+
+          <div
+            className={cn(
+              "h-4 w-px shrink-0 bg-studio-border",
+              isNarrowToolbar && "hidden",
+            )}
+          />
+
+          <div
+            className={cn(
+              "flex shrink-0 items-center gap-0.5",
+              isNarrowToolbar &&
+                "basis-full justify-center border-t border-studio-border/70 pt-1",
+            )}
+          >
+            <button
+              type="button"
+              onClick={handleResetCrop}
+              aria-label="Reset crop"
+              title="Reset crop"
+              className="flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-studio-muted transition-colors hover:bg-studio-panel hover:text-white"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span className={cn(isCompactToolbar && "sr-only")}>Reset</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCancelCrop}
+              aria-label="Cancel crop"
+              title="Cancel crop"
+              className="flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span className={cn(isCompactToolbar && "sr-only")}>Cancel</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleApplyCrop}
+              aria-label="Apply crop"
+              title="Apply crop"
+              className="flex h-7 items-center gap-1.5 rounded-md bg-brand px-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand/90"
+            >
+              <Check className="h-4 w-4" />
+              <span className={cn(isCompactToolbar && "sr-only")}>Done</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Active Crop Box Rect */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           left: `${cropLeftPx}px`,
           top: `${cropTopPx}px`,
           width: `${cropWidthPx}px`,
@@ -259,53 +393,6 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         onPointerDown={handleStartPanCrop}
         className="border-2 border-brand pointer-events-auto relative shadow-2xl cursor-move group"
       >
-        {/* Top Floating Control Bar - Attached directly to top line of crop selection overlay */}
-        <div
-          className={cn(
-            'absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5 bg-studio-topbar/95 backdrop-blur-xl border border-studio-border px-4 py-1.5 rounded-2xl shadow-2xl z-50 whitespace-nowrap transition-all select-none pointer-events-auto',
-            isNearTop ? 'top-3' : '-top-14'
-          )}
-        >
-          <span className="text-xs font-bold text-brand flex items-center gap-1.5 px-0.5">
-            <Crop className="h-4 w-4" /> Crop Mode
-          </span>
-          <div className="h-4 w-px bg-studio-border" />
-
-          {/* Aspect Ratio Buttons */}
-          <div className="flex items-center gap-1">
-            <button type="button" onClick={() => applyAspectRatio('16:9', 16 / 9)} className={getRatioBtnClass('16:9')}>16:9</button>
-            <button type="button" onClick={() => applyAspectRatio('9:16', 9 / 16)} className={getRatioBtnClass('9:16')}>9:16</button>
-            <button type="button" onClick={() => applyAspectRatio('4:3', 4 / 3)} className={getRatioBtnClass('4:3')}>4:3</button>
-            <button type="button" onClick={() => applyAspectRatio('1:1', 1)} className={getRatioBtnClass('1:1')}>1:1</button>
-          </div>
-
-          <div className="h-4 w-px bg-studio-border" />
-
-          <button
-            type="button"
-            onClick={handleResetCrop}
-            className="flex items-center gap-1 text-xs font-medium text-studio-muted hover:text-white px-2 py-1 rounded-lg hover:bg-studio-panel transition-colors cursor-pointer"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCancelCrop}
-            className="flex items-center gap-1 text-xs font-medium text-red-400 hover:text-red-300 px-2 py-1 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
-          >
-            <X className="h-3.5 w-3.5" /> Cancel
-          </button>
-
-          <button
-            type="button"
-            onClick={handleApplyCrop}
-            className="flex items-center gap-1.5 bg-brand hover:bg-brand/90 text-white text-xs font-bold px-3.5 py-1 rounded-lg shadow-sm transition-all cursor-pointer"
-          >
-            <Check className="h-4 w-4" /> Done
-          </button>
-        </div>
-
         {/* Rule of Thirds Grid Lines */}
         <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-30 pointer-events-none">
           <div className="border-r border-b border-white" />
