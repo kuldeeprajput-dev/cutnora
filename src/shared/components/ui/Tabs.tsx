@@ -61,6 +61,7 @@ export function TabTrigger({ value, className, children, ...props }: TabTriggerP
       type="button"
       role="tab"
       aria-selected={isActive}
+      data-state={isActive ? 'active' : 'inactive'}
       onClick={() => context.setActiveTab(value)}
       className={cn(
         'inline-flex items-center justify-center px-3 py-1 text-xs font-medium rounded-md transition-colors select-none',
