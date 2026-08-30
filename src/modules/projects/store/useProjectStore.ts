@@ -62,7 +62,11 @@ interface ProjectState {
   toggleTrackMute: (trackId: string) => void;
 
   addClip: (trackId: string, clip: TimelineClip) => void;
-  updateClip: (clipId: string, updates: Partial<TimelineClip>, options?: { skipHistory?: boolean }) => void;
+  updateClip: (
+    clipId: string,
+    updates: Partial<TimelineClip>,
+    options?: { skipHistory?: boolean },
+  ) => void;
   renameClip: (clipId: string, name: string) => void;
   moveClip: (clipId: string, targetTrackId: string, newStart: number) => void;
   moveClipToNewTrack: (
@@ -167,6 +171,16 @@ export const useProjectStore = create<ProjectState>()(
       const current = get().currentProject;
       if (!current) return;
 
+      const changedEntries = Object.entries(settingsUpdates).filter(
+        ([key, value]) =>
+          !Object.is(current.settings[key as keyof ProjectSettings], value),
+      );
+      if (changedEntries.length === 0) return;
+
+      const effectiveUpdates = Object.fromEntries(
+        changedEntries,
+      ) as Partial<ProjectSettings>;
+
       if (options?.recordHistory !== false) {
         historyManager.pushState(current);
       }
@@ -175,8 +189,8 @@ export const useProjectStore = create<ProjectState>()(
       // so clips maintain their relative position & size on the new canvas.
       const oldW = current.settings.width;
       const oldH = current.settings.height;
-      const newW = settingsUpdates.width ?? oldW;
-      const newH = settingsUpdates.height ?? oldH;
+      const newW = effectiveUpdates.width ?? oldW;
+      const newH = effectiveUpdates.height ?? oldH;
       const scaleX = oldW > 0 ? newW / oldW : 1;
       const scaleY = oldH > 0 ? newH / oldH : 1;
       const dimensionsChanged = newW !== oldW || newH !== oldH;
@@ -185,7 +199,7 @@ export const useProjectStore = create<ProjectState>()(
         if (state.currentProject) {
           state.currentProject.settings = {
             ...state.currentProject.settings,
-            ...settingsUpdates,
+            ...effectiveUpdates,
           };
           // Rescale clip transforms only when canvas dimensions actually change
           if (dimensionsChanged) {

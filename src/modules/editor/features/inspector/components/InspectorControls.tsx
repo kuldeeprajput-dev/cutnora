@@ -23,12 +23,12 @@ export function InspectorSection({
   return (
     <section
       className={cn(
-        "rounded-xl border border-studio-border/80 bg-studio-panel/55 p-3",
+        "rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]",
         className,
       )}
     >
       <div className="mb-3 flex items-start gap-2.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-brand">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-brand">
           <Icon className="h-3.5 w-3.5" />
         </span>
         <div className="min-w-0">
@@ -155,4 +155,3 @@ export function InspectorResetButton({
 
 export const inspectorActionClass =
   "h-9 justify-start gap-2 rounded-lg border border-studio-border bg-studio-bg/45 px-2.5 text-[11px] font-medium text-studio-fg shadow-none hover:border-brand/40 hover:bg-studio-panel-raised disabled:border-studio-border/60 disabled:bg-studio-bg/20 disabled:text-studio-muted/55 disabled:opacity-100";
-
