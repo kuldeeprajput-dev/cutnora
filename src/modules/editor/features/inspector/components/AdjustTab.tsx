@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { TimelineClip, Adjustments } from '@/modules/editor/types';
-import { useProjectStore } from '@/modules/projects';
-import { Slider } from '@/shared/components/ui/Slider';
-import { Button } from '@/shared/components/ui/Button';
-import { RotateCcw } from 'lucide-react';
+import React from "react";
+import { Palette, Sparkles } from "lucide-react";
+import type { Adjustments, TimelineClip } from "@/modules/editor/types";
+import { useProjectStore } from "@/modules/projects";
+import { Slider } from "@/shared/components/ui/Slider";
+import {
+  InspectorResetButton,
+  InspectorSection,
+  InspectorSliderHeader,
+} from "./InspectorControls";
 
 export interface AdjustTabProps {
   clip: TimelineClip;
@@ -20,168 +24,102 @@ const defaultAdjustments: Adjustments = {
   sepia: 0,
 };
 
-export function AdjustTab({ clip }: AdjustTabProps) {
-  const { updateClip } = useProjectStore();
-  const adj = clip.adjustments || defaultAdjustments;
+const toneControls = [
+  { key: "brightness", label: "Brightness", min: 0, max: 2, step: 0.05 },
+  { key: "contrast", label: "Contrast", min: 0, max: 2, step: 0.05 },
+  { key: "saturation", label: "Saturation", min: 0, max: 2, step: 0.05 },
+] as const;
 
-  const updateAdj = (key: keyof Adjustments, val: number) => {
+const effectControls = [
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1 },
+  { key: "grayscale", label: "Grayscale", min: 0, max: 1, step: 0.05 },
+  { key: "sepia", label: "Sepia", min: 0, max: 1, step: 0.05 },
+] as const;
+
+function formatValue(key: keyof Adjustments, value: number) {
+  return key === "blur" ? `${value}px` : `${Math.round(value * 100)}%`;
+}
+
+export function AdjustTab({ clip }: AdjustTabProps) {
+  const updateClip = useProjectStore((state) => state.updateClip);
+  const adjustments = clip.adjustments || defaultAdjustments;
+
+  const updateAdjustment = (key: keyof Adjustments, value: number) => {
     updateClip(clip.id, {
       adjustments: {
-        ...adj,
-        [key]: val,
+        ...adjustments,
+        [key]: value,
       },
     });
   };
 
-  const handleResetProp = (key: keyof Adjustments) => {
-    updateAdj(key, defaultAdjustments[key]);
+  const resetAdjustment = (key: keyof Adjustments) => {
+    updateAdjustment(key, defaultAdjustments[key]);
   };
 
-  const handleResetAll = () => {
+  const resetAll = () => {
     updateClip(clip.id, {
       adjustments: { ...defaultAdjustments },
     });
   };
 
+  const renderControls = (
+    controls: ReadonlyArray<{
+      key: keyof Adjustments;
+      label: string;
+      min: number;
+      max: number;
+      step: number;
+    }>,
+  ) => (
+    <div className="space-y-3.5">
+      {controls.map((control) => (
+        <div key={control.key}>
+          <InspectorSliderHeader
+            label={control.label}
+            value={formatValue(control.key, adjustments[control.key])}
+            onReset={() => resetAdjustment(control.key)}
+          />
+          <Slider
+            aria-label={control.label}
+            value={adjustments[control.key]}
+            min={control.min}
+            max={control.max}
+            step={control.step}
+            onValueChange={(value) =>
+              updateAdjustment(control.key, value)
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
-      <p className="text-[11px] text-studio-muted">Double-click any label to reset that property.</p>
-
-      {/* Brightness */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('brightness')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Brightness
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.brightness * 100)}%</span>
-        </div>
-        <Slider
-          value={adj.brightness}
-          min={0}
-          max={2}
-          step={0.05}
-          onValueChange={(val) => updateAdj('brightness', val)}
-        />
+    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
+      <div className="rounded-xl border border-brand/25 bg-brand/5 px-3 py-2 text-[10px] leading-4 text-studio-muted">
+        Double-click a control label to restore its default value.
       </div>
 
-      {/* Contrast */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('contrast')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Contrast
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.contrast * 100)}%</span>
-        </div>
-        <Slider
-          value={adj.contrast}
-          min={0}
-          max={2}
-          step={0.05}
-          onValueChange={(val) => updateAdj('contrast', val)}
-        />
-      </div>
-
-      {/* Saturation */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('saturation')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Saturation
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.saturation * 100)}%</span>
-        </div>
-        <Slider
-          value={adj.saturation}
-          min={0}
-          max={2}
-          step={0.05}
-          onValueChange={(val) => updateAdj('saturation', val)}
-        />
-      </div>
-
-      {/* Blur */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('blur')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Blur (px)
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{adj.blur}px</span>
-        </div>
-        <Slider
-          value={adj.blur}
-          min={0}
-          max={20}
-          step={1}
-          onValueChange={(val) => updateAdj('blur', val)}
-        />
-      </div>
-
-      {/* Grayscale */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('grayscale')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Grayscale
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.grayscale * 100)}%</span>
-        </div>
-        <Slider
-          value={adj.grayscale}
-          min={0}
-          max={1}
-          step={0.05}
-          onValueChange={(val) => updateAdj('grayscale', val)}
-        />
-      </div>
-
-      {/* Sepia */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label
-            onDoubleClick={() => handleResetProp('sepia')}
-            className="text-[11px] font-medium text-studio-muted cursor-pointer hover:text-studio-fg"
-            title="Double-click to reset"
-          >
-            Sepia
-          </label>
-          <span className="font-mono text-xs text-studio-fg">{Math.round(adj.sepia * 100)}%</span>
-        </div>
-        <Slider
-          value={adj.sepia}
-          min={0}
-          max={1}
-          step={0.05}
-          onValueChange={(val) => updateAdj('sepia', val)}
-        />
-      </div>
-
-      {/* Reset Action */}
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={handleResetAll}
-        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+      <InspectorSection
+        icon={Palette}
+        title="Tone & color"
+        description="Balance the light, contrast, and color intensity."
       >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset All Adjustments
-      </Button>
+        {renderControls(toneControls)}
+      </InspectorSection>
+
+      <InspectorSection
+        icon={Sparkles}
+        title="Image effects"
+        description="Add softness or stylized monochrome color."
+      >
+        {renderControls(effectControls)}
+      </InspectorSection>
+
+      <InspectorResetButton onClick={resetAll}>
+        Reset all adjustments
+      </InspectorResetButton>
     </div>
   );
 }
