@@ -1,135 +1,217 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { TimelineClip } from '@/modules/editor/types';
-import { useProjectStore } from '@/modules/projects';
-import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
-import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
-import { Move, Scissors, RotateCcw } from 'lucide-react';
+import React from "react";
+import { Clock3, Move, Scissors, TimerReset } from "lucide-react";
+import type { TimelineClip } from "@/modules/editor/types";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { useProjectStore } from "@/modules/projects";
+import { Button } from "@/shared/components/ui/Button";
+import { Input } from "@/shared/components/ui/Input";
+import {
+  InspectorControlLabel,
+  InspectorResetButton,
+  InspectorSection,
+  InspectorValue,
+  inspectorActionClass,
+} from "./InspectorControls";
 
 export interface TimeTabProps {
   clip: TimelineClip;
 }
 
 export function TimeTab({ clip }: TimeTabProps) {
-  const { moveClip, trimClip } = useProjectStore();
-  const { playhead } = usePlaybackStore();
+  const moveClip = useProjectStore((state) => state.moveClip);
+  const trimClip = useProjectStore((state) => state.trimClip);
+  const playhead = usePlaybackStore((state) => state.playhead);
+  const clipEnd = clip.timelineStart + clip.timelineDuration;
+  const playheadInsideClip =
+    playhead > clip.timelineStart && playhead < clipEnd;
 
-  const handleMoveToPlayhead = () => {
+  const moveToPlayhead = () => {
     moveClip(clip.id, clip.trackId, playhead);
   };
 
-  const handleTrimStartToPlayhead = () => {
-    if (playhead <= clip.timelineStart || playhead >= clip.timelineStart + clip.timelineDuration) return;
-    const newStart = playhead;
-    const newDuration = (clip.timelineStart + clip.timelineDuration) - playhead;
+  const trimStartToPlayhead = () => {
+    if (!playheadInsideClip) return;
+    const newDuration = clipEnd - playhead;
     const delta = playhead - clip.timelineStart;
     const newSourceStart = clip.sourceStart + delta * clip.speed;
-    trimClip(clip.id, newStart, newDuration, newSourceStart);
+    trimClip(clip.id, playhead, newDuration, newSourceStart);
   };
 
-  const handleTrimEndToPlayhead = () => {
-    if (playhead <= clip.timelineStart || playhead >= clip.timelineStart + clip.timelineDuration) return;
-    const newDuration = playhead - clip.timelineStart;
-    trimClip(clip.id, clip.timelineStart, newDuration, clip.sourceStart);
+  const trimEndToPlayhead = () => {
+    if (!playheadInsideClip) return;
+    trimClip(
+      clip.id,
+      clip.timelineStart,
+      playhead - clip.timelineStart,
+      clip.sourceStart,
+    );
   };
 
-  const handleResetTiming = () => {
+  const resetTiming = () => {
     trimClip(clip.id, clip.timelineStart, clip.sourceDuration, 0);
   };
 
   return (
-    <div className="flex flex-col gap-4 text-studio-fg select-none">
-      {/* Playhead Actions */}
-      <div>
-        <label className="text-[11px] font-medium text-studio-muted block mb-2">Playhead Alignment</label>
-        <div className="flex flex-col gap-1.5">
-          <Button size="sm" variant="secondary" onClick={handleMoveToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
-            <Move className="h-3.5 w-3.5 text-brand" /> Move Clip Start to Playhead
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleTrimStartToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
-            <Scissors className="h-3.5 w-3.5 text-selection" /> Trim Start to Playhead
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleTrimEndToPlayhead} className="justify-start gap-2 text-xs cursor-pointer">
-            <Scissors className="h-3.5 w-3.5 text-mkt-info" /> Trim End to Playhead
-          </Button>
+    <div className="flex select-none flex-col gap-3 pb-2 text-studio-fg">
+      <InspectorSection
+        icon={Clock3}
+        title="Playhead actions"
+        description="Align or trim this clip at the current playhead."
+      >
+        <div className="mb-2.5 flex items-center justify-between rounded-lg border border-studio-border bg-studio-bg/45 px-2.5 py-2">
+          <span className="text-[10px] text-studio-muted">
+            Current playhead
+          </span>
+          <InspectorValue>{playhead.toFixed(2)}s</InspectorValue>
         </div>
-      </div>
-
-      <div className="h-px bg-studio-border" />
-
-      {/* Timeline Timing Controls */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1">Timeline Start (s)</label>
-          <Input
-            type="number"
-            min={0}
-            step={0.1}
-            value={clip.timelineStart}
-            onChange={(e) => moveClip(clip.id, clip.trackId, Math.max(0, parseFloat(e.target.value) || 0))}
-            className="h-8 text-xs font-mono"
-          />
+        <div className="grid gap-1.5">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={moveToPlayhead}
+            className={inspectorActionClass}
+          >
+            <Move className="h-3.5 w-3.5 text-brand" />
+            Move clip start to playhead
+          </Button>
+          <div className="grid grid-cols-2 gap-1.5">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={trimStartToPlayhead}
+              disabled={!playheadInsideClip}
+              className={inspectorActionClass}
+              title={playheadInsideClip ? undefined : "Place playhead inside clip to trim"}
+            >
+              <Scissors className="h-3.5 w-3.5 text-brand" />
+              Trim start
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={trimEndToPlayhead}
+              disabled={!playheadInsideClip}
+              className={inspectorActionClass}
+              title={playheadInsideClip ? undefined : "Place playhead inside clip to trim"}
+            >
+              <Scissors className="h-3.5 w-3.5 text-brand" />
+              Trim end
+            </Button>
+          </div>
         </div>
+      </InspectorSection>
 
-        <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1">Timeline Duration (s)</label>
-          <Input
-            type="number"
-            min={0.1}
-            step={0.1}
-            value={clip.timelineDuration}
-            onChange={(e) => {
-              const dur = Math.max(0.1, parseFloat(e.target.value) || 1);
-              trimClip(clip.id, clip.timelineStart, dur, clip.sourceStart);
-            }}
-            className="h-8 text-xs font-mono"
-          />
+      <InspectorSection
+        icon={TimerReset}
+        title="Timeline timing"
+        description="Set where the clip begins and how long it remains visible."
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="min-w-0">
+            <InspectorControlLabel htmlFor="timeline-start">
+              Start
+            </InspectorControlLabel>
+            <div className="relative mt-1.5">
+              <Input
+                id="timeline-start"
+                type="number"
+                min={0}
+                step={0.1}
+                value={clip.timelineStart}
+                onChange={(e) =>
+                  moveClip(
+                    clip.id,
+                    clip.trackId,
+                    Math.max(0, Number.parseFloat(e.target.value) || 0),
+                  )
+                }
+                className="h-9 pr-7 font-mono text-xs"
+              />
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                s
+              </span>
+            </div>
+          </div>
+          <div className="min-w-0">
+            <InspectorControlLabel htmlFor="timeline-duration">
+              Duration
+            </InspectorControlLabel>
+            <div className="relative mt-1.5">
+              <Input
+                id="timeline-duration"
+                type="number"
+                min={0.1}
+                step={0.1}
+                value={clip.timelineDuration}
+                onChange={(e) => {
+                  const duration = Math.max(0.1, Number.parseFloat(e.target.value) || 1);
+                  trimClip(clip.id, clip.timelineStart, duration, clip.sourceStart);
+                }}
+                className="h-9 pr-7 font-mono text-xs"
+              />
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                s
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      </InspectorSection>
 
-      {/* Source Media Trims */}
       {clip.assetId && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[11px] font-medium text-studio-muted block mb-1">Source Start (s)</label>
-            <Input
-              type="number"
-              min={0}
-              step={0.1}
-              value={clip.sourceStart}
-              onChange={(e) => {
-                const sStart = Math.max(0, parseFloat(e.target.value) || 0);
-                trimClip(clip.id, clip.timelineStart, clip.timelineDuration, sStart);
-              }}
-              className="h-8 text-xs font-mono"
-            />
+        <InspectorSection
+          icon={Scissors}
+          title="Source trim"
+          description="Choose the used portion of the original media."
+        >
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="min-w-0">
+              <InspectorControlLabel htmlFor="source-start">
+                Source start
+              </InspectorControlLabel>
+              <div className="relative mt-1.5">
+                <Input
+                  id="source-start"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={clip.sourceStart}
+                  onChange={(e) => {
+                    const sourceStart = Math.max(0, Number.parseFloat(e.target.value) || 0);
+                    trimClip(clip.id, clip.timelineStart, clip.timelineDuration, sourceStart);
+                  }}
+                  className="h-9 pr-7 font-mono text-xs"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                  s
+                </span>
+              </div>
+            </div>
+            <div className="min-w-0">
+              <InspectorControlLabel htmlFor="source-end">
+                Source end
+              </InspectorControlLabel>
+              <div className="relative mt-1.5">
+                <Input
+                  id="source-end"
+                  type="number"
+                  disabled
+                  value={(clip.sourceStart + clip.sourceDuration).toFixed(1)}
+                  className="h-9 pr-7 font-mono text-xs"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                  s
+                </span>
+              </div>
+            </div>
           </div>
-
-          <div>
-            <label className="text-[11px] font-medium text-studio-muted block mb-1">Source End (s)</label>
-            <Input
-              type="number"
-              disabled
-              value={(clip.sourceStart + clip.sourceDuration).toFixed(1)}
-              className="h-8 text-xs font-mono opacity-60"
-            />
-          </div>
-        </div>
+        </InspectorSection>
       )}
 
-      <div className="h-px bg-studio-border mt-1" />
-
-      {/* Reset Action */}
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={handleResetTiming}
-        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Trims & Timing
-      </Button>
+      <InspectorResetButton onClick={resetTiming}>
+        Reset trims & timing
+      </InspectorResetButton>
     </div>
   );
 }
