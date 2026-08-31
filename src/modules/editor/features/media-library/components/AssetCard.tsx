@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { db } from "@/modules/core/db/database";
 import { objectUrlManager } from "@/modules/core/db/object-url-manager";
 import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
@@ -36,41 +36,54 @@ export function AssetCard({
   viewMode = "grid",
   onPreview,
 }: AssetCardProps) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(
-    asset.remoteUrl ?? asset.remotePreviewUrl ?? null,
-  );
+  const initialThumbUrl = asset.remoteUrl ?? asset.remotePreviewUrl ?? null;
+  const [thumbUrl, setThumbUrl] = useState<string | null>(initialThumbUrl);
   const [isThumbLoaded, setIsThumbLoaded] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(asset.name);
+  const assetRef = useRef(asset);
+  const thumbUrlRef = useRef<string | null>(initialThumbUrl);
   const {
+    id: assetId,
     blobId,
     duration,
     remotePreviewUrl,
     remoteUrl,
+    source,
     thumbnailBlobId,
     type: assetType,
   } = asset;
+  const sourceKind = source?.kind;
+  const sourcePath = source?.kind === "opfs" ? source.path : undefined;
+
+  useEffect(() => {
+    assetRef.current = asset;
+  }, [asset]);
 
   useEffect(() => {
     let isMounted = true;
-    setIsThumbLoaded(false);
+
+    const updateThumbUrl = (nextUrl: string | null) => {
+      if (!isMounted || thumbUrlRef.current === nextUrl) return;
+      thumbUrlRef.current = nextUrl;
+      setIsThumbLoaded(false);
+      setThumbUrl(nextUrl);
+    };
 
     async function loadThumb() {
       if (remoteUrl || remotePreviewUrl) {
-        if (isMounted) {
-          setThumbUrl(remoteUrl ?? remotePreviewUrl ?? null);
-        }
+        updateThumbUrl(remoteUrl ?? remotePreviewUrl ?? null);
         return;
       }
 
       if (!thumbnailBlobId) {
-        if (isMounted) setThumbUrl(null);
+        updateThumbUrl(null);
         return;
       }
 
       let thumbnailBlob: Blob | null = null;
       try {
-        thumbnailBlob = await ensureHighQualityThumbnail(asset);
+        thumbnailBlob = await ensureHighQualityThumbnail(assetRef.current);
       } catch {
         const existing = await db.thumbnails.get(thumbnailBlobId);
         thumbnailBlob = existing?.blob ?? null;
@@ -78,7 +91,7 @@ export function AssetCard({
 
       if (thumbnailBlob && isMounted) {
         const url = objectUrlManager.createUrl(thumbnailBlobId, thumbnailBlob);
-        setThumbUrl(url);
+        updateThumbUrl(url);
       }
     }
 
@@ -88,12 +101,14 @@ export function AssetCard({
       isMounted = false;
     };
   }, [
+    assetId,
     assetType,
-    asset,
     blobId,
     duration,
     remotePreviewUrl,
     remoteUrl,
+    sourceKind,
+    sourcePath,
     thumbnailBlobId,
   ]);
 
