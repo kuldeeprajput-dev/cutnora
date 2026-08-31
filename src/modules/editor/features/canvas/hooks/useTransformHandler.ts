@@ -13,6 +13,18 @@ export interface UseTransformHandlerReturn {
   startTransform: (clip: TimelineClip, mode: TransformMode, e: React.PointerEvent) => void;
 }
 
+function guidesMatch(current: GuideLine[], next: GuideLine[]) {
+  return (
+    current.length === next.length &&
+    current.every(
+      (guide, index) =>
+        guide.id === next[index]?.id &&
+        guide.type === next[index]?.type &&
+        Object.is(guide.position, next[index]?.position),
+    )
+  );
+}
+
 export function useTransformHandler(stageScale: number): UseTransformHandlerReturn {
   const [activeGuides, setActiveGuides] = useState<GuideLine[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +32,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
   const { snappingEnabled } = useEditorUIStore();
 
   const activeClipRef = useRef<TimelineClip | null>(null);
+  const activeGuidesRef = useRef<GuideLine[]>([]);
   const startPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const startTextStyleRef = useRef<TimelineClip['textStyle']>(undefined);
   const startTransformRef = useRef<TimelineClip['transform']>({
@@ -47,6 +60,12 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     startAngle: 0,
     startRotation: 0,
   });
+
+  const updateActiveGuides = (nextGuides: GuideLine[]) => {
+    if (guidesMatch(activeGuidesRef.current, nextGuides)) return;
+    activeGuidesRef.current = nextGuides;
+    setActiveGuides(nextGuides);
+  };
 
   const flushMobileUpdate = () => {
     mobileFrameRef.current = null;
@@ -166,7 +185,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
 
         newX = snapResult.x;
         newY = snapResult.y;
-        if (!isMobileGestureRef.current) setActiveGuides(snapResult.guides);
+        if (!isMobileGestureRef.current) updateActiveGuides(snapResult.guides);
       } else if (mode === 'rotate') {
         // Both mobile and desktop: use angular delta from start angle to current angle
         const { centerX, centerY, startAngle, startRotation } = rotationGestureRef.current;
@@ -260,7 +279,7 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
       window.removeEventListener('pointercancel', handlePointerUp);
       window.removeEventListener('cutnora:mobile-pinch-start', handleMobilePinchStart);
       setIsDragging(false);
-      setActiveGuides([]);
+      updateActiveGuides([]);
       activeClipRef.current = null;
       isMobileGestureRef.current = false;
       mobileHistoryCapturedRef.current = false;

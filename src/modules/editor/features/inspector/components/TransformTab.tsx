@@ -23,18 +23,75 @@ export interface TransformTabProps {
   clip: TimelineClip;
 }
 
+interface TransformDraft {
+  sourceClipId: string;
+  sourceX: number;
+  sourceY: number;
+  sourceWidth: number;
+  sourceHeight: number;
+  sourceRotation: number;
+  sourceOpacity: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+}
+
+const formatNum = (num: number) => Math.round(num * 10) / 10;
+
+function createTransformDraft(
+  clipId: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  rotation: number,
+  opacity: number,
+): TransformDraft {
+  return {
+    sourceClipId: clipId,
+    sourceX: x,
+    sourceY: y,
+    sourceWidth: width,
+    sourceHeight: height,
+    sourceRotation: rotation,
+    sourceOpacity: opacity,
+    x: formatNum(x),
+    y: formatNum(y),
+    width: formatNum(width),
+    height: formatNum(height),
+    rotation: formatNum(rotation),
+    opacity,
+  };
+}
+
+function draftMatchesSource(
+  draft: TransformDraft,
+  clipId: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  rotation: number,
+  opacity: number,
+) {
+  return (
+    draft.sourceClipId === clipId &&
+    Object.is(draft.sourceX, x) &&
+    Object.is(draft.sourceY, y) &&
+    Object.is(draft.sourceWidth, width) &&
+    Object.is(draft.sourceHeight, height) &&
+    Object.is(draft.sourceRotation, rotation) &&
+    Object.is(draft.sourceOpacity, opacity)
+  );
+}
+
 export function TransformTab({ clip }: TransformTabProps) {
   const { updateClip, currentProject } = useProjectStore();
   const { activeTool, setActiveTool } = useEditorUIStore();
 
-  const formatNum = (num: number) => Math.round(num * 10) / 10;
-
-  const [x, setX] = useState(formatNum(clip.transform.x));
-  const [y, setY] = useState(formatNum(clip.transform.y));
-  const [width, setWidth] = useState(formatNum(clip.transform.width));
-  const [height, setHeight] = useState(formatNum(clip.transform.height));
-  const [rotation, setRotation] = useState(formatNum(clip.transform.rotation));
-  const [opacity, setOpacity] = useState(clip.transform.opacity);
   const [isAspectLocked, setIsAspectLocked] = useState(true);
 
   const isCropping = activeTool === "crop";
@@ -57,14 +114,18 @@ export function TransformTab({ clip }: TransformTabProps) {
   const tRot = clip.transform.rotation;
   const tOp = clip.transform.opacity;
 
+  const [draft, setDraft] = useState(() =>
+    createTransformDraft(clip.id, tX, tY, tW, tH, tRot, tOp),
+  );
+  const { x, y, width, height, rotation, opacity } = draft;
+
   useEffect(() => {
-    setX(formatNum(tX));
-    setY(formatNum(tY));
-    setWidth(formatNum(tW));
-    setHeight(formatNum(tH));
-    setRotation(formatNum(tRot));
-    setOpacity(tOp);
-  }, [tX, tY, tW, tH, tRot, tOp]);
+    setDraft((current) =>
+      draftMatchesSource(current, clip.id, tX, tY, tW, tH, tRot, tOp)
+        ? current
+        : createTransformDraft(clip.id, tX, tY, tW, tH, tRot, tOp),
+    );
+  }, [clip.id, tX, tY, tW, tH, tRot, tOp]);
 
   const commitTransform = (updates: Partial<TimelineClip["transform"]>) => {
     updateClip(clip.id, {
@@ -97,6 +158,15 @@ export function TransformTab({ clip }: TransformTabProps) {
       height: projH,
       fitMode: "cover",
     });
+  };
+
+  const handleCenter = () => {
+    const projW = currentProject?.settings.width || 1920;
+    const projH = currentProject?.settings.height || 1080;
+    const nextX = Math.round((projW - clip.transform.width) / 2);
+    const nextY = Math.round((projH - clip.transform.height) / 2);
+    setDraft((current) => ({ ...current, x: nextX, y: nextY }));
+    commitTransform({ x: nextX, y: nextY });
   };
 
   const handleToggleCrop = () => {
@@ -163,7 +233,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     currentVal: number,
-    setter: (v: number) => void,
     field: keyof TimelineClip["transform"],
   ) => {
     if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
@@ -171,18 +240,18 @@ export function TransformTab({ clip }: TransformTabProps) {
     const step = e.shiftKey ? 10 : 1;
     const delta = e.key === "ArrowUp" ? step : -step;
     const newVal = Math.round((currentVal + delta) * 10) / 10;
-    setter(newVal);
+    setDraft((current) => ({ ...current, [field]: newVal }));
     commitTransform({ [field]: newVal });
   };
 
   return (
-    <div className="flex flex-col gap-3 text-xs select-none">
+    <div className="flex flex-col gap-4 text-studio-fg">
       {/* Quick Layout Actions */}
-      <div className="grid grid-cols-3 gap-0.5 rounded-lg border border-studio-border bg-studio-bg/45 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+      <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-studio-border bg-studio-bg/45 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
         <button
           type="button"
           onClick={handleFit}
-          className={`flex h-9 items-center justify-center gap-1.5 rounded-md text-xs transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             clip.transform.fitMode === "contain"
               ? "bg-brand text-white font-bold shadow-sm"
               : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
@@ -193,7 +262,7 @@ export function TransformTab({ clip }: TransformTabProps) {
         <button
           type="button"
           onClick={handleFill}
-          className={`flex h-9 items-center justify-center gap-1.5 rounded-md text-xs transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             clip.transform.fitMode === "cover"
               ? "bg-brand text-white font-bold shadow-sm"
               : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
@@ -203,8 +272,15 @@ export function TransformTab({ clip }: TransformTabProps) {
         </button>
         <button
           type="button"
+          onClick={handleCenter}
+          className="flex h-9 items-center justify-center gap-1 rounded-md text-[11px] text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          Center
+        </button>
+        <button
+          type="button"
           onClick={handleToggleCrop}
-          className={`flex h-9 items-center justify-center gap-1.5 rounded-md text-xs transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             isCropping || hasActiveCrop
               ? "bg-brand text-white font-bold shadow-sm"
               : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
@@ -337,9 +413,14 @@ export function TransformTab({ clip }: TransformTabProps) {
             <Input
               type="number"
               value={x}
-              onChange={(e) => setX(parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                setDraft((current) => ({
+                  ...current,
+                  x: parseFloat(e.target.value) || 0,
+                }))
+              }
               onBlur={() => commitTransform({ x })}
-              onKeyDown={(e) => handleKeyDown(e, x, setX, "x")}
+              onKeyDown={(e) => handleKeyDown(e, x, "x")}
               className="h-8 text-xs font-mono"
             />
           </div>
@@ -350,9 +431,14 @@ export function TransformTab({ clip }: TransformTabProps) {
             <Input
               type="number"
               value={y}
-              onChange={(e) => setY(parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                setDraft((current) => ({
+                  ...current,
+                  y: parseFloat(e.target.value) || 0,
+                }))
+              }
               onBlur={() => commitTransform({ y })}
-              onKeyDown={(e) => handleKeyDown(e, y, setY, "y")}
+              onKeyDown={(e) => handleKeyDown(e, y, "y")}
               className="h-8 text-xs font-mono"
             />
           </div>
@@ -382,14 +468,17 @@ export function TransformTab({ clip }: TransformTabProps) {
               value={width}
               onChange={(e) => {
                 const newW = parseFloat(e.target.value) || 20;
-                setWidth(newW);
-                if (isAspectLocked && clip.transform.width > 0) {
-                  const ratio = clip.transform.height / clip.transform.width;
-                  setHeight(Math.round(newW * ratio));
-                }
+                setDraft((current) => {
+                  const next = { ...current, width: newW };
+                  if (isAspectLocked && clip.transform.width > 0) {
+                    const ratio = clip.transform.height / clip.transform.width;
+                    next.height = Math.round(newW * ratio);
+                  }
+                  return next;
+                });
               }}
               onBlur={() => commitTransform({ width, height })}
-              onKeyDown={(e) => handleKeyDown(e, width, setWidth, "width")}
+              onKeyDown={(e) => handleKeyDown(e, width, "width")}
               className="h-8 text-xs font-mono"
             />
           </div>
@@ -403,14 +492,17 @@ export function TransformTab({ clip }: TransformTabProps) {
               value={height}
               onChange={(e) => {
                 const newH = parseFloat(e.target.value) || 20;
-                setHeight(newH);
-                if (isAspectLocked && clip.transform.height > 0) {
-                  const ratio = clip.transform.width / clip.transform.height;
-                  setWidth(Math.round(newH * ratio));
-                }
+                setDraft((current) => {
+                  const next = { ...current, height: newH };
+                  if (isAspectLocked && clip.transform.height > 0) {
+                    const ratio = clip.transform.width / clip.transform.height;
+                    next.width = Math.round(newH * ratio);
+                  }
+                  return next;
+                });
               }}
               onBlur={() => commitTransform({ width, height })}
-              onKeyDown={(e) => handleKeyDown(e, height, setHeight, "height")}
+              onKeyDown={(e) => handleKeyDown(e, height, "height")}
               className="h-8 text-xs font-mono"
             />
           </div>
@@ -446,10 +538,51 @@ export function TransformTab({ clip }: TransformTabProps) {
               max={360}
               step={1}
               onValueChange={(val) => {
-                setRotation(val);
+                setDraft((current) => ({ ...current, rotation: val }));
                 commitTransform({ rotation: val });
               }}
             />
+            <div className="mt-2 flex items-center gap-1.5">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  const nextRot = (Math.round(rotation - 90) + 360) % 360;
+                  setDraft((current) => ({ ...current, rotation: nextRot }));
+                  commitTransform({ rotation: nextRot });
+                }}
+                className="h-6 flex-1 text-[10px] font-mono"
+                title="Rotate -90°"
+              >
+                -90°
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setDraft((current) => ({ ...current, rotation: 0 }));
+                  commitTransform({ rotation: 0 });
+                }}
+                disabled={rotation === 0}
+                className="h-6 flex-1 text-[10px] font-mono"
+                title="Reset angle to 0°"
+              >
+                0°
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  const nextRot = Math.round(rotation + 90) % 360;
+                  setDraft((current) => ({ ...current, rotation: nextRot }));
+                  commitTransform({ rotation: nextRot });
+                }}
+                className="h-6 flex-1 text-[10px] font-mono"
+                title="Rotate +90°"
+              >
+                +90°
+              </Button>
+            </div>
           </div>
 
           <div>
@@ -467,7 +600,7 @@ export function TransformTab({ clip }: TransformTabProps) {
               max={1}
               step={0.01}
               onValueChange={(val) => {
-                setOpacity(val);
+                setDraft((current) => ({ ...current, opacity: val }));
                 commitTransform({ opacity: val });
               }}
             />
