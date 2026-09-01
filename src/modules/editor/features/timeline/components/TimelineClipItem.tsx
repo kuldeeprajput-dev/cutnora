@@ -168,6 +168,10 @@ export function TimelineClipItem({
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const { selectedClipIds, setSelectedClipIds } = useEditorUIStore.getState();
+    if (!selectedClipIds.includes(clip.id)) {
+      setSelectedClipIds([clip.id]);
+    }
     setContextMenuPos({ x: e.clientX, y: e.clientY });
   };
 
@@ -178,7 +182,7 @@ export function TimelineClipItem({
       icon: <Scissors className="h-3.5 w-3.5" />,
       shortcut: "⌘X",
       onClick: () => {
-        useClipboardStore.getState().cutSelectedClips();
+        useClipboardStore.getState().cutSelectedClips([clip.id]);
       },
     },
     {
@@ -187,7 +191,7 @@ export function TimelineClipItem({
       icon: <Copy className="h-3.5 w-3.5" />,
       shortcut: "⌘C",
       onClick: () => {
-        useClipboardStore.getState().copySelectedClips();
+        useClipboardStore.getState().copySelectedClips([clip.id]);
       },
     },
     {
@@ -195,6 +199,7 @@ export function TimelineClipItem({
       label: "Paste after",
       icon: <Clipboard className="h-3.5 w-3.5" />,
       shortcut: "⌘V",
+      disabled: useClipboardStore.getState().clipboardClips.length === 0,
       onClick: () => {
         useClipboardStore
           .getState()

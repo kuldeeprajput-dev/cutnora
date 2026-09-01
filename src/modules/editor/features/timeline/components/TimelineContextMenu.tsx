@@ -45,7 +45,7 @@ export function TimelineContextMenu({ x, y, pasteTime, onClose }: TimelineContex
     },
     {
       id: 'paste',
-      label: 'Paste after',
+      label: pasteTime !== undefined ? 'Paste here' : 'Paste at playhead',
       icon: <Clipboard className="h-3.5 w-3.5" />,
       shortcut: '⌘V',
       disabled: clipboardClips.length === 0,

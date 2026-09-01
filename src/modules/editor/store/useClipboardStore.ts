@@ -9,8 +9,8 @@ import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
 
 interface ClipboardState {
   clipboardClips: TimelineClip[];
-  copySelectedClips: () => void;
-  cutSelectedClips: () => void;
+  copySelectedClips: (clipIds?: string[]) => void;
+  cutSelectedClips: (clipIds?: string[]) => void;
   pasteClips: (targetTrackId?: string, pasteTime?: number) => void;
 }
 
@@ -18,10 +18,16 @@ export const useClipboardStore = create<ClipboardState>()(
   immer((set, get) => ({
     clipboardClips: [],
 
-    copySelectedClips: () => {
+    copySelectedClips: (clipIds) => {
       const project = useProjectStore.getState().currentProject;
-      const selectedIds = useEditorUIStore.getState().selectedClipIds;
-      if (!project || selectedIds.length === 0) return;
+      const selectedIds = clipIds && clipIds.length > 0
+        ? clipIds
+        : useEditorUIStore.getState().selectedClipIds;
+
+      if (!project || selectedIds.length === 0) {
+        useToastStore.getState().showToast('Select a clip first to copy', 'warning');
+        return;
+      }
 
       const selected = project.tracks
         .flatMap((t) => t.clips)
@@ -32,23 +38,37 @@ export const useClipboardStore = create<ClipboardState>()(
           state.clipboardClips = JSON.parse(JSON.stringify(selected));
         });
         useToastStore.getState().showToast(`Copied ${selected.length} clip(s) to clipboard`, 'info');
+      } else {
+        useToastStore.getState().showToast('Select a clip first to copy', 'warning');
       }
     },
 
-    cutSelectedClips: () => {
-      get().copySelectedClips();
-      const selectedIds = useEditorUIStore.getState().selectedClipIds;
-      if (selectedIds.length > 0) {
-        useProjectStore.getState().deleteClips(selectedIds);
-        useEditorUIStore.getState().clearSelection();
-        useToastStore.getState().showToast('Cut selected clip(s)', 'info');
+    cutSelectedClips: (clipIds) => {
+      const project = useProjectStore.getState().currentProject;
+      const selectedIds = clipIds && clipIds.length > 0
+        ? clipIds
+        : useEditorUIStore.getState().selectedClipIds;
+
+      if (!project || selectedIds.length === 0) {
+        useToastStore.getState().showToast('Select a clip first to cut', 'warning');
+        return;
       }
+
+      get().copySelectedClips(selectedIds);
+      useProjectStore.getState().deleteClips(selectedIds);
+      useEditorUIStore.getState().clearSelection();
+      useToastStore.getState().showToast(`Cut ${selectedIds.length} clip(s) to clipboard`, 'info');
     },
 
     pasteClips: (targetTrackId, pasteTime) => {
       const buffer = get().clipboardClips;
       const project = useProjectStore.getState().currentProject;
-      if (!project || buffer.length === 0) return;
+      if (!project) return;
+
+      if (buffer.length === 0) {
+        useToastStore.getState().showToast('Clipboard is empty. Copy or cut a clip first.', 'warning');
+        return;
+      }
 
       const playhead = usePlaybackStore.getState().playhead;
       const targetTime = pasteTime !== undefined ? pasteTime : playhead;
