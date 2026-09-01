@@ -60,6 +60,7 @@ export function ExportModal() {
   } = useExportStore();
 
   const isCancelRef = useRef(false);
+  const wasOpenRef = useRef(false);
   const [preflight, setPreflight] = useState<ExportPreflightResult | null>(
     null,
   );
@@ -67,6 +68,21 @@ export function ExportModal() {
   useEffect(() => {
     detectCapabilities();
   }, [detectCapabilities]);
+
+  useEffect(() => {
+    const justOpened = isExportModalOpen && !wasOpenRef.current;
+    wasOpenRef.current = isExportModalOpen;
+
+    if (!justOpened || !currentProject) return;
+
+    const projectFps = currentProject.settings.fps;
+    setExportFps(
+      projectFps === 24 || projectFps === 30 || projectFps === 60
+        ? projectFps
+        : 30,
+    );
+    setExportResolution("project");
+  }, [currentProject, isExportModalOpen, setExportFps, setExportResolution]);
 
   useEffect(() => {
     if (currentProject && filename === "video-export") {

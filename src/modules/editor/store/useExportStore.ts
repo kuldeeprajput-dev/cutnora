@@ -1,10 +1,12 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
-export type ExportFormat = 'webm' | 'mp4';
-export type ExportResolution = '1280x720' | '1920x1080' | '720p' | '1080p' | 'project';
-export type ExportQuality = 'draft' | 'standard' | 'high';
-export type ExportPhase = 'idle' | 'rendering' | 'converting' | 'completed' | 'error' | 'cancelled';
+export type ExportFormat = "webm" | "mp4";
+export type ExportResolution =
+  "1280x720" | "1920x1080" | "720p" | "1080p" | "project";
+export type ExportQuality = "draft" | "standard" | "high";
+export type ExportPhase =
+  "idle" | "rendering" | "converting" | "completed" | "error" | "cancelled";
 
 export interface Capabilities {
   hasCaptureStream: boolean;
@@ -48,12 +50,12 @@ interface ExportState {
 export const useExportStore = create<ExportState>()(
   immer((set) => ({
     isExportModalOpen: false,
-    filename: 'video-export',
-    exportFormat: 'webm',
-    exportResolution: '1080p',
+    filename: "video-export",
+    exportFormat: "webm",
+    exportResolution: "project",
     exportFps: 30,
-    exportQuality: 'standard',
-    exportPhase: 'idle',
+    exportQuality: "standard",
+    exportPhase: "idle",
     exportProgress: 0,
     currentExportTime: 0,
     exportError: null,
@@ -63,15 +65,19 @@ export const useExportStore = create<ExportState>()(
       hasCaptureStream: true,
       hasMediaRecorder: true,
       hasWebAudio: true,
-      supportedWebMCodecs: ['video/webm;codecs=vp9,opus', 'video/webm'],
+      supportedWebMCodecs: ["video/webm;codecs=vp9,opus", "video/webm"],
       hasFFmpegSupport: true,
     },
 
     setExportModalOpen: (open) =>
       set((state) => {
         state.isExportModalOpen = open;
-        if (!open && state.exportPhase !== 'rendering' && state.exportPhase !== 'converting') {
-          state.exportPhase = 'idle';
+        if (
+          !open &&
+          state.exportPhase !== "rendering" &&
+          state.exportPhase !== "converting"
+        ) {
+          state.exportPhase = "idle";
           state.exportProgress = 0;
           state.exportError = null;
         }
@@ -120,7 +126,7 @@ export const useExportStore = create<ExportState>()(
     setExportError: (error) =>
       set((state) => {
         state.exportError = error;
-        state.exportPhase = 'error';
+        state.exportPhase = "error";
       }),
 
     setExportBlobUrl: (url) =>
@@ -135,26 +141,36 @@ export const useExportStore = create<ExportState>()(
       set((state) => {
         state.isCancelRequested = cancel;
         if (cancel) {
-          state.exportPhase = 'cancelled';
+          state.exportPhase = "cancelled";
         }
       }),
 
     detectCapabilities: () => {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
-      const hasCaptureStream = typeof HTMLCanvasElement !== 'undefined' && 'captureStream' in HTMLCanvasElement.prototype;
-      const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
-      const hasWebAudio = typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext !== 'undefined';
+      const hasCaptureStream =
+        typeof HTMLCanvasElement !== "undefined" &&
+        "captureStream" in HTMLCanvasElement.prototype;
+      const hasMediaRecorder = typeof MediaRecorder !== "undefined";
+      const hasWebAudio =
+        typeof AudioContext !== "undefined" ||
+        typeof (
+          window as unknown as { webkitAudioContext: typeof AudioContext }
+        ).webkitAudioContext !== "undefined";
 
       const webmCodecs = [
-        'video/webm;codecs=vp9,opus',
-        'video/webm;codecs=vp8,opus',
-        'video/webm;codecs=h264,opus',
-        'video/webm',
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm;codecs=h264,opus",
+        "video/webm",
       ];
-      const supportedWebMCodecs = hasMediaRecorder ? webmCodecs.filter((c) => MediaRecorder.isTypeSupported(c)) : [];
+      const supportedWebMCodecs = hasMediaRecorder
+        ? webmCodecs.filter((c) => MediaRecorder.isTypeSupported(c))
+        : [];
 
-      const hasFFmpegSupport = typeof SharedArrayBuffer !== 'undefined' || typeof Worker !== 'undefined';
+      const hasFFmpegSupport =
+        typeof SharedArrayBuffer !== "undefined" ||
+        typeof Worker !== "undefined";
 
       set((state) => {
         state.capabilities = {
@@ -172,12 +188,12 @@ export const useExportStore = create<ExportState>()(
         if (state.exportBlobUrl) {
           URL.revokeObjectURL(state.exportBlobUrl);
         }
-        state.exportPhase = 'idle';
+        state.exportPhase = "idle";
         state.exportProgress = 0;
         state.currentExportTime = 0;
         state.exportError = null;
         state.exportBlobUrl = null;
         state.isCancelRequested = false;
       }),
-  }))
+  })),
 );

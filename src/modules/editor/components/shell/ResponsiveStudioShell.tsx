@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { useProjectStore } from "@/modules/projects";
 
 const mobileEditorQuery = "(max-width: 1023px)";
 let mobileEditorMediaQuery: MediaQueryList | null = null;
@@ -54,6 +56,14 @@ export function ResponsiveStudioShell() {
     getMobileEditorSnapshot,
     getMobileEditorServerSnapshot,
   );
+  const projectFps = useProjectStore(
+    (state) => state.currentProject?.settings.fps ?? 30,
+  );
+  const setPlaybackFps = usePlaybackStore((state) => state.setFps);
+
+  useEffect(() => {
+    setPlaybackFps(projectFps);
+  }, [projectFps, setPlaybackFps]);
 
   return isMobileEditor ? <MobileStudioShell /> : <StudioShell />;
 }
