@@ -1,30 +1,43 @@
 "use client";
 
 import React from "react";
-import { Activity, Gauge, Info, Timer } from "lucide-react";
+import { Gauge, Timer, RotateCcw } from "lucide-react";
 import type { TimelineClip } from "@/modules/editor/types";
 import { useProjectStore } from "@/modules/projects";
 import { Button } from "@/shared/components/ui/Button";
-import { Input } from "@/shared/components/ui/Input";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
-import {
-  InspectorControlLabel,
-  InspectorResetButton,
-  InspectorSection,
-  InspectorSliderHeader,
-} from "./InspectorControls";
 
 export interface SpeedTabProps {
   clip: TimelineClip;
 }
 
-const speedPresets = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 4];
+const SPEED_PRESETS = [
+  { speed: 0.25, label: "0.25×", sub: "Super Slow" },
+  { speed: 0.5, label: "0.5×", sub: "Slow Mo" },
+  { speed: 0.75, label: "0.75×", sub: "Gentle Slow" },
+  { speed: 1.0, label: "1.0×", sub: "Normal" },
+  { speed: 1.25, label: "1.25×", sub: "Brisk" },
+  { speed: 1.5, label: "1.5×", sub: "Fast" },
+  { speed: 2.0, label: "2.0×", sub: "Double" },
+  { speed: 4.0, label: "4.0×", sub: "Hyperlapse" },
+];
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = (seconds % 60).toFixed(1);
+  if (mins > 0) {
+    return `${mins}m ${secs}s`;
+  }
+  return `${secs}s`;
+}
 
 export function SpeedTab({ clip }: SpeedTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const currentProject = useProjectStore((state) => state.currentProject);
   const projectFps = currentProject?.settings.fps || 30;
+
+  const currentSpeed = clip.speed ?? 1.0;
 
   const changeSpeed = (newSpeed: number) => {
     const validSpeed = Math.min(4, Math.max(0.1, Number(newSpeed.toFixed(2))));
@@ -36,172 +49,148 @@ export function SpeedTab({ clip }: SpeedTabProps) {
     });
   };
 
-  const estimatedEffectiveFps = Math.round(projectFps * clip.speed);
+  const estimatedEffectiveFps = Math.round(projectFps * currentSpeed);
 
   return (
     <div className="flex select-none flex-col gap-3 pb-2 text-studio-fg">
-      <InspectorSection
-        icon={Gauge}
-        title="Playback speed"
-        description="Choose a preset, slide, or enter a custom multiplier."
-      >
-        <InspectorControlLabel>Speed presets</InspectorControlLabel>
-        <div className="mt-1.5 grid grid-cols-4 gap-1.5">
-          {speedPresets.map((speed) => {
-            const active = Math.abs(clip.speed - speed) < 0.01;
+      {/* 1. Quick Playback Speed Presets */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+              <Gauge className="h-3.5 w-3.5 text-brand" /> Playback Speed
+            </h3>
+            <p className="mt-0.5 text-[10px] text-studio-muted">
+              Speed up or slow down video & audio playback
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {currentSpeed !== 1.0 && (
+              <button
+                type="button"
+                onClick={() => changeSpeed(1.0)}
+                className="text-[10px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
+              {currentSpeed.toFixed(2)}×
+            </span>
+          </div>
+        </div>
+
+        {/* Speed Preset Chips */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {SPEED_PRESETS.map((p) => {
+            const isActive = Math.abs(currentSpeed - p.speed) < 0.03;
             return (
               <button
-                key={speed}
+                key={p.speed}
                 type="button"
-                aria-pressed={active}
-                onClick={() => changeSpeed(speed)}
+                aria-pressed={isActive}
+                onClick={() => changeSpeed(p.speed)}
                 className={cn(
-                  "h-9 rounded-lg border text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
-                  active
-                    ? "border-brand bg-brand text-white shadow-sm"
-                    : "border-studio-border bg-studio-bg/45 text-studio-muted hover:border-brand/50 hover:bg-studio-panel-raised hover:text-studio-fg",
+                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
+                  isActive
+                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
+                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
                 )}
               >
-                {speed}×
+                <span
+                  className={cn(
+                    "text-xs font-bold",
+                    isActive ? "text-brand" : "text-studio-fg",
+                  )}
+                >
+                  {p.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[8px] mt-0.5 font-medium truncate",
+                    isActive ? "text-brand/80" : "text-studio-muted",
+                  )}
+                >
+                  {p.sub}
+                </span>
               </button>
             );
           })}
         </div>
 
-        <div className="mt-3.5">
-          <InspectorSliderHeader
-            label="Speed multiplier"
-            value={`${clip.speed.toFixed(2)}×`}
-            onReset={() => changeSpeed(1)}
-          />
+        {/* Speed Slider */}
+        <div className="pt-1">
           <Slider
-            aria-label="Speed multiplier"
-            value={clip.speed}
+            aria-label="Speed multiplier slider"
+            value={currentSpeed}
             min={0.1}
-            max={4}
+            max={4.0}
             step={0.05}
             onValueChange={changeSpeed}
           />
         </div>
+      </section>
 
-        <div className="mt-3">
-          <InspectorControlLabel htmlFor="custom-speed">
-            Custom multiplier
-          </InspectorControlLabel>
-          <div className="relative mt-1.5">
-            <Input
-              id="custom-speed"
-              aria-label="Custom speed multiplier"
-              type="number"
-              min={0.1}
-              max={4}
-              step={0.05}
-              value={clip.speed}
-              onChange={(event) =>
-                changeSpeed(Number.parseFloat(event.target.value) || 1)
-              }
-              className="h-9 pr-8 font-mono text-xs"
-            />
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-studio-muted">
-              ×
-            </span>
-          </div>
+      {/* 2. Duration & Timeline Impact */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
+        <div>
+          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+            <Timer className="h-3.5 w-3.5 text-brand" /> Duration Impact
+          </h3>
+          <p className="mt-0.5 text-[10px] text-studio-muted">
+            How speed affects clip duration on your timeline
+          </p>
         </div>
 
-        <div className="mt-2.5 flex items-center gap-1.5">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => changeSpeed(clip.speed - 0.1)}
-            disabled={clip.speed <= 0.15}
-            className="h-7 flex-1 text-[10px] font-mono"
-            title="Decrease speed by 0.1x"
-          >
-            -0.10×
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => changeSpeed(clip.speed + 0.1)}
-            disabled={clip.speed >= 3.95}
-            className="h-7 flex-1 text-[10px] font-mono"
-            title="Increase speed by 0.1x"
-          >
-            +0.10×
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => changeSpeed(clip.speed * 0.5)}
-            disabled={clip.speed <= 0.2}
-            className="h-7 flex-1 text-[10px] font-mono"
-            title="Half speed (0.5x)"
-          >
-            ½×
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => changeSpeed(clip.speed * 2)}
-            disabled={clip.speed >= 2}
-            className="h-7 flex-1 text-[10px] font-mono"
-            title="Double speed (2.0x)"
-          >
-            2×
-          </Button>
-        </div>
-      </InspectorSection>
-
-      <InspectorSection
-        icon={Timer}
-        title="Duration result"
-        description="The timeline length updates automatically."
-      >
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-lg border border-studio-border bg-studio-bg/45 p-2.5">
+          <div className="rounded-lg border border-studio-border bg-studio-panel/50 p-2.5">
             <span className="block text-[9px] font-medium uppercase tracking-wide text-studio-muted">
-              Source
+              Source Duration
             </span>
-            <span className="mt-1 block font-mono text-xs text-studio-fg">
-              {clip.sourceDuration.toFixed(2)}s
+            <span className="mt-1 block font-mono text-xs font-bold text-studio-fg">
+              {formatTime(clip.sourceDuration)}
+            </span>
+            <span className="text-[9px] text-studio-muted mt-0.5 block font-mono">
+              {clip.sourceDuration.toFixed(2)}s raw
             </span>
           </div>
-          <div className="rounded-lg border border-brand/30 bg-brand/5 p-2.5">
-            <span className="block text-[9px] font-medium uppercase tracking-wide text-studio-muted">
-              Timeline
-            </span>
-            <span className="mt-1 block font-mono text-xs text-brand">
-              {clip.timelineDuration.toFixed(2)}s
-            </span>
-          </div>
-        </div>
-        <div className="mt-2.5 flex items-start gap-2 text-[10px] leading-4 text-studio-muted">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-          <span>
-            Speed changes visible duration while preserving the current source
-            trim.
-          </span>
-        </div>
-      </InspectorSection>
 
-      <InspectorSection
-        icon={Activity}
-        title="Playback motion"
-        description="Estimated motion smoothness at current speed."
-      >
-        <div className="flex items-center justify-between rounded-lg border border-studio-border bg-studio-bg/45 px-3 py-2">
-          <span className="text-[11px] font-medium text-studio-muted">
+          <div className="rounded-lg border border-brand/40 bg-brand/10 p-2.5">
+            <span className="block text-[9px] font-medium uppercase tracking-wide text-brand">
+              Timeline Duration
+            </span>
+            <span className="mt-1 block font-mono text-xs font-bold text-brand">
+              {formatTime(clip.timelineDuration)}
+            </span>
+            <span className="text-[9px] text-brand/80 mt-0.5 block font-mono">
+              {currentSpeed === 1
+                ? "100% (Realtime)"
+                : currentSpeed > 1
+                  ? `${Math.round((1 / currentSpeed) * 100)}% shorter`
+                  : `${Math.round((1 / currentSpeed) * 100)}% longer`}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel/30 px-3 py-2">
+          <span className="text-[10px] text-studio-muted">
             Effective frame rate
           </span>
-          <span className="font-mono text-xs font-semibold text-studio-fg">
+          <span className="font-mono text-[11px] font-semibold text-studio-fg">
             ~{estimatedEffectiveFps} fps
           </span>
         </div>
-      </InspectorSection>
+      </section>
 
-      <InspectorResetButton onClick={() => changeSpeed(1)}>
-        Reset speed to 1×
-      </InspectorResetButton>
+      {/* 3. Reset Button */}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => changeSpeed(1.0)}
+        className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Reset Speed to 1.0× Normal
+      </Button>
     </div>
   );
 }
