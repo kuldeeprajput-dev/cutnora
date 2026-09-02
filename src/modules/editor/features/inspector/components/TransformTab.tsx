@@ -13,11 +13,13 @@ import {
   Crop,
   FlipHorizontal,
   FlipVertical,
-  Lock,
-  Unlock,
+  Link2,
+  Link2Off,
   Move,
   SlidersHorizontal,
+  LayoutGrid,
 } from "lucide-react";
+import { cn } from "@/shared/utils/cn";
 
 export interface TransformTabProps {
   clip: TimelineClip;
@@ -31,15 +33,13 @@ interface TransformDraft {
   sourceHeight: number;
   sourceRotation: number;
   sourceOpacity: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: string;
+  y: string;
+  width: string;
+  height: string;
   rotation: number;
   opacity: number;
 }
-
-const formatNum = (num: number) => Math.round(num * 10) / 10;
 
 function createTransformDraft(
   clipId: string,
@@ -58,11 +58,11 @@ function createTransformDraft(
     sourceHeight: height,
     sourceRotation: rotation,
     sourceOpacity: opacity,
-    x: formatNum(x),
-    y: formatNum(y),
-    width: formatNum(width),
-    height: formatNum(height),
-    rotation: formatNum(rotation),
+    x: String(Math.round(x * 10) / 10),
+    y: String(Math.round(y * 10) / 10),
+    width: String(Math.round(width * 10) / 10),
+    height: String(Math.round(height * 10) / 10),
+    rotation: Math.round(rotation * 10) / 10,
     opacity,
   };
 }
@@ -88,11 +88,18 @@ function draftMatchesSource(
   );
 }
 
+const SIZE_PRESETS = [
+  { label: "100% Full", sub: "Full canvas", scale: 1 },
+  { label: "50% Half", sub: "Half screen", scale: 0.5 },
+  { label: "25% PiP", sub: "Corner mini", scale: 0.25 },
+];
+
 export function TransformTab({ clip }: TransformTabProps) {
   const { updateClip, currentProject } = useProjectStore();
   const { activeTool, setActiveTool } = useEditorUIStore();
 
   const [isAspectLocked, setIsAspectLocked] = useState(true);
+  const [customSizeOpen, setCustomSizeOpen] = useState(false);
 
   const isCropping = activeTool === "crop";
   const crop: CropSettings = clip.transform.crop || {
@@ -104,9 +111,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   const hasActiveCrop =
     crop.top > 0 || crop.right > 0 || crop.bottom > 0 || crop.left > 0;
 
-  // IMPORTANT: depend on individual primitives, NOT the object reference.
-  // Depending on clip.transform (object) causes an infinite update loop because
-  // every updateClip() call creates a new object reference.
   const tX = clip.transform.x;
   const tY = clip.transform.y;
   const tW = clip.transform.width;
@@ -117,7 +121,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   const [draft, setDraft] = useState(() =>
     createTransformDraft(clip.id, tX, tY, tW, tH, tRot, tOp),
   );
-  const { x, y, width, height, rotation, opacity } = draft;
 
   useEffect(() => {
     setDraft((current) =>
@@ -136,9 +139,147 @@ export function TransformTab({ clip }: TransformTabProps) {
     });
   };
 
+  const projW = currentProject?.settings.width || 1920;
+  const projH = currentProject?.settings.height || 1080;
+
+  const commitDimension = (key: "width" | "height") => {
+    const raw = draft[key].trim();
+    const parsed = Number.parseFloat(raw);
+
+    if (!raw || !Number.isFinite(parsed) || parsed <= 0) {
+      setDraft((current) => ({
+        ...current,
+        width: String(Math.round(clip.transform.width * 10) / 10),
+        height: String(Math.round(clip.transform.height * 10) / 10),
+      }));
+      return;
+    }
+
+    const value = Math.max(10, Math.min(7680, Math.round(parsed)));
+    let nextW =
+      key === "width"
+        ? value
+        : Number.parseFloat(draft.width) || clip.transform.width;
+    let nextH =
+      key === "height"
+        ? value
+        : Number.parseFloat(draft.height) || clip.transform.height;
+
+    if (
+      isAspectLocked &&
+      clip.transform.width > 0 &&
+      clip.transform.height > 0
+    ) {
+      const ratio = clip.transform.width / clip.transform.height;
+      if (key === "width") {
+        nextH = Math.round(value / ratio);
+      } else {
+        nextW = Math.round(value * ratio);
+      }
+    }
+
+    setDraft((current) => ({
+      ...current,
+      width: String(nextW),
+      height: String(nextH),
+    }));
+    commitTransform({ width: nextW, height: nextH });
+  };
+
+  const commitPosition = (key: "x" | "y") => {
+    const raw = draft[key].trim();
+    const parsed = Number.parseFloat(raw);
+
+    if (!raw || !Number.isFinite(parsed)) {
+      setDraft((current) => ({
+        ...current,
+        x: String(Math.round(clip.transform.x * 10) / 10),
+        y: String(Math.round(clip.transform.y * 10) / 10),
+      }));
+      return;
+    }
+
+    const value = Math.round(parsed * 10) / 10;
+    setDraft((current) => ({
+      ...current,
+      [key]: String(value),
+    }));
+    commitTransform({ [key]: value });
+  };
+
+  const handleApplySizePreset = (scale: number) => {
+    setCustomSizeOpen(false);
+    const newW = Math.round(projW * scale);
+    const newH = Math.round(projH * scale);
+    let newX = Math.round((projW - newW) / 2);
+    let newY = Math.round((projH - newH) / 2);
+
+    if (scale === 0.25) {
+      newX = Math.max(0, projW - newW - 40);
+      newY = Math.max(0, projH - newH - 40);
+    }
+
+    setDraft((current) => ({
+      ...current,
+      width: String(newW),
+      height: String(newH),
+      x: String(newX),
+      y: String(newY),
+    }));
+    commitTransform({
+      width: newW,
+      height: newH,
+      x: newX,
+      y: newY,
+      fitMode: scale === 1 ? "contain" : undefined,
+    });
+  };
+
+  const handleAlign = (
+    position:
+      | "center"
+      | "top-left"
+      | "top-right"
+      | "bottom-left"
+      | "bottom-right",
+  ) => {
+    const curW = Number.parseFloat(draft.width) || clip.transform.width;
+    const curH = Number.parseFloat(draft.height) || clip.transform.height;
+    let nextX = Number.parseFloat(draft.x) || 0;
+    let nextY = Number.parseFloat(draft.y) || 0;
+
+    switch (position) {
+      case "center":
+        nextX = Math.round((projW - curW) / 2);
+        nextY = Math.round((projH - curH) / 2);
+        break;
+      case "top-left":
+        nextX = 0;
+        nextY = 0;
+        break;
+      case "top-right":
+        nextX = Math.max(0, projW - curW);
+        nextY = 0;
+        break;
+      case "bottom-left":
+        nextX = 0;
+        nextY = Math.max(0, projH - curH);
+        break;
+      case "bottom-right":
+        nextX = Math.max(0, projW - curW);
+        nextY = Math.max(0, projH - curH);
+        break;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      x: String(nextX),
+      y: String(nextY),
+    }));
+    commitTransform({ x: nextX, y: nextY });
+  };
+
   const handleFit = () => {
-    const projW = currentProject?.settings.width || 1920;
-    const projH = currentProject?.settings.height || 1080;
     commitTransform({
       x: 0,
       y: 0,
@@ -149,8 +290,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   const handleFill = () => {
-    const projW = currentProject?.settings.width || 1920;
-    const projH = currentProject?.settings.height || 1080;
     commitTransform({
       x: 0,
       y: 0,
@@ -158,15 +297,6 @@ export function TransformTab({ clip }: TransformTabProps) {
       height: projH,
       fitMode: "cover",
     });
-  };
-
-  const handleCenter = () => {
-    const projW = currentProject?.settings.width || 1920;
-    const projH = currentProject?.settings.height || 1080;
-    const nextX = Math.round((projW - clip.transform.width) / 2);
-    const nextY = Math.round((projH - clip.transform.height) / 2);
-    setDraft((current) => ({ ...current, x: nextX, y: nextY }));
-    commitTransform({ x: nextX, y: nextY });
   };
 
   const handleToggleCrop = () => {
@@ -196,8 +326,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   const handleReset = () => {
-    const projW = currentProject?.settings.width || 1920;
-    const projH = currentProject?.settings.height || 1080;
     updateClip(clip.id, {
       transform: {
         x: 0,
@@ -227,64 +355,47 @@ export function TransformTab({ clip }: TransformTabProps) {
       },
       speed: 1,
     });
+    setCustomSizeOpen(false);
     if (isCropping) setActiveTool("canvas");
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    currentVal: number,
-    field: keyof TimelineClip["transform"],
-  ) => {
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
-    e.preventDefault();
-    const step = e.shiftKey ? 10 : 1;
-    const delta = e.key === "ArrowUp" ? step : -step;
-    const newVal = Math.round((currentVal + delta) * 10) / 10;
-    setDraft((current) => ({ ...current, [field]: newVal }));
-    commitTransform({ [field]: newVal });
-  };
-
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
-      {/* Quick Layout Actions */}
-      <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-studio-border bg-studio-bg/45 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+    <div className="flex flex-col gap-3 text-studio-fg pb-2">
+      {/* 1. Quick Layout Actions */}
+      <div className="grid grid-cols-3 gap-1 rounded-xl border border-studio-border/80 bg-studio-bg/35 p-1.5">
         <button
           type="button"
           onClick={handleFit}
-          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={cn(
+            "flex h-8 items-center justify-center gap-1 rounded-lg text-xs font-semibold select-none cursor-pointer transition-all",
             clip.transform.fitMode === "contain"
-              ? "bg-brand text-white font-bold shadow-sm"
-              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
-          }`}
+              ? "bg-brand text-white shadow-xs font-bold"
+              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel",
+          )}
         >
           <Maximize2 className="h-3 w-3" /> Fit
         </button>
         <button
           type="button"
           onClick={handleFill}
-          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={cn(
+            "flex h-8 items-center justify-center gap-1 rounded-lg text-xs font-semibold select-none cursor-pointer transition-all",
             clip.transform.fitMode === "cover"
-              ? "bg-brand text-white font-bold shadow-sm"
-              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
-          }`}
+              ? "bg-brand text-white shadow-xs font-bold"
+              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel",
+          )}
         >
           Fill
         </button>
         <button
           type="button"
-          onClick={handleCenter}
-          className="flex h-9 items-center justify-center gap-1 rounded-md text-[11px] text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
-          Center
-        </button>
-        <button
-          type="button"
           onClick={handleToggleCrop}
-          className={`flex h-9 items-center justify-center gap-1 rounded-md text-[11px] transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+          className={cn(
+            "flex h-8 items-center justify-center gap-1 rounded-lg text-xs font-semibold select-none cursor-pointer transition-all",
             isCropping || hasActiveCrop
-              ? "bg-brand text-white font-bold shadow-sm"
-              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised font-medium"
-          }`}
+              ? "bg-brand text-white shadow-xs font-bold"
+              : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel",
+          )}
         >
           <Crop className="h-3 w-3" /> {isCropping ? "Cropping" : "Crop"}
         </button>
@@ -365,250 +476,457 @@ export function TransformTab({ clip }: TransformTabProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-1.5">
-        <button
-          type="button"
-          onClick={handleFlipH}
-          className={`flex h-9 items-center justify-center gap-1.5 rounded-md text-xs transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-            clip.transform.scaleX === -1
-              ? "bg-brand text-white font-bold shadow-sm"
-              : "border border-studio-border bg-studio-bg/45 text-studio-fg hover:border-brand/40 hover:bg-studio-panel-raised font-medium"
-          }`}
-        >
-          <FlipHorizontal className="h-3 w-3" /> Flip H
-        </button>
-        <button
-          type="button"
-          onClick={handleFlipV}
-          className={`flex h-9 items-center justify-center gap-1.5 rounded-md text-xs transition-[background-color,color,box-shadow] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-            clip.transform.scaleY === -1
-              ? "bg-brand text-white font-bold shadow-sm"
-              : "border border-studio-border bg-studio-bg/45 text-studio-fg hover:border-brand/40 hover:bg-studio-panel-raised font-medium"
-          }`}
-        >
-          <FlipVertical className="h-3 w-3" /> Flip V
-        </button>
-      </div>
-
-      {/* Position & Dimensions */}
-      <section className="border-t border-studio-border/80 pt-4">
-        <div className="mb-3 flex items-start gap-2.5">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-brand">
-            <Move className="h-3.5 w-3.5" />
-          </span>
+      {/* 2. Layer Size & Presets (Beginner Friendly like Canvas Settings) */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xs font-semibold text-studio-fg">
-              Position & size
+            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+              <Move className="h-3.5 w-3.5 text-brand" /> Clip Size & Scale
             </h3>
-            <p className="mt-0.5 text-[10px] leading-4 text-studio-muted">
-              Place and size this layer on the canvas.
+            <p className="mt-0.5 text-[10px] text-studio-muted">
+              Choose a quick size or enter custom dimensions
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsAspectLocked((prev) => !prev)}
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border transition-colors cursor-pointer",
+              isAspectLocked
+                ? "border-brand/40 bg-brand/10 text-brand font-semibold"
+                : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg",
+            )}
+          >
+            {isAspectLocked ? (
+              <Link2 className="h-3 w-3" />
+            ) : (
+              <Link2Off className="h-3 w-3" />
+            )}
+            <span>{isAspectLocked ? "Proportions Locked" : "Free Size"}</span>
+          </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[11px] font-medium text-studio-muted block mb-1">
-              X Position (px)
-            </label>
-            <Input
-              type="number"
-              value={x}
-              onChange={(e) =>
-                setDraft((current) => ({
-                  ...current,
-                  x: parseFloat(e.target.value) || 0,
-                }))
-              }
-              onBlur={() => commitTransform({ x })}
-              onKeyDown={(e) => handleKeyDown(e, x, "x")}
-              className="h-8 text-xs font-mono"
-            />
-          </div>
-          <div>
-            <label className="text-[11px] font-medium text-studio-muted block mb-1">
-              Y Position (px)
-            </label>
-            <Input
-              type="number"
-              value={y}
-              onChange={(e) =>
-                setDraft((current) => ({
-                  ...current,
-                  y: parseFloat(e.target.value) || 0,
-                }))
-              }
-              onBlur={() => commitTransform({ y })}
-              onKeyDown={(e) => handleKeyDown(e, y, "y")}
-              className="h-8 text-xs font-mono"
-            />
-          </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-medium text-studio-muted">
+        {/* Quick Size Preset Chips */}
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          {SIZE_PRESETS.map((p) => {
+            const targetW = Math.round(projW * p.scale);
+            const targetH = Math.round(projH * p.scale);
+            const curW = Number.parseFloat(draft.width) || clip.transform.width;
+            const curH =
+              Number.parseFloat(draft.height) || clip.transform.height;
+            const isActive =
+              !customSizeOpen &&
+              Math.abs(curW - targetW) <= 2 &&
+              Math.abs(curH - targetH) <= 2;
+
+            return (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => handleApplySizePreset(p.scale)}
+                className={cn(
+                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
+                  isActive
+                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
+                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
+                )}
+              >
+                <span
+                  className={cn(
+                    "text-xs font-bold",
+                    isActive ? "text-brand" : "text-studio-fg",
+                  )}
+                >
+                  {p.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[9px] mt-0.5",
+                    isActive
+                      ? "text-brand/80 font-medium"
+                      : "text-studio-muted",
+                  )}
+                >
+                  {p.sub}
+                </span>
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            aria-pressed={customSizeOpen}
+            onClick={() => setCustomSizeOpen(true)}
+            className={cn(
+              "flex flex-col items-center justify-center rounded-lg border p-2 transition-all cursor-pointer select-none",
+              customSizeOpen
+                ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
+                : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
+            )}
+          >
+            <span
+              className={cn(
+                "text-xs font-bold",
+                customSizeOpen ? "text-brand" : "text-studio-fg",
+              )}
+            >
+              Custom
+            </span>
+            <span
+              className={cn(
+                "mt-0.5 text-[9px]",
+                customSizeOpen
+                  ? "text-brand/80 font-medium"
+                  : "text-studio-muted",
+              )}
+            >
+              Enter size
+            </span>
+          </button>
+        </div>
+
+        {/* Width & Height Custom Inputs (Visible when Custom is chosen) */}
+        {customSizeOpen ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-lg border border-studio-border bg-studio-panel/50 p-2.5">
+            <div>
+              <label className="text-[10px] font-medium text-studio-muted block mb-1">
                 Width (px)
               </label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.width}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDraft((current) => ({ ...current, width: val }));
+                  }}
+                  onBlur={() => commitDimension("width")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      commitDimension("width");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="h-9 pr-7 font-mono text-xs"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                  px
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-4 text-studio-muted">
               <button
                 type="button"
                 onClick={() => setIsAspectLocked(!isAspectLocked)}
-                className="text-studio-muted hover:text-brand transition-colors"
                 title={
-                  isAspectLocked ? "Unlock aspect ratio" : "Lock aspect ratio"
+                  isAspectLocked
+                    ? "Click to unlock aspect ratio"
+                    : "Click to lock aspect ratio"
                 }
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center border transition-colors cursor-pointer",
+                  isAspectLocked
+                    ? "border-brand/40 bg-brand/10 text-brand"
+                    : "border-studio-border bg-studio-panel text-studio-muted",
+                )}
               >
                 {isAspectLocked ? (
-                  <Lock className="h-3 w-3 text-brand" />
+                  <Link2 className="h-3.5 w-3.5" />
                 ) : (
-                  <Unlock className="h-3 w-3" />
+                  <Link2Off className="h-3.5 w-3.5" />
                 )}
               </button>
             </div>
-            <Input
-              type="number"
-              value={width}
-              onChange={(e) => {
-                const newW = parseFloat(e.target.value) || 20;
-                setDraft((current) => {
-                  const next = { ...current, width: newW };
-                  if (isAspectLocked && clip.transform.width > 0) {
-                    const ratio = clip.transform.height / clip.transform.width;
-                    next.height = Math.round(newW * ratio);
-                  }
-                  return next;
-                });
-              }}
-              onBlur={() => commitTransform({ width, height })}
-              onKeyDown={(e) => handleKeyDown(e, width, "width")}
-              className="h-8 text-xs font-mono"
-            />
-          </div>
 
-          <div>
-            <label className="text-[11px] font-medium text-studio-muted block mb-1">
-              Height (px)
-            </label>
-            <Input
-              type="number"
-              value={height}
-              onChange={(e) => {
-                const newH = parseFloat(e.target.value) || 20;
-                setDraft((current) => {
-                  const next = { ...current, height: newH };
-                  if (isAspectLocked && clip.transform.height > 0) {
-                    const ratio = clip.transform.width / clip.transform.height;
-                    next.width = Math.round(newH * ratio);
-                  }
-                  return next;
-                });
-              }}
-              onBlur={() => commitTransform({ width, height })}
-              onKeyDown={(e) => handleKeyDown(e, height, "height")}
-              className="h-8 text-xs font-mono"
-            />
+            <div>
+              <label className="text-[10px] font-medium text-studio-muted block mb-1">
+                Height (px)
+              </label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.height}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDraft((current) => ({ ...current, height: val }));
+                  }}
+                  onBlur={() => commitDimension("height")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      commitDimension("height");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="h-9 pr-7 font-mono text-xs"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                  px
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : null}
       </section>
 
-      {/* Rotation & Opacity */}
-      <section className="border-t border-studio-border/80 pt-4">
-        <div className="mb-3 flex items-start gap-2.5">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-brand">
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-          </span>
+      {/* 3. Position & Alignment */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xs font-semibold text-studio-fg">Appearance</h3>
-            <p className="mt-0.5 text-[10px] leading-4 text-studio-muted">
-              Refine rotation and layer visibility.
+            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+              <LayoutGrid className="h-3.5 w-3.5 text-brand" /> Position &
+              Alignment
+            </h3>
+            <p className="mt-0.5 text-[10px] text-studio-muted">
+              Snap to canvas corners or fine-tune coordinates
             </p>
           </div>
         </div>
-        <div className="flex flex-col gap-3">
+
+        {/* Quick Position Snap Buttons */}
+        <div className="grid grid-cols-5 gap-1.5">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleAlign("top-left")}
+            className="h-7 text-[10px] px-1 font-medium cursor-pointer"
+            title="Top Left"
+          >
+            ↖ Top-L
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleAlign("top-right")}
+            className="h-7 text-[10px] px-1 font-medium cursor-pointer"
+            title="Top Right"
+          >
+            ↗ Top-R
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleAlign("center")}
+            className="h-7 text-[10px] px-1 font-bold text-brand cursor-pointer"
+            title="Center Canvas"
+          >
+            ⊙ Center
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleAlign("bottom-left")}
+            className="h-7 text-[10px] px-1 font-medium cursor-pointer"
+            title="Bottom Left"
+          >
+            ↙ Btm-L
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleAlign("bottom-right")}
+            className="h-7 text-[10px] px-1 font-medium cursor-pointer"
+            title="Bottom Right"
+          >
+            ↘ Btm-R
+          </Button>
+        </div>
+
+        {/* Exact Coordinates Inputs */}
+        <div className="grid grid-cols-2 gap-2">
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-medium text-studio-muted">
-                Rotation (°)
-              </label>
-              <span className="font-mono text-xs text-studio-fg">
-                {rotation}°
+            <label className="text-[10px] font-medium text-studio-muted block mb-1">
+              X Position (px)
+            </label>
+            <div className="relative">
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={draft.x}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDraft((current) => ({ ...current, x: val }));
+                }}
+                onBlur={() => commitPosition("x")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    commitPosition("x");
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 text-xs font-mono pr-7"
+              />
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                px
               </span>
-            </div>
-            <Slider
-              value={rotation}
-              min={0}
-              max={360}
-              step={1}
-              onValueChange={(val) => {
-                setDraft((current) => ({ ...current, rotation: val }));
-                commitTransform({ rotation: val });
-              }}
-            />
-            <div className="mt-2 flex items-center gap-1.5">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const nextRot = (Math.round(rotation - 90) + 360) % 360;
-                  setDraft((current) => ({ ...current, rotation: nextRot }));
-                  commitTransform({ rotation: nextRot });
-                }}
-                className="h-6 flex-1 text-[10px] font-mono"
-                title="Rotate -90°"
-              >
-                -90°
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  setDraft((current) => ({ ...current, rotation: 0 }));
-                  commitTransform({ rotation: 0 });
-                }}
-                disabled={rotation === 0}
-                className="h-6 flex-1 text-[10px] font-mono"
-                title="Reset angle to 0°"
-              >
-                0°
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const nextRot = Math.round(rotation + 90) % 360;
-                  setDraft((current) => ({ ...current, rotation: nextRot }));
-                  commitTransform({ rotation: nextRot });
-                }}
-                className="h-6 flex-1 text-[10px] font-mono"
-                title="Rotate +90°"
-              >
-                +90°
-              </Button>
             </div>
           </div>
-
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-medium text-studio-muted">
-                Opacity
-              </label>
-              <span className="font-mono text-xs text-studio-fg">
-                {Math.round(opacity * 100)}%
+            <label className="text-[10px] font-medium text-studio-muted block mb-1">
+              Y Position (px)
+            </label>
+            <div className="relative">
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={draft.y}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDraft((current) => ({ ...current, y: val }));
+                }}
+                onBlur={() => commitPosition("y")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    commitPosition("y");
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 text-xs font-mono pr-7"
+              />
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
+                px
               </span>
             </div>
-            <Slider
-              value={opacity}
-              min={0}
-              max={1}
-              step={0.01}
-              onValueChange={(val) => {
-                setDraft((current) => ({ ...current, opacity: val }));
-                commitTransform({ opacity: val });
-              }}
-            />
           </div>
         </div>
       </section>
 
-      {/* Reset Action */}
+      {/* 4. Appearance: Rotation, Opacity & Flipping */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+              <SlidersHorizontal className="h-3.5 w-3.5 text-brand" /> Rotation
+              & Appearance
+            </h3>
+            <p className="mt-0.5 text-[10px] text-studio-muted">
+              Rotate, flip, or adjust layer transparency
+            </p>
+          </div>
+          <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
+            {draft.rotation}°
+          </span>
+        </div>
+
+        {/* Flip Action Buttons */}
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={handleFlipH}
+            className={cn(
+              "flex h-8 items-center justify-center gap-1.5 rounded-lg text-xs font-semibold transition-all select-none cursor-pointer border",
+              clip.transform.scaleX === -1
+                ? "border-brand bg-brand text-white shadow-xs font-bold"
+                : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg hover:border-brand/40",
+            )}
+          >
+            <FlipHorizontal className="h-3.5 w-3.5" /> Flip Horizontal
+          </button>
+          <button
+            type="button"
+            onClick={handleFlipV}
+            className={cn(
+              "flex h-8 items-center justify-center gap-1.5 rounded-lg text-xs font-semibold transition-all select-none cursor-pointer border",
+              clip.transform.scaleY === -1
+                ? "border-brand bg-brand text-white shadow-xs font-bold"
+                : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg hover:border-brand/40",
+            )}
+          >
+            <FlipVertical className="h-3.5 w-3.5" /> Flip Vertical
+          </button>
+        </div>
+
+        {/* Rotation Slider & Quick Angles */}
+        <div className="space-y-2">
+          <Slider
+            value={draft.rotation}
+            min={0}
+            max={360}
+            step={1}
+            onValueChange={(val) => {
+              setDraft((current) => ({ ...current, rotation: val }));
+              commitTransform({ rotation: val });
+            }}
+          />
+          <div className="grid grid-cols-4 gap-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setDraft((current) => ({ ...current, rotation: 0 }));
+                commitTransform({ rotation: 0 });
+              }}
+              disabled={draft.rotation === 0}
+              className="h-6 text-[10px] font-mono"
+              title="Reset angle to 0°"
+            >
+              0°
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setDraft((current) => ({ ...current, rotation: 90 }));
+                commitTransform({ rotation: 90 });
+              }}
+              className="h-6 text-[10px] font-mono"
+              title="Rotate 90°"
+            >
+              90°
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setDraft((current) => ({ ...current, rotation: 180 }));
+                commitTransform({ rotation: 180 });
+              }}
+              className="h-6 text-[10px] font-mono"
+              title="Rotate 180°"
+            >
+              180°
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setDraft((current) => ({ ...current, rotation: 270 }));
+                commitTransform({ rotation: 270 });
+              }}
+              className="h-6 text-[10px] font-mono"
+              title="Rotate 270°"
+            >
+              270°
+            </Button>
+          </div>
+        </div>
+
+        {/* Opacity Slider */}
+        <div className="pt-1">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-medium text-studio-muted">
+              Layer Opacity
+            </label>
+            <span className="font-mono text-xs font-bold text-studio-fg">
+              {Math.round(draft.opacity * 100)}%
+            </span>
+          </div>
+          <Slider
+            value={draft.opacity}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={(val) => {
+              setDraft((current) => ({ ...current, opacity: val }));
+              commitTransform({ opacity: val });
+            }}
+          />
+        </div>
+      </section>
+
+      {/* 5. Reset Button */}
       <Button
         size="sm"
         variant="ghost"

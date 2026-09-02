@@ -18,7 +18,6 @@ import { AudioTab } from "./AudioTab";
 import { SpeedTab } from "./SpeedTab";
 import { TimeTab } from "./TimeTab";
 import { CanvasSettingsPanel } from "./CanvasSettingsPanel";
-import { LayerOperations } from "./LayerOperations";
 import { TextInspectorTab } from "@/modules/editor/features/text";
 import { ElementInspectorTab } from "@/modules/editor/features/elements";
 import {
@@ -467,9 +466,6 @@ export function InspectorPanel() {
             <TimeTab clip={clip} />
           </TabContent>
         </Tabs>
-
-        {/* Layer Ordering and Lock Operations */}
-        <LayerOperations clip={clip} />
       </div>
     </StudioPanel>
   );
