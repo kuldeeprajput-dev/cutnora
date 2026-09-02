@@ -98,6 +98,7 @@ export const useClipboardStore = create<ClipboardState>()(
           ...JSON.parse(JSON.stringify(clip)),
           id: newClipId,
           trackId: track.id,
+          splitGroupId: undefined,
           timelineStart: targetTime + offset,
           name: `${clip.name} (Copy)`,
         };

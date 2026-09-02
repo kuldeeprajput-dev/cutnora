@@ -8,6 +8,7 @@ import {
   moveClipInTimeline,
   trimClipBounds,
   splitClipAtTime,
+  resetClipToOriginal,
   deleteClipsFromTracks,
   duplicateClipsInTracks,
   reorderTrackLanes,
@@ -81,6 +82,7 @@ interface ProjectState {
     newDuration: number,
     newSourceStart: number,
   ) => void;
+  resetClipTiming: (clipId: string) => void;
   splitClip: (clipId: string, splitTime: number) => void;
   deleteClips: (clipIds: string[]) => void;
   duplicateClips: (clipIds: string[]) => void;
@@ -535,6 +537,25 @@ export const useProjectStore = create<ProjectState>()(
             newStart,
             newDuration,
             newSourceStart,
+          );
+          syncProjectDuration(state.currentProject);
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    resetClipTiming: (clipId) => {
+      const current = get().currentProject;
+      if (!current) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          state.currentProject.tracks = resetClipToOriginal(
+            state.currentProject.tracks,
+            clipId,
           );
           syncProjectDuration(state.currentProject);
         }

@@ -140,11 +140,17 @@ export function trimClipBounds(
           safeDuration = Math.min(maxAvailable, safeDuration);
         }
 
-        const otherClips = track.clips.filter((c) => c.id !== clipId);
+        const orderedClips = [...track.clips].sort(
+          (a, b) =>
+            a.timelineStart - b.timelineStart || a.id.localeCompare(b.id),
+        );
+        const clipIndex = orderedClips.findIndex((item) => item.id === clipId);
+        const prevClip = clipIndex > 0 ? orderedClips[clipIndex - 1] : undefined;
+        const nextClip =
+          clipIndex >= 0 && clipIndex < orderedClips.length - 1
+            ? orderedClips[clipIndex + 1]
+            : undefined;
         let safeStart = Math.max(0, newStart);
-
-        const prevClip = otherClips.filter((c) => c.timelineStart + c.timelineDuration <= clip.timelineStart).pop();
-        const nextClip = otherClips.find((c) => c.timelineStart >= clip.timelineStart + clip.timelineDuration);
 
         if (prevClip && safeStart < prevClip.timelineStart + prevClip.timelineDuration) {
           safeStart = prevClip.timelineStart + prevClip.timelineDuration;
@@ -179,15 +185,18 @@ export function splitClipAtTime(tracks: Track[], clipId: string, splitTime: numb
     const firstHalfDuration = Number(relativeSplit.toFixed(3));
     const secondHalfDuration = Number((clipToSplit.timelineDuration - relativeSplit).toFixed(3));
     const speed = clipToSplit.speed || 1;
+    const splitGroupId = clipToSplit.splitGroupId ?? nanoid();
 
     const firstClip: TimelineClip = {
       ...clipToSplit,
+      splitGroupId,
       timelineDuration: firstHalfDuration,
     };
 
     const secondClip: TimelineClip = {
       ...clipToSplit,
       id: nanoid(),
+      splitGroupId,
       timelineStart: splitTime,
       timelineDuration: secondHalfDuration,
       sourceStart: Number((clipToSplit.sourceStart + firstHalfDuration * speed).toFixed(3)),
@@ -198,6 +207,129 @@ export function splitClipAtTime(tracks: Track[], clipId: string, splitTime: numb
       clips: track.clips.flatMap((c) => (c.id === clipId ? [firstClip, secondClip] : [c])),
     };
   });
+}
+
+const SPLIT_JOIN_EPSILON = 0.05;
+
+function areLegacySplitNeighbors(left: TimelineClip, right: TimelineClip) {
+  if (
+    !left.assetId ||
+    left.assetId !== right.assetId ||
+    left.type !== right.type ||
+    Math.abs((left.speed || 1) - (right.speed || 1)) > SPLIT_JOIN_EPSILON
+  ) {
+    return false;
+  }
+
+  const timelineAdjacent =
+    Math.abs(
+      left.timelineStart + left.timelineDuration - right.timelineStart,
+    ) <= SPLIT_JOIN_EPSILON;
+  const sourceAdjacent =
+    Math.abs(
+      left.sourceStart + left.timelineDuration * (left.speed || 1) -
+        right.sourceStart,
+    ) <= SPLIT_JOIN_EPSILON;
+
+  return timelineAdjacent && sourceAdjacent;
+}
+
+export function resetClipToOriginal(tracks: Track[], clipId: string): Track[] {
+  const selectedTrack = tracks.find((track) =>
+    track.clips.some((clip) => clip.id === clipId),
+  );
+  const selectedClip = selectedTrack?.clips.find((clip) => clip.id === clipId);
+  if (!selectedTrack || !selectedClip) return tracks;
+
+  const orderedClips = [...selectedTrack.clips].sort(
+    (a, b) => a.timelineStart - b.timelineStart || a.id.localeCompare(b.id),
+  );
+  let splitClips: TimelineClip[];
+
+  if (selectedClip.splitGroupId) {
+    splitClips = orderedClips.filter(
+      (clip) => clip.splitGroupId === selectedClip.splitGroupId,
+    );
+  } else {
+    const selectedIndex = orderedClips.findIndex(
+      (clip) => clip.id === selectedClip.id,
+    );
+    let firstIndex = selectedIndex;
+    let lastIndex = selectedIndex;
+
+    while (
+      firstIndex > 0 &&
+      areLegacySplitNeighbors(
+        orderedClips[firstIndex - 1],
+        orderedClips[firstIndex],
+      )
+    ) {
+      firstIndex -= 1;
+    }
+    while (
+      lastIndex < orderedClips.length - 1 &&
+      areLegacySplitNeighbors(
+        orderedClips[lastIndex],
+        orderedClips[lastIndex + 1],
+      )
+    ) {
+      lastIndex += 1;
+    }
+
+    splitClips = orderedClips.slice(firstIndex, lastIndex + 1);
+  }
+
+  const speed = selectedClip.speed > 0 ? selectedClip.speed : 1;
+  const fullTimelineDuration = Number(
+    Math.max(0.1, selectedClip.sourceDuration / speed).toFixed(3),
+  );
+
+  if (splitClips.length < 2) {
+    return trimClipBounds(
+      tracks,
+      clipId,
+      selectedClip.timelineStart,
+      fullTimelineDuration,
+      0,
+    );
+  }
+
+  const splitIds = new Set(splitClips.map((clip) => clip.id));
+  const originalTimelineStart = Math.max(
+    0,
+    Math.min(
+      ...splitClips.map(
+        (clip) => clip.timelineStart - clip.sourceStart / (clip.speed || 1),
+      ),
+    ),
+  );
+  const unrelatedClips = selectedTrack.clips.filter(
+    (clip) => !splitIds.has(clip.id),
+  );
+  const safeTimelineStart = preventClipOverlap(
+    unrelatedClips,
+    selectedClip.id,
+    originalTimelineStart,
+    fullTimelineDuration,
+  );
+  const restoredClip: TimelineClip = {
+    ...selectedClip,
+    timelineStart: safeTimelineStart,
+    timelineDuration: fullTimelineDuration,
+    sourceStart: 0,
+    splitGroupId: undefined,
+  };
+
+  return tracks.map((track) =>
+    track.id === selectedTrack.id
+      ? {
+          ...track,
+          clips: [...unrelatedClips, restoredClip].sort(
+            (a, b) => a.timelineStart - b.timelineStart,
+          ),
+        }
+      : track,
+  );
 }
 
 export function deleteClipsFromTracks(tracks: Track[], clipIds: string[]): Track[] {
@@ -221,6 +353,7 @@ export function duplicateClipsInTracks(tracks: Track[], clipIds: string[]): Trac
         duplicatedClips.push({
           ...clip,
           id: nanoid(),
+          splitGroupId: undefined,
           timelineStart: safeStart,
         });
       }
