@@ -111,6 +111,7 @@ export interface TimelineClip {
   timelineDuration: number;
   sourceStart: number;
   sourceDuration: number;
+  splitGroupId?: string;
   name: string;
   transform: Transform;
   adjustments: Adjustments;

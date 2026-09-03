@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { nanoid } from "nanoid";
+import React, { useState, useEffect, useRef } from "react";
 import { db } from "@/modules/core/db/database";
 import { objectUrlManager } from "@/modules/core/db/object-url-manager";
 import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
 import type { MediaAsset } from "@/modules/projects/types";
 import { useProjectStore } from "@/modules/projects";
-import type { TimelineClip, Track } from "@/modules/editor/types";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { ensureHighQualityThumbnail } from "../services/media-import-service";
+import { addMediaAssetToTimeline } from "../utils/add-media-asset-to-timeline";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -23,50 +22,68 @@ import {
   Plus,
   Trash2,
   Edit2,
+  Eye,
 } from "lucide-react";
 
 export interface AssetCardProps {
   asset: MediaAsset;
   viewMode?: "grid" | "list";
+  onPreview?: (asset: MediaAsset) => void;
 }
 
-export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(
-    asset.remoteUrl ?? asset.remotePreviewUrl ?? null,
-  );
+export function AssetCard({
+  asset,
+  viewMode = "grid",
+  onPreview,
+}: AssetCardProps) {
+  const initialThumbUrl = asset.remoteUrl ?? asset.remotePreviewUrl ?? null;
+  const [thumbUrl, setThumbUrl] = useState<string | null>(initialThumbUrl);
   const [isThumbLoaded, setIsThumbLoaded] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(asset.name);
-  const { currentProject, addClip, addTrack } = useProjectStore();
+  const assetRef = useRef(asset);
+  const thumbUrlRef = useRef<string | null>(initialThumbUrl);
   const {
+    id: assetId,
     blobId,
     duration,
     remotePreviewUrl,
     remoteUrl,
+    source,
     thumbnailBlobId,
     type: assetType,
   } = asset;
+  const sourceKind = source?.kind;
+  const sourcePath = source?.kind === "opfs" ? source.path : undefined;
+
+  useEffect(() => {
+    assetRef.current = asset;
+  }, [asset]);
 
   useEffect(() => {
     let isMounted = true;
-    setIsThumbLoaded(false);
+
+    const updateThumbUrl = (nextUrl: string | null) => {
+      if (!isMounted || thumbUrlRef.current === nextUrl) return;
+      thumbUrlRef.current = nextUrl;
+      setIsThumbLoaded(false);
+      setThumbUrl(nextUrl);
+    };
 
     async function loadThumb() {
       if (remoteUrl || remotePreviewUrl) {
-        if (isMounted) {
-          setThumbUrl(remoteUrl ?? remotePreviewUrl ?? null);
-        }
+        updateThumbUrl(remoteUrl ?? remotePreviewUrl ?? null);
         return;
       }
 
       if (!thumbnailBlobId) {
-        if (isMounted) setThumbUrl(null);
+        updateThumbUrl(null);
         return;
       }
 
       let thumbnailBlob: Blob | null = null;
       try {
-        thumbnailBlob = await ensureHighQualityThumbnail(asset);
+        thumbnailBlob = await ensureHighQualityThumbnail(assetRef.current);
       } catch {
         const existing = await db.thumbnails.get(thumbnailBlobId);
         thumbnailBlob = existing?.blob ?? null;
@@ -74,7 +91,7 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
 
       if (thumbnailBlob && isMounted) {
         const url = objectUrlManager.createUrl(thumbnailBlobId, thumbnailBlob);
-        setThumbUrl(url);
+        updateThumbUrl(url);
       }
     }
 
@@ -84,95 +101,23 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
       isMounted = false;
     };
   }, [
+    assetId,
     assetType,
-    asset,
     blobId,
     duration,
     remotePreviewUrl,
     remoteUrl,
+    sourceKind,
+    sourcePath,
     thumbnailBlobId,
   ]);
 
   const handleAddToTimeline = () => {
-    if (!currentProject) return;
-
-    // Find or create appropriate track type
-    const requiredTrackType: Track["type"] =
-      asset.type === "audio" ? "audio" : "video";
-    let targetTrack = currentProject.tracks.find(
-      (t) => t.type === requiredTrackType,
-    );
-
-    if (!targetTrack) {
-      addTrack(
-        requiredTrackType,
-        `${requiredTrackType.charAt(0).toUpperCase() + requiredTrackType.slice(1)} Track`,
-      );
-      const updatedTracks =
-        useProjectStore.getState().currentProject?.tracks || [];
-      targetTrack = updatedTracks.find((t) => t.type === requiredTrackType);
-    }
-
-    if (!targetTrack) return;
-
-    // Determine initial timeline start time (after last clip on track)
-    let start = 0;
-    if (targetTrack.clips.length > 0) {
-      const lastClip = targetTrack.clips[targetTrack.clips.length - 1];
-      start = lastClip.timelineStart + lastClip.timelineDuration;
-    }
-
-    const duration = asset.type === "image" ? 5 : asset.duration;
-    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
-
-    const newClip: TimelineClip = {
-      id: nanoid(),
-      trackId: targetTrack.id,
-      assetId: asset.id,
-      type:
-        asset.type === "image" ? "image" : (asset.type as TimelineClip["type"]),
-      timelineStart: Math.max(0, start),
-      timelineDuration: Math.max(0.1, duration),
-      sourceStart: 0,
-      sourceDuration: Math.max(0.1, duration),
-      name: asset.name,
-      transform: {
-        x: 0,
-        y: 0,
-        width: isMobile ? currentProject.settings.width : asset.width || 1920,
-        height: isMobile
-          ? currentProject.settings.height
-          : asset.height || 1080,
-        scaleX: 1,
-        scaleY: 1,
-        rotation: 0,
-        opacity: 1,
-        fitMode: "contain",
-      },
-      adjustments: {
-        brightness: 1,
-        contrast: 1,
-        saturation: 1,
-        blur: 0,
-        grayscale: 0,
-        sepia: 0,
-      },
-      audio: {
-        volume: 1,
-        muted: false,
-        fadeIn: 0,
-        fadeOut: 0,
-      },
-      speed: 1,
-    };
-
-    addClip(targetTrack.id, newClip);
-    if (isMobile) {
-      useEditorUIStore.getState().setSelectedClipIds([newClip.id]);
-    }
+    addMediaAssetToTimeline(asset);
   };
 
   const handleDeleteAsset = async () => {
+    const currentProject = useProjectStore.getState().currentProject;
     const removedClipIds = new Set(
       currentProject?.tracks
         .flatMap((track) => track.clips)
@@ -228,8 +173,9 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
   if (viewMode === "list") {
     return (
       <div
+        onClick={() => onPreview?.(asset)}
         onDoubleClick={handleAddToTimeline}
-        className="group flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-2 hover:border-brand transition-colors select-none cursor-pointer"
+        className="group flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-2 transition-colors hover:border-brand select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_58px]"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-10 w-14 shrink-0 rounded bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
@@ -239,6 +185,8 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
                 src={thumbUrl}
                 alt={asset.name}
                 decoding="async"
+                loading="lazy"
+                draggable={false}
                 onLoad={() => setIsThumbLoaded(true)}
                 onError={() => setIsThumbLoaded(true)}
                 className={`h-full w-full transition-opacity duration-200 ${asset.type === "image" ? "object-contain p-1" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
@@ -278,6 +226,14 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
           onClick={(e) => e.stopPropagation()}
         >
           <IconButton
+            label="Preview media"
+            size="sm"
+            variant="ghost"
+            onClick={() => onPreview?.(asset)}
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </IconButton>
+          <IconButton
             label="Add to timeline"
             size="sm"
             variant="ghost"
@@ -297,6 +253,14 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
             }
             align="right"
           >
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview?.(asset);
+              }}
+            >
+              <Eye className="h-3.5 w-3.5" /> Preview media
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
@@ -330,13 +294,9 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
 
   return (
     <div
-      onClick={() => {
-        if (window.matchMedia("(max-width: 1023px)").matches) {
-          handleAddToTimeline();
-        }
-      }}
+      onClick={() => onPreview?.(asset)}
       onDoubleClick={handleAddToTimeline}
-      className="group relative flex flex-col rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-all hover:border-brand select-none cursor-pointer"
+      className="group relative flex flex-col rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-[border-color,transform] hover:border-brand active:scale-[0.995] select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_170px]"
     >
       {/* Thumbnail View Stage */}
       <div className="relative aspect-video w-full rounded-lg bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
@@ -349,6 +309,8 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
             src={thumbUrl}
             alt={asset.name}
             decoding="async"
+            loading="lazy"
+            draggable={false}
             onLoad={() => setIsThumbLoaded(true)}
             onError={() => setIsThumbLoaded(true)}
             className={`h-full w-full transition-[opacity,transform] duration-300 group-hover:scale-[1.01] ${asset.type === "image" ? "object-contain p-2" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
@@ -363,7 +325,18 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
         </span>
 
         {/* Hover Quick Add Overlay */}
-        <div className="absolute inset-0 hidden items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 lg:flex">
+        <div
+          className="absolute inset-0 hidden items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100 lg:flex"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <IconButton
+            label="Preview media"
+            size="sm"
+            variant="secondary"
+            onClick={() => onPreview?.(asset)}
+          >
+            <Eye className="h-4 w-4" />
+          </IconButton>
           <IconButton
             label="Add to timeline"
             size="sm"
@@ -420,6 +393,14 @@ export function AssetCard({ asset, viewMode = "grid" }: AssetCardProps) {
             }
             align="right"
           >
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview?.(asset);
+              }}
+            >
+              <Eye className="h-3.5 w-3.5" /> Preview media
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();

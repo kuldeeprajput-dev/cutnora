@@ -18,3 +18,4 @@ export * from './ProgressBar';
 export * from './EmptyState';
 export * from './Kbd';
 export * from './VisuallyHidden';
+export * from './ColorPicker';

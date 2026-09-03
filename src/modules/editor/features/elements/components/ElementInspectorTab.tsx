@@ -1,22 +1,29 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { TimelineClip, ElementStyle } from '@/modules/editor/types';
-import { useProjectStore } from '@/modules/projects';
-import { Slider } from '@/shared/components/ui/Slider';
-import { Select } from '@/shared/components/ui/Select';
+import React from "react";
+import { Palette, PenTool, Sparkles, Square } from "lucide-react";
+import type { ElementStyle, TimelineClip } from "@/modules/editor/types";
+import {
+  InspectorColorControl,
+  InspectorControlLabel,
+  InspectorSection,
+  InspectorSliderHeader,
+} from "@/modules/editor/features/inspector/components/InspectorControls";
+import { useProjectStore } from "@/modules/projects";
+import { Select } from "@/shared/components/ui/Select";
+import { Slider } from "@/shared/components/ui/Slider";
 
 export interface ElementInspectorTabProps {
   clip: TimelineClip;
 }
 
 export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
-  const { updateClip } = useProjectStore();
+  const updateClip = useProjectStore((state) => state.updateClip);
 
   const elementStyle: ElementStyle = clip.elementStyle || {
-    fillColor: '#FF5A36',
+    fillColor: "#FF5A36",
     borderRadius: 8,
-    shapeType: 'rectangle',
+    shapeType: "rectangle",
   };
 
   const updateStyle = (updates: Partial<ElementStyle>) => {
@@ -29,166 +36,177 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-studio-fg">
-      {/* Fill & Border Colors */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Fill Color</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={elementStyle.fillColor || '#FF5A36'}
-              onChange={(e) => updateStyle({ fillColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
-            />
-            <span className="font-mono text-xs text-studio-muted">{elementStyle.fillColor}</span>
-          </div>
+    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
+      <InspectorSection
+        icon={Palette}
+        title="Shape colors"
+        description="Set the fill and outline colors."
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <InspectorColorControl
+            label="Fill color"
+            value={elementStyle.fillColor || "#FF5A36"}
+            onChange={(value) => updateStyle({ fillColor: value })}
+          />
+          <InspectorColorControl
+            label="Border color"
+            value={elementStyle.strokeColor || "#FFFFFF"}
+            onChange={(value) => updateStyle({ strokeColor: value })}
+          />
         </div>
+      </InspectorSection>
 
+      <InspectorSection
+        icon={PenTool}
+        title="Border"
+        description="Control the outline weight and line style."
+      >
         <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Border Color</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={elementStyle.strokeColor || '#FFFFFF'}
-              onChange={(e) => updateStyle({ strokeColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
-            />
-            <span className="font-mono text-xs text-studio-muted">{elementStyle.strokeColor || 'None'}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="h-px bg-studio-border" />
-
-      {/* Border Width & Style */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-studio-muted">Border Width (px)</label>
-            <span className="font-mono text-xs text-studio-fg">{elementStyle.strokeWidth || 0}px</span>
-          </div>
+          <InspectorSliderHeader
+            label="Border width"
+            value={`${elementStyle.strokeWidth || 0}px`}
+          />
           <Slider
+            aria-label="Border width"
             value={elementStyle.strokeWidth || 0}
             min={0}
             max={20}
             step={1}
-            onValueChange={(val) => updateStyle({ strokeWidth: val })}
+            onValueChange={(value) => updateStyle({ strokeWidth: value })}
           />
         </div>
-
-        <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1">Line Style</label>
+        <div className="mt-3">
+          <InspectorControlLabel htmlFor="element-line-style">
+            Line style
+          </InspectorControlLabel>
           <Select
-            value={elementStyle.lineStyle || 'solid'}
-            onChange={(e) => updateStyle({ lineStyle: e.target.value as 'solid' | 'dashed' | 'dotted' })}
-            className="h-8 text-xs border-studio-border"
+            id="element-line-style"
+            value={elementStyle.lineStyle || "solid"}
+            onChange={(e) => updateStyle({ lineStyle: e.target.value as "solid" | "dashed" | "dotted" })}
+            className="mt-1.5 h-9 text-xs"
           >
             <option value="solid">Solid</option>
             <option value="dashed">Dashed</option>
             <option value="dotted">Dotted</option>
           </Select>
         </div>
-      </div>
+      </InspectorSection>
 
-      {/* Arrowhead Option (if shapeType === 'arrow') */}
-      {elementStyle.shapeType === 'arrow' && (
-        <div>
-          <label className="text-[11px] font-medium text-studio-muted block mb-1">Arrowheads</label>
-          <Select
-            value={elementStyle.arrowHead || 'end'}
-            onChange={(e) => updateStyle({ arrowHead: e.target.value as 'none' | 'end' | 'both' })}
-            className="h-8 text-xs border-studio-border"
-          >
-            <option value="none">None</option>
-            <option value="end">End Arrowhead</option>
-            <option value="both">Both Ends</option>
-          </Select>
-        </div>
-      )}
-
-      {/* Progress % Slider (if shapeType === 'progress-bar') */}
-      {elementStyle.shapeType === 'progress-bar' && (
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-medium text-studio-muted">Progress Value</label>
-            <span className="font-mono text-xs text-studio-fg">{elementStyle.progress ?? 65}%</span>
-          </div>
-          <Slider
-            value={elementStyle.progress ?? 65}
-            min={0}
-            max={100}
-            step={1}
-            onValueChange={(val) => updateStyle({ progress: val })}
-          />
-        </div>
-      )}
-
-      {/* Corner Radius */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] font-medium text-studio-muted">Corner Radius (px)</label>
-          <span className="font-mono text-xs text-studio-fg">{elementStyle.borderRadius || 0}px</span>
-        </div>
-        <Slider
-          value={elementStyle.borderRadius || 0}
-          min={0}
-          max={100}
-          step={1}
-          onValueChange={(val) => updateStyle({ borderRadius: val })}
-        />
-      </div>
-
-      <div className="h-px bg-studio-border" />
-
-      {/* Shape Drop Shadow */}
-      <div>
-        <label className="text-[11px] font-medium text-studio-muted block mb-1.5">Drop Shadow</label>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={elementStyle.shadowColor || '#000000'}
-              onChange={(e) => updateStyle({ shadowColor: e.target.value })}
-              className="h-8 w-10 rounded cursor-pointer border border-studio-border bg-studio-panel p-0.5"
-            />
-            <span className="font-mono text-xs text-studio-muted">Shadow Color</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
+      <InspectorSection
+        icon={Square}
+        title="Shape details"
+        description="Fine-tune corners and shape-specific settings."
+      >
+        <div className="space-y-3.5">
+          {elementStyle.shapeType === "arrow" && (
             <div>
-              <span className="text-[10px] text-studio-muted block">Blur</span>
+              <InspectorControlLabel htmlFor="element-arrowheads">
+                Arrowheads
+              </InspectorControlLabel>
+              <Select
+                id="element-arrowheads"
+                value={elementStyle.arrowHead || "end"}
+                onChange={(e) => updateStyle({ arrowHead: e.target.value as "none" | "end" | "both" })}
+                className="mt-1.5 h-9 text-xs"
+              >
+                <option value="none">None</option>
+                <option value="end">End arrowhead</option>
+                <option value="both">Both ends</option>
+              </Select>
+            </div>
+          )}
+
+          {elementStyle.shapeType === "progress-bar" && (
+            <div>
+              <InspectorSliderHeader
+                label="Progress value"
+                value={`${elementStyle.progress ?? 65}%`}
+              />
               <Slider
-                value={elementStyle.shadowBlur || 0}
+                aria-label="Progress value"
+                value={elementStyle.progress ?? 65}
                 min={0}
-                max={30}
+                max={100}
                 step={1}
-                onValueChange={(val) => updateStyle({ shadowBlur: val })}
+                onValueChange={(value) => updateStyle({ progress: value })}
               />
             </div>
-            <div>
-              <span className="text-[10px] text-studio-muted block">Offset X</span>
-              <Slider
-                value={elementStyle.shadowOffsetX || 0}
-                min={-20}
-                max={20}
-                step={1}
-                onValueChange={(val) => updateStyle({ shadowOffsetX: val })}
-              />
-            </div>
-            <div>
-              <span className="text-[10px] text-studio-muted block">Offset Y</span>
-              <Slider
-                value={elementStyle.shadowOffsetY || 0}
-                min={-20}
-                max={20}
-                step={1}
-                onValueChange={(val) => updateStyle({ shadowOffsetY: val })}
-              />
-            </div>
+          )}
+
+          <div>
+            <InspectorSliderHeader
+              label="Corner radius"
+              value={`${elementStyle.borderRadius || 0}px`}
+            />
+            <Slider
+              aria-label="Corner radius"
+              value={elementStyle.borderRadius || 0}
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={(value) =>
+                updateStyle({ borderRadius: value })
+              }
+            />
           </div>
         </div>
-      </div>
+      </InspectorSection>
+
+      <InspectorSection
+        icon={Sparkles}
+        title="Drop shadow"
+        description="Add depth and separation from the canvas."
+      >
+        <InspectorColorControl
+          label="Shadow color"
+          value={elementStyle.shadowColor || "#000000"}
+          onChange={(value) => updateStyle({ shadowColor: value })}
+        />
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div>
+            <InspectorSliderHeader
+              label="Blur"
+              value={`${elementStyle.shadowBlur || 0}px`}
+            />
+            <Slider
+              aria-label="Blur"
+              value={elementStyle.shadowBlur || 0}
+              min={0}
+              max={30}
+              step={1}
+              onValueChange={(value) => updateStyle({ shadowBlur: value })}
+            />
+          </div>
+          <div>
+            <InspectorSliderHeader
+              label="X"
+              value={`${elementStyle.shadowOffsetX || 0}px`}
+            />
+            <Slider
+              aria-label="Offset X"
+              value={elementStyle.shadowOffsetX || 0}
+              min={-20}
+              max={20}
+              step={1}
+              onValueChange={(value) => updateStyle({ shadowOffsetX: value })}
+            />
+          </div>
+          <div>
+            <InspectorSliderHeader
+              label="Y"
+              value={`${elementStyle.shadowOffsetY || 0}px`}
+            />
+            <Slider
+              aria-label="Offset Y"
+              value={elementStyle.shadowOffsetY || 0}
+              min={-20}
+              max={20}
+              step={1}
+              onValueChange={(value) => updateStyle({ shadowOffsetY: value })}
+            />
+          </div>
+        </div>
+      </InspectorSection>
     </div>
   );
 }

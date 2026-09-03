@@ -17,6 +17,7 @@ import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { useProjectStore } from "@/modules/projects";
 import { cn } from "@/shared/utils/cn";
+import { getMobileRulerInterval } from "./mobile-timeline-utils";
 
 const MAX_PIXELS_PER_SECOND = 48;
 const MIN_PIXELS_PER_SECOND = 0.05;
@@ -95,10 +96,11 @@ export function MobileTimeline() {
     ),
   );
   const pixelsPerSecond = basePixelsPerSecond * timelineZoom;
-  const contentWidth = Math.max(
-    viewportWidth,
-    Math.ceil(duration * pixelsPerSecond) + TIMELINE_GUTTER * 2,
-  );
+  const rulerInterval = getMobileRulerInterval(pixelsPerSecond);
+  const calculatedWidth =
+    Math.ceil(duration * pixelsPerSecond) + TIMELINE_GUTTER * 2;
+  const isOverflowing = viewportWidth > 0 && calculatedWidth > viewportWidth;
+  const contentWidth = isOverflowing ? calculatedWidth : 0;
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -153,34 +155,50 @@ export function MobileTimeline() {
 
   useEffect(() => {
     let active = true;
-    const ownedIds: string[] = [];
 
     async function loadThumbnails() {
       const next: Record<string, string> = {};
-      for (const clip of clips) {
-        if (!clip.assetId || next[clip.assetId]) continue;
-        const asset = await db.assets.get(clip.assetId);
-        if (!asset) continue;
-        if (asset.remotePreviewUrl || asset.remoteUrl) {
-          next[clip.assetId] = asset.remotePreviewUrl ?? asset.remoteUrl ?? "";
-          continue;
-        }
-        if (!asset.thumbnailBlobId) continue;
-        const record = await db.thumbnails.get(asset.thumbnailBlobId);
-        if (!record?.blob) continue;
-        next[clip.assetId] = objectUrlManager.createUrl(
-          asset.thumbnailBlobId,
-          record.blob,
-        );
-        ownedIds.push(asset.thumbnailBlobId);
-      }
+      const assetIds = Array.from(
+        new Set(
+          clips
+            .map((clip) => clip.assetId)
+            .filter((assetId): assetId is string => Boolean(assetId)),
+        ),
+      );
+      const assets = await db.assets.bulkGet(assetIds);
+
+      await Promise.all(
+        assets.map(async (asset) => {
+          if (!asset) return;
+          if (asset.remotePreviewUrl || asset.remoteUrl) {
+            next[asset.id] = asset.remotePreviewUrl ?? asset.remoteUrl ?? "";
+            return;
+          }
+          if (!asset.thumbnailBlobId) return;
+
+          const cachedUrl = objectUrlManager.getUrl(asset.thumbnailBlobId);
+          if (cachedUrl) {
+            next[asset.id] = cachedUrl;
+            return;
+          }
+
+          const record = await db.thumbnails.get(asset.thumbnailBlobId);
+          if (!record?.blob) return;
+          const thumbnailUrl = objectUrlManager.createUrl(
+            asset.thumbnailBlobId,
+            record.blob,
+          );
+          if (!active) return;
+          next[asset.id] = thumbnailUrl;
+        }),
+      );
+
       if (active) setThumbnailUrls(next);
     }
 
     void loadThumbnails();
     return () => {
       active = false;
-      ownedIds.forEach((id) => objectUrlManager.revokeUrl(id));
     };
   }, [clips]);
 
@@ -280,40 +298,47 @@ export function MobileTimeline() {
   const handleTimelinePointerDown = (event: React.PointerEvent) => {
     if ((event.target as HTMLElement).closest("[data-mobile-clip]")) return;
     const bounds = event.currentTarget.getBoundingClientRect();
-    const scrollLeft = scrollRef.current?.scrollLeft ?? 0;
-    const x = event.clientX - bounds.left + scrollLeft - TIMELINE_GUTTER;
-    setPlayhead(Math.max(0, x / pixelsPerSecond));
+    // The ruler content itself scrolls, so its bounding box already includes
+    // the scroll offset. Adding scrollLeft here would seek too far to the right.
+    const x = event.clientX - bounds.left - TIMELINE_GUTTER;
+    setPlayhead(Math.min(duration, Math.max(0, x / pixelsPerSecond)));
     setSelectedClipIds([]);
   };
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-studio-border bg-timeline-bg">
-      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-studio-border px-3">
+      <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-studio-border px-3 [@media(max-height:480px)]:h-10">
         <div className="min-w-0">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.18em] text-studio-muted">
             Timeline
           </h2>
-          <p className="truncate text-[9px] text-studio-muted/70">
-            {clips.length} {clips.length === 1 ? "clip" : "clips"} in one ribbon
+          <p className="truncate font-mono text-[9px] text-studio-muted/70 [@media(max-height:480px)]:hidden">
+            {formatTime(playhead)} / {formatTime(duration)} · {clips.length}{" "}
+            {clips.length === 1 ? "clip" : "clips"}
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-0.5" aria-label="Timeline zoom controls">
+        <div
+          className="flex shrink-0 items-center gap-0.5"
+          aria-label="Timeline zoom controls"
+        >
           <button
             type="button"
             onClick={() => changeTimelineZoom(1)}
             disabled={clips.length === 0 || timelineZoom === 1}
             aria-label="Reset timeline zoom"
-            className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
+            className="flex h-10 w-9 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
-            onClick={() => changeTimelineZoom(timelineZoom - TIMELINE_ZOOM_STEP)}
+            onClick={() =>
+              changeTimelineZoom(timelineZoom - TIMELINE_ZOOM_STEP)
+            }
             disabled={clips.length === 0 || timelineZoom <= MIN_TIMELINE_ZOOM}
             aria-label="Zoom timeline out"
-            className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
+            className="flex h-10 w-9 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
           >
             <Minus className="h-4 w-4" />
           </button>
@@ -326,14 +351,17 @@ export function MobileTimeline() {
             onChange={(event) => changeTimelineZoom(Number(event.target.value))}
             disabled={clips.length === 0}
             aria-label="Timeline zoom level"
-            className="h-8 w-12 cursor-pointer accent-brand disabled:opacity-30"
+            aria-valuetext={`${Math.round(timelineZoom * 100)}%`}
+            className="h-10 w-14 cursor-pointer touch-manipulation accent-brand disabled:opacity-30 max-[359px]:w-10"
           />
           <button
             type="button"
-            onClick={() => changeTimelineZoom(timelineZoom + TIMELINE_ZOOM_STEP)}
+            onClick={() =>
+              changeTimelineZoom(timelineZoom + TIMELINE_ZOOM_STEP)
+            }
             disabled={clips.length === 0 || timelineZoom >= MAX_TIMELINE_ZOOM}
             aria-label="Zoom timeline in"
-            className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
+            className="flex h-10 w-9 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -350,22 +378,32 @@ export function MobileTimeline() {
         )}
       >
         <div
-          className="relative h-full min-h-[108px]"
-          style={{ width: clips.length > 0 ? `${contentWidth}px` : "100%" }}
+          className="relative h-full min-h-[116px] [@media(max-height:480px)]:min-h-[92px]"
+          style={{ width: contentWidth > 0 ? `${contentWidth}px` : "100%" }}
           onPointerDown={handleTimelinePointerDown}
         >
-          <div className="absolute inset-x-0 top-0 h-7 border-b border-studio-border bg-studio-panel/40">
+          <div className="absolute inset-x-0 top-0 h-8 border-b border-studio-border bg-studio-panel/40">
             {Array.from(
-              { length: clips.length === 0 ? 1 : Math.ceil(duration / 2) + 1 },
+              {
+                length:
+                  clips.length === 0
+                    ? 1
+                    : Math.floor(duration / rulerInterval) + 1,
+              },
               (_, index) => {
-                const second = index * 2;
+                const second = index * rulerInterval;
                 return (
                   <div
                     key={second}
-                    className="absolute inset-y-0 border-l border-studio-border"
+                    className="absolute inset-y-0 border-l border-studio-border/80"
                     style={{ left: TIMELINE_GUTTER + second * pixelsPerSecond }}
                   >
-                    <span className="mt-1 block -translate-x-1/2 font-mono text-[8px] text-studio-muted/70 text-center">
+                    <span
+                      className={cn(
+                        "mt-1.5 block whitespace-nowrap font-mono text-[8px] text-studio-muted/80",
+                        index > 0 && "-translate-x-1/2 text-center",
+                      )}
+                    >
                       {formatTime(second)}
                     </span>
                   </div>
@@ -375,7 +413,7 @@ export function MobileTimeline() {
           </div>
 
           {clips.length === 0 ? (
-            <div className="absolute inset-x-4 top-10 flex h-20 items-center justify-center rounded-xl border border-dashed border-studio-border px-5 text-center text-[11px] font-medium text-studio-muted">
+            <div className="absolute inset-x-4 top-11 flex h-16 items-center justify-center rounded-xl border border-dashed border-studio-border px-5 text-center text-[11px] font-medium text-studio-muted">
               Add media to start editing
             </div>
           ) : null}
@@ -402,7 +440,7 @@ export function MobileTimeline() {
                   setPreview(null);
                 }}
                 className={cn(
-                  "absolute top-10 h-12 touch-none overflow-hidden rounded-lg border bg-brand/20 shadow-sm",
+                  "absolute top-11 h-14 touch-none overflow-hidden rounded-xl border bg-brand/20 shadow-sm [@media(max-height:480px)]:top-9 [@media(max-height:480px)]:h-12",
                   selected
                     ? "border-brand ring-2 ring-brand/35"
                     : "border-brand/50",
@@ -436,8 +474,10 @@ export function MobileTimeline() {
                       }
                       onPointerMove={updateDragPreview}
                       onPointerUp={commitDrag}
-                      className="absolute inset-y-0 left-0 w-3 cursor-ew-resize border-r-2 border-white/80 bg-brand"
-                    />
+                      className="absolute inset-y-0 left-0 w-5 touch-none cursor-ew-resize bg-transparent"
+                    >
+                      <span className="absolute inset-y-1 left-0 w-1 rounded-r bg-white shadow-sm" />
+                    </button>
                     <button
                       type="button"
                       aria-label="Trim clip end"
@@ -446,8 +486,10 @@ export function MobileTimeline() {
                       }
                       onPointerMove={updateDragPreview}
                       onPointerUp={commitDrag}
-                      className="absolute inset-y-0 right-0 w-3 cursor-ew-resize border-l-2 border-white/80 bg-brand"
-                    />
+                      className="absolute inset-y-0 right-0 w-5 touch-none cursor-ew-resize bg-transparent"
+                    >
+                      <span className="absolute inset-y-1 right-0 w-1 rounded-l bg-white shadow-sm" />
+                    </button>
                   </>
                 ) : null}
               </div>
@@ -457,7 +499,9 @@ export function MobileTimeline() {
           <div
             className={cn(
               "pointer-events-none absolute top-0 z-20 w-px bg-brand",
-              clips.length > 0 ? "h-[92px]" : "h-8",
+              clips.length > 0
+                ? "h-[105px] [@media(max-height:480px)]:h-[84px]"
+                : "h-8",
             )}
             style={{ left: TIMELINE_GUTTER + playhead * pixelsPerSecond }}
           >

@@ -99,14 +99,14 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
       label: 'Cut',
       icon: <Scissors className="h-3.5 w-3.5" />,
       shortcut: '⌘X',
-      onClick: () => useClipboardStore.getState().cutSelectedClips(),
+      onClick: () => useClipboardStore.getState().cutSelectedClips([contextMenu.clip.id]),
     },
     {
       id: 'copy',
       label: 'Copy',
       icon: <Copy className="h-3.5 w-3.5" />,
       shortcut: '⌘C',
-      onClick: () => useClipboardStore.getState().copySelectedClips(),
+      onClick: () => useClipboardStore.getState().copySelectedClips([contextMenu.clip.id]),
     },
     {
       id: 'duplicate',

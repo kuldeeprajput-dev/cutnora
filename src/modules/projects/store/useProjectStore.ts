@@ -8,6 +8,7 @@ import {
   moveClipInTimeline,
   trimClipBounds,
   splitClipAtTime,
+  resetClipToOriginal,
   deleteClipsFromTracks,
   duplicateClipsInTracks,
   reorderTrackLanes,
@@ -47,7 +48,10 @@ interface ProjectState {
     settings?: Partial<ProjectSettings>,
   ) => Promise<Project>;
   loadProject: (id: string) => Promise<boolean>;
-  updateProjectSettings: (settings: Partial<ProjectSettings>) => void;
+  updateProjectSettings: (
+    settings: Partial<ProjectSettings>,
+    options?: { recordHistory?: boolean },
+  ) => void;
 
   addAsset: (asset: MediaAsset) => void;
   removeAsset: (assetId: string) => void;
@@ -59,7 +63,11 @@ interface ProjectState {
   toggleTrackMute: (trackId: string) => void;
 
   addClip: (trackId: string, clip: TimelineClip) => void;
-  updateClip: (clipId: string, updates: Partial<TimelineClip>) => void;
+  updateClip: (
+    clipId: string,
+    updates: Partial<TimelineClip>,
+    options?: { skipHistory?: boolean },
+  ) => void;
   renameClip: (clipId: string, name: string) => void;
   moveClip: (clipId: string, targetTrackId: string, newStart: number) => void;
   moveClipToNewTrack: (
@@ -74,6 +82,7 @@ interface ProjectState {
     newDuration: number,
     newSourceStart: number,
   ) => void;
+  resetClipTiming: (clipId: string) => void;
   splitClip: (clipId: string, splitTime: number) => void;
   deleteClips: (clipIds: string[]) => void;
   duplicateClips: (clipIds: string[]) => void;
@@ -160,17 +169,55 @@ export const useProjectStore = create<ProjectState>()(
       }
     },
 
-    updateProjectSettings: (settingsUpdates) => {
+    updateProjectSettings: (settingsUpdates, options) => {
       const current = get().currentProject;
       if (!current) return;
 
-      historyManager.pushState(current);
+      const changedEntries = Object.entries(settingsUpdates).filter(
+        ([key, value]) =>
+          !Object.is(current.settings[key as keyof ProjectSettings], value),
+      );
+      if (changedEntries.length === 0) return;
+
+      const effectiveUpdates = Object.fromEntries(
+        changedEntries,
+      ) as Partial<ProjectSettings>;
+
+      if (options?.recordHistory !== false) {
+        historyManager.pushState(current);
+      }
+
+      // When canvas dimensions change, proportionally rescale all clip transforms
+      // so clips maintain their relative position & size on the new canvas.
+      const oldW = current.settings.width;
+      const oldH = current.settings.height;
+      const newW = effectiveUpdates.width ?? oldW;
+      const newH = effectiveUpdates.height ?? oldH;
+      const scaleX = oldW > 0 ? newW / oldW : 1;
+      const scaleY = oldH > 0 ? newH / oldH : 1;
+      const dimensionsChanged = newW !== oldW || newH !== oldH;
+
       set((state) => {
         if (state.currentProject) {
           state.currentProject.settings = {
             ...state.currentProject.settings,
-            ...settingsUpdates,
+            ...effectiveUpdates,
           };
+          // Rescale clip transforms only when canvas dimensions actually change
+          if (dimensionsChanged) {
+            state.currentProject.tracks.forEach((track) => {
+              track.clips = track.clips.map((clip) => ({
+                ...clip,
+                transform: {
+                  ...clip.transform,
+                  x: Math.round(clip.transform.x * scaleX),
+                  y: Math.round(clip.transform.y * scaleY),
+                  width: Math.round(clip.transform.width * scaleX),
+                  height: Math.round(clip.transform.height * scaleY),
+                },
+              }));
+            });
+          }
         }
       });
 
@@ -362,11 +409,16 @@ export const useProjectStore = create<ProjectState>()(
       if (updated) autosaveService.scheduleSave(updated);
     },
 
-    updateClip: (clipId, updates) => {
+    updateClip: (clipId, updates, options) => {
       const current = get().currentProject;
       if (!current) return;
 
-      historyManager.pushState(current);
+      // Only push history when explicitly NOT skipping (e.g. not during live drag).
+      // During drag (pointermove), pass { skipHistory: true } to avoid flooding
+      // the history stack on every frame which causes "Maximum update depth exceeded".
+      if (!options?.skipHistory) {
+        historyManager.pushState(current);
+      }
       set((state) => {
         if (state.currentProject) {
           state.currentProject.tracks.forEach((track) => {
@@ -485,6 +537,25 @@ export const useProjectStore = create<ProjectState>()(
             newStart,
             newDuration,
             newSourceStart,
+          );
+          syncProjectDuration(state.currentProject);
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    resetClipTiming: (clipId) => {
+      const current = get().currentProject;
+      if (!current) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          state.currentProject.tracks = resetClipToOriginal(
+            state.currentProject.tracks,
+            clipId,
           );
           syncProjectDuration(state.currentProject);
         }

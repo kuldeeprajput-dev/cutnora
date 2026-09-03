@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
+import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 
 export interface DropdownMenuProps {
   trigger: React.ReactNode;
@@ -14,6 +15,16 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const timelineHeight = useEditorUIStore((state) => state.timelineHeight);
+  const leftPanelWidth = useEditorUIStore((state) => state.leftPanelWidth);
+
+  // Automatically close dropdown when adjusting bottom bar height or sidebar width
+  useEffect(() => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  }, [timelineHeight, leftPanelWidth]);
 
   const updateCoords = () => {
     if (triggerRef.current) {
@@ -48,7 +59,7 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
     // First frame update to measure exact menu DOM height
     const rafId = requestAnimationFrame(updateCoords);
 
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | PointerEvent) => {
       const target = e.target as Node;
       if (
         triggerRef.current && !triggerRef.current.contains(target) &&
@@ -66,14 +77,16 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
       updateCoords();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside, true);
+    document.addEventListener('mousedown', handleClickOutside, true);
     document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleScroll);
 
     return () => {
       cancelAnimationFrame(rafId);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleScroll);

@@ -41,10 +41,13 @@ export interface ImportOptions {
 const THUMBNAIL_WIDTH = 640;
 const THUMBNAIL_HEIGHT = 360;
 const IMAGE_THUMBNAIL_RENDER_VERSION = 2;
+const VIDEO_THUMBNAIL_RENDER_VERSION = 2;
+const VIDEO_THUMBNAIL_TIMEOUT_MS = 15_000;
 const INDEXEDDB_FALLBACK_LIMIT = 256 * 1024 * 1024;
 const WAVEFORM_SIZE_LIMIT = 128 * 1024 * 1024;
 const WAVEFORM_DURATION_LIMIT = 20 * 60;
 const verifiedThumbnailIds = new Set<string>();
+const pendingThumbnailUpgrades = new Map<string, Promise<Blob | null>>();
 
 export function detectAssetType(
   mimeType: string,
@@ -190,7 +193,9 @@ export async function processAndStoreMediaFile(
         blob: thumbnailBlob,
         createdAt: Date.now(),
         renderVersion:
-          assetType === "image" ? IMAGE_THUMBNAIL_RENDER_VERSION : 1,
+          assetType === "image"
+            ? IMAGE_THUMBNAIL_RENDER_VERSION
+            : VIDEO_THUMBNAIL_RENDER_VERSION,
       };
       await db.thumbnails.put(storedThumbnail);
     }
@@ -250,7 +255,26 @@ export async function processAndStoreMediaFile(
     URL.revokeObjectURL(tempUrl);
   }
 }
-export async function ensureHighQualityThumbnail(
+export function ensureHighQualityThumbnail(
+  asset: MediaAsset,
+): Promise<Blob | null> {
+  const thumbnailId = asset.thumbnailBlobId;
+  if (!thumbnailId) return Promise.resolve(null);
+
+  const pendingUpgrade = pendingThumbnailUpgrades.get(thumbnailId);
+  if (pendingUpgrade) return pendingUpgrade;
+
+  const operation = ensureHighQualityThumbnailInternal(asset);
+  const trackedOperation = operation.finally(() => {
+    if (pendingThumbnailUpgrades.get(thumbnailId) === trackedOperation) {
+      pendingThumbnailUpgrades.delete(thumbnailId);
+    }
+  });
+  pendingThumbnailUpgrades.set(thumbnailId, trackedOperation);
+  return trackedOperation;
+}
+
+async function ensureHighQualityThumbnailInternal(
   asset: MediaAsset,
 ): Promise<Blob | null> {
   if (
@@ -266,15 +290,20 @@ export async function ensureHighQualityThumbnail(
   const needsImageContainUpgrade =
     asset.type === "image" &&
     existing?.renderVersion !== IMAGE_THUMBNAIL_RENDER_VERSION;
+  const needsVideoMidpointUpgrade =
+    asset.type === "video" &&
+    existing?.renderVersion !== VIDEO_THUMBNAIL_RENDER_VERSION;
+  const needsThumbnailUpgrade =
+    needsImageContainUpgrade || needsVideoMidpointUpgrade;
   if (
     existing &&
-    !needsImageContainUpgrade &&
+    !needsThumbnailUpgrade &&
     verifiedThumbnailIds.has(asset.thumbnailBlobId)
   ) {
     return existing.blob;
   }
 
-  if (existing && !needsImageContainUpgrade) {
+  if (existing && !needsThumbnailUpgrade) {
     const dimensions = await readBlobImageDimensions(existing.blob);
     if (
       dimensions &&
@@ -303,7 +332,9 @@ export async function ensureHighQualityThumbnail(
       blob: upgraded,
       createdAt: Date.now(),
       renderVersion:
-        asset.type === "image" ? IMAGE_THUMBNAIL_RENDER_VERSION : 1,
+        asset.type === "image"
+          ? IMAGE_THUMBNAIL_RENDER_VERSION
+          : VIDEO_THUMBNAIL_RENDER_VERSION,
     });
     objectUrlManager.revokeUrl(asset.thumbnailBlobId);
     verifiedThumbnailIds.add(asset.thumbnailBlobId);
@@ -506,10 +537,54 @@ function generateVideoThumbnail(
   return new Promise((resolve) => {
     const video = document.createElement("video");
     video.preload = "auto";
-    video.src = videoUrl;
+    video.muted = true;
+    video.playsInline = true;
+
+    let settled = false;
+    let timeout: number | undefined;
+
+    const cleanup = () => {
+      if (timeout !== undefined) window.clearTimeout(timeout);
+      video.onloadedmetadata = null;
+      video.onseeked = null;
+      video.onerror = null;
+      video.removeAttribute("src");
+      video.load();
+    };
+
+    const finish = (blob?: Blob) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+
+      if (blob?.size) {
+        resolve(blob);
+        return;
+      }
+
+      void createFallbackThumbnailBlob().then(resolve);
+    };
+
+    timeout = window.setTimeout(
+      () => finish(),
+      VIDEO_THUMBNAIL_TIMEOUT_MS,
+    );
 
     video.onloadedmetadata = () => {
-      video.currentTime = Math.min(0.5, duration / 2);
+      const sourceDuration =
+        Number.isFinite(video.duration) && video.duration > 0
+          ? video.duration
+          : duration;
+      const captureTime =
+        Number.isFinite(sourceDuration) && sourceDuration > 0
+          ? sourceDuration / 2
+          : 0.5;
+
+      try {
+        video.currentTime = captureTime;
+      } catch {
+        finish();
+      }
     };
 
     video.onseeked = () => {
@@ -520,12 +595,15 @@ function generateVideoThumbnail(
       if (ctx && video.videoWidth && video.videoHeight) {
         drawCoverThumbnail(ctx, video, video.videoWidth, video.videoHeight);
       }
-      void canvasToThumbnailBlob(canvas).then(resolve);
+      void canvasToThumbnailBlob(canvas).then(finish).catch(() => finish());
     };
 
     video.onerror = () => {
-      void createFallbackThumbnailBlob().then(resolve);
+      finish();
     };
+
+    video.src = videoUrl;
+    video.load();
   });
 }
 

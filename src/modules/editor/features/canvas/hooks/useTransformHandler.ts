@@ -1,28 +1,57 @@
-import { useState, useRef } from 'react';
-import type { TimelineClip } from '@/modules/editor/types';
-import { autosaveService, useProjectStore } from '@/modules/projects';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
-import { historyManager } from '@/modules/editor/store/useHistoryStore';
-import { calculateSnapping, type GuideLine } from '../utils/snapping-utils';
+import { useState, useRef } from "react";
+import type { TimelineClip } from "@/modules/editor/types";
+import { autosaveService, useProjectStore } from "@/modules/projects";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import { historyManager } from "@/modules/editor/store/useHistoryStore";
+import { calculateSnapping, type GuideLine } from "../utils/snapping-utils";
 
-export type TransformMode = 'translate' | 'resize-nw' | 'resize-n' | 'resize-ne' | 'resize-e' | 'resize-se' | 'resize-s' | 'resize-sw' | 'resize-w' | 'rotate';
+export type TransformMode =
+  | "translate"
+  | "resize-nw"
+  | "resize-n"
+  | "resize-ne"
+  | "resize-e"
+  | "resize-se"
+  | "resize-s"
+  | "resize-sw"
+  | "resize-w"
+  | "rotate";
 
 export interface UseTransformHandlerReturn {
   activeGuides: GuideLine[];
   isDragging: boolean;
-  startTransform: (clip: TimelineClip, mode: TransformMode, e: React.PointerEvent) => void;
+  startTransform: (
+    clip: TimelineClip,
+    mode: TransformMode,
+    e: React.PointerEvent,
+  ) => void;
 }
 
-export function useTransformHandler(stageScale: number): UseTransformHandlerReturn {
+function guidesMatch(current: GuideLine[], next: GuideLine[]) {
+  return (
+    current.length === next.length &&
+    current.every(
+      (guide, index) =>
+        guide.id === next[index]?.id &&
+        guide.type === next[index]?.type &&
+        Object.is(guide.position, next[index]?.position),
+    )
+  );
+}
+
+export function useTransformHandler(
+  stageScale: number,
+): UseTransformHandlerReturn {
   const [activeGuides, setActiveGuides] = useState<GuideLine[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const { updateClip, currentProject } = useProjectStore();
   const { snappingEnabled } = useEditorUIStore();
 
   const activeClipRef = useRef<TimelineClip | null>(null);
+  const activeGuidesRef = useRef<GuideLine[]>([]);
   const startPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const startTextStyleRef = useRef<TimelineClip['textStyle']>(undefined);
-  const startTransformRef = useRef<TimelineClip['transform']>({
+  const startTextStyleRef = useRef<TimelineClip["textStyle"]>(undefined);
+  const startTransformRef = useRef<TimelineClip["transform"]>({
     x: 0,
     y: 0,
     width: 100,
@@ -31,9 +60,9 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     scaleY: 1,
     rotation: 0,
     opacity: 1,
-    fitMode: 'contain',
+    fitMode: "contain",
   });
-  const modeRef = useRef<TransformMode>('translate');
+  const modeRef = useRef<TransformMode>("translate");
   const isMobileGestureRef = useRef(false);
   const mobileHistoryCapturedRef = useRef(false);
   const mobileFrameRef = useRef<number | null>(null);
@@ -45,7 +74,14 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     centerX: 0,
     centerY: 0,
     startAngle: 0,
+    startRotation: 0,
   });
+
+  const updateActiveGuides = (nextGuides: GuideLine[]) => {
+    if (guidesMatch(activeGuidesRef.current, nextGuides)) return;
+    activeGuidesRef.current = nextGuides;
+    setActiveGuides(nextGuides);
+  };
 
   const flushMobileUpdate = () => {
     mobileFrameRef.current = null;
@@ -64,41 +100,77 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
     useProjectStore.setState((state) => {
       if (!state.currentProject) return;
       for (const track of state.currentProject.tracks) {
-        const clipIndex = track.clips.findIndex((item) => item.id === pending.clipId);
+        const clipIndex = track.clips.findIndex(
+          (item) => item.id === pending.clipId,
+        );
         if (clipIndex === -1) continue;
-        track.clips[clipIndex] = { ...track.clips[clipIndex], ...pending.updates };
+        track.clips[clipIndex] = {
+          ...track.clips[clipIndex],
+          ...pending.updates,
+        };
         break;
       }
     });
   };
 
-  const queueMobileUpdate = (clipId: string, updates: Partial<TimelineClip>) => {
+  const queueMobileUpdate = (
+    clipId: string,
+    updates: Partial<TimelineClip>,
+  ) => {
     pendingMobileUpdateRef.current = { clipId, updates };
     if (mobileFrameRef.current === null) {
       mobileFrameRef.current = window.requestAnimationFrame(flushMobileUpdate);
     }
   };
 
-  const startTransform = (clip: TimelineClip, mode: TransformMode, e: React.PointerEvent) => {
+  const startTransform = (
+    clip: TimelineClip,
+    mode: TransformMode,
+    e: React.PointerEvent,
+  ) => {
     e.stopPropagation();
     activeClipRef.current = clip;
     modeRef.current = mode;
     startPointerRef.current = { x: e.clientX, y: e.clientY };
     startTransformRef.current = { ...clip.transform };
-    startTextStyleRef.current = clip.textStyle ? { ...clip.textStyle } : undefined;
-    isMobileGestureRef.current = window.matchMedia('(max-width: 1023px)').matches;
+    startTextStyleRef.current = clip.textStyle
+      ? { ...clip.textStyle }
+      : undefined;
+    isMobileGestureRef.current = window.matchMedia(
+      "(max-width: 1023px)",
+    ).matches;
     mobileHistoryCapturedRef.current = false;
     pendingMobileUpdateRef.current = null;
-    if (mode === 'rotate' && isMobileGestureRef.current) {
-      const overlayBounds = e.currentTarget.parentElement?.getBoundingClientRect();
-      const centerX = overlayBounds ? overlayBounds.left + overlayBounds.width / 2 : e.clientX;
-      const centerY = overlayBounds ? overlayBounds.top + overlayBounds.height / 2 : e.clientY;
+    if (mode === "rotate") {
+      // For BOTH desktop and mobile: capture the element's center in screen coords
+      // and the starting angle from center → initial pointer position.
+      // The center of the axis-aligned bounding box of a rotated rect equals the
+      // geometric center of the rect, so getBoundingClientRect().center is correct.
+      const overlayEl =
+        (e.currentTarget as HTMLElement).closest('[id^="layer-"]') ||
+        (e.currentTarget as HTMLElement).parentElement;
+      const overlayBounds = overlayEl?.getBoundingClientRect();
+      const centerX = overlayBounds
+        ? overlayBounds.left + overlayBounds.width / 2
+        : e.clientX;
+      const centerY = overlayBounds
+        ? overlayBounds.top + overlayBounds.height / 2
+        : e.clientY;
       rotationGestureRef.current = {
         centerX,
         centerY,
         startAngle: Math.atan2(e.clientY - centerY, e.clientX - centerX),
+        startRotation: clip.transform.rotation,
       };
     }
+
+    // Push history ONCE at the start of a desktop drag (not mobile — mobile uses
+    // its own RAF-batched path that captures history on first flush).
+    if (!isMobileGestureRef.current) {
+      const project = useProjectStore.getState().currentProject;
+      if (project) historyManager.pushState(project);
+    }
+
     setIsDragging(true);
 
     const handlePointerMove = (moveEv: PointerEvent) => {
@@ -111,13 +183,23 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
 
       const mode = modeRef.current;
       const startT = startTransformRef.current;
+      const rotationRadians = (startT.rotation * Math.PI) / 180;
+      const rotationCos = Math.cos(rotationRadians);
+      const rotationSin = Math.sin(rotationRadians);
+      // Resize handles move in the media's local coordinate system. Without
+      // this inverse rotation, a rotated handle incorrectly follows the canvas
+      // axes and the selection drifts away from the pointer.
+      const localDeltaProjectX =
+        deltaProjectX * rotationCos + deltaProjectY * rotationSin;
+      const localDeltaProjectY =
+        -deltaProjectX * rotationSin + deltaProjectY * rotationCos;
       let newX = startT.x;
       let newY = startT.y;
       let newW = startT.width;
       let newH = startT.height;
       let newRotation = startT.rotation;
 
-      if (mode === 'translate') {
+      if (mode === "translate") {
         const rawX = startT.x + deltaProjectX;
         const rawY = startT.y + deltaProjectY;
 
@@ -141,50 +223,134 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
           otherBounds,
           projectW,
           projectH,
-          snappingEnabled && !isMobileGestureRef.current
+          snappingEnabled && !isMobileGestureRef.current,
         );
 
         newX = snapResult.x;
         newY = snapResult.y;
-        if (!isMobileGestureRef.current) setActiveGuides(snapResult.guides);
-      } else if (mode === 'rotate') {
-        if (isMobileGestureRef.current) {
-          const rotationGesture = rotationGestureRef.current;
-          const currentAngle = Math.atan2(
-            moveEv.clientY - rotationGesture.centerY,
-            moveEv.clientX - rotationGesture.centerX,
+        if (!isMobileGestureRef.current) updateActiveGuides(snapResult.guides);
+      } else if (mode === "rotate") {
+        // Both mobile and desktop: use angular delta from start angle to current angle
+        const { centerX, centerY, startAngle, startRotation } =
+          rotationGestureRef.current;
+        const currentAngle = Math.atan2(
+          moveEv.clientY - centerY,
+          moveEv.clientX - centerX,
+        );
+        const angleDelta = (currentAngle - startAngle) * (180 / Math.PI);
+        newRotation = Math.round(startRotation + angleDelta);
+      } else if (mode.startsWith("resize-")) {
+        const resizeDirection = mode.slice("resize-".length);
+        const resizeFromEast = resizeDirection.includes("e");
+        const resizeFromWest = resizeDirection.includes("w");
+        const resizeFromNorth = resizeDirection.includes("n");
+        const resizeFromSouth = resizeDirection.includes("s");
+        const preserveMediaRatio =
+          (activeClipRef.current.type === "image" ||
+            activeClipRef.current.type === "video") &&
+          (mode === "resize-nw" ||
+            mode === "resize-ne" ||
+            mode === "resize-se" ||
+            mode === "resize-sw") &&
+          startT.fitMode !== "cover" &&
+          startT.fitMode !== "fill";
+
+        if (preserveMediaRatio) {
+          const hasHorizontalEdge = resizeFromEast || resizeFromWest;
+          const hasVerticalEdge = resizeFromNorth || resizeFromSouth;
+          const candidateW = resizeFromEast
+            ? startT.width + localDeltaProjectX
+            : resizeFromWest
+              ? startT.width - localDeltaProjectX
+              : startT.width;
+          const candidateH = resizeFromSouth
+            ? startT.height + localDeltaProjectY
+            : resizeFromNorth
+              ? startT.height - localDeltaProjectY
+              : startT.height;
+          const widthScale = candidateW / Math.max(1, startT.width);
+          const heightScale = candidateH / Math.max(1, startT.height);
+          let scale: number;
+
+          if (hasHorizontalEdge && hasVerticalEdge) {
+            scale =
+              Math.abs(widthScale - 1) >= Math.abs(heightScale - 1)
+                ? widthScale
+                : heightScale;
+          } else {
+            scale = hasHorizontalEdge ? widthScale : heightScale;
+          }
+
+          const minimumScale = Math.max(
+            20 / Math.max(1, startT.width),
+            20 / Math.max(1, startT.height),
           );
-          const angleDelta = (currentAngle - rotationGesture.startAngle) * (180 / Math.PI);
-          newRotation = Math.round(startT.rotation + angleDelta);
+          scale = Math.max(minimumScale, scale);
+          newW = startT.width * scale;
+          newH = startT.height * scale;
+
+          if (resizeFromWest) {
+            newX = startT.x + startT.width - newW;
+          } else if (!resizeFromEast) {
+            newX = startT.x + (startT.width - newW) / 2;
+          }
+
+          if (resizeFromNorth) {
+            newY = startT.y + startT.height - newH;
+          } else if (!resizeFromSouth) {
+            newY = startT.y + (startT.height - newH) / 2;
+          }
         } else {
-          const centerX = startT.x + startT.width / 2;
-          const centerY = startT.y + startT.height / 2;
-          const pointerProjX = startT.x + deltaProjectX;
-          const pointerProjY = startT.y + deltaProjectY;
-          const rad = Math.atan2(pointerProjY - centerY, pointerProjX - centerX);
-          newRotation = Math.round((rad * (180 / Math.PI)) % 360);
+          if (resizeFromEast)
+            newW = Math.max(20, startT.width + localDeltaProjectX);
+          if (resizeFromSouth)
+            newH = Math.max(20, startT.height + localDeltaProjectY);
+          if (resizeFromWest) {
+            const w = Math.max(20, startT.width - localDeltaProjectX);
+            newX = startT.x + (startT.width - w);
+            newW = w;
+          }
+          if (resizeFromNorth) {
+            const h = Math.max(20, startT.height - localDeltaProjectY);
+            newY = startT.y + (startT.height - h);
+            newH = h;
+          }
         }
-      } else if (mode.startsWith('resize-')) {
-        if (mode.includes('e')) newW = Math.max(20, startT.width + deltaProjectX);
-        if (mode.includes('s')) newH = Math.max(20, startT.height + deltaProjectY);
-        if (mode.includes('w')) {
-          const w = Math.max(20, startT.width - deltaProjectX);
-          newX = startT.x + (startT.width - w);
-          newW = w;
-        }
-        if (mode.includes('n')) {
-          const h = Math.max(20, startT.height - deltaProjectY);
-          newY = startT.y + (startT.height - h);
-          newH = h;
-        }
+
+        // Keep the opposite handle fixed in world space. x/y describe the
+        // unrotated box, so rotate the local center shift before storing them.
+        const widthChange = newW - startT.width;
+        const heightChange = newH - startT.height;
+        const localCenterShiftX = resizeFromEast
+          ? widthChange / 2
+          : resizeFromWest
+            ? -widthChange / 2
+            : 0;
+        const localCenterShiftY = resizeFromSouth
+          ? heightChange / 2
+          : resizeFromNorth
+            ? -heightChange / 2
+            : 0;
+        const worldCenterShiftX =
+          localCenterShiftX * rotationCos - localCenterShiftY * rotationSin;
+        const worldCenterShiftY =
+          localCenterShiftX * rotationSin + localCenterShiftY * rotationCos;
+        const startCenterX = startT.x + startT.width / 2;
+        const startCenterY = startT.y + startT.height / 2;
+
+        newX = startCenterX + worldCenterShiftX - newW / 2;
+        newY = startCenterY + worldCenterShiftY - newH / 2;
       }
 
       // If text clip, scale font size proportionally with width change
       let updatedTextStyle = activeClipRef.current.textStyle;
-      if (activeClipRef.current.type === 'text' && mode.startsWith('resize-')) {
+      if (activeClipRef.current.type === "text" && mode.startsWith("resize-")) {
         const startFontSize = startTextStyleRef.current?.fontSize || 48;
         const scaleFactor = newW / (startT.width || 1);
-        const newFontSize = Math.max(10, Math.min(400, Math.round(startFontSize * scaleFactor)));
+        const newFontSize = Math.max(
+          10,
+          Math.min(400, Math.round(startFontSize * scaleFactor)),
+        );
         if (updatedTextStyle) {
           updatedTextStyle = {
             ...updatedTextStyle,
@@ -208,7 +374,10 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
       if (isMobileGestureRef.current) {
         queueMobileUpdate(activeClipRef.current.id, updates);
       } else {
-        updateClip(activeClipRef.current.id, updates);
+        // skipHistory:true — history was already captured once at pointerdown.
+        // Calling pushState every frame floods history and triggers "Maximum update
+        // depth exceeded" via cascading re-renders.
+        updateClip(activeClipRef.current.id, updates, { skipHistory: true });
       }
 
       activeClipRef.current = {
@@ -235,13 +404,20 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
       if (isMobileGestureRef.current && mobileHistoryCapturedRef.current) {
         const project = useProjectStore.getState().currentProject;
         if (project) autosaveService.scheduleSave(project);
+      } else if (!isMobileGestureRef.current) {
+        // Desktop: schedule autosave after drag ends.
+        const project = useProjectStore.getState().currentProject;
+        if (project) autosaveService.scheduleSave(project);
       }
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
-      window.removeEventListener('cutnora:mobile-pinch-start', handleMobilePinchStart);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+      window.removeEventListener(
+        "cutnora:mobile-pinch-start",
+        handleMobilePinchStart,
+      );
       setIsDragging(false);
-      setActiveGuides([]);
+      updateActiveGuides([]);
       activeClipRef.current = null;
       isMobileGestureRef.current = false;
       mobileHistoryCapturedRef.current = false;
@@ -249,10 +425,13 @@ export function useTransformHandler(stageScale: number): UseTransformHandlerRetu
 
     const handleMobilePinchStart = () => handlePointerUp();
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
-    window.addEventListener('cutnora:mobile-pinch-start', handleMobilePinchStart);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    window.addEventListener(
+      "cutnora:mobile-pinch-start",
+      handleMobilePinchStart,
+    );
   };
 
   return {

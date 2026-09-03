@@ -20,7 +20,9 @@ import {
   Image as ImageIcon,
   Type,
   ChevronDown,
+  Layers,
 } from "lucide-react";
+import { cn } from "@/shared/utils/cn";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/modules/core/db/database";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
@@ -75,6 +77,8 @@ export function TimelineToolbar({
     setZoomMode,
     stageScale,
     triggerResetView,
+    showTrackHeaders = true,
+    toggleTrackHeaders,
   } = useEditorUIStore();
 
   const {
@@ -190,9 +194,9 @@ export function TimelineToolbar({
   };
 
   return (
-    <div className="flex h-10 w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3 text-xs select-none overflow-x-auto">
+    <div className="relative flex h-11 w-full shrink-0 items-center justify-between gap-3 overflow-hidden border-b border-studio-border bg-studio-topbar px-2 text-xs select-none">
       {/* Left: Timeline Edit Actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="z-10 flex shrink-0 items-center gap-0.5 rounded-lg border border-studio-border/80 bg-studio-bg/45 p-0.5">
         <IconButton
           label="Split clip at playhead (S)"
           size="sm"
@@ -257,10 +261,32 @@ export function TimelineToolbar({
             <span>Text Track</span>
           </DropdownMenuItem>
         </DropdownMenu>
+
+        <div className="mx-0.5 h-3.5 w-px bg-studio-border" />
+
+        <IconButton
+          label={showTrackHeaders ? "Hide track headers" : "Show track headers"}
+          size="sm"
+          variant="ghost"
+          onClick={toggleTrackHeaders}
+          className={cn(
+            "cursor-pointer h-7 w-7 transition-colors",
+            !showTrackHeaders
+              ? "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised"
+              : "text-studio-fg/90 hover:bg-studio-panel-raised",
+          )}
+        >
+          <Layers
+            className={cn(
+              "h-3.5 w-3.5 transition-opacity",
+              !showTrackHeaders && "opacity-40",
+            )}
+          />
+        </IconButton>
       </div>
 
-      {/* Center: Stage Controls + Transport Playback Controls */}
-      <div className="flex items-center gap-2 shrink-0 px-2">
+      {/* Center: Stage Controls + Transport Playback Controls (Always Centered) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex shrink-0 items-center gap-2 rounded-lg border border-studio-border/80 bg-studio-bg/45 px-1.5 py-0.5">
         {/* Canvas Stage View Controls (Fit Stage) */}
         <div className="flex items-center gap-1">
           <Select
@@ -357,26 +383,27 @@ export function TimelineToolbar({
       </div>
 
       {/* Right: Selected Media Info + Zoom Controls */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="z-10 ml-auto flex shrink-0 items-center gap-2 rounded-lg border border-studio-border/80 bg-studio-bg/45 px-1.5 py-0.5">
         {/* Selected Media Indicator (Only displayed when media is selected) */}
-        {(selectedMediaName || selectedMediaDetails) && (
-          <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0">
-            <span
-              className="font-medium text-studio-fg/90"
-              title={selectedClip?.name || selectedMediaName || undefined}
-            >
-              {selectedMediaName}
-            </span>
-            {selectedMediaDetails && (
-              <>
-                <span>•</span>
-                <span>{selectedMediaDetails}</span>
-              </>
-            )}
-          </div>
-        )}
-
-        <div className="h-3.5 w-px bg-studio-border" />
+        {(selectedMediaName || selectedMediaDetails) ? (
+          <>
+            <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0 max-w-[200px] truncate">
+              <span
+                className="font-medium text-studio-fg/90 truncate"
+                title={selectedClip?.name || selectedMediaName || undefined}
+              >
+                {selectedMediaName}
+              </span>
+              {selectedMediaDetails && (
+                <>
+                  <span>•</span>
+                  <span className="truncate">{selectedMediaDetails}</span>
+                </>
+              )}
+            </div>
+            <div className="h-3.5 w-px bg-studio-border" />
+          </>
+        ) : null}
 
         {/* Timeline Zoom Slider Controls */}
         <div className="flex items-center gap-1">

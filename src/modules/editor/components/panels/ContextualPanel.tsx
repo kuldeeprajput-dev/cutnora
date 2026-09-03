@@ -13,7 +13,7 @@ import { ElementsPanel } from "@/modules/editor/features/elements";
 import { RecordPanel } from "@/modules/editor/features/record/components/RecordPanel";
 
 export function ContextualPanel() {
-  const { activeTool } = useEditorUIStore();
+  const activeTool = useEditorUIStore((state) => state.activeTool);
 
   if (
     activeTool === "canvas" ||

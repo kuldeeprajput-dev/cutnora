@@ -74,6 +74,7 @@ export const ClipSchema = z.object({
   timelineDuration: z.number().positive(),
   sourceStart: z.number().min(0),
   sourceDuration: z.number().positive(),
+  splitGroupId: z.string().optional(),
   name: z.string(),
   transform: TransformSchema,
   adjustments: AdjustmentsSchema,

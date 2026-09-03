@@ -1,24 +1,46 @@
-'use client';
+"use client";
 
-import React from 'react';
-import type { TimelineClip } from '@/modules/editor/types';
-import { useProjectStore } from '@/modules/projects';
-import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
-import { Info, RotateCcw } from 'lucide-react';
+import React from "react";
+import { Gauge, Timer, RotateCcw } from "lucide-react";
+import type { TimelineClip } from "@/modules/editor/types";
+import { useProjectStore } from "@/modules/projects";
+import { Button } from "@/shared/components/ui/Button";
+import { Slider } from "@/shared/components/ui/Slider";
+import { cn } from "@/shared/utils/cn";
 
 export interface SpeedTabProps {
   clip: TimelineClip;
 }
 
-const speedPresets = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
+const SPEED_PRESETS = [
+  { speed: 0.25, label: "0.25×", sub: "Super Slow" },
+  { speed: 0.5, label: "0.5×", sub: "Slow Mo" },
+  { speed: 0.75, label: "0.75×", sub: "Gentle Slow" },
+  { speed: 1.0, label: "1.0×", sub: "Normal" },
+  { speed: 1.25, label: "1.25×", sub: "Brisk" },
+  { speed: 1.5, label: "1.5×", sub: "Fast" },
+  { speed: 2.0, label: "2.0×", sub: "Double" },
+  { speed: 4.0, label: "4.0×", sub: "Hyperlapse" },
+];
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = (seconds % 60).toFixed(1);
+  if (mins > 0) {
+    return `${mins}m ${secs}s`;
+  }
+  return `${secs}s`;
+}
 
 export function SpeedTab({ clip }: SpeedTabProps) {
-  const { updateClip } = useProjectStore();
+  const updateClip = useProjectStore((state) => state.updateClip);
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const projectFps = currentProject?.settings.fps || 30;
 
-  const handleSpeedChange = (newSpeed: number) => {
-    const validSpeed = Math.min(4, Math.max(0.1, newSpeed));
-    // Calculate new timeline duration based on source duration / speed
+  const currentSpeed = clip.speed ?? 1.0;
+
+  const changeSpeed = (newSpeed: number) => {
+    const validSpeed = Math.min(4, Math.max(0.1, Number(newSpeed.toFixed(2))));
     const newTimelineDuration = clip.sourceDuration / validSpeed;
 
     updateClip(clip.id, {
@@ -27,65 +49,147 @@ export function SpeedTab({ clip }: SpeedTabProps) {
     });
   };
 
+  const estimatedEffectiveFps = Math.round(projectFps * currentSpeed);
+
   return (
-    <div className="flex flex-col gap-4 text-studio-fg select-none">
-      {/* Speed Presets Grid */}
-      <div>
-        <label className="text-[11px] font-medium text-studio-muted block mb-2">Speed Presets</label>
+    <div className="flex select-none flex-col gap-3 pb-2 text-studio-fg">
+      {/* 1. Quick Playback Speed Presets */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+              <Gauge className="h-3.5 w-3.5 text-brand" /> Playback Speed
+            </h3>
+            <p className="mt-0.5 text-[10px] text-studio-muted">
+              Speed up or slow down video & audio playback
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {currentSpeed !== 1.0 && (
+              <button
+                type="button"
+                onClick={() => changeSpeed(1.0)}
+                className="text-[10px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
+              {currentSpeed.toFixed(2)}×
+            </span>
+          </div>
+        </div>
+
+        {/* Speed Preset Chips */}
         <div className="grid grid-cols-4 gap-1.5">
-          {speedPresets.map((sp) => {
-            const isActive = Math.abs(clip.speed - sp) < 0.01;
+          {SPEED_PRESETS.map((p) => {
+            const isActive = Math.abs(currentSpeed - p.speed) < 0.03;
             return (
               <button
-                key={sp}
+                key={p.speed}
                 type="button"
-                onClick={() => handleSpeedChange(sp)}
-                className={`flex h-8 items-center justify-center rounded-lg text-xs transition-all select-none cursor-pointer ${
+                aria-pressed={isActive}
+                onClick={() => changeSpeed(p.speed)}
+                className={cn(
+                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
                   isActive
-                    ? 'bg-brand text-white font-bold shadow-sm'
-                    : 'bg-studio-panel text-studio-fg border border-studio-border hover:bg-studio-panel-raised hover:border-brand/50 font-medium'
-                }`}
+                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
+                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
+                )}
               >
-                {sp}x
+                <span
+                  className={cn(
+                    "text-xs font-bold",
+                    isActive ? "text-brand" : "text-studio-fg",
+                  )}
+                >
+                  {p.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[8px] mt-0.5 font-medium truncate",
+                    isActive ? "text-brand/80" : "text-studio-muted",
+                  )}
+                >
+                  {p.sub}
+                </span>
               </button>
             );
           })}
         </div>
-      </div>
 
-      {/* Custom Speed Input */}
-      <div>
-        <label className="text-[11px] font-medium text-studio-muted block mb-1">Custom Speed Multiplier</label>
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
+        {/* Speed Slider */}
+        <div className="pt-1">
+          <Slider
+            aria-label="Speed multiplier slider"
+            value={currentSpeed}
             min={0.1}
-            max={4}
-            step={0.1}
-            value={clip.speed}
-            onChange={(e) => handleSpeedChange(parseFloat(e.target.value) || 1)}
-            className="h-8 text-xs font-mono"
+            max={4.0}
+            step={0.05}
+            onValueChange={changeSpeed}
           />
-          <span className="text-xs font-mono text-studio-muted">x</span>
         </div>
-      </div>
+      </section>
 
-      {/* Explanatory Hint */}
-      <div className="flex items-start gap-2 rounded-lg border border-studio-border bg-studio-panel p-2.5 text-xs text-studio-muted">
-        <Info className="h-4 w-4 text-brand shrink-0 mt-0.5" />
-        <span>Changing clip playback speed adjusts its visible duration on the timeline without altering source trims.</span>
-      </div>
+      {/* 2. Duration & Timeline Impact */}
+      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
+        <div>
+          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
+            <Timer className="h-3.5 w-3.5 text-brand" /> Duration Impact
+          </h3>
+          <p className="mt-0.5 text-[10px] text-studio-muted">
+            How speed affects clip duration on your timeline
+          </p>
+        </div>
 
-      <div className="h-px bg-studio-border mt-1" />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-lg border border-studio-border bg-studio-panel/50 p-2.5">
+            <span className="block text-[9px] font-medium uppercase tracking-wide text-studio-muted">
+              Source Duration
+            </span>
+            <span className="mt-1 block font-mono text-xs font-bold text-studio-fg">
+              {formatTime(clip.sourceDuration)}
+            </span>
+            <span className="text-[9px] text-studio-muted mt-0.5 block font-mono">
+              {clip.sourceDuration.toFixed(2)}s raw
+            </span>
+          </div>
 
-      {/* Reset Action */}
+          <div className="rounded-lg border border-brand/40 bg-brand/10 p-2.5">
+            <span className="block text-[9px] font-medium uppercase tracking-wide text-brand">
+              Timeline Duration
+            </span>
+            <span className="mt-1 block font-mono text-xs font-bold text-brand">
+              {formatTime(clip.timelineDuration)}
+            </span>
+            <span className="text-[9px] text-brand/80 mt-0.5 block font-mono">
+              {currentSpeed === 1
+                ? "100% (Realtime)"
+                : currentSpeed > 1
+                  ? `${Math.round((1 / currentSpeed) * 100)}% shorter`
+                  : `${Math.round((1 / currentSpeed) * 100)}% longer`}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel/30 px-3 py-2">
+          <span className="text-[10px] text-studio-muted">
+            Effective frame rate
+          </span>
+          <span className="font-mono text-[11px] font-semibold text-studio-fg">
+            ~{estimatedEffectiveFps} fps
+          </span>
+        </div>
+      </section>
+
+      {/* 3. Reset Button */}
       <Button
         size="sm"
         variant="ghost"
-        onClick={() => handleSpeedChange(1)}
-        className="h-8 gap-1.5 text-xs text-studio-muted hover:text-destructive cursor-pointer"
+        onClick={() => changeSpeed(1.0)}
+        className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
       >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Speed (1.0x)
+        <RotateCcw className="h-3.5 w-3.5" /> Reset Speed to 1.0× Normal
       </Button>
     </div>
   );

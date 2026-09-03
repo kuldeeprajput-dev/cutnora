@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useProjectStore } from "@/modules/projects";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 import {
@@ -21,8 +21,45 @@ export function useMediaImporter(): UseMediaImporterReturn {
   const [importProgress, setImportProgress] = useState(0);
   const [importStatus, setImportStatus] = useState<ImportProgress | null>(null);
   const [importErrors, setImportErrors] = useState<string[]>([]);
-  const { currentProject, addAsset } = useProjectStore();
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const addAsset = useProjectStore((state) => state.addAsset);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const progressFrameRef = useRef<number | null>(null);
+  const queuedProgressRef = useRef<{
+    status: ImportProgress;
+    overallProgress: number;
+  } | null>(null);
+
+  const clearQueuedProgress = useCallback(() => {
+    if (progressFrameRef.current !== null) {
+      cancelAnimationFrame(progressFrameRef.current);
+      progressFrameRef.current = null;
+    }
+    queuedProgressRef.current = null;
+  }, []);
+
+  const queueProgress = useCallback(
+    (status: ImportProgress, overallProgress: number) => {
+      queuedProgressRef.current = { status, overallProgress };
+      if (progressFrameRef.current !== null) return;
+      progressFrameRef.current = requestAnimationFrame(() => {
+        progressFrameRef.current = null;
+        const queued = queuedProgressRef.current;
+        queuedProgressRef.current = null;
+        if (!queued) return;
+        setImportStatus(queued.status);
+        setImportProgress(queued.overallProgress);
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+      clearQueuedProgress();
+    };
+  }, [clearQueuedProgress]);
 
   const clearErrors = useCallback(() => {
     setImportErrors([]);
@@ -59,8 +96,8 @@ export function useMediaImporter(): UseMediaImporterReturn {
             {
               signal: controller.signal,
               onProgress: (status) => {
-                setImportStatus(status);
-                setImportProgress(
+                queueProgress(
+                  status,
                   Math.round(
                     ((i + status.percentage / 100) / files.length) * 100,
                   ),
@@ -70,6 +107,9 @@ export function useMediaImporter(): UseMediaImporterReturn {
           );
           addAsset(asset);
           successCount++;
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve()),
+          );
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") break;
           console.error("Import error for file:", file.name, err);
@@ -94,11 +134,12 @@ export function useMediaImporter(): UseMediaImporterReturn {
       if (controller.signal.aborted) {
         useToastStore.getState().showToast("Import cancelled", "info");
       }
+      clearQueuedProgress();
       abortControllerRef.current = null;
       setImportStatus(null);
       setIsImporting(false);
     },
-    [currentProject, addAsset],
+    [addAsset, clearQueuedProgress, currentProject, queueProgress],
   );
 
   return {
