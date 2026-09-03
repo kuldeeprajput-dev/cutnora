@@ -98,11 +98,14 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     });
   };
 
-  // Dimensions of full clip on stage in pixels
-  const left = clip.transform.x * stageScale;
-  const top = clip.transform.y * stageScale;
+  // Dimensions of the full clip in the positioned media layer. CropOverlay is
+  // already a child of that layer, so applying clip x/y here would offset it twice.
+  const stageTop = clip.transform.y * stageScale;
   const fullWidth = Math.max(50, clip.transform.width * stageScale);
   const fullHeight = Math.max(50, clip.transform.height * stageScale);
+  const rotationRadians = (clip.transform.rotation * Math.PI) / 180;
+  const rotationCos = Math.cos(rotationRadians);
+  const rotationSin = Math.sin(rotationRadians);
 
   // Active cropped region coordinates relative to clip
   const cropLeftPx = (crop.left / 100) * fullWidth;
@@ -134,9 +137,11 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     const handlePointerMove = (moveEv: PointerEvent) => {
       const deltaX = moveEv.clientX - startX;
       const deltaY = moveEv.clientY - startY;
+      const localDeltaX = deltaX * rotationCos + deltaY * rotationSin;
+      const localDeltaY = -deltaX * rotationSin + deltaY * rotationCos;
 
-      const deltaLeftPct = (deltaX / fullWidth) * 100;
-      const deltaTopPct = (deltaY / fullHeight) * 100;
+      const deltaLeftPct = (localDeltaX / fullWidth) * 100;
+      const deltaTopPct = (localDeltaY / fullHeight) * 100;
 
       let newTop = startTop;
       let newBottom = startBottom;
@@ -144,16 +149,28 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
       let newRight = startRight;
 
       if (handleType.includes("n")) {
-        newTop = Math.max(0, Math.min(100 - startBottom - 5, startTop + deltaTopPct));
+        newTop = Math.max(
+          0,
+          Math.min(100 - startBottom - 5, startTop + deltaTopPct),
+        );
       }
       if (handleType.includes("s")) {
-        newBottom = Math.max(0, Math.min(100 - startTop - 5, startBottom - deltaTopPct));
+        newBottom = Math.max(
+          0,
+          Math.min(100 - startTop - 5, startBottom - deltaTopPct),
+        );
       }
       if (handleType.includes("w")) {
-        newLeft = Math.max(0, Math.min(100 - startRight - 5, startLeft + deltaLeftPct));
+        newLeft = Math.max(
+          0,
+          Math.min(100 - startRight - 5, startLeft + deltaLeftPct),
+        );
       }
       if (handleType.includes("e")) {
-        newRight = Math.max(0, Math.min(100 - startLeft - 5, startRight - deltaLeftPct));
+        newRight = Math.max(
+          0,
+          Math.min(100 - startLeft - 5, startRight - deltaLeftPct),
+        );
       }
 
       updateClip(clip.id, {
@@ -197,11 +214,16 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
     const handlePointerMove = (moveEv: PointerEvent) => {
       const deltaX = moveEv.clientX - startX;
       const deltaY = moveEv.clientY - startY;
+      const localDeltaX = deltaX * rotationCos + deltaY * rotationSin;
+      const localDeltaY = -deltaX * rotationSin + deltaY * rotationCos;
 
-      const deltaLeftPct = (deltaX / fullWidth) * 100;
-      const deltaTopPct = (deltaY / fullHeight) * 100;
+      const deltaLeftPct = (localDeltaX / fullWidth) * 100;
+      const deltaTopPct = (localDeltaY / fullHeight) * 100;
 
-      let newLeft = Math.max(0, Math.min(100 - cropW, startLeft + deltaLeftPct));
+      let newLeft = Math.max(
+        0,
+        Math.min(100 - cropW, startLeft + deltaLeftPct),
+      );
       let newRight = 100 - newLeft - cropW;
       let newTop = Math.max(0, Math.min(100 - cropH, startTop + deltaTopPct));
       let newBottom = 100 - newTop - cropH;
@@ -236,15 +258,15 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
         : "bg-studio-panel hover:bg-studio-border text-studio-fg border border-studio-border/60",
     );
 
-  const isNearTop = top + cropTopPx < 55;
+  const isNearTop = stageTop + cropTopPx < 55;
   const toolbarTop = isNearTop ? cropTopPx + 8 : cropTopPx - toolbarHeight - 8;
 
   return (
     <div
       style={{
         position: "absolute",
-        left: `${left}px`,
-        top: `${top}px`,
+        left: 0,
+        top: 0,
         width: `${fullWidth}px`,
         height: `${fullHeight}px`,
       }}
@@ -410,7 +432,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Top-Left NW Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('nw', e)}
+          onPointerDown={(e) => handleStartDragHandle("nw", e)}
           className="crop-handle absolute -top-3 -left-3 h-6 w-6 cursor-nwse-resize pointer-events-auto flex items-center justify-center group/h"
           title="Drag to crop Top-Left"
         >
@@ -419,7 +441,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Top-Right NE Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('ne', e)}
+          onPointerDown={(e) => handleStartDragHandle("ne", e)}
           className="crop-handle absolute -top-3 -right-3 h-6 w-6 cursor-nesw-resize pointer-events-auto flex items-center justify-center group/h"
           title="Drag to crop Top-Right"
         >
@@ -428,7 +450,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Bottom-Left SW Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('sw', e)}
+          onPointerDown={(e) => handleStartDragHandle("sw", e)}
           className="crop-handle absolute -bottom-3 -left-3 h-6 w-6 cursor-nesw-resize pointer-events-auto flex items-center justify-center group/h"
           title="Drag to crop Bottom-Left"
         >
@@ -437,7 +459,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Bottom-Right SE Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('se', e)}
+          onPointerDown={(e) => handleStartDragHandle("se", e)}
           className="crop-handle absolute -bottom-3 -right-3 h-6 w-6 cursor-nwse-resize pointer-events-auto flex items-center justify-center group/h"
           title="Drag to crop Bottom-Right"
         >
@@ -448,7 +470,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Top Edge N Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('n', e)}
+          onPointerDown={(e) => handleStartDragHandle("n", e)}
           className="crop-handle absolute -top-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag top edge"
         >
@@ -457,7 +479,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Bottom Edge S Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('s', e)}
+          onPointerDown={(e) => handleStartDragHandle("s", e)}
           className="crop-handle absolute -bottom-3 left-1/2 -translate-x-1/2 h-5 w-10 cursor-ns-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag bottom edge"
         >
@@ -466,7 +488,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Left Edge W Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('w', e)}
+          onPointerDown={(e) => handleStartDragHandle("w", e)}
           className="crop-handle absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag left edge"
         >
@@ -475,7 +497,7 @@ export function CropOverlay({ clip, stageScale }: CropOverlayProps) {
 
         {/* Right Edge E Handle */}
         <div
-          onPointerDown={(e) => handleStartDragHandle('e', e)}
+          onPointerDown={(e) => handleStartDragHandle("e", e)}
           className="crop-handle absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-5 cursor-ew-resize pointer-events-auto flex items-center justify-center rounded-full bg-brand text-white shadow-md hover:scale-110 transition-transform"
           title="Drag right edge"
         >
