@@ -156,9 +156,9 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
   return (
     <Link
       href={`/studio/${project.id}`}
-      className="group relative rounded-xl border border-studio-border bg-studio-panel p-4 transition-all hover:border-brand"
+      className="group relative rounded-xl border border-studio-border bg-studio-panel p-3 transition-all hover:border-brand sm:p-4"
     >
-      <div className="aspect-video w-full rounded-lg bg-studio-bg border border-studio-border flex items-center justify-center mb-3 overflow-hidden relative">
+      <div className="relative mb-3 flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-studio-border bg-studio-bg">
         {thumbUrl ? (
           <img
             src={thumbUrl}
@@ -170,7 +170,7 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
         )}
       </div>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold text-studio-fg group-hover:text-brand transition-colors truncate">
             {project.name}
           </h3>
@@ -182,8 +182,9 @@ function ProjectCard({ project, onDelete }: ProjectCardProps) {
         <button
           type="button"
           title="Delete project"
+          aria-label={`Delete ${project.name}`}
           onClick={(e) => onDelete(project.id, e)}
-          className="p-1 text-studio-muted hover:text-destructive transition-colors"
+          className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted transition-colors active:bg-studio-hover active:text-destructive sm:mr-0 sm:mt-0 sm:h-auto sm:w-auto sm:rounded-none sm:p-1 sm:active:bg-transparent sm:hover:text-destructive"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -223,30 +224,36 @@ export default function StudioDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-studio-bg text-studio-fg py-12">
+    <div className="min-h-dvh bg-studio-bg py-6 text-studio-fg sm:min-h-screen sm:py-12">
       <Container size="lg">
         {/* Dashboard Header */}
-        <div className="flex items-center justify-between border-b border-studio-border pb-6 mb-8">
-          <div>
-            <Link href="/" className="flex items-center gap-2 mb-2">
+        <div className="mb-6 flex flex-col items-stretch gap-5 border-b border-studio-border pb-5 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-6">
+          <div className="min-w-0">
+            <Link href="/" className="mb-2 flex w-fit items-center gap-2">
               <BrandMark size={24} />
               <span className="text-sm font-bold tracking-tight text-studio-muted">
                 Cutnora Studio
               </span>
             </Link>
-            <h1 className="text-3xl font-extrabold tracking-tight text-studio-fg">
+            <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-studio-fg sm:text-3xl sm:leading-9">
               Local Projects
             </h1>
-            <p className="mt-1 text-xs text-studio-muted">
-              Projects stored on your local browser IndexedDB storage.
+            <p className="mt-1 max-w-sm text-xs leading-5 text-studio-muted sm:max-w-none sm:leading-4">
+              Projects stored on your local browser storage.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle className="border-studio-border bg-studio-bg text-studio-fg hover:bg-studio-hover" />
-            <Link href="/studio/new">
-              <Button size="md" variant="primary">
-                <Plus className="h-4 w-4" /> Create New Project
+          <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:shrink-0">
+            <ThemeToggle className="h-11 min-w-11 shrink-0 touch-manipulation border-studio-border bg-studio-bg px-0 text-studio-fg hover:bg-studio-hover sm:h-10 sm:min-w-10 sm:px-3" />
+            <Link href="/studio/new" className="min-w-0 flex-1 sm:flex-none">
+              <Button
+                size="md"
+                variant="primary"
+                className="h-11 w-full touch-manipulation whitespace-nowrap px-4 sm:h-9 sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="sm:hidden">New Project</span>
+                <span className="hidden sm:inline">Create New Project</span>
               </Button>
             </Link>
           </div>
@@ -258,7 +265,7 @@ export default function StudioDashboardPage() {
             Loading local projects...
           </div>
         ) : projects.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-studio-border bg-studio-panel p-12 text-center">
+          <div className="rounded-2xl border border-dashed border-studio-border bg-studio-panel p-6 text-center sm:p-12">
             <Film className="mx-auto h-12 w-12 text-studio-muted mb-4" />
             <h3 className="text-base font-bold text-studio-fg">
               No local projects found
@@ -275,7 +282,7 @@ export default function StudioDashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {projects.map((project) => (
               <ProjectCard
                 key={project.id}

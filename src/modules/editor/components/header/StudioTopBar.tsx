@@ -164,7 +164,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
             {saveStatus === "saved" && (
               <span
                 className="inline-flex items-center gap-1 text-mkt-success"
-                title="All changes saved to IndexedDB"
+                title="All changes saved locally"
               >
                 <Check className="h-3 w-3" /> Saved
               </span>
