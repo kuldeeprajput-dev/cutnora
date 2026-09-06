@@ -11,6 +11,7 @@ import { Container } from "@/shared/components/layout/Container";
 import { Plus, Film, Trash2 } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { confirm } from "@/shared/components/ui/Popup";
 
 interface ProjectCardProps {
   project: Project;
@@ -215,6 +216,15 @@ export default function StudioDashboardPage() {
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const targetProject = projects.find((p) => p.id === id);
+    const ok = await confirm({
+      title: "Delete Project",
+      message: `Are you sure you want to delete "${targetProject?.name || "this project"}"? All associated media assets and edits will be permanently removed.`,
+      confirmText: "Delete Project",
+      variant: "destructive",
+    });
+    if (!ok) return;
+
     const assets = await db.assets.where("projectId").equals(id).toArray();
     for (const asset of assets) {
       await deleteStoredMediaAsset(asset);

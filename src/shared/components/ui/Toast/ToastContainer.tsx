@@ -24,21 +24,22 @@ export function ToastContainer() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 hidden lg:flex flex-col gap-2 pointer-events-none max-w-sm w-full select-none">
+    <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm sm:left-auto sm:right-4 w-auto sm:w-full select-none">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto flex items-center justify-between gap-3 rounded-lg border border-studio-border bg-studio-panel p-3 text-xs text-studio-fg shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
+          className="pointer-events-auto flex items-center justify-between gap-3 rounded-xl border border-studio-border bg-studio-panel px-3.5 py-3 text-xs text-studio-fg shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
         >
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             {renderIcon(toast.type)}
-            <span className="truncate">{toast.message}</span>
+            <span className="truncate font-medium">{toast.message}</span>
           </div>
 
           <button
             type="button"
+            aria-label="Dismiss notification"
             onClick={() => removeToast(toast.id)}
-            className="text-studio-muted hover:text-studio-fg transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-studio-muted hover:bg-studio-hover hover:text-studio-fg transition-colors touch-manipulation shrink-0"
           >
             <X className="h-3.5 w-3.5" />
           </button>

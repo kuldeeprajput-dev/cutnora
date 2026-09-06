@@ -10,7 +10,6 @@ import { PreviewStage } from "../stage/PreviewStage";
 import { TimelineShell } from "../timeline/TimelineShell";
 import { ResizableDivider } from "@/shared/components/layout/ResizableDivider";
 import { KeyboardShortcutsModal } from "../modals/KeyboardShortcutsModal";
-import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
 import { useKeyboardShortcuts } from "@/modules/editor/commands/useKeyboardShortcuts";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 
@@ -195,7 +194,6 @@ export function StudioShell() {
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
       />
-      <ToastContainer />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { ContextMenu, type ContextMenuItemData } from '@/shared/components/ui/ContextMenu';
 import { useProjectStore } from '@/modules/projects';
+import { confirm } from '@/shared/components/ui/Popup';
 import type { TrackType } from '@/modules/editor/types';
 import { VolumeX, Lock, Trash2, Plus } from 'lucide-react';
 
@@ -64,7 +65,18 @@ export function TrackHeaderContextMenu({
       id: 'delete',
       label: 'Delete track',
       icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
-      onClick: () => {
+      onClick: async () => {
+        const project = useProjectStore.getState().currentProject;
+        const track = project?.tracks.find((x) => x.id === trackId);
+        if (track && track.clips.length > 0) {
+          const ok = await confirm({
+            title: 'Delete Track',
+            message: `Track "${track.name}" contains ${track.clips.length} clip(s). Are you sure you want to delete this track and all of its clips?`,
+            confirmText: 'Delete Track',
+            variant: 'destructive',
+          });
+          if (!ok) return;
+        }
         deleteTrack(trackId);
       },
     },

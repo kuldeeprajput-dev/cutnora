@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
+import { GlobalPopups } from "@/shared/components/providers/GlobalPopups";
 
 export const metadata: Metadata = {
   title: {
@@ -63,7 +64,10 @@ export default function RootLayout({
           suppressHydrationWarning
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <GlobalPopups />
+      </body>
     </html>
   );
 }

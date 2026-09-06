@@ -41,7 +41,6 @@ import type { EditorTool, TimelineClip } from "@/modules/editor/types";
 import { useProjectStore, autosaveService } from "@/modules/projects";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
-import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
 import { cn } from "@/shared/utils/cn";
 
 type MobileSheet = "library" | "inspector" | null;

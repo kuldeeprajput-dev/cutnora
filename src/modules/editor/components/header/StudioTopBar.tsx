@@ -24,6 +24,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
+import { confirm } from "@/shared/components/ui/Popup";
 
 export interface StudioTopBarProps {
   onOpenHelp?: () => void;
@@ -45,11 +46,15 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   );
 
   const handleRepair = async () => {
-    if (
-      confirm(
+    const ok = await confirm({
+      title: "Scan & Repair References",
+      message:
         "Scan and repair project references? Invalid or missing asset links will be safely cleaned up.",
-      )
-    ) {
+      confirmText: "Repair References",
+      variant: "primary",
+    });
+
+    if (ok) {
       const fixed = await repairProjectReferences();
       useToastStore
         .getState()

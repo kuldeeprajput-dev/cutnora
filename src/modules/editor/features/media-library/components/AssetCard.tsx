@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
+import { confirm } from "@/shared/components/ui/Popup";
 import { IconButton } from "@/shared/components/ui/IconButton";
 import {
   FileVideo,
@@ -118,12 +119,23 @@ export function AssetCard({
 
   const handleDeleteAsset = async () => {
     const currentProject = useProjectStore.getState().currentProject;
-    const removedClipIds = new Set(
+    const clipsUsingAsset =
       currentProject?.tracks
         .flatMap((track) => track.clips)
-        .filter((clip) => clip.assetId === asset.id)
-        .map((clip) => clip.id) ?? [],
-    );
+        .filter((clip) => clip.assetId === asset.id) ?? [];
+
+    const ok = await confirm({
+      title: "Delete Media Asset",
+      message:
+        clipsUsingAsset.length > 0
+          ? `Are you sure you want to delete "${asset.name}"? This asset is currently used in ${clipsUsingAsset.length} clip(s) on the timeline and will be removed.`
+          : `Are you sure you want to delete "${asset.name}" from your project media library?`,
+      confirmText: "Delete Asset",
+      variant: "destructive",
+    });
+    if (!ok) return;
+
+    const removedClipIds = new Set(clipsUsingAsset.map((clip) => clip.id));
     await deleteStoredMediaAsset(asset);
     useProjectStore.getState().removeAsset(asset.id);
     const editorState = useEditorUIStore.getState();
@@ -253,37 +265,16 @@ export function AssetCard({
             }
             align="right"
           >
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview?.(asset);
-              }}
-            >
+            <DropdownMenuItem onClick={() => onPreview?.(asset)}>
               <Eye className="h-3.5 w-3.5" /> Preview media
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddToTimeline();
-              }}
-            >
+            <DropdownMenuItem onClick={handleAddToTimeline}>
               <Plus className="h-3.5 w-3.5" /> Add to timeline
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsRenaming(true);
-              }}
-            >
+            <DropdownMenuItem onClick={() => setIsRenaming(true)}>
               <Edit2 className="h-3.5 w-3.5" /> Rename
             </DropdownMenuItem>
-            <DropdownMenuItem
-              destructive
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteAsset();
-              }}
-            >
+            <DropdownMenuItem destructive onClick={handleDeleteAsset}>
               <Trash2 className="h-3.5 w-3.5" /> Delete
             </DropdownMenuItem>
           </DropdownMenu>
@@ -393,37 +384,16 @@ export function AssetCard({
             }
             align="right"
           >
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview?.(asset);
-              }}
-            >
+            <DropdownMenuItem onClick={() => onPreview?.(asset)}>
               <Eye className="h-3.5 w-3.5" /> Preview media
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddToTimeline();
-              }}
-            >
+            <DropdownMenuItem onClick={handleAddToTimeline}>
               <Plus className="h-3.5 w-3.5" /> Add to timeline
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsRenaming(true);
-              }}
-            >
+            <DropdownMenuItem onClick={() => setIsRenaming(true)}>
               <Edit2 className="h-3.5 w-3.5" /> Rename
             </DropdownMenuItem>
-            <DropdownMenuItem
-              destructive
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteAsset();
-              }}
-            >
+            <DropdownMenuItem destructive onClick={handleDeleteAsset}>
               <Trash2 className="h-3.5 w-3.5" /> Delete
             </DropdownMenuItem>
           </DropdownMenu>
