@@ -1,0 +1,223 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
+import { Film } from "lucide-react";
+import { db } from "@/modules/core/db/database";
+import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import type { Project } from "../types";
+import { getProjectDuration, formatDuration, formatDate } from "../utils/project-utils";
+import { ProjectActionMenu } from "./ProjectActionMenu";
+import { cn } from "@/shared/utils/cn";
+
+export interface ProjectListRowProps {
+  project: Project;
+  isSelected: boolean;
+  onToggleSelect: (id: string, e: React.MouseEvent) => void;
+  onDelete: (id: string, e: React.MouseEvent) => void;
+  onRename: (id: string, currentName: string, e: React.MouseEvent) => void;
+  onDuplicate: (id: string, e: React.MouseEvent) => void;
+  onInfo: (project: Project, e: React.MouseEvent) => void;
+}
+
+export function ProjectListRow({
+  project,
+  isSelected,
+  onToggleSelect,
+  onDelete,
+  onRename,
+  onDuplicate,
+  onInfo,
+}: ProjectListRowProps) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const durationSec = useMemo(() => getProjectDuration(project), [project]);
+  const durationStr = useMemo(() => formatDuration(durationSec), [durationSec]);
+  const dateStr = useMemo(
+    () => formatDate(project.createdAt || project.updatedAt),
+    [project.createdAt, project.updatedAt],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadThumb() {
+      try {
+        const customThumbId = (project as any).thumbnailBlobId;
+        if (customThumbId) {
+          const cached = objectUrlManager.getUrl(customThumbId);
+          if (cached) {
+            if (isMounted) setThumbUrl(cached);
+            return;
+          }
+          const thumbRecord = await db.thumbnails.get(customThumbId);
+          if (thumbRecord && isMounted) {
+            setThumbUrl(
+              objectUrlManager.createUrl(customThumbId, thumbRecord.blob),
+            );
+            return;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadThumb();
+    return () => {
+      isMounted = false;
+    };
+  }, [project]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handleClick);
+    window.addEventListener("touchstart", handleClick);
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("touchstart", handleClick);
+    };
+  }, [menuOpen]);
+
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-2 sm:gap-3.5 border-b border-border py-2.5 px-2 sm:px-4 transition-colors max-w-full",
+        menuOpen ? "relative z-30" : "relative z-0",
+        isSelected ? "bg-accent/40" : "hover:bg-accent/20",
+      )}
+    >
+      {/* Checkbox */}
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={isSelected}
+        data-state={isSelected ? "checked" : "unchecked"}
+        value="on"
+        onClick={(e) => onToggleSelect(project.id, e)}
+        className={cn(
+          "cursor-pointer bg-background peer focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary shrink-0 shadow-xs rounded-sm border border-border focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 size-5 flex items-center justify-center transition-colors",
+        )}
+      >
+        {isSelected && (
+          <span
+            data-state="checked"
+            className="flex items-center justify-center text-current"
+            style={{ pointerEvents: "none" }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-check size-4"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+          </span>
+        )}
+      </button>
+
+      {/* Mini square thumbnail */}
+      <Link
+        href={`/studio/${project.id}`}
+        className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted flex items-center justify-center"
+      >
+        {thumbUrl ? (
+          <img
+            src={thumbUrl}
+            alt={project.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Film className="h-4 w-4 text-muted-foreground" />
+        )}
+      </Link>
+
+      {/* Project Title */}
+      <Link
+        href={`/studio/${project.id}`}
+        className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground hover:text-primary transition-colors"
+      >
+        {project.name}
+      </Link>
+
+      {/* Duration */}
+      <span className="shrink-0 text-right font-mono text-xs text-muted-foreground sm:w-16">
+        {durationStr}
+      </span>
+
+      {/* Date */}
+      <span className="shrink-0 text-right text-xs text-muted-foreground sm:w-28 whitespace-nowrap">
+        {dateStr}
+      </span>
+
+      {/* More menu */}
+      <div className="relative shrink-0" ref={menuRef}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
+          aria-label="More options"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            color="currentColor"
+            className="size-4"
+          >
+            <path
+              d="M12.0045 11.5C12.5568 11.5 13.0045 11.9477 13.0045 12.5C13.0045 13.0523 12.5568 13.5 12.0045 13.5C11.4522 13.5 11.0045 13.0523 11.0045 12.5C11.0045 11.9477 11.4522 11.5 12.0045 11.5Z"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            ></path>
+            <path
+              d="M18.0045 11.5C18.5568 11.5 19.0045 11.9477 19.0045 12.5C19.0045 13.0523 18.5568 13.5 18.0045 13.5C17.4522 13.5 17.0045 13.0523 17.0045 12.5C17.0045 11.9477 17.4522 11.5 18.0045 11.5Z"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            ></path>
+            <path
+              d="M6.00449 11.5C6.55677 11.5 7.00449 11.9477 7.00449 12.5C7.00449 13.0523 6.55677 13.5 6.00449 13.5C5.4522 13.5 5.00449 13.0523 5.00449 12.5C5.00449 11.9477 5.4522 11.5 6.00449 11.5Z"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            ></path>
+          </svg>
+        </button>
+
+        <ProjectActionMenu
+          isOpen={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          onRename={(e) => onRename(project.id, project.name, e)}
+          onDuplicate={(e) => onDuplicate(project.id, e)}
+          onInfo={(e) => onInfo(project, e)}
+          onDelete={(e) => onDelete(project.id, e)}
+          className="bottom-full mb-1.5 md:bottom-auto md:top-full md:mt-1.5"
+        />
+      </div>
+    </div>
+  );
+}
