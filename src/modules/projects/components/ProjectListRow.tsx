@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { Film } from "lucide-react";
-import { db } from "@/modules/core/db/database";
-import { objectUrlManager } from "@/modules/core/db/object-url-manager";
+import { useProjectThumbnail } from "../hooks/useProjectThumbnail";
 import type { Project } from "../types";
 import { getProjectDuration, formatDuration, formatDate } from "../utils/project-utils";
 import { ProjectActionMenu } from "./ProjectActionMenu";
@@ -29,7 +28,7 @@ export function ProjectListRow({
   onDuplicate,
   onInfo,
 }: ProjectListRowProps) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const thumbUrl = useProjectThumbnail(project);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -41,38 +40,13 @@ export function ProjectListRow({
   );
 
   useEffect(() => {
-    let isMounted = true;
-    async function loadThumb() {
-      try {
-        const customThumbId = (project as any).thumbnailBlobId;
-        if (customThumbId) {
-          const cached = objectUrlManager.getUrl(customThumbId);
-          if (cached) {
-            if (isMounted) setThumbUrl(cached);
-            return;
-          }
-          const thumbRecord = await db.thumbnails.get(customThumbId);
-          if (thumbRecord && isMounted) {
-            setThumbUrl(
-              objectUrlManager.createUrl(customThumbId, thumbRecord.blob),
-            );
-            return;
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    loadThumb();
-    return () => {
-      isMounted = false;
-    };
-  }, [project]);
-
-  useEffect(() => {
     if (!menuOpen) return;
     const handleClick = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current &&
+        e.target instanceof Node &&
+        !menuRef.current.contains(e.target)
+      ) {
         setMenuOpen(false);
       }
     };
@@ -148,7 +122,7 @@ export function ProjectListRow({
       {/* Project Title */}
       <Link
         href={`/studio/${project.id}`}
-        className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground hover:text-primary transition-colors"
+        className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground hover:text-foreground/70 transition-colors"
       >
         {project.name}
       </Link>

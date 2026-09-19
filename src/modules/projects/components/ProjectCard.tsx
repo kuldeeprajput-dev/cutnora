@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Film } from "lucide-react";
+import { Film, MoreVertical } from "lucide-react";
 import type { Project } from "../types";
 import {
   getProjectDuration,
@@ -34,7 +34,8 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const thumbUrl = useProjectThumbnail(project);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const durationSec = useMemo(() => getProjectDuration(project), [project]);
   const durationStr = useMemo(() => formatDuration(durationSec), [durationSec]);
@@ -46,7 +47,11 @@ export function ProjectCard({
   useEffect(() => {
     if (!menuOpen) return;
     const handleClick = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      const isInsideDesktop = desktopMenuRef.current?.contains(target);
+      const isInsideMobile = mobileMenuRef.current?.contains(target);
+      if (!isInsideDesktop && !isInsideMobile) {
         setMenuOpen(false);
       }
     };
@@ -59,9 +64,12 @@ export function ProjectCard({
   }, [menuOpen]);
 
   return (
-    <div className="group relative" data-state={menuOpen ? "open" : "closed"}>
-      <Link className="block" href={`/studio/${project.id}`}>
-        <div className="text-card-foreground rounded-2xl border bg-background overflow-hidden border-none p-0">
+    <div
+      className={cn("group relative", menuOpen ? "z-30" : "z-0")}
+      data-state={menuOpen ? "open" : "closed"}
+    >
+      <div className="text-card-foreground rounded-2xl border bg-background border-none p-0">
+        <Link className="block" href={`/studio/${project.id}`}>
           <div className="bg-muted relative aspect-video overflow-hidden rounded-2xl">
             <div className="absolute inset-0">
               {thumbUrl ? (
@@ -89,10 +97,43 @@ export function ProjectCard({
               {durationStr}
             </div>
           </div>
-          <div className="p-6 flex flex-col gap-2 px-0 pt-4">
-            <h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
-              {project.name}
-            </h3>
+        </Link>
+
+        <div className="p-6 flex flex-col gap-2 px-0 pt-4">
+          <div className="flex items-start justify-between gap-2">
+            <Link className="block min-w-0 flex-1" href={`/studio/${project.id}`}>
+              <h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
+                {project.name}
+              </h3>
+            </Link>
+
+            {/* Mobile 3-Dot Project Menu Button (Right side of project name) */}
+            <div className="sm:hidden relative shrink-0" ref={mobileMenuRef}>
+              <button
+                type="button"
+                aria-label="Project menu"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                className="flex h-5 w-5 items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <MoreVertical className="size-4" />
+              </button>
+
+              <ProjectActionMenu
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                onRename={(e) => onRename(project.id, project.name, e)}
+                onDuplicate={(e) => onDuplicate(project.id, e)}
+                onInfo={(e) => onInfo(project, e)}
+                onDelete={(e) => onDelete(project.id, e)}
+              />
+            </div>
+          </div>
+
+          <Link className="block" href={`/studio/${project.id}`}>
             <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -127,9 +168,9 @@ export function ProjectCard({
               </svg>
               <span>Created {dateStr}</span>
             </div>
-          </div>
+          </Link>
         </div>
-      </Link>
+      </div>
 
       {/* Select Checkbox (Top Left) */}
       <button
@@ -169,8 +210,8 @@ export function ProjectCard({
         )}
       </button>
 
-      {/* 3-Dot Project Menu Button (Top Right) */}
-      <div className="absolute z-10 top-3 right-3" ref={menuRef}>
+      {/* Desktop 3-Dot Project Menu Button (Top Right) */}
+      <div className="hidden sm:block absolute z-10 top-3 right-3" ref={desktopMenuRef}>
         <button
           className={cn(
             "inline-flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-background text-foreground hover:bg-background/90 size-7 rounded-sm transition-opacity",

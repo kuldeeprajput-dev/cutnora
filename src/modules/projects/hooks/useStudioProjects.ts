@@ -25,6 +25,31 @@ export function useStudioProjects() {
   const [infoProject, setInfoProject] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProjects() {
+      try {
+        const list = await db.projects.orderBy("updatedAt").reverse().toArray();
+        if (isMounted) {
+          setProjects(list);
+        }
+      } catch (err) {
+        console.error("Failed to load projects:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadProjects();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const {
     sortBy,
     setSortBy,
