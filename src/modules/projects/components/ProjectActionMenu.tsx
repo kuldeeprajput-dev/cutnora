@@ -1,0 +1,88 @@
+"use client";
+
+import React from "react";
+import { Pencil, Copy, Info, Trash2 } from "lucide-react";
+import { cn } from "@/shared/utils/cn";
+
+export interface ProjectActionMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onRename: (e: React.MouseEvent) => void;
+  onDuplicate: (e: React.MouseEvent) => void;
+  onInfo: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+  className?: string;
+}
+
+export function ProjectActionMenu({
+  isOpen,
+  onClose,
+  onRename,
+  onDuplicate,
+  onInfo,
+  onDelete,
+  className,
+}: ProjectActionMenuProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={cn(
+        "absolute right-0 z-50 w-44 rounded-2xl border border-border bg-[#161618] p-1.5 shadow-2xl animate-in fade-in-50",
+        className || "top-full mt-1.5",
+      )}
+    >
+      {/* Rename */}
+      <button
+        type="button"
+        onClick={(e) => {
+          onClose();
+          onRename(e);
+        }}
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+      >
+        <Pencil className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <span>Rename</span>
+      </button>
+
+      {/* Duplicate */}
+      <button
+        type="button"
+        onClick={(e) => {
+          onClose();
+          onDuplicate(e);
+        }}
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+      >
+        <Copy className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <span>Duplicate</span>
+      </button>
+
+      {/* Info */}
+      <button
+        type="button"
+        onClick={(e) => {
+          onClose();
+          onInfo(e);
+        }}
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+      >
+        <Info className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <span>Info</span>
+      </button>
+
+      {/* Delete */}
+      <button
+        type="button"
+        onClick={(e) => {
+          onClose();
+          onDelete(e);
+        }}
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+      >
+        <Trash2 className="h-4 w-4 text-red-500" />
+        <span>Delete</span>
+      </button>
+    </div>
+  );
+}
