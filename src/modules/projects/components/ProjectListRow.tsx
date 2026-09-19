@@ -30,6 +30,7 @@ export function ProjectListRow({
 }: ProjectListRowProps) {
   const thumbUrl = useProjectThumbnail(project);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openUpwards, setOpenUpwards] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const durationSec = useMemo(() => getProjectDuration(project), [project]);
@@ -38,6 +39,28 @@ export function ProjectListRow({
     () => formatDate(project.createdAt || project.updatedAt),
     [project.createdAt, project.updatedAt],
   );
+
+  const updateMenuPlacement = () => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUpwards(spaceBelow < 200);
+    }
+  };
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    updateMenuPlacement();
+    const handleScrollOrResize = () => {
+      updateMenuPlacement();
+    };
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -144,6 +167,9 @@ export function ProjectListRow({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (!menuOpen) {
+              updateMenuPlacement();
+            }
             setMenuOpen(!menuOpen);
           }}
           aria-label="More options"
@@ -185,11 +211,16 @@ export function ProjectListRow({
         <ProjectActionMenu
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
+          onSelect={(e) => onToggleSelect(project.id, e)}
+          isSelected={isSelected}
           onRename={(e) => onRename(project.id, project.name, e)}
           onDuplicate={(e) => onDuplicate(project.id, e)}
           onInfo={(e) => onInfo(project, e)}
           onDelete={(e) => onDelete(project.id, e)}
-          className="bottom-full mb-1.5 md:bottom-auto md:top-full md:mt-1.5"
+          className={cn(
+            openUpwards ? "bottom-full mb-1.5" : "top-full mt-1.5",
+            "md:bottom-auto md:top-full md:mt-1.5",
+          )}
         />
       </div>
     </div>

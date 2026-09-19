@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { nanoid } from "nanoid";
 import { db } from "@/modules/core/db/database";
 import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
 import type { Project } from "../types";
@@ -99,7 +100,7 @@ export function useStudioProjects() {
     const sourceProject = projects.find((p) => p.id === id);
     if (!sourceProject) return;
 
-    const newId = crypto.randomUUID();
+    const newId = nanoid();
     const newName = `${sourceProject.name} (Copy)`;
     const now = Date.now();
 
@@ -121,7 +122,7 @@ export function useStudioProjects() {
       for (const asset of sourceAssets) {
         await db.assets.add({
           ...asset,
-          id: crypto.randomUUID(),
+          id: nanoid(),
           projectId: newId,
           createdAt: now,
         });
@@ -174,7 +175,7 @@ export function useStudioProjects() {
       const sourceProject = projects.find((p) => p.id === id);
       if (!sourceProject) continue;
 
-      const newId = crypto.randomUUID();
+      const newId = nanoid();
       const newName = `${sourceProject.name} (Copy)`;
 
       const duplicatedProject: Project = {
@@ -195,7 +196,7 @@ export function useStudioProjects() {
         for (const asset of sourceAssets) {
           await db.assets.add({
             ...asset,
-            id: crypto.randomUUID(),
+            id: nanoid(),
             projectId: newId,
             createdAt: now,
           });

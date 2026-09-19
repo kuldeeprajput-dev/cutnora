@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
-import { Pencil, Copy, Info, Trash2 } from "lucide-react";
+import { CheckSquare, Pencil, Copy, Info, Trash2 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
 export interface ProjectActionMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  onSelect?: (e: React.MouseEvent) => void;
+  isSelected?: boolean;
   onRename: (e: React.MouseEvent) => void;
   onDuplicate: (e: React.MouseEvent) => void;
   onInfo: (e: React.MouseEvent) => void;
@@ -17,6 +19,8 @@ export interface ProjectActionMenuProps {
 export function ProjectActionMenu({
   isOpen,
   onClose,
+  onSelect,
+  isSelected,
   onRename,
   onDuplicate,
   onInfo,
@@ -32,6 +36,21 @@ export function ProjectActionMenu({
         className || "top-full mt-1.5",
       )}
     >
+      {/* Select option */}
+      {onSelect && (
+        <button
+          type="button"
+          onClick={(e) => {
+            onClose();
+            onSelect(e);
+          }}
+          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+        >
+          <CheckSquare className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+          <span>{isSelected ? "Deselect" : "Select"}</span>
+        </button>
+      )}
+
       {/* Rename */}
       <button
         type="button"
