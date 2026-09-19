@@ -6,10 +6,26 @@
   --font-sans: "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
-  --color-brand: #c45100;
-  --color-brand-hover: #a94400;
-  --color-brand-soft: #f4e5d7;
+  --color-brand: #ea580c;
+  --color-brand-hover: #c2410c;
+  --color-brand-soft: #25160d;
   --color-brand-contrast: #ffffff;
+
+  --color-background: var(--background, #0d0d0d);
+  --color-foreground: var(--foreground, #f4f2ed);
+  --color-muted: var(--muted, #161618);
+  --color-muted-foreground: var(--muted-foreground, #9ca3af);
+  --color-border: var(--border, #27272a);
+  --color-input: var(--input, #161618);
+  --color-accent: var(--accent, #26262a);
+  --color-accent-foreground: var(--accent-foreground, #ffffff);
+  --color-card: var(--card, #0d0d0d);
+  --color-card-foreground: var(--card-foreground, #ffffff);
+  --color-primary: var(--primary, #ea580c);
+  --color-primary-foreground: var(--primary-foreground, #ffffff);
+  --color-destructive: var(--destructive, #ef4444);
+  --color-destructive-foreground: var(--destructive-foreground, #ffffff);
+  --color-ring: var(--ring, #ea580c);
 
   --color-mkt-bg: #f8f9fb;
   --color-mkt-surface: #ffffff;
@@ -72,8 +88,21 @@
     --canvas-bg: #e7e9ed;
     --selection: #c45100;
     --selection-hover: #a94400;
-    --destructive: #c43b30;
-    --destructive-hover: #a92f27;
+    --background: #0d0d0d;
+    --foreground: #f4f2ed;
+    --muted: #161618;
+    --muted-foreground: #9ca3af;
+    --border: #27272a;
+    --input: #161618;
+    --accent: #26262a;
+    --accent-foreground: #ffffff;
+    --card: #0d0d0d;
+    --card-foreground: #ffffff;
+    --primary: #ea580c;
+    --primary-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-hover: #dc2626;
+    --ring: #ea580c;
     --overlay: #777b82;
   }
 
