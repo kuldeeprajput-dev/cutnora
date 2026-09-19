@@ -1,237 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { db } from "@/modules/core/db/database";
-import { objectUrlManager } from "@/modules/core/db/object-url-manager";
-import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
-import type { Project } from "@/modules/projects";
+import {
+  ProjectCard,
+  useStudioProjects,
+} from "@/modules/projects";
 import { Button } from "@/shared/components/ui/Button";
 import { Container } from "@/shared/components/layout/Container";
-import { Plus, Film, Trash2 } from "lucide-react";
+import { Plus, Film } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
-import { confirm } from "@/shared/components/ui/Popup";
-
-interface ProjectCardProps {
-  project: Project;
-  onDelete: (id: string, e: React.MouseEvent) => void;
-}
-
-function ProjectCard({ project, onDelete }: ProjectCardProps) {
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadThumb() {
-      try {
-        // 1. Direct project thumbnail if set
-        const customThumbId = (project as any).thumbnailBlobId;
-        if (customThumbId) {
-          const cached = objectUrlManager.getUrl(customThumbId);
-          if (cached) {
-            if (isMounted) setThumbUrl(cached);
-            return;
-          }
-          const thumbRecord = await db.thumbnails.get(customThumbId);
-          if (thumbRecord && isMounted) {
-            setThumbUrl(
-              objectUrlManager.createUrl(customThumbId, thumbRecord.blob),
-            );
-            return;
-          }
-        }
-
-        // 2. Search assets belonging to this project
-        const projectAssets = await db.assets
-          .where("projectId")
-          .equals(project.id)
-          .toArray();
-        const visualAsset = projectAssets.find(
-          (a) => a.type === "video" || a.type === "image",
-        );
-
-        if (visualAsset) {
-          if (visualAsset.thumbnailBlobId) {
-            const cached = objectUrlManager.getUrl(visualAsset.thumbnailBlobId);
-            if (cached) {
-              if (isMounted) setThumbUrl(cached);
-              return;
-            }
-            const thumbRecord = await db.thumbnails.get(
-              visualAsset.thumbnailBlobId,
-            );
-            if (thumbRecord && isMounted) {
-              setThumbUrl(
-                objectUrlManager.createUrl(
-                  visualAsset.thumbnailBlobId,
-                  thumbRecord.blob,
-                ),
-              );
-              return;
-            }
-          }
-
-          if (visualAsset.blobId) {
-            const cached = objectUrlManager.getUrl(visualAsset.blobId);
-            if (cached) {
-              if (isMounted) setThumbUrl(cached);
-              return;
-            }
-            const thumbRecord = await db.thumbnails.get(visualAsset.blobId);
-            if (thumbRecord && isMounted) {
-              setThumbUrl(
-                objectUrlManager.createUrl(
-                  visualAsset.blobId,
-                  thumbRecord.blob,
-                ),
-              );
-              return;
-            }
-            const blobRecord = await db.blobs.get(visualAsset.blobId);
-            if (blobRecord && isMounted) {
-              setThumbUrl(
-                objectUrlManager.createUrl(visualAsset.blobId, blobRecord.blob),
-              );
-              return;
-            }
-          }
-        }
-
-        // 3. Fallback: Search clip asset references in tracks
-        for (const track of project.tracks) {
-          for (const clip of track.clips) {
-            if (clip.assetId) {
-              const asset = await db.assets.get(clip.assetId);
-              if (asset && (asset.type === "video" || asset.type === "image")) {
-                if (asset.thumbnailBlobId) {
-                  const cached = objectUrlManager.getUrl(asset.thumbnailBlobId);
-                  if (cached) {
-                    if (isMounted) setThumbUrl(cached);
-                    return;
-                  }
-                  const thumbRecord = await db.thumbnails.get(
-                    asset.thumbnailBlobId,
-                  );
-                  if (thumbRecord && isMounted) {
-                    setThumbUrl(
-                      objectUrlManager.createUrl(
-                        asset.thumbnailBlobId,
-                        thumbRecord.blob,
-                      ),
-                    );
-                    return;
-                  }
-                }
-                if (asset.blobId) {
-                  const cached = objectUrlManager.getUrl(asset.blobId);
-                  if (cached) {
-                    if (isMounted) setThumbUrl(cached);
-                    return;
-                  }
-                  const blobRecord = await db.blobs.get(asset.blobId);
-                  if (blobRecord && isMounted) {
-                    setThumbUrl(
-                      objectUrlManager.createUrl(asset.blobId, blobRecord.blob),
-                    );
-                    return;
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed loading project thumbnail:", err);
-      }
-    }
-
-    loadThumb();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [project]);
-
-  return (
-    <Link
-      href={`/studio/${project.id}`}
-      className="group relative rounded-xl border border-studio-border bg-studio-panel p-3 transition-all hover:border-brand sm:p-4"
-    >
-      <div className="relative mb-3 flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-studio-border bg-studio-bg">
-        {thumbUrl ? (
-          <img
-            src={thumbUrl}
-            alt={project.name}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <Film className="h-8 w-8 text-studio-muted group-hover:text-brand transition-colors" />
-        )}
-      </div>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-studio-fg group-hover:text-brand transition-colors truncate">
-            {project.name}
-          </h3>
-          <p className="text-[11px] font-mono text-studio-muted mt-0.5">
-            {project.settings.width}×{project.settings.height} (
-            {project.settings.aspectRatio})
-          </p>
-        </div>
-        <button
-          type="button"
-          title="Delete project"
-          aria-label={`Delete ${project.name}`}
-          onClick={(e) => onDelete(project.id, e)}
-          className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted transition-colors active:bg-studio-hover active:text-destructive sm:mr-0 sm:mt-0 sm:h-auto sm:w-auto sm:rounded-none sm:p-1 sm:active:bg-transparent sm:hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
-    </Link>
-  );
-}
 
 export default function StudioDashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const list = await db.projects.orderBy("updatedAt").reverse().toArray();
-        setProjects(list);
-      } catch (err) {
-        console.error("Failed to load projects:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadProjects();
-  }, []);
-
-  const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const targetProject = projects.find((p) => p.id === id);
-    const ok = await confirm({
-      title: "Delete Project",
-      message: `Are you sure you want to delete "${targetProject?.name || "this project"}"? All associated media assets and edits will be permanently removed.`,
-      confirmText: "Delete Project",
-      variant: "destructive",
-    });
-    if (!ok) return;
-
-    const assets = await db.assets.where("projectId").equals(id).toArray();
-    for (const asset of assets) {
-      await deleteStoredMediaAsset(asset);
-    }
-    await db.projects.delete(id);
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-  };
+  const {
+    isLoading,
+    filteredAndSortedProjects: projects,
+    selectedIds,
+    toggleSelectProject,
+    handleDeleteProject,
+    handleDuplicateProject,
+    handleOpenRename,
+    handleOpenInfo,
+  } = useStudioProjects();
 
   return (
     <div className="min-h-dvh bg-studio-bg py-6 text-studio-fg sm:min-h-screen sm:py-12">
@@ -297,7 +88,12 @@ export default function StudioDashboardPage() {
               <ProjectCard
                 key={project.id}
                 project={project}
+                isSelected={selectedIds.includes(project.id)}
+                onToggleSelect={toggleSelectProject}
                 onDelete={handleDeleteProject}
+                onRename={handleOpenRename}
+                onDuplicate={handleDuplicateProject}
+                onInfo={handleOpenInfo}
               />
             ))}
           </div>
