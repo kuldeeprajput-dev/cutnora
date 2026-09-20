@@ -12,17 +12,32 @@ const DropdownContext = createContext<DropdownContextType>({
 });
 
 export interface DropdownMenuProps {
-  trigger: React.ReactNode;
+  trigger: React.ReactNode | ((isOpen: boolean) => React.ReactNode);
   children: React.ReactNode;
   align?: 'left' | 'right';
   className?: string;
+  triggerClassName?: string;
+  matchTriggerWidth?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function DropdownMenu({ trigger, children, align = 'left', className }: DropdownMenuProps) {
+export function DropdownMenu({
+  trigger,
+  children,
+  align = 'left',
+  className,
+  triggerClassName,
+  matchTriggerWidth = false,
+  onOpenChange,
+}: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [coords, setCoords] = useState<{ top: number; left: number; width?: number }>({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    onOpenChange?.(isOpen);
+  }, [isOpen, onOpenChange]);
 
   const timelineHeight = useEditorUIStore((state) => state.timelineHeight);
   const leftPanelWidth = useEditorUIStore((state) => state.leftPanelWidth);
@@ -51,6 +66,7 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
       setCoords({
         top,
         left: align === 'right' ? rect.right : rect.left,
+        width: rect.width,
       });
     }
   };
@@ -104,8 +120,8 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
 
   return (
     <DropdownContext.Provider value={{ close }}>
-      <div ref={triggerRef} onClick={toggleOpen} className="inline-flex cursor-pointer select-none">
-        {trigger}
+      <div ref={triggerRef} onClick={toggleOpen} className={cn("inline-flex cursor-pointer select-none", triggerClassName)}>
+        {typeof trigger === 'function' ? trigger(isOpen) : trigger}
       </div>
 
       {isOpen &&
@@ -119,10 +135,12 @@ export function DropdownMenu({ trigger, children, align = 'left', className }: D
               top: `${coords.top}px`,
               left: align === 'right' ? undefined : `${coords.left}px`,
               right: align === 'right' ? `${window.innerWidth - coords.left}px` : undefined,
+              width: matchTriggerWidth && coords.width ? `${coords.width}px` : undefined,
               zIndex: 9000,
             }}
             className={cn(
-              'min-w-[160px] rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-md p-1.5 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150',
+              matchTriggerWidth ? 'min-w-0' : 'min-w-[160px]',
+              'rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-md p-1.5 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150',
               className
             )}
           >

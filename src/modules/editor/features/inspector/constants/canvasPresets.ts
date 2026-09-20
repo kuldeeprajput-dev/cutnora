@@ -211,9 +211,10 @@ export const QUALITY_PRESETS = [
 ];
 
 export const FPS_OPTIONS = [
-  { value: 24, label: "24 FPS", desc: "Cinematic film" },
-  { value: 30, label: "30 FPS", desc: "Standard video", recommended: true },
-  { value: 60, label: "60 FPS", desc: "Smooth motion" },
+  { value: 24, label: "24 fps", desc: "Cinematic film" },
+  { value: 30, label: "30 fps", desc: "Standard video", recommended: true },
+  { value: 60, label: "60 fps", desc: "Smooth motion" },
+  { value: 120, label: "120 fps", desc: "High frame rate" },
 ];
 
 export const CANVAS_COLOR_SWATCHES = [

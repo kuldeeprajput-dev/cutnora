@@ -8,10 +8,12 @@ export interface SliderProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
   max?: number;
   step?: number;
   label?: string;
+  fillClassName?: string;
+  trackClassName?: string;
 }
 
 export const Slider = forwardRef<HTMLInputElement, SliderProps>(
-  ({ className, value, onValueChange, min = 0, max = 100, step = 1, disabled, label, ...props }, ref) => {
+  ({ className, value, onValueChange, min = 0, max = 100, step = 1, disabled, label, fillClassName, trackClassName, ...props }, ref) => {
     const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -44,13 +46,18 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
             <span className="font-mono">{value}</span>
           </div>
         )}
-        <div className="relative flex items-center w-full h-5 touch-none select-none">
-          <div className="relative w-full h-1.5 rounded-full bg-studio-border overflow-hidden">
+        <div className="group/slider relative flex items-center w-full h-5 touch-none select-none">
+          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-studio-border")}>
             <div
-              className="absolute left-0 top-0 h-full bg-brand rounded-full"
+              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-brand")}
               style={{ width: `${percentage}%` }}
             />
           </div>
+          {/* Draggable visual thumb handle */}
+          <div
+            className="pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-white shadow-md border border-black/20 transition-transform group-hover/slider:scale-125"
+            style={{ left: `${percentage}%` }}
+          />
           <input
             type="range"
             ref={ref}

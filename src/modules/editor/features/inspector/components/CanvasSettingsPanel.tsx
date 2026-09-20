@@ -2,29 +2,25 @@
 
 import React, { useEffect, useState } from "react";
 import {
+  ArrowLeftRight,
   Check,
-  Clapperboard,
-  Gauge,
+  ChevronDown,
+  ChevronRight,
   Link2,
   Link2Off,
-  Monitor,
-  Palette,
-  RectangleVertical,
   RotateCcw,
-  Smartphone,
-  Sparkles,
-  Square,
+  SlidersHorizontal,
   Volume2,
-  ArrowLeftRight,
-  Film,
 } from "lucide-react";
 import { useProjectStore } from "@/modules/projects";
 import type { AspectRatio } from "@/modules/projects/types";
-import { Button } from "@/shared/components/ui/Button";
 import { ColorPickerPopover } from "@/shared/components/ui/ColorPicker";
 import { Input } from "@/shared/components/ui/Input";
-import { Select } from "@/shared/components/ui/Select";
 import { Slider } from "@/shared/components/ui/Slider";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+} from "@/shared/components/ui/DropdownMenu";
 import { cn } from "@/shared/utils/cn";
 
 import {
@@ -41,10 +37,19 @@ import {
 export type { SocialPreset };
 
 export function CanvasSettingsPanel() {
-  const settings = useProjectStore((state) => state.currentProject?.settings);
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const settings = currentProject?.settings;
   const updateSettings = useProjectStore(
     (state) => state.updateProjectSettings,
   );
+
+  const [aspectRatioExpanded, setAspectRatioExpanded] = useState(false);
+  const [resolutionExpanded, setResolutionExpanded] = useState(false);
+  const [bgColorsExpanded, setBgColorsExpanded] = useState(false);
+
+  const [nameDraft, setNameDraft] = useState(currentProject?.name ?? "Untitled project");
+  const [isEditingName, setIsEditingName] = useState(false);
+
   const settingsWidth = settings?.width;
   const settingsHeight = settings?.height;
   const [linked, setLinked] = useState(true);
@@ -54,6 +59,12 @@ export function CanvasSettingsPanel() {
     width: settingsWidth === undefined ? "" : String(settingsWidth),
     height: settingsHeight === undefined ? "" : String(settingsHeight),
   }));
+
+  useEffect(() => {
+    if (currentProject?.name) {
+      setNameDraft(currentProject.name);
+    }
+  }, [currentProject?.name]);
 
   useEffect(() => {
     if (settingsWidth === undefined || settingsHeight === undefined) return;
@@ -71,6 +82,21 @@ export function CanvasSettingsPanel() {
   );
   const activePreset =
     SOCIAL_PRESETS.find((preset) => preset.id === presetId) ?? matchedPreset;
+
+  const handleNameSubmit = () => {
+    setIsEditingName(false);
+    const trimmed = nameDraft.trim();
+    if (trimmed && trimmed !== currentProject?.name) {
+      useProjectStore.setState((state) => {
+        if (state.currentProject) {
+          state.currentProject.name = trimmed;
+          state.currentProject.updatedAt = Date.now();
+        }
+      });
+    } else {
+      setNameDraft(currentProject?.name ?? "Untitled project");
+    }
+  };
 
   const commitDimension = (key: "width" | "height") => {
     const raw = dimensionDraft[key].trim();
@@ -156,567 +182,573 @@ export function CanvasSettingsPanel() {
     });
   };
 
-  const getFormatLabel = () => {
-    if (activePreset) return activePreset.name;
-    const matched = POPULAR_FORMATS.find((f) => f.ratio === settings.aspectRatio);
-    if (matched) return `${matched.title} (${matched.ratio})`;
-    return `${settings.aspectRatio} Custom Format`;
+  const getRatioLabel = (ratio: AspectRatio) => {
+    if (ratio === "16:9") return "Landscape";
+    if (ratio === "9:16") return "Vertical";
+    if (ratio === "1:1") return "Square";
+    if (ratio === "4:5") return "Portrait";
+    if (ratio === "2:3") return "Poster";
+    if (ratio === "21:9") return "Cinema";
+    return "Custom";
   };
 
   return (
-    <div className="flex flex-col gap-4 pb-2 text-studio-fg">
-      {/* 1. Header Format Card with Live Mini Canvas Wireframe */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3.5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            {/* Top row: Status Tag */}
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
-                Active Canvas
-              </span>
-              <span className="text-[10px] font-semibold text-studio-muted">
-                {settings.aspectRatio === "custom" ? "Custom Ratio" : `${settings.aspectRatio} Ratio`}
-              </span>
-            </div>
-
-            {/* Format Title */}
-            <p className="mt-1.5 text-sm font-bold text-studio-fg truncate">
-              {getFormatLabel()}
-            </p>
-
-            {/* Specs Badges */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
-              <span className="rounded-md border border-studio-border bg-studio-panel px-2 py-0.5 font-medium text-studio-fg">
-                {settings.width} × {settings.height} px
-              </span>
-              <span className="rounded-md border border-brand/30 bg-brand/10 px-1.5 py-0.5 font-bold text-brand">
-                {Math.max(settings.width, settings.height) >= 3840
-                  ? "4K UHD"
-                  : Math.max(settings.width, settings.height) >= 2560
-                  ? "2K QHD"
-                  : Math.max(settings.width, settings.height) >= 1920
-                  ? "1080p FHD"
-                  : Math.max(settings.width, settings.height) >= 1280
-                  ? "720p HD"
-                  : "SD"}
-              </span>
-              <span className="rounded-md border border-studio-border bg-studio-panel px-1.5 py-0.5 font-medium text-studio-muted">
-                {settings.fps} FPS
-              </span>
-            </div>
-          </div>
-
-          {/* Dynamic Aspect Ratio Wireframe Preview */}
-          <div className="flex flex-col items-center justify-center shrink-0 pl-1">
-            {(() => {
-              const maxDim = 42;
-              const w = settings.width || 1920;
-              const h = settings.height || 1080;
-              let wireframeW = maxDim;
-              let wireframeH = maxDim;
-
-              if (w >= h) {
-                wireframeW = maxDim;
-                wireframeH = Math.max(20, Math.round(maxDim * (h / w)));
-              } else {
-                wireframeH = maxDim;
-                wireframeW = Math.max(20, Math.round(maxDim * (w / h)));
-              }
-
-              return (
-                <div
-                  style={{ width: `${wireframeW}px`, height: `${wireframeH}px` }}
-                  className="relative flex items-center justify-center rounded-md border border-studio-border bg-studio-panel shadow-xs transition-all duration-300"
-                  title={`Canvas shape: ${settings.width} × ${settings.height}`}
-                >
-                  <span className="text-[8px] font-mono font-bold text-brand leading-none">
-                    {settings.aspectRatio === "custom" ? "Custom" : settings.aspectRatio}
-                  </span>
-                </div>
-              );
-            })()}
-            <span className="mt-1 text-[8px] font-medium text-studio-muted">
-              {settings.width > settings.height
-                ? "Landscape"
-                : settings.height > settings.width
-                ? "Vertical"
-                : "Square"}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Popular Video Formats & Platform Presets */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg">Video Format</h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">Choose where this video will be played</p>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={handleSwapOrientation}
-            className="h-7 gap-1 px-2 text-[10px] font-medium cursor-pointer text-brand hover:border-brand/40"
-            title="Swap width and height (Rotate landscape / portrait)"
-          >
-            <ArrowLeftRight className="h-3 w-3" /> Rotate ⇄
-          </Button>
-        </div>
-
-        {/* Social Platforms Dropdown - Placed right after Video Format */}
-        <div>
-          <Select
-            id="canvas-preset"
-            value={activePreset?.id ?? ""}
-            onChange={(event) => {
-              const preset = SOCIAL_PRESETS.find(
-                (item) => item.id === event.target.value,
-              );
-              if (!preset) return;
-              setCustomResolutionOpen(false);
-              setPresetId(preset.id);
-              updateSettings({
-                width: preset.width,
-                height: preset.height,
-                aspectRatio: preset.aspectRatio,
-              });
-            }}
-            className="h-9 text-xs"
-          >
-            <option value="">Choose a specific platform template...</option>
-            {PLATFORMS.map((platform) => (
-              <optgroup key={platform} label={platform}>
-                {SOCIAL_PRESETS.filter(
-                  (preset) => preset.platform === platform,
-                ).map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name} ({preset.width}×{preset.height})
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </Select>
-        </div>
-
-        {/* 6 Popular Cards with Icons Left Beside the Text */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {POPULAR_FORMATS.map((item) => {
-            const active = settings.aspectRatio === item.ratio;
-            return (
-              <button
-                key={item.ratio}
-                type="button"
-                onClick={() => {
-                  setCustomResolutionOpen(false);
-                  setPresetId("");
-                  updateSettings({
-                    width: item.width,
-                    height: item.height,
-                    aspectRatio: item.ratio,
-                  });
-                }}
-                className={cn(
-                  "relative flex flex-col items-start p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none",
-                  active
-                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
-                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
-                )}
-              >
-                {/* Top Row: Icon + Title on left, Checkmark on right */}
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <item.Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "text-brand" : "text-studio-muted")} />
-                    <span className="text-xs font-bold text-studio-fg truncate">{item.title}</span>
-                  </div>
-                  {active && (
-                    <Check className="h-3.5 w-3.5 text-brand shrink-0" />
-                  )}
-                </div>
-
-                {/* Bottom Row: Subtitle on left, Ratio badge on bottom right */}
-                <div className="mt-1.5 flex items-center justify-between w-full gap-1">
-                  <span className="text-[9px] text-studio-muted truncate">
-                    {item.subtitle}
-                  </span>
-                  <span className={cn(
-                    "text-[9px] font-mono px-1.5 py-0.5 rounded shrink-0",
-                    active ? "bg-brand/20 text-brand font-bold" : "bg-studio-bg/60 text-studio-muted"
-                  )}>
-                    {item.badge}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. Custom Resolution & Width / Height */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg">Canvas Resolution</h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">Set exact pixel width & height</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setLinked((prev) => !prev)}
-            className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border transition-colors cursor-pointer",
-              linked
-                ? "border-brand/40 bg-brand/10 text-brand font-semibold"
-                : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg"
-            )}
-          >
-            {linked ? <Link2 className="h-3 w-3" /> : <Link2Off className="h-3 w-3" />}
-            <span>{linked ? "Proportions Locked" : "Free Size"}</span>
-          </button>
-        </div>
-
-        {/* Quick Resolution Tier Chips */}
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-          {QUALITY_PRESETS.map((q) => {
-            let isActive = false;
-            let subText = `${Math.round(1920 * q.scale)}×${Math.round(1080 * q.scale)}`;
-
-            if (settings.aspectRatio === "16:9") {
-              isActive =
-                settings.width === Math.round(1920 * q.scale) &&
-                settings.height === Math.round(1080 * q.scale);
-              subText = `${Math.round(1920 * q.scale)}×${Math.round(1080 * q.scale)}`;
-            } else if (settings.aspectRatio === "9:16") {
-              isActive =
-                settings.width === Math.round(1080 * q.scale) &&
-                settings.height === Math.round(1920 * q.scale);
-              subText = `${Math.round(1080 * q.scale)}×${Math.round(1920 * q.scale)}`;
-            } else if (settings.aspectRatio === "1:1") {
-              isActive =
-                settings.width === Math.round(1080 * q.scale) &&
-                settings.height === Math.round(1080 * q.scale);
-              subText = `${Math.round(1080 * q.scale)}×${Math.round(1080 * q.scale)}`;
-            } else if (settings.aspectRatio === "4:5") {
-              isActive =
-                settings.width === Math.round(1080 * q.scale) &&
-                settings.height === Math.round(1350 * q.scale);
-              subText = `${Math.round(1080 * q.scale)}×${Math.round(1350 * q.scale)}`;
-            } else if (settings.aspectRatio === "2:3") {
-              isActive =
-                settings.width === Math.round(1000 * q.scale) &&
-                settings.height === Math.round(1500 * q.scale);
-              subText = `${Math.round(1000 * q.scale)}×${Math.round(1500 * q.scale)}`;
-            } else if (settings.aspectRatio === "21:9") {
-              isActive =
-                settings.width === Math.round(2560 * q.scale) &&
-                settings.height === Math.round(1080 * q.scale);
-              subText = `${Math.round(2560 * q.scale)}×${Math.round(1080 * q.scale)}`;
-            } else {
-              const landscapeWidth = Math.round(1920 * q.scale);
-              const landscapeHeight = Math.round(1080 * q.scale);
-              const isPortrait = settings.height > settings.width;
-              const targetWidth = isPortrait
-                ? landscapeHeight
-                : landscapeWidth;
-              const targetHeight = isPortrait
-                ? landscapeWidth
-                : landscapeHeight;
-              isActive =
-                settings.width === targetWidth &&
-                settings.height === targetHeight;
-              subText = `${targetWidth}×${targetHeight}`;
-            }
-
-            return (
-              <button
-                key={q.label}
-                type="button"
-                onClick={() => {
-                  setCustomResolutionOpen(false);
-                  if (settings.aspectRatio === "16:9") {
-                    handleApplyResolutionScale(
-                      Math.round(1920 * q.scale),
-                      Math.round(1080 * q.scale)
-                    );
-                  } else if (settings.aspectRatio === "9:16") {
-                    handleApplyResolutionScale(
-                      Math.round(1080 * q.scale),
-                      Math.round(1920 * q.scale)
-                    );
-                  } else if (settings.aspectRatio === "1:1") {
-                    handleApplyResolutionScale(
-                      Math.round(1080 * q.scale),
-                      Math.round(1080 * q.scale)
-                    );
-                  } else if (settings.aspectRatio === "4:5") {
-                    handleApplyResolutionScale(
-                      Math.round(1080 * q.scale),
-                      Math.round(1350 * q.scale)
-                    );
-                  } else if (settings.aspectRatio === "2:3") {
-                    handleApplyResolutionScale(
-                      Math.round(1000 * q.scale),
-                      Math.round(1500 * q.scale)
-                    );
-                  } else if (settings.aspectRatio === "21:9") {
-                    handleApplyResolutionScale(
-                      Math.round(2560 * q.scale),
-                      Math.round(1080 * q.scale)
-                    );
-                  } else {
-                    handleApplyResolutionScale(
-                      Math.round(1920 * q.scale),
-                      Math.round(1080 * q.scale)
-                    );
+    <div className="flex flex-col gap-3 text-white pb-3 select-none">
+      <div className="flex flex-col text-xs">
+          {/* Row 1: Project Name */}
+          <div className="flex items-center justify-between py-2.5 border-b border-white/[0.06]">
+            <span className="text-white/50 font-medium">Name</span>
+            {isEditingName ? (
+              <input
+                type="text"
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={handleNameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleNameSubmit();
+                  if (e.key === "Escape") {
+                    setNameDraft(currentProject?.name ?? "Untitled project");
+                    setIsEditingName(false);
                   }
                 }}
-                className={cn(
-                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
-                  !customResolutionOpen && isActive
-                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
-                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg"
-                )}
-              >
-                <span className={cn("text-xs font-bold", !customResolutionOpen && isActive ? "text-brand" : "text-studio-fg")}>
-                  {q.label}
-                </span>
-                <span className={cn("text-[9px] mt-0.5", !customResolutionOpen && isActive ? "text-brand/80 font-medium" : "text-studio-muted")}>
-                  {subText}
-                </span>
-              </button>
-            );
-          })}
-
-          <button
-            type="button"
-            aria-pressed={customResolutionOpen}
-            onClick={() => {
-              setPresetId("");
-              setCustomResolutionOpen(true);
-            }}
-            className={cn(
-              "flex flex-col items-center justify-center rounded-lg border p-2 transition-all cursor-pointer select-none",
-              customResolutionOpen
-                ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
-                : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
-            )}
-          >
-            <span className={cn("text-xs font-bold", customResolutionOpen ? "text-brand" : "text-studio-fg")}>
-              Custom
-            </span>
-            <span className={cn("mt-0.5 text-[9px]", customResolutionOpen ? "font-medium text-brand/80" : "text-studio-muted")}>
-              Enter size
-            </span>
-          </button>
-        </div>
-
-        {/* Width & Height Inputs */}
-        {customResolutionOpen ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-lg border border-studio-border bg-studio-panel/50 p-2.5">
-          <div>
-            <label className="text-[10px] font-medium text-studio-muted block mb-1">
-              Width (px)
-            </label>
-            <div className="relative">
-              <Input
-                type="number"
-                min={64}
-                max={7680}
-                value={dimensionDraft.width}
-                onChange={(event) =>
-                  setDimensionDraft((current) => ({
-                    ...current,
-                    width: event.target.value,
-                  }))
-                }
-                onBlur={() => commitDimension("width")}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") event.currentTarget.blur();
-                }}
-                className="h-9 pr-7 font-mono text-xs"
+                className="h-7 w-48 rounded border border-white/30 bg-[#141414] px-2 text-right font-medium text-white outline-none focus:border-white"
               />
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
-                px
-              </span>
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditingName(true)}
+                title="Click to rename"
+                className="max-w-[200px] truncate text-right font-medium text-white/90 hover:text-white hover:underline decoration-white/30 underline-offset-4 cursor-pointer"
+              >
+                {nameDraft || "Untitled project"}
+              </button>
+            )}
           </div>
 
-          <div className="pt-4 text-studio-muted">
-            <button
-              type="button"
-              onClick={() => setLinked(!linked)}
-              title={linked ? "Click to unlock aspect ratio" : "Click to lock aspect ratio"}
-              className={cn(
-                "h-8 w-8 rounded-lg flex items-center justify-center border transition-colors cursor-pointer",
-                linked ? "border-brand/40 bg-brand/10 text-brand" : "border-studio-border bg-studio-panel text-studio-muted"
+          {/* Row 2: Frame rate */}
+          <div className="flex items-center justify-between py-2.5 border-b border-white/[0.06]">
+            <span className="text-white/50 font-medium">Frame rate</span>
+            <DropdownMenu
+              align="right"
+              className="w-36 min-w-[130px] rounded-2xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/80 backdrop-blur-md"
+              trigger={(isOpen) => (
+                <div className="flex items-center gap-1 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs">
+                  <span>{settings?.fps ?? 30} fps</span>
+                  {isOpen ? (
+                    <ChevronDown className="h-3.5 w-3.5 text-white/50" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-white/50" />
+                  )}
+                </div>
               )}
             >
-              {linked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
-            </button>
+              {FPS_OPTIONS.map((opt) => {
+                const isSelected = (settings?.fps ?? 30) === opt.value;
+                return (
+                  <DropdownMenuItem
+                    key={opt.value}
+                    onClick={() => updateSettings({ fps: opt.value })}
+                    className={cn(
+                      "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors",
+                      isSelected
+                        ? "text-white"
+                        : "text-white/80 hover:text-white hover:bg-white/[0.08]"
+                    )}
+                  >
+                    <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                      {isSelected && (
+                        <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />
+                      )}
+                    </span>
+                    <span>{opt.label}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenu>
           </div>
 
-          <div>
-            <label className="text-[10px] font-medium text-studio-muted block mb-1">
-              Height (px)
-            </label>
-            <div className="relative">
-              <Input
-                type="number"
-                min={64}
-                max={7680}
-                value={dimensionDraft.height}
-                onChange={(event) =>
-                  setDimensionDraft((current) => ({
-                    ...current,
-                    height: event.target.value,
-                  }))
-                }
-                onBlur={() => commitDimension("height")}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") event.currentTarget.blur();
-                }}
-                className="h-9 pr-7 font-mono text-xs"
+          {/* Row 3: Aspect ratio */}
+          <div className="py-2.5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between">
+              <span className="text-white/50 font-medium">Aspect ratio</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAspectRatioExpanded((prev) => !prev)}
+                  className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="font-mono text-xs">{settings.aspectRatio}</span>
+                  <span className="text-[11px] text-white/45">
+                    ({getRatioLabel(settings.aspectRatio)})
+                  </span>
+                  {aspectRatioExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSwapOrientation}
+                  title="Swap orientation (Rotate ⇄)"
+                  className="flex h-6 w-6 items-center justify-center rounded text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Expanded Aspect Ratio Options */}
+            {aspectRatioExpanded && (
+              <div className="mt-2.5 space-y-1 pl-0.5">
+                {/* Platform Presets Dropdown */}
+                <div className="pb-1">
+                  <DropdownMenu
+                    matchTriggerWidth
+                    triggerClassName="w-full"
+                    className="max-h-72 w-full overflow-y-auto studio-scrollbar rounded-xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/90 backdrop-blur-md"
+                    trigger={(isOpen) => (
+                      <div
+                        className={cn(
+                          "flex h-8 w-full items-center justify-between gap-2 rounded-lg border px-2.5 text-xs transition-all cursor-pointer",
+                          isOpen
+                            ? "border-white/30 bg-white/[0.06] text-white"
+                            : "border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
+                        )}
+                      >
+                        <span className="truncate">
+                          {activePreset
+                            ? `${activePreset.name} (${activePreset.width}×${activePreset.height})`
+                            : "Platform templates (YouTube, TikTok, Reels...)"}
+                        </span>
+                        {isOpen ? (
+                          <ChevronDown className="h-3.5 w-3.5 text-white/60 shrink-0" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5 text-white/40 shrink-0" />
+                        )}
+                      </div>
+                    )}
+                  >
+                    <div className="flex flex-col space-y-1">
+                      {PLATFORMS.map((platform, idx) => {
+                        const presets = SOCIAL_PRESETS.filter((p) => p.platform === platform);
+                        if (presets.length === 0) return null;
+                        return (
+                          <div key={platform} className={cn(idx > 0 && "pt-1.5 mt-1 border-t border-white/[0.06]")}>
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/35 select-none"
+                            >
+                              {platform}
+                            </div>
+                            <div className="space-y-0.5">
+                              {presets.map((preset) => {
+                                const isSelected = activePreset?.id === preset.id;
+                                return (
+                                  <DropdownMenuItem
+                                    key={preset.id}
+                                    onClick={() => {
+                                      setCustomResolutionOpen(false);
+                                      setPresetId(preset.id);
+                                      updateSettings({
+                                        width: preset.width,
+                                        height: preset.height,
+                                        aspectRatio: preset.aspectRatio,
+                                      });
+                                    }}
+                                    className={cn(
+                                      "flex w-full items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-left",
+                                      isSelected
+                                        ? "bg-white/10 text-white font-medium"
+                                        : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0 truncate">
+                                      <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                                        {isSelected && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                                      </span>
+                                      <span className="truncate">{preset.formatName}</span>
+                                      <span className="font-mono text-[10px] text-white/40 shrink-0">
+                                        ({preset.aspectRatio})
+                                      </span>
+                                    </div>
+                                    <span className="font-mono text-[10px] text-white/35 shrink-0 ml-auto pl-2">
+                                      {preset.width}×{preset.height}
+                                    </span>
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </DropdownMenu>
+                </div>
+
+                {POPULAR_FORMATS.map((item) => {
+                  const active = settings.aspectRatio === item.ratio && !customResolutionOpen;
+                  return (
+                    <button
+                      key={item.ratio}
+                      type="button"
+                      onClick={() => {
+                        setCustomResolutionOpen(false);
+                        setPresetId("");
+                        updateSettings({
+                          width: item.width,
+                          height: item.height,
+                          aspectRatio: item.ratio,
+                        });
+                      }}
+                      className={cn(
+                        "group flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-all cursor-pointer",
+                        active
+                          ? "bg-white/[0.08] text-white font-medium border border-white/10 shadow-xs"
+                          : "text-white/65 hover:bg-white/[0.04] hover:text-white border border-transparent"
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <item.Icon className={cn("h-3.5 w-3.5 shrink-0 transition-colors", active ? "text-white" : "text-white/40 group-hover:text-white/70")} />
+                        <span className="font-mono text-xs w-9 text-left font-medium shrink-0">{item.ratio}</span>
+                        <span className="text-[11px] text-white/50 group-hover:text-white/70 truncate">{item.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-white/35 group-hover:text-white/50">{item.subtitle}</span>
+                        <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                          {active && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {/* Custom Ratio Row */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPresetId("");
+                    setCustomResolutionOpen(true);
+                    setResolutionExpanded(true);
+                  }}
+                  className={cn(
+                    "group flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-all cursor-pointer",
+                    customResolutionOpen
+                      ? "bg-white/[0.08] text-white font-medium border border-white/10 shadow-xs"
+                      : "text-white/65 hover:bg-white/[0.04] hover:text-white border border-transparent"
+                  )}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <SlidersHorizontal className={cn("h-3.5 w-3.5 shrink-0 transition-colors", customResolutionOpen ? "text-white" : "text-white/40 group-hover:text-white/70")} />
+                    <span className="font-mono text-xs w-9 text-left font-medium shrink-0">Custom</span>
+                    <span className="text-[11px] text-white/50 group-hover:text-white/70 truncate">Free size</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] text-white/35 group-hover:text-white/50">Manual px</span>
+                    <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                      {customResolutionOpen && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Row 4: Resolution */}
+          <div className="py-2.5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between">
+              <span className="text-white/50 font-medium">Resolution</span>
+              <button
+                type="button"
+                onClick={() => setResolutionExpanded((prev) => !prev)}
+                className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer"
+              >
+                <span className="font-mono text-xs">
+                  {settings.width} × {settings.height}
+                </span>
+                {resolutionExpanded ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+                )}
+              </button>
+            </div>
+
+            {/* Resolution Tier Pills & Custom Dimension Inputs */}
+            {resolutionExpanded && (
+              <div className="mt-2.5 space-y-2">
+                <div className="grid grid-cols-4 gap-1.5">
+                  {QUALITY_PRESETS.map((q) => {
+                    let isActive = false;
+                    if (settings.aspectRatio === "16:9") {
+                      isActive =
+                        settings.width === Math.round(1920 * q.scale) &&
+                        settings.height === Math.round(1080 * q.scale);
+                    } else if (settings.aspectRatio === "9:16") {
+                      isActive =
+                        settings.width === Math.round(1080 * q.scale) &&
+                        settings.height === Math.round(1920 * q.scale);
+                    } else if (settings.aspectRatio === "1:1") {
+                      isActive =
+                        settings.width === Math.round(1080 * q.scale) &&
+                        settings.height === Math.round(1080 * q.scale);
+                    } else {
+                      isActive =
+                        settings.width === Math.round(1920 * q.scale) ||
+                        settings.height === Math.round(1080 * q.scale);
+                    }
+
+                    return (
+                      <button
+                        key={q.label}
+                        type="button"
+                        onClick={() => {
+                          setCustomResolutionOpen(false);
+                          handleApplyResolutionScale(
+                            Math.round(1920 * q.scale),
+                            Math.round(1080 * q.scale)
+                          );
+                        }}
+                        className={cn(
+                          "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                          !customResolutionOpen && isActive
+                            ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                            : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                        )}
+                      >
+                        {q.label.split(" ")[0]}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPresetId("");
+                      setCustomResolutionOpen(true);
+                    }}
+                    className={cn(
+                      "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                      customResolutionOpen
+                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    )}
+                  >
+                    Custom
+                  </button>
+                </div>
+
+                {/* Custom Width & Height Inputs */}
+                {customResolutionOpen && (
+                  <div className="flex items-center gap-2 pt-1.5">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min={64}
+                        max={7680}
+                        value={dimensionDraft.width}
+                        onChange={(e) =>
+                          setDimensionDraft((cur) => ({ ...cur, width: e.target.value }))
+                        }
+                        onBlur={() => commitDimension("width")}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.currentTarget.blur();
+                        }}
+                        className="h-8 pr-6 font-mono text-xs bg-[#141414] border-white/10"
+                      />
+                      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/40">
+                        W
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setLinked(!linked)}
+                      title={linked ? "Proportions locked (click to unlock)" : "Free size (click to lock)"}
+                      className={cn(
+                        "h-8 w-8 rounded flex items-center justify-center border transition-colors cursor-pointer",
+                        linked ? "border-white/20 bg-white/10 text-white" : "border-white/10 text-white/40 hover:text-white"
+                      )}
+                    >
+                      {linked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
+                    </button>
+
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min={64}
+                        max={7680}
+                        value={dimensionDraft.height}
+                        onChange={(e) =>
+                          setDimensionDraft((cur) => ({ ...cur, height: e.target.value }))
+                        }
+                        onBlur={() => commitDimension("height")}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.currentTarget.blur();
+                        }}
+                        className="h-8 pr-6 font-mono text-xs bg-[#141414] border-white/10"
+                      />
+                      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/40">
+                        H
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Row 5: Background */}
+          <div className="py-2.5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setBgColorsExpanded((prev) => !prev)}
+                className="flex items-center gap-1.5 font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
+              >
+                <span>Background</span>
+                {bgColorsExpanded ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+                )}
+              </button>
+              <ColorPickerPopover
+                label="Background Color"
+                value={settings.backgroundColor || "#000000"}
+                presets={CANVAS_COLOR_SWATCHES.map((s) => s.hex)}
+                onChange={(hex) => updateSettings({ backgroundColor: hex.toUpperCase() })}
+                align="right"
+                triggerClassName="h-6 px-2 gap-1.5 rounded border border-white/10 bg-[#141414] hover:border-white/20 hover:bg-white/[0.04] cursor-pointer text-xs"
               />
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted">
-                px
+            </div>
+
+            {/* Quick Swatches & Preset Styles */}
+            {bgColorsExpanded && (
+              <div className="mt-3 space-y-2.5 pl-0.5">
+                {/* Swatches */}
+                <div className="flex flex-wrap gap-1.5">
+                  {CANVAS_COLOR_SWATCHES.map((swatch) => {
+                    const isSelected =
+                      (settings.backgroundColor || "#000000").toUpperCase() ===
+                      swatch.hex.toUpperCase();
+                    return (
+                      <button
+                        key={swatch.hex}
+                        type="button"
+                        onClick={() => updateSettings({ backgroundColor: swatch.hex })}
+                        title={`${swatch.label} (${swatch.hex})`}
+                        style={{ backgroundColor: swatch.hex }}
+                        className={cn(
+                          "relative h-6 w-6 rounded border transition-all cursor-pointer",
+                          isSelected
+                            ? "border-white ring-2 ring-white/40 scale-105"
+                            : "border-white/15 hover:border-white/40"
+                        )}
+                      >
+                        {isSelected && (
+                          <Check
+                            className={cn(
+                              "absolute inset-0 m-auto h-3 w-3 drop-shadow-md",
+                              swatch.hex === "#FFFFFF" ? "text-black" : "text-white"
+                            )}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Preset Themes (Light, Medium, Heavy) */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    {
+                      name: "Light",
+                      color: "#18191D",
+                      previewClass: "bg-gradient-to-br from-neutral-800 to-neutral-900",
+                    },
+                    {
+                      name: "Medium",
+                      color: "#08090A",
+                      previewClass: "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black",
+                    },
+                    {
+                      name: "Heavy",
+                      color: "#000000",
+                      previewClass: "bg-black",
+                    },
+                  ].map((style) => {
+                    const isSelected =
+                      (settings.backgroundColor || "#000000").toUpperCase() ===
+                      style.color.toUpperCase();
+                    return (
+                      <button
+                        key={style.name}
+                        type="button"
+                        onClick={() => updateSettings({ backgroundColor: style.color })}
+                        className={cn(
+                          "group flex h-7 items-center justify-center rounded border text-[10px] font-medium transition-all cursor-pointer",
+                          style.previewClass,
+                          isSelected
+                            ? "border-white text-white ring-1 ring-white/40"
+                            : "border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                        )}
+                      >
+                        <span>{style.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Row 6: Master Audio */}
+          <div className="py-2.5 border-b border-white/[0.06] space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Volume2 className="h-3.5 w-3.5 text-white/40" />
+                <span className="text-white/50 font-medium">Master volume</span>
+              </div>
+              <span className="font-mono text-xs text-white/80">
+                {Math.round(settings.masterVolume * 100)}%
               </span>
             </div>
+            <Slider
+              value={settings.masterVolume}
+              min={0}
+              max={1}
+              step={0.01}
+              fillClassName="bg-white/90"
+              trackClassName="bg-white/10"
+              onValueChange={(val) => updateSettings({ masterVolume: val })}
+            />
+          </div>
+
+          {/* Row 7: Reset Button */}
+          <div className="pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setLinked(true);
+                setCustomResolutionOpen(false);
+                setPresetId("");
+                updateSettings({
+                  width: 1920,
+                  height: 1080,
+                  aspectRatio: "16:9",
+                  fps: 30,
+                  backgroundColor: "#000000",
+                  masterVolume: 1,
+                });
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] py-2 text-xs font-medium text-white/50 hover:bg-white/[0.06] hover:border-white/20 hover:text-white transition-all cursor-pointer"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Reset to default (1080p 16:9)</span>
+            </button>
           </div>
         </div>
-        ) : null}
-      </section>
-
-      {/* 4. Frame Rate (FPS) */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              <Gauge className="h-3.5 w-3.5 text-brand" /> Video Smoothness (FPS)
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">Frames rendered per second</p>
-          </div>
-          <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-            {settings.fps} FPS
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-1.5">
-          {FPS_OPTIONS.map((option) => {
-            const active = settings.fps === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => updateSettings({ fps: option.value })}
-                className={cn(
-                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
-                  active
-                    ? "border-brand bg-brand text-white shadow-xs font-bold"
-                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg"
-                )}
-              >
-                <span className="text-xs font-bold">{option.label}</span>
-                <span className={cn("text-[9px] mt-0.5", active ? "text-white/80" : "text-studio-muted")}>
-                  {option.desc}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 5. Canvas Background Appearance */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5 text-brand" /> Canvas Background Color
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">Visible in empty canvas areas</p>
-          </div>
-          <ColorPickerPopover
-            label="Canvas Background Color"
-            value={settings.backgroundColor || "#000000"}
-            presets={CANVAS_COLOR_SWATCHES.map((s) => s.hex)}
-            onChange={(hex) => updateSettings({ backgroundColor: hex.toUpperCase() })}
-            align="right"
-            triggerClassName="h-8 w-28 shrink-0 bg-studio-panel px-2 border-studio-border"
-          />
-        </div>
-
-        {/* Quick Color Swatches */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {CANVAS_COLOR_SWATCHES.map((preset) => {
-            const isSelected = (settings.backgroundColor || "#000000").toUpperCase() === preset.hex.toUpperCase();
-            return (
-              <button
-                key={preset.hex}
-                type="button"
-                onClick={() => updateSettings({ backgroundColor: preset.hex })}
-                title={`${preset.label} (${preset.hex})`}
-                style={{ backgroundColor: preset.hex }}
-                className={cn(
-                  "relative h-7 w-7 rounded-md border shadow-xs transition-all hover:scale-105 cursor-pointer",
-                  isSelected ? "border-brand ring-2 ring-brand/60 scale-105" : "border-white/15 hover:border-white/40"
-                )}
-              >
-                {isSelected && (
-                  <Check
-                    className={cn(
-                      "absolute inset-0 m-auto h-3.5 w-3.5 drop-shadow-md",
-                      preset.hex === "#FFFFFF" ? "text-studio-bg" : "text-white"
-                    )}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 6. Master Audio Output */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              <Volume2 className="h-3.5 w-3.5 text-brand" /> Master Audio Level
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">Overall project volume</p>
-          </div>
-          <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-            {Math.round(settings.masterVolume * 100)}%
-          </span>
-        </div>
-        <Slider
-          value={settings.masterVolume}
-          min={0}
-          max={1}
-          step={0.01}
-          onValueChange={(value) => updateSettings({ masterVolume: value })}
-        />
-      </section>
-
-      {/* 7. Reset Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => {
-          setLinked(true);
-          setCustomResolutionOpen(false);
-          setPresetId("");
-          updateSettings({
-            width: 1920,
-            height: 1080,
-            aspectRatio: "16:9",
-            fps: 30,
-            backgroundColor: "#000000",
-            masterVolume: 1,
-          });
-        }}
-        className="w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Canvas to Default (1080p 16:9)
-      </Button>
     </div>
   );
 }
