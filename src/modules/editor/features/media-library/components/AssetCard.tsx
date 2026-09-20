@@ -239,14 +239,6 @@ export function AssetCard({
         >
           <button
             type="button"
-            onClick={() => onPreview?.(asset)}
-            title="Preview media"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <Eye className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
             onClick={handleAddToTimeline}
             title="Add to timeline"
             className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-black hover:bg-neutral-200 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
@@ -329,34 +321,18 @@ export function AssetCard({
         <div
           className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40 opacity-0 transition-all duration-200 group-hover:opacity-100 flex flex-col justify-between p-1.5 pointer-events-none"
         >
-          {/* Top-Right Frosted Glass Floating Capsule */}
-          <div
-            className="self-end pointer-events-auto flex items-center gap-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 p-0.5 shadow-xl shadow-black/50 transition-all duration-200 translate-y-1 group-hover:translate-y-0"
-            onClick={(event) => event.stopPropagation()}
+          {/* Top-Right Add to Timeline Button */}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleAddToTimeline();
+            }}
+            title="Add to timeline"
+            className="self-end pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-150 shadow-lg shadow-black/50 cursor-pointer hover:scale-110 active:scale-95 translate-y-1 group-hover:translate-y-0"
           >
-            {/* Preview Button */}
-            <button
-              type="button"
-              onClick={() => onPreview?.(asset)}
-              title="Preview media"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/20 transition-all duration-150 cursor-pointer hover:scale-105 active:scale-95"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </button>
-
-            {/* Hairline Divider */}
-            <div className="h-3 w-px bg-white/20 mx-0.5" />
-
-            {/* Add to Timeline Button */}
-            <button
-              type="button"
-              onClick={handleAddToTimeline}
-              title="Add to timeline"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-150 shadow-sm cursor-pointer hover:scale-105 active:scale-95"
-            >
-              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-            </button>
-          </div>
+            <Plus className="h-4 w-4 stroke-[2.5]" />
+          </button>
         </div>
       </div>
 
