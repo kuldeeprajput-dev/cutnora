@@ -14,9 +14,9 @@ import {
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
 import { confirm } from "@/shared/components/ui/Popup";
-import { IconButton } from "@/shared/components/ui/IconButton";
 import {
   FileVideo,
+  Film,
   Image as ImageIcon,
   Music,
   MoreVertical,
@@ -174,11 +174,11 @@ export function AssetCard({
   const renderIcon = () => {
     switch (asset.type) {
       case "video":
-        return <FileVideo className="h-6 w-6 text-brand" />;
+        return <FileVideo className="h-6 w-6 text-white/50" />;
       case "image":
-        return <ImageIcon className="h-6 w-6 text-selection" />;
+        return <ImageIcon className="h-6 w-6 text-white/50" />;
       case "audio":
-        return <Music className="h-6 w-6 text-mkt-info" />;
+        return <Music className="h-6 w-6 text-white/50" />;
     }
   };
 
@@ -187,10 +187,10 @@ export function AssetCard({
       <div
         onClick={() => onPreview?.(asset)}
         onDoubleClick={handleAddToTimeline}
-        className="group flex items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-2 transition-colors hover:border-brand select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_58px]"
+        className="group flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.025] p-2 transition-all duration-200 hover:border-white/30 hover:bg-white/[0.045] hover:-translate-y-0.5 select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_58px]"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-14 shrink-0 rounded bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
+          <div className="h-10 w-14 shrink-0 rounded bg-black/40 border border-white/10 overflow-hidden flex items-center justify-center">
             {thumbUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -219,14 +219,14 @@ export function AssetCard({
                   if (e.key === "Escape") setIsRenaming(false);
                 }}
                 autoFocus
-                className="h-6 rounded bg-studio-bg border border-brand px-1.5 text-xs text-studio-fg focus:outline-none"
+                className="h-6 rounded bg-white/[0.06] border border-white/30 px-1.5 text-xs text-white focus:outline-none"
               />
             ) : (
-              <p className="text-xs font-semibold text-studio-fg truncate">
+              <p className="text-xs font-semibold text-white/90 group-hover:text-white transition-colors truncate">
                 {asset.name}
               </p>
             )}
-            <p className="text-[10px] text-studio-muted font-mono mt-0.5">
+            <p className="text-[10px] text-white/40 font-mono mt-0.5">
               {asset.type !== "image" && `${formatDuration(asset.duration)} • `}
               {formatSize(asset.size)}
             </p>
@@ -234,31 +234,31 @@ export function AssetCard({
         </div>
 
         <div
-          className="flex items-center gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
+          className="flex items-center gap-1.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
           onClick={(e) => e.stopPropagation()}
         >
-          <IconButton
-            label="Preview media"
-            size="sm"
-            variant="ghost"
+          <button
+            type="button"
             onClick={() => onPreview?.(asset)}
+            title="Preview media"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <Eye className="h-3.5 w-3.5" />
-          </IconButton>
-          <IconButton
-            label="Add to timeline"
-            size="sm"
-            variant="ghost"
+          </button>
+          <button
+            type="button"
             onClick={handleAddToTimeline}
+            title="Add to timeline"
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-black hover:bg-neutral-200 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <Plus className="h-3.5 w-3.5" />
-          </IconButton>
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+          </button>
           <DropdownMenu
             trigger={
               <button
                 type="button"
                 aria-label="Asset options"
-                className="p-1 rounded-md text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised transition-colors cursor-pointer"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <MoreVertical className="h-3.5 w-3.5" />
               </button>
@@ -287,10 +287,10 @@ export function AssetCard({
     <div
       onClick={() => onPreview?.(asset)}
       onDoubleClick={handleAddToTimeline}
-      className="group relative flex flex-col rounded-xl border border-studio-border bg-studio-panel p-1.5 transition-[border-color,transform] hover:border-brand active:scale-[0.995] select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_170px]"
+      className="group relative flex flex-col rounded-xl border border-white/10 bg-white/[0.025] p-1.5 transition-all duration-300 hover:border-white/30 hover:bg-white/[0.045] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] active:scale-[0.99] select-none cursor-pointer lg:[content-visibility:auto] lg:[contain-intrinsic-size:0_170px]"
     >
       {/* Thumbnail View Stage */}
-      <div className="relative aspect-video w-full rounded-lg bg-studio-bg border border-studio-border overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-video w-full rounded-lg bg-black/40 border border-white/10 overflow-hidden flex items-center justify-center">
         {thumbUrl && !isThumbLoaded && (
           <span className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent" />
         )}
@@ -304,38 +304,59 @@ export function AssetCard({
             draggable={false}
             onLoad={() => setIsThumbLoaded(true)}
             onError={() => setIsThumbLoaded(true)}
-            className={`h-full w-full transition-[opacity,transform] duration-300 group-hover:scale-[1.01] ${asset.type === "image" ? "object-contain p-2" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
+            className={`h-full w-full transition-[opacity,transform] duration-500 ease-out group-hover:scale-105 ${asset.type === "image" ? "object-contain p-2" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
           />
         ) : (
           renderIcon()
         )}
 
-        {/* Duration / Tag Overlay */}
-        <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1 py-0.5 font-mono text-[9px] text-studio-fg">
-          {asset.type === "image" ? "IMAGE" : formatDuration(asset.duration)}
+        {/* Media Type / Duration Badge */}
+        <span className="absolute bottom-1.5 right-1.5 z-10 inline-flex items-center justify-center gap-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 px-2 py-0.5 text-[9px] font-medium leading-none text-white/90 shadow-sm transition-all duration-200 select-none">
+          {asset.type === "image" ? (
+            <>
+              <ImageIcon className="h-2.5 w-2.5 text-white/70 shrink-0 -translate-y-px" />
+              <span className="tracking-wide leading-none">Image</span>
+            </>
+          ) : (
+            <>
+              <Film className="h-2.5 w-2.5 text-white/70 shrink-0 -translate-y-px" />
+              <span className="font-mono tracking-tight leading-none">{formatDuration(asset.duration)}</span>
+            </>
+          )}
         </span>
 
-        {/* Hover Quick Add Overlay */}
+        {/* Hover Quick Action Overlay */}
         <div
-          className="absolute inset-0 hidden items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100 lg:flex"
-          onClick={(event) => event.stopPropagation()}
+          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40 opacity-0 transition-all duration-200 group-hover:opacity-100 flex flex-col justify-between p-1.5 pointer-events-none"
         >
-          <IconButton
-            label="Preview media"
-            size="sm"
-            variant="secondary"
-            onClick={() => onPreview?.(asset)}
+          {/* Top-Right Frosted Glass Floating Capsule */}
+          <div
+            className="self-end pointer-events-auto flex items-center gap-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 p-0.5 shadow-xl shadow-black/50 transition-all duration-200 translate-y-1 group-hover:translate-y-0"
+            onClick={(event) => event.stopPropagation()}
           >
-            <Eye className="h-4 w-4" />
-          </IconButton>
-          <IconButton
-            label="Add to timeline"
-            size="sm"
-            variant="selection"
-            onClick={handleAddToTimeline}
-          >
-            <Plus className="h-4 w-4" />
-          </IconButton>
+            {/* Preview Button */}
+            <button
+              type="button"
+              onClick={() => onPreview?.(asset)}
+              title="Preview media"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/20 transition-all duration-150 cursor-pointer hover:scale-105 active:scale-95"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+
+            {/* Hairline Divider */}
+            <div className="h-3 w-px bg-white/20 mx-0.5" />
+
+            {/* Add to Timeline Button */}
+            <button
+              type="button"
+              onClick={handleAddToTimeline}
+              title="Add to timeline"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition-all duration-150 shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -353,14 +374,14 @@ export function AssetCard({
                 if (e.key === "Escape") setIsRenaming(false);
               }}
               autoFocus
-              className="h-5 w-full rounded bg-studio-bg border border-brand px-1 text-[11px] text-studio-fg focus:outline-none"
+              className="h-5 w-full rounded bg-white/[0.06] border border-white/30 px-1 text-[11px] text-white focus:outline-none"
             />
           ) : (
-            <p className="text-[11px] sm:text-xs font-semibold text-studio-fg truncate">
+            <p className="text-[11px] sm:text-xs font-semibold text-white/90 group-hover:text-white transition-colors truncate">
               {asset.name}
             </p>
           )}
-          <p className="text-[9px] font-mono text-studio-muted mt-0.5">
+          <p className="text-[9px] font-mono text-white/40 mt-0.5">
             {asset.width && asset.height
               ? `${asset.width}×${asset.height} • `
               : ""}
@@ -377,7 +398,7 @@ export function AssetCard({
               <button
                 type="button"
                 aria-label="Asset options"
-                className="p-1 rounded-md text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised transition-colors cursor-pointer"
+                className="p-1 rounded-md text-white/40 group-hover:text-white/70 hover:!text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <MoreVertical className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
               </button>
