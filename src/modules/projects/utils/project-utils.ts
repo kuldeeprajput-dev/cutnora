@@ -30,3 +30,55 @@ export function formatDate(timestamp?: number): string {
     year: "numeric",
   });
 }
+
+/**
+ * Strips copy suffixes from a project name to extract the original root name.
+ * Handles patterns like:
+ *  - "Project (Copy)"
+ *  - "Project (Copy 2)"
+ *  - "Project (Copy2)"
+ *  - "Project (Copy) (Copy)"
+ *  - "Project copy"
+ *  - "Project copy 2"
+ */
+export function getBaseProjectName(name: string): string {
+  let cleaned = name.trim();
+  const copyRegex = /(?:\s*\((?:copy|copy\s*\d+)\)|\s+(?:copy|copy\s*\d+))$/i;
+  while (copyRegex.test(cleaned)) {
+    cleaned = cleaned.replace(copyRegex, "").trim();
+  }
+  return cleaned || name.trim();
+}
+
+/**
+ * Generates duplicate name following the sequence:
+ *  1st copy: "<Base> (Copy)"
+ *  2nd copy: "<Base> (Copy 2)"
+ *  3rd copy: "<Base> (Copy 3)"
+ *  4th copy: "<Base> (Copy 4)"
+ *  ...
+ */
+export function generateDuplicateProjectName(
+  sourceName: string,
+  existingNames: string[],
+): string {
+  const baseName = getBaseProjectName(sourceName);
+  const lowerNames = new Set(existingNames.map((n) => n.trim().toLowerCase()));
+
+  // 1st copy
+  const firstCopy = `${baseName} (Copy)`;
+  if (!lowerNames.has(firstCopy.toLowerCase())) {
+    return firstCopy;
+  }
+
+  // 2nd copy onwards: (Copy 2), (Copy 3), (Copy 4), ...
+  let counter = 2;
+  while (
+    lowerNames.has(`${baseName} (Copy ${counter})`.toLowerCase()) ||
+    lowerNames.has(`${baseName} (Copy${counter})`.toLowerCase())
+  ) {
+    counter++;
+  }
+
+  return `${baseName} (Copy ${counter})`;
+}

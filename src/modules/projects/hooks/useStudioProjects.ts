@@ -6,6 +6,7 @@ import { db } from "@/modules/core/db/database";
 import { deleteStoredMediaAsset } from "@/modules/core/storage/media-asset-service";
 import type { Project } from "../types";
 import { useProjectSort } from "./useProjectSort";
+import { generateDuplicateProjectName } from "../utils/project-utils";
 
 export interface DeleteTarget {
   type: "single" | "batch";
@@ -101,7 +102,10 @@ export function useStudioProjects() {
     if (!sourceProject) return;
 
     const newId = nanoid();
-    const newName = `${sourceProject.name} (Copy)`;
+    const newName = generateDuplicateProjectName(
+      sourceProject.name,
+      projects.map((p) => p.name),
+    );
     const now = Date.now();
 
     const duplicatedProject: Project = {
@@ -171,12 +175,15 @@ export function useStudioProjects() {
     const now = Date.now();
     const duplicatedList: Project[] = [];
 
+    const currentNames = projects.map((p) => p.name);
+
     for (const id of selectedIds) {
       const sourceProject = projects.find((p) => p.id === id);
       if (!sourceProject) continue;
 
       const newId = nanoid();
-      const newName = `${sourceProject.name} (Copy)`;
+      const newName = generateDuplicateProjectName(sourceProject.name, currentNames);
+      currentNames.push(newName);
 
       const duplicatedProject: Project = {
         ...sourceProject,
