@@ -135,7 +135,7 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
           toggleFullscreen();
         }
       }}
-      className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black outline-none ring-brand focus-visible:ring-2"
+      className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black outline-none ring-white/30 focus-visible:ring-2"
       aria-label={`Video player: ${label}`}
     >
       <video
@@ -154,7 +154,7 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
       )}
       {hasError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 text-white">
-          <RotateCcw className="h-6 w-6 text-brand" />
+          <RotateCcw className="h-6 w-6 text-white/70" />
           <p className="text-xs font-semibold">Video preview unavailable</p>
         </div>
       )}
@@ -163,7 +163,7 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
           type="button"
           aria-label="Play video"
           onClick={togglePlay}
-          className="absolute grid h-12 w-12 place-items-center rounded-full bg-brand text-white shadow-lg transition-transform hover:scale-110"
+          className="absolute grid h-12 w-12 place-items-center rounded-full bg-white text-black shadow-xl shadow-black/50 transition-transform hover:scale-110 hover:bg-neutral-200 cursor-pointer"
         >
           <Play className="ml-0.5 h-5 w-5 fill-current" />
         </button>
@@ -186,8 +186,8 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
               setCurrentTime(videoRef.current.currentTime);
             }
           }}
-          className="mb-2 h-1 w-full cursor-pointer appearance-none rounded-full accent-brand"
-          style={{ background: `linear-gradient(to right, var(--brand) ${progress}%, rgba(255,255,255,0.3) ${progress}%)` }}
+          className="mb-2 h-1 w-full cursor-pointer appearance-none rounded-full accent-white"
+          style={{ background: `linear-gradient(to right, #ffffff ${progress}%, rgba(255,255,255,0.25) ${progress}%)` }}
         />
         <div className="flex items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
                 <span>{playbackRate}x</span>
               </button>
               {showRateMenu && (
-                <div className="absolute bottom-7 right-0 flex flex-col rounded-md border border-studio-border bg-studio-panel p-1 shadow-lg">
+                <div className="absolute bottom-7 right-0 flex flex-col rounded-md border border-white/10 bg-[#1A1A1A] p-1 shadow-xl">
                   {PLAYBACK_RATES.map((rate) => (
                     <button
                       key={rate}
@@ -225,8 +225,10 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
                         setShowRateMenu(false);
                       }}
                       className={cn(
-                        "rounded px-2 py-1 text-left text-xs text-studio-fg hover:bg-studio-hover",
-                        playbackRate === rate && "text-brand font-bold"
+                        "rounded px-2 py-1 text-left text-xs transition-colors",
+                        playbackRate === rate
+                          ? "text-white font-bold bg-white/10"
+                          : "text-white/70 hover:text-white hover:bg-white/5"
                       )}
                     >
                       {rate}x

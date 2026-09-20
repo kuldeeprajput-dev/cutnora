@@ -23,6 +23,7 @@ import { ensureHighQualityThumbnail } from "@/modules/editor/features/media-libr
 import { Button } from "@/shared/components/ui/Button";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
+import { ThemedImagePreview } from "./ThemedImagePreview";
 import { ThemedVideoPlayer } from "./ThemedVideoPlayer";
 
 interface MediaPreviewDialogProps {
@@ -60,14 +61,14 @@ function formatMediaFormat(asset: MediaAsset) {
 function AudioArtwork({ asset }: { asset: MediaAsset }) {
   const peaks = asset.waveformPeaks?.length ? asset.waveformPeaks.slice(0, 56) : FALLBACK_PEAKS;
   return (
-    <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-brand text-white">
+    <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-[#141414] text-white">
       <div className="absolute inset-x-5 top-1/2 flex h-24 -translate-y-1/2 items-center justify-center gap-[3px] opacity-25">
         {peaks.map((p, i) => (
           <span key={i} className="w-0.5 min-h-1 rounded-full bg-white" style={{ height: `${Math.max(8, p * 88)}%` }} />
         ))}
       </div>
-      <div className="relative grid h-20 w-20 place-items-center rounded-2xl border border-white/30 bg-black/10 shadow-lg sm:h-24 sm:w-24">
-        <Music2 className="h-10 w-10 sm:h-12 sm:w-12" strokeWidth={1.75} />
+      <div className="relative grid h-20 w-20 place-items-center rounded-2xl border border-white/20 bg-white/[0.05] shadow-lg sm:h-24 sm:w-24">
+        <Music2 className="h-10 w-10 sm:h-12 sm:w-12 text-white/80" strokeWidth={1.75} />
       </div>
     </div>
   );
@@ -156,72 +157,73 @@ export function MediaPreviewDialog({
       title="Media preview"
       description="Review source media before adding to timeline."
       mobileBottomSheet
-      className="max-w-[920px] overflow-y-auto p-3 sm:p-5"
+      className="max-w-[920px] overflow-y-auto border-white/10 bg-[#1A1A1A] p-3 sm:p-5"
     >
-      <div className="grid min-h-0 overflow-hidden rounded-xl border border-studio-border bg-studio-bg lg:grid-cols-[minmax(0,1fr)_250px]">
+      <div className="grid min-h-0 overflow-hidden rounded-xl border border-white/10 bg-[#141414] lg:grid-cols-[minmax(0,1fr)_250px]">
         <section className="min-w-0">
           <div className="flex min-h-[210px] items-center justify-center p-2.5 sm:min-h-[300px] sm:p-4">
             {asset.type !== "audio" && !sourceUrl && !loadError && (
-              <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-studio-bg">
-                <Loader2 className="h-6 w-6 animate-spin text-brand" aria-label="Loading preview" />
+              <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-black/40">
+                <Loader2 className="h-6 w-6 animate-spin text-white/80" aria-label="Loading preview" />
               </div>
             )}
             {loadError && (
-              <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg bg-studio-bg px-6 text-center">
+              <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg bg-black/40 px-6 text-center">
                 <AlertCircle className="h-6 w-6 text-destructive" />
-                <p className="text-sm font-semibold text-studio-fg">Preview unavailable</p>
-                <p className="max-w-sm text-xs text-studio-muted">{loadError}</p>
+                <p className="text-sm font-semibold text-white">Preview unavailable</p>
+                <p className="max-w-sm text-xs text-white/60">{loadError}</p>
               </div>
             )}
             {sourceUrl && asset.type === "video" && <ThemedVideoPlayer src={sourceUrl} poster={posterUrl} label={asset.name} />}
             {sourceUrl && asset.type === "image" && (
-              <div className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-studio-panel-raised">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={sourceUrl} alt={asset.name} className="h-full w-full object-contain" />
-              </div>
+              <ThemedImagePreview src={sourceUrl} alt={asset.name} />
             )}
             {asset.type === "audio" && <AudioArtwork asset={asset} />}
           </div>
 
-          <nav aria-label="Media preview navigation" className="flex items-center justify-between border-t border-studio-border bg-studio-panel px-2 py-2 sm:px-3">
-            <Button size="sm" variant="ghost" disabled={!hasPrevious} onClick={() => onSelect(assets[currentIndex - 1])} aria-label="Previous media">
+          <nav aria-label="Media preview navigation" className="flex items-center justify-between border-t border-white/10 bg-[#1A1A1A] px-2 py-2 sm:px-3">
+            <Button size="sm" variant="ghost" disabled={!hasPrevious} onClick={() => onSelect(assets[currentIndex - 1])} aria-label="Previous media" className="text-white/70 hover:text-white hover:bg-white/10">
               <ArrowLeft className="h-3.5 w-3.5 mr-1" />
               <span className="hidden sm:inline">Previous</span>
               <span className="sm:hidden">Prev</span>
             </Button>
-            <span className="font-mono text-[10px] tabular-nums text-studio-muted">{currentIndex + 1} / {assets.length}</span>
-            <Button size="sm" variant="ghost" disabled={!hasNext} onClick={() => onSelect(assets[currentIndex + 1])} aria-label="Next media">
+            <span className="font-mono text-[10px] tabular-nums text-white/40">{currentIndex + 1} / {assets.length}</span>
+            <Button size="sm" variant="ghost" disabled={!hasNext} onClick={() => onSelect(assets[currentIndex + 1])} aria-label="Next media" className="text-white/70 hover:text-white hover:bg-white/10">
               Next
               <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </nav>
         </section>
 
-        <aside className="flex min-w-0 flex-col border-t border-studio-border bg-studio-panel p-4 lg:border-l lg:border-t-0">
+        <aside className="flex min-w-0 flex-col border-t border-white/10 bg-[#1A1A1A] p-4 lg:border-l lg:border-t-0">
           <div className="min-w-0">
             <Tooltip content={asset.name} position="bottom" className="max-w-72 whitespace-normal text-left">
-              <p className="line-clamp-2 min-w-0 cursor-default text-sm font-semibold leading-5 text-studio-fg">{asset.name}</p>
+              <p className="line-clamp-2 min-w-0 cursor-default text-sm font-semibold leading-5 text-white">{asset.name}</p>
             </Tooltip>
-            <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-brand">
+            <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/70">
               <TypeIcon className="h-3.5 w-3.5" />
               {asset.type}
             </div>
             <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-1">
               {metadata.map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center gap-2.5 text-xs">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-studio-panel-raised text-studio-muted">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-white/[0.05] text-white/60">
                     <Icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-studio-muted">{label}</p>
-                    <p className="truncate font-mono text-[11px] text-studio-fg">{value}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-white/40">{label}</p>
+                    <p className="truncate font-mono text-[11px] text-white/90">{value}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="sticky bottom-0 z-10 -mx-4 mt-5 border-t border-studio-border bg-studio-panel px-4 pt-3 lg:static lg:mx-0 lg:mt-auto lg:border-0 lg:px-0 lg:pt-8">
-            <Button size="md" variant="primary" onClick={() => onAddToTimeline(asset)} className="w-full gap-2">
+          <div className="sticky bottom-0 z-10 -mx-4 mt-5 border-t border-white/10 bg-[#1A1A1A] px-4 pt-3 lg:static lg:mx-0 lg:mt-auto lg:border-0 lg:px-0 lg:pt-8">
+            <Button
+              size="md"
+              onClick={() => onAddToTimeline(asset)}
+              className="w-full gap-2 border-none bg-white text-black font-semibold shadow-sm transition-all hover:bg-neutral-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer focus-visible:ring-white/40"
+            >
               <Plus className="h-4 w-4" /> Add to Timeline
             </Button>
           </div>
