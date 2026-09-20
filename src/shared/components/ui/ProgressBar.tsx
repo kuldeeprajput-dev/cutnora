@@ -6,6 +6,7 @@ export interface ProgressBarProps extends React.HTMLAttributes<HTMLDivElement> {
   max?: number;
   showValue?: boolean;
   label?: string;
+  barClassName?: string;
 }
 
 export function ProgressBar({
@@ -14,6 +15,7 @@ export function ProgressBar({
   max = 100,
   showValue = false,
   label,
+  barClassName,
   ...props
 }: ProgressBarProps) {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
@@ -21,7 +23,7 @@ export function ProgressBar({
   return (
     <div className={cn('flex flex-col gap-1 w-full', className)} {...props}>
       {(label || showValue) && (
-        <div className="flex justify-between items-center text-xs text-studio-muted">
+        <div className="flex justify-between items-center text-xs text-white/50">
           {label && <span>{label}</span>}
           {showValue && <span className="font-mono">{Math.round(percentage)}%</span>}
         </div>
@@ -31,10 +33,13 @@ export function ProgressBar({
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        className="h-2 w-full overflow-hidden rounded-full bg-studio-border"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-white/10"
       >
         <div
-          className="h-full bg-brand transition-all duration-300 ease-out"
+          className={cn(
+            "h-full rounded-full bg-white transition-all duration-300 ease-out",
+            barClassName,
+          )}
           style={{ width: `${percentage}%` }}
         />
       </div>

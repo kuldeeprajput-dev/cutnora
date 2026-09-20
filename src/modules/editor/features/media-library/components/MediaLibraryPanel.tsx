@@ -21,7 +21,6 @@ import {
   DropdownMenu,
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
-import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 import {
   LayoutGrid,
   List,
@@ -141,7 +140,7 @@ export function MediaLibraryPanel() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-busy={isImporting}
-      className="relative flex h-full w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-2 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:overflow-hidden lg:overscroll-auto lg:p-3"
+      className="relative flex h-full w-full flex-col overflow-hidden p-2 select-none lg:p-3"
     >
       {/* Hidden File Input for triggering file picker anywhere */}
       <input
@@ -171,131 +170,18 @@ export function MediaLibraryPanel() {
         </div>
       )}
 
-      {/* When NO assets exist: ONLY SHOW DRAG AND DROP */}
+      {/* Main Content: Either Dropzone or Library */}
       {!hasAssets ? (
-        <div className="flex h-full w-full flex-1 flex-col min-h-0 gap-3">
-          {/* Progress Bar during active imports */}
-          {isImporting && (
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 shrink-0">
-              <div className="flex items-center justify-between text-xs font-semibold text-white mb-1.5">
-                <span className="flex min-w-0 items-center gap-1.5 text-white">
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-white" /> Processing
-                  <span className="truncate text-white/80">
-                    {importStatus?.fileName || "media assets..."}
-                  </span>
-                </span>
-                <div className="ml-2 flex shrink-0 items-center gap-2">
-                  <span className="font-mono text-[11px] text-white/50">
-                    {importStatus?.phase || "validating"} · {importProgress}%
-                  </span>
-                  <button
-                    type="button"
-                    onClick={cancelImport}
-                    className="text-[10px] font-semibold text-destructive hover:underline cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-              <ProgressBar value={importProgress} />
-              {importStatus?.phase === "copying" && (
-                <p className="mt-1 text-right font-mono text-[10px] text-white/50">
-                  {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
-                  {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Import Error Alerts */}
-          {importErrors.length > 0 && (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive shrink-0">
-              <div className="flex items-center justify-between font-bold mb-1">
-                <span className="flex items-center gap-1">
-                  <AlertCircle className="h-3.5 w-3.5" /> Import Issues
-                </span>
-                <button
-                  type="button"
-                  onClick={clearErrors}
-                  className="text-[10px] underline hover:opacity-80 cursor-pointer"
-                >
-                  Dismiss
-                </button>
-              </div>
-              <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
-                {importErrors.map((err, i) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Full-height Dropzone */}
+        <div className="flex h-full w-full flex-1 min-h-0 flex-col">
           <MediaDropzone
             onFilesSelected={importFiles}
             isImporting={isImporting}
           />
         </div>
       ) : (
-        <>
+        <div className="flex h-full w-full flex-1 min-h-0 flex-col overflow-hidden">
           {/* FIXED TOP CONTROLS & HEADER SECTION (NON-SCROLLING) */}
-          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-studio-border/50 pb-2 lg:pb-3">
-            {/* Progress Bar during active imports */}
-            {isImporting && (
-              <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
-                <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
-                  <span className="flex min-w-0 items-center gap-1.5 text-brand">
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing
-                    <span className="truncate">
-                      {importStatus?.fileName || "media assets..."}
-                    </span>
-                  </span>
-                  <div className="ml-2 flex shrink-0 items-center gap-2">
-                    <span className="font-mono text-[11px] text-studio-muted">
-                      {importStatus?.phase || "validating"} · {importProgress}%
-                    </span>
-                    <button
-                      type="button"
-                      onClick={cancelImport}
-                      className="text-[10px] font-semibold text-destructive hover:underline cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-                <ProgressBar value={importProgress} />
-                {importStatus?.phase === "copying" && (
-                  <p className="mt-1 text-right font-mono text-[10px] text-studio-muted">
-                    {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
-                    {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Import Error Alerts */}
-            {importErrors.length > 0 && (
-              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-                <div className="flex items-center justify-between font-bold mb-1">
-                  <span className="flex items-center gap-1">
-                    <AlertCircle className="h-3.5 w-3.5" /> Import Issues
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearErrors}
-                    className="text-[10px] underline hover:opacity-80 cursor-pointer"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-                <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
-                  {importErrors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
+          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-white/[0.06] pb-2 lg:pb-3">
             {/* Row 1: Search + Import */}
             <div className="flex w-full min-w-0 items-center gap-2">
               <label className="relative min-w-0 flex-1">
@@ -429,16 +315,16 @@ export function MediaLibraryPanel() {
           </div>
 
           {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
-          <div className="shrink-0 overflow-visible pt-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden lg:pt-3 lg:pr-2 lg:pb-0 studio-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-2 pb-1 studio-scrollbar">
             {filteredAssets.length === 0 ? (
               <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-white/40">
                   <FolderOpen className="h-5 w-5" />
                 </div>
-                <p className="mt-3 text-xs font-semibold text-studio-fg">
+                <p className="mt-3 text-xs font-semibold text-white/80">
                   No matching media
                 </p>
-                <p className="mt-1 max-w-48 text-[10px] leading-4 text-studio-muted">
+                <p className="mt-1 max-w-48 text-[10px] leading-4 text-white/40">
                   Try another filename or clear the active media filter.
                 </p>
               </div>
@@ -461,7 +347,89 @@ export function MediaLibraryPanel() {
               </div>
             )}
           </div>
-        </>
+        </div>
+      )}
+
+      {/* DOCKED BOTTOM IMPORT STATUS BAR (ALWAYS AT THE BOTTOM!) */}
+      {isImporting && (
+        <div className="shrink-0 pt-2.5 border-t border-white/[0.06] mt-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] backdrop-blur-md p-2.5">
+            {/* Top row: Icon, File name, Status phase, Percentage & Cancel button */}
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p
+                      className="text-xs font-semibold text-white truncate max-w-[130px] sm:max-w-[170px]"
+                      title={importStatus?.fileName || "Processing media..."}
+                    >
+                      {importStatus?.fileName || "Processing media..."}
+                    </p>
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-white/[0.06] text-white/50 capitalize shrink-0">
+                      {importStatus?.phase || "importing"}
+                    </span>
+                  </div>
+                  {importStatus?.phase === "copying" && importStatus.totalBytes > 0 && (
+                    <p className="font-mono text-[9px] text-white/40 mt-0.5">
+                      {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
+                      {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-mono text-xs font-bold text-white/90 bg-white/[0.08] px-2 py-0.5 rounded-md">
+                  {importProgress}%
+                </span>
+                <button
+                  type="button"
+                  onClick={cancelImport}
+                  className="rounded-md px-2 py-1 text-[11px] font-medium text-white/40 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Cancel import"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+            {/* Sleek Progress Bar */}
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-white transition-all duration-300 ease-out"
+                style={{ width: `${importProgress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Error Alerts at bottom */}
+      {importErrors.length > 0 && (
+        <div className="shrink-0 pt-2.5 border-t border-white/[0.06] mt-auto">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-2.5 text-xs text-red-300">
+            <div className="flex items-center justify-between font-semibold mb-1">
+              <span className="flex items-center gap-1.5 text-[11px] text-red-200">
+                <AlertCircle className="h-3.5 w-3.5 text-red-400" /> Import Issues
+              </span>
+              <button
+                type="button"
+                onClick={clearErrors}
+                className="text-[10px] text-red-300/70 hover:text-red-200 underline cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+            <ul className="list-disc pl-4 space-y-0.5 text-[10px] text-red-300/80">
+              {importErrors.map((err, i) => (
+                <li key={i}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       )}
 
       <MediaPreviewDialog
