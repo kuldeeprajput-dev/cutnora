@@ -68,7 +68,7 @@ export function ContextualPanel() {
   return (
     <StudioPanel
       title={getPanelTitle()}
-      className="h-full w-full border-r-0 border-t-0 border-b-0"
+      className="h-full w-full border-none shadow-none"
     >
       {renderContent()}
     </StudioPanel>

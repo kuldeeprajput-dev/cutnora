@@ -52,7 +52,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
       ref={rulerRef}
       onPointerDown={handlePointerDown}
       style={{ minWidth: `${totalWidthPx}px` }}
-      className={`relative h-6 w-full border-b border-studio-border bg-studio-topbar text-studio-muted select-none ${
+      className={`relative h-6 w-full border-b border-studio-border bg-transparent text-studio-muted select-none ${
         isSeeking ? 'cursor-grabbing' : 'cursor-pointer'
       }`}
     >

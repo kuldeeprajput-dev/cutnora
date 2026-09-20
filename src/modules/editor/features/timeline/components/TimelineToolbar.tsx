@@ -194,9 +194,9 @@ export function TimelineToolbar({
   };
 
   return (
-    <div className="relative flex h-11 w-full shrink-0 items-center justify-between gap-3 overflow-hidden border-b border-studio-border bg-studio-topbar px-2 text-xs select-none">
+    <div className="relative flex h-11 w-full shrink-0 items-center justify-between gap-3 overflow-hidden border-b border-studio-border bg-transparent px-2 text-xs select-none">
       {/* Left: Timeline Edit Actions */}
-      <div className="z-10 flex shrink-0 items-center gap-0.5 rounded-lg border border-studio-border/80 bg-studio-bg/45 p-0.5">
+      <div className="z-10 flex shrink-0 items-center gap-0.5">
         <IconButton
           label="Split clip at playhead (S)"
           size="sm"
@@ -286,7 +286,7 @@ export function TimelineToolbar({
       </div>
 
       {/* Center: Stage Controls + Transport Playback Controls (Always Centered) */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex shrink-0 items-center gap-2 rounded-lg border border-studio-border/80 bg-studio-bg/45 px-1.5 py-0.5">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex shrink-0 items-center gap-2">
         {/* Canvas Stage View Controls (Fit Stage) */}
         <div className="flex items-center gap-1">
           <Select
@@ -295,7 +295,7 @@ export function TimelineToolbar({
               const val = e.target.value;
               setZoomMode(val === "fit" ? "fit" : parseInt(val, 10));
             }}
-            className="h-6 text-[11px] w-24 py-0 pl-1.5 pr-5 border-studio-border bg-studio-bg rounded-md cursor-pointer"
+            className="h-6 text-[11px] w-24 py-0 pl-1.5 pr-5 border-studio-border/60 bg-transparent rounded-md cursor-pointer hover:border-studio-border"
           >
             <option value="fit">Fit Stage</option>
             <option value="25">25%</option>
@@ -383,7 +383,7 @@ export function TimelineToolbar({
       </div>
 
       {/* Right: Selected Media Info + Zoom Controls */}
-      <div className="z-10 ml-auto flex shrink-0 items-center gap-2 rounded-lg border border-studio-border/80 bg-studio-bg/45 px-1.5 py-0.5">
+      <div className="z-10 ml-auto flex shrink-0 items-center gap-2">
         {/* Selected Media Indicator (Only displayed when media is selected) */}
         {(selectedMediaName || selectedMediaDetails) ? (
           <>

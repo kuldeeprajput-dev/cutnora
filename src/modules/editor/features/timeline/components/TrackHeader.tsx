@@ -157,7 +157,7 @@ export function TrackHeader({
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-studio-topbar px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
+          "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-transparent px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
           !isCompact ? "justify-between" : "justify-between gap-1",
           isSelected &&
             "bg-studio-panel-raised shadow-[inset_3px_0_0_var(--color-brand),inset_0_1px_0_rgba(255,255,255,0.025)]",

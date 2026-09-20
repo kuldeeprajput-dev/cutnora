@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { PanelLeftClose } from "lucide-react";
 import { StudioTopBar } from "../header/StudioTopBar";
 import { StudioToolRail } from "../rail/StudioToolRail";
 import { ContextualPanel } from "../panels/ContextualPanel";
@@ -34,7 +33,6 @@ export function StudioShell() {
     (state) => state.setTimelineHeight,
   );
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
-  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const isExportModalOpen = useExportStore((state) => state.isExportModalOpen);
 
   useKeyboardShortcuts(() => setIsShortcutsOpen(true));
@@ -85,102 +83,117 @@ export function StudioShell() {
   }, []);
 
   const handleWidthResize = (delta: number) => {
-    const newWidth = leftPanelWidth + delta;
+    const currentWidth = useEditorUIStore.getState().leftPanelWidth;
+    const responsiveMaximum = Math.max(
+      350,
+      Math.min(560, Math.floor(window.innerWidth * 0.40)),
+    );
+    const newWidth = Math.min(responsiveMaximum, Math.max(350, currentWidth + delta));
     setLeftPanelWidth(newWidth);
     localStorage.setItem("cutnora_panel_width", String(newWidth));
   };
 
   const handleHeightResize = (delta: number) => {
-    const newHeight = timelineHeight - delta;
+    const currentHeight = useEditorUIStore.getState().timelineHeight;
+    const responsiveMaximum = Math.min(500, Math.floor(window.innerHeight * 0.45));
+    const newHeight = Math.min(responsiveMaximum, Math.max(120, currentHeight - delta));
     setTimelineHeight(newHeight);
     localStorage.setItem("cutnora_timeline_height", String(newHeight));
   };
 
+  const handleCornerResize = (deltaX: number, deltaY: number) => {
+    const currentWidth = useEditorUIStore.getState().leftPanelWidth;
+    const currentHeight = useEditorUIStore.getState().timelineHeight;
+
+    const responsiveMaxWidth = Math.max(
+      350,
+      Math.min(560, Math.floor(window.innerWidth * 0.40)),
+    );
+    const newWidth = Math.min(responsiveMaxWidth, Math.max(350, currentWidth + deltaX));
+
+    const responsiveMaxHeight = Math.min(500, Math.floor(window.innerHeight * 0.45));
+    const newHeight = Math.min(responsiveMaxHeight, Math.max(120, currentHeight - deltaY));
+
+    setLeftPanelWidth(newWidth);
+    setTimelineHeight(newHeight);
+    localStorage.setItem("cutnora_panel_width", String(newWidth));
+    localStorage.setItem("cutnora_timeline_height", String(newHeight));
+  };
+
   return (
-    <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
+    <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-[#0D0D0D] text-studio-fg select-none">
       {/* Top 56px Bar */}
       <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
-      {/* Main Workspace Area (Fills Remaining Height) */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left 64px Tool Rail */}
-        <StudioToolRail onToolSelect={() => setIsPanelCollapsed(false)} />
+      {/* Main Workspace Area with outer margins and matching 8px gap */}
+      <div className="flex flex-1 flex-col overflow-hidden relative px-2.5 pb-2.5 pt-1.5 bg-[#0D0D0D]">
+        {/* Upper Workspace: Left Sidebar Card + Preview Stage Card */}
+        <div className="flex flex-1 min-h-0 relative">
+          {/* Left Sidebar Card: Tool Rail + Contextual Panel */}
+          <div
+            data-studio-sidebar
+            className="flex h-full shrink-0 overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs"
+          >
+            {/* Left 64px Tool Rail */}
+            <StudioToolRail />
 
-        {/* Outer Split Container: Upper Stage + Bottom Timeline */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Upper Workspace: Contextual Panel + Preview Stage */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Left Contextual Panel */}
-            {!isPanelCollapsed ? (
-              <>
-                <div
-                  data-studio-sidebar
-                  style={{
-                    width: `${leftPanelWidth}px`,
-                    minWidth: "350px",
-                    maxWidth: "40vw",
-                  }}
-                  className="h-full shrink-0 overflow-hidden"
-                >
-                  <ErrorBoundary
-                    fallbackTitle="Panel Error"
-                    fallbackMessage="Contextual panel encountered an error."
-                  >
-                    <ContextualPanel />
-                  </ErrorBoundary>
-                </div>
-
-                {/* Panel Width Resizable Divider */}
-                <div className="relative shrink-0">
-                  <ResizableDivider
-                    orientation="vertical"
-                    onResize={handleWidthResize}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setIsPanelCollapsed(true)}
-                    aria-label="Collapse side panel"
-                    title="Collapse side panel"
-                    className="absolute left-1/2 top-2 z-30 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-md border border-studio-border bg-studio-topbar text-studio-muted shadow-sm transition-colors hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                  >
-                    <PanelLeftClose className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </>
-            ) : null}
-
-            {/* Center Preview Stage */}
-            <div className="flex-1 h-full overflow-hidden">
+            {/* Contextual Panel */}
+            <div
+              style={{
+                width: `${leftPanelWidth}px`,
+                minWidth: "350px",
+                maxWidth: "40vw",
+              }}
+              className="h-full shrink-0 overflow-hidden"
+            >
               <ErrorBoundary
-                fallbackTitle="Stage Preview Error"
-                fallbackMessage="Stage failed to render preview frame."
+                fallbackTitle="Panel Error"
+                fallbackMessage="Contextual panel encountered an error."
               >
-                <PreviewStage />
+                <ContextualPanel />
               </ErrorBoundary>
             </div>
           </div>
 
-          {/* Timeline Height Resizable Divider */}
+          {/* Panel Width Resizable Divider with Corner Handle at T-Junction */}
           <ResizableDivider
-            orientation="horizontal"
-            onResize={handleHeightResize}
+            orientation="vertical"
+            onResize={handleWidthResize}
+            hasCornerHandle={true}
+            onCornerResize={handleCornerResize}
           />
 
-          {/* Bottom Timeline */}
-          <div
-            style={{
-              height: `${timelineHeight}px`,
-              maxHeight: "45dvh",
-            }}
-            className="shrink-0 w-full overflow-hidden"
-          >
+          {/* Center Preview Stage Card */}
+          <div className="flex-1 h-full min-w-0 overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs">
             <ErrorBoundary
-              fallbackTitle="Timeline Error"
-              fallbackMessage="Multitrack timeline encountered an error."
+              fallbackTitle="Stage Preview Error"
+              fallbackMessage="Stage failed to render preview frame."
             >
-              <TimelineShell />
+              <PreviewStage />
             </ErrorBoundary>
           </div>
+        </div>
+
+        {/* Timeline Height Resizable Divider (Horizontal Gap) */}
+        <ResizableDivider
+          orientation="horizontal"
+          onResize={handleHeightResize}
+        />
+
+        {/* Bottom Timeline Card */}
+        <div
+          style={{
+            height: `${timelineHeight}px`,
+            maxHeight: "45dvh",
+          }}
+          className="shrink-0 w-full overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs"
+        >
+          <ErrorBoundary
+            fallbackTitle="Timeline Error"
+            fallbackMessage="Multitrack timeline encountered an error."
+          >
+            <TimelineShell />
+          </ErrorBoundary>
         </div>
       </div>
 

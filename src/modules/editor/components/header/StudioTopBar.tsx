@@ -114,7 +114,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   const canRedo = historyManager.canRedo();
 
   return (
-    <header className="flex h-[56px] w-full shrink-0 items-center justify-between gap-3 border-b border-studio-border bg-studio-topbar px-3 text-studio-fg select-none xl:px-4">
+    <header className="flex h-[56px] w-full shrink-0 items-center justify-between gap-3 border-b border-studio-border bg-[#0D0D0D] px-3 text-studio-fg select-none xl:px-4">
       {/* Left: Logo, Title & Autosave Status */}
       <div className="flex min-w-0 items-center gap-3 xl:gap-4">
         <Link

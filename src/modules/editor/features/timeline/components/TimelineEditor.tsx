@@ -640,7 +640,7 @@ export function TimelineEditor() {
     maxIntersectingTrackIndex >= 0 ? (maxIntersectingTrackIndex + 1) * 48 : 0;
 
   return (
-    <div className="flex h-full w-full flex-col bg-timeline-bg text-studio-fg select-none overflow-hidden">
+    <div className="flex h-full w-full flex-col bg-transparent text-studio-fg select-none overflow-hidden">
       {/* Top Timeline Toolbar */}
       <TimelineToolbar
         fitTimelineZoom={fitTimelineZoom}
@@ -648,12 +648,12 @@ export function TimelineEditor() {
       />
 
       {/* Fixed Time Ruler Header Row */}
-      <div className="flex h-6 w-full shrink-0 border-b border-studio-border bg-studio-topbar z-20">
+      <div className="flex h-6 w-full shrink-0 border-b border-studio-border bg-transparent z-20">
         {/* Left header corner over track headers */}
         <div
           style={{ width: `${trackHeaderWidth}px` }}
           className={cn(
-            "flex shrink-0 items-center justify-between border-r border-studio-border bg-studio-topbar px-3",
+            "flex shrink-0 items-center justify-between border-r border-studio-border bg-transparent px-3",
             !showTrackHeaders && "hidden",
           )}
         >
@@ -699,7 +699,7 @@ export function TimelineEditor() {
           }}
           style={{ width: `${trackHeaderWidth}px` }}
           className={cn(
-            "shrink-0 bg-studio-topbar border-r border-studio-border z-10 flex flex-col overflow-hidden",
+            "shrink-0 bg-transparent border-r border-studio-border z-10 flex flex-col overflow-hidden",
             !showTrackHeaders && "hidden",
           )}
         >

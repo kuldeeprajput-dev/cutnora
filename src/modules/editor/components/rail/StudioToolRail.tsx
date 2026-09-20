@@ -41,13 +41,13 @@ export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
   const { activeTool, setActiveTool, clearSelection } = useEditorUIStore();
 
   return (
-    <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-2 border-r border-studio-border bg-studio-topbar py-3 text-studio-muted select-none">
+    <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-2 border-r border-studio-border bg-studio-panel py-3 text-studio-muted select-none">
       {railItems.map((item) => {
         const Icon = item.icon;
         const isActive = activeTool === item.id || (activeTool === 'select' && item.id === 'media');
 
         return (
-          <Tooltip key={item.id} content={item.label} position="right" delayMs={200}>
+          <Tooltip key={item.id} content={item.label} position="right" delayMs={150}>
             <button
               type="button"
               aria-label={item.label}
@@ -58,20 +58,13 @@ export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
                 clearSelection();
               }}
               className={cn(
-                'relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors',
+                'relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors cursor-pointer',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 focus-visible:ring-offset-studio-topbar',
                 isActive
-                  ? 'bg-brand/15 text-brand font-semibold'
-                  : 'hover:bg-studio-panel-raised hover:text-studio-fg'
+                  ? 'bg-brand/15 text-brand font-semibold shadow-xs'
+                  : 'text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg'
               )}
             >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'absolute -left-1.5 h-5 w-0.5 rounded-full bg-brand transition-opacity',
-                  isActive ? 'opacity-100' : 'opacity-0'
-                )}
-              />
               <Icon className="h-4 w-4" />
               <span>{item.label}</span>
             </button>
