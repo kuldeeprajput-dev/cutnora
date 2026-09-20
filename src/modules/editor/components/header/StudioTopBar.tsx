@@ -115,23 +115,18 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
 
   return (
     <header className="flex h-[56px] w-full shrink-0 items-center justify-between gap-3 border-b border-studio-border bg-studio-topbar px-3 text-studio-fg select-none xl:px-4">
-      {/* Left: Cutnora Logo & Title & Autosave Status */}
+      {/* Left: Logo, Title & Autosave Status */}
       <div className="flex min-w-0 items-center gap-3 xl:gap-4">
         <Link
           href="/"
-          className="flex items-center gap-2 group"
+          className="flex items-center group"
           title="Return to home"
         >
           <BrandMark
             size={28}
             className="transition-transform group-hover:-rotate-3"
           />
-          <span className="text-base font-bold tracking-tight text-studio-fg max-[1120px]:hidden">
-            Cutnora
-          </span>
         </Link>
-
-        <div className="h-4 w-px shrink-0 bg-studio-border max-[1120px]:hidden" />
 
         {/* Editable Project Name */}
         <div className="flex min-w-0 items-center gap-2">
