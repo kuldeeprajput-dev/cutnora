@@ -241,6 +241,47 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  @keyframes dropzone-float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes dropzone-glow {
+    0%, 100% {
+      opacity: 0.2;
+      transform: scale(0.95);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(1.12);
+    }
+  }
+
+  @keyframes dropzone-pulse-subtle {
+    0%, 100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.75;
+    }
+  }
+
+  .animate-dropzone-float {
+    animation: dropzone-float 3.5s ease-in-out infinite;
+  }
+
+  .animate-dropzone-glow {
+    animation: dropzone-glow 3s ease-in-out infinite;
+  }
+
+  .animate-dropzone-pulse {
+    animation: dropzone-pulse-subtle 2.5s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

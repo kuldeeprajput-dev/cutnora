@@ -16,7 +16,6 @@ import { MediaDropzone } from "./MediaDropzone";
 import { AssetCard } from "./AssetCard";
 import { MediaPreviewDialog } from "./MediaPreviewDialog";
 import { addMediaAssetToTimeline } from "../utils/add-media-asset-to-timeline";
-import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import {
   DropdownMenu,
@@ -161,270 +160,309 @@ export function MediaLibraryPanel() {
 
       {/* Drag & Drop Overlay when assets exist */}
       {isDragOver && hasAssets && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-studio-panel/95 backdrop-blur-sm border-2 border-dashed border-brand rounded-2xl p-4 text-center">
-          <UploadCloud className="h-10 w-10 text-brand animate-bounce mb-2" />
-          <p className="text-xs font-bold text-studio-fg">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#1A1A1A]/95 backdrop-blur-sm border-2 border-dashed border-white/60 rounded-2xl p-4 text-center">
+          <UploadCloud className="h-10 w-10 text-white animate-bounce mb-2" />
+          <p className="text-xs font-bold text-white">
             Drop media files to import
           </p>
-          <p className="text-[11px] text-studio-muted mt-1">
+          <p className="text-[11px] text-white/60 mt-1">
             Supports Videos, Images, and Audio
           </p>
         </div>
       )}
 
-      {/* FIXED TOP CONTROLS & HEADER SECTION (NON-SCROLLING) */}
-      <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-studio-border/50 pb-2 lg:pb-3">
-        {/* Show full dropzone box only when project has NO media assets */}
-        {!hasAssets && (
+      {/* When NO assets exist: ONLY SHOW DRAG AND DROP */}
+      {!hasAssets ? (
+        <div className="flex h-full w-full flex-1 flex-col min-h-0 gap-3">
+          {/* Progress Bar during active imports */}
+          {isImporting && (
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 shrink-0">
+              <div className="flex items-center justify-between text-xs font-semibold text-white mb-1.5">
+                <span className="flex min-w-0 items-center gap-1.5 text-white">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-white" /> Processing
+                  <span className="truncate text-white/80">
+                    {importStatus?.fileName || "media assets..."}
+                  </span>
+                </span>
+                <div className="ml-2 flex shrink-0 items-center gap-2">
+                  <span className="font-mono text-[11px] text-white/50">
+                    {importStatus?.phase || "validating"} · {importProgress}%
+                  </span>
+                  <button
+                    type="button"
+                    onClick={cancelImport}
+                    className="text-[10px] font-semibold text-destructive hover:underline cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              <ProgressBar value={importProgress} />
+              {importStatus?.phase === "copying" && (
+                <p className="mt-1 text-right font-mono text-[10px] text-white/50">
+                  {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
+                  {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Import Error Alerts */}
+          {importErrors.length > 0 && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive shrink-0">
+              <div className="flex items-center justify-between font-bold mb-1">
+                <span className="flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" /> Import Issues
+                </span>
+                <button
+                  type="button"
+                  onClick={clearErrors}
+                  className="text-[10px] underline hover:opacity-80 cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
+                {importErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Full-height Dropzone */}
           <MediaDropzone
             onFilesSelected={importFiles}
             isImporting={isImporting}
           />
-        )}
-
-        {/* Progress Bar during active imports */}
-        {isImporting && (
-          <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
-            <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
-              <span className="flex min-w-0 items-center gap-1.5 text-brand">
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing
-                <span className="truncate">
-                  {importStatus?.fileName || "media assets..."}
-                </span>
-              </span>
-              <div className="ml-2 flex shrink-0 items-center gap-2">
-                <span className="font-mono text-[11px] text-studio-muted">
-                  {importStatus?.phase || "validating"} · {importProgress}%
-                </span>
-                <button
-                  type="button"
-                  onClick={cancelImport}
-                  className="text-[10px] font-semibold text-destructive hover:underline"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-            <ProgressBar value={importProgress} />
-            {importStatus?.phase === "copying" && (
-              <p className="mt-1 text-right font-mono text-[10px] text-studio-muted">
-                {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
-                {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Import Error Alerts */}
-        {importErrors.length > 0 && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-            <div className="flex items-center justify-between font-bold mb-1">
-              <span className="flex items-center gap-1">
-                <AlertCircle className="h-3.5 w-3.5" /> Import Issues
-              </span>
-              <button
-                type="button"
-                onClick={clearErrors}
-                className="text-[10px] underline hover:opacity-80"
-              >
-                Dismiss
-              </button>
-            </div>
-            <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
-              {importErrors.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Filter & View Mode Controls Bar (Stacked 3-Row Layout) */}
-        {/* Row 1: Search Input & Import Action */}
-        <div className="flex w-full min-w-0 items-center gap-2">
-          <label className="relative min-w-0 flex-1">
-            <span className="sr-only">Search media by filename</span>
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
-            <Input
-              type="search"
-              placeholder="Search by filename…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="h-8 min-w-0 pl-8 pr-8 text-xs"
-            />
-            {search ? (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                aria-label="Clear media search"
-                className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            ) : null}
-          </label>
-          {hasAssets && (
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={triggerUpload}
-              disabled={isImporting}
-              className="h-8 px-3 shrink-0 flex items-center gap-1.5 text-xs font-semibold"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Import</span>
-            </Button>
-          )}
         </div>
-
-        {/* Row 2: Category Filter Tabs */}
-        <div className="flex w-full items-center gap-1 overflow-x-auto py-0.5 touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          {(["all", "video", "image", "audio"] as const).map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setFilter(cat)}
-              aria-pressed={filter === cat}
-              className={`flex-1 min-w-max rounded-md px-2.5 py-1.5 text-center text-[11px] font-semibold capitalize transition-[background-color,color,transform] cursor-pointer active:scale-[0.98] ${
-                filter === cat
-                  ? "bg-brand text-white shadow-sm"
-                  : "bg-studio-panel text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Row 3: Sort Dropdown & View Mode Toggle */}
-        <div className="flex items-center justify-between gap-2 w-full pt-1.5 border-t border-studio-border/50">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[10px] font-semibold text-studio-muted uppercase tracking-wider shrink-0">
-              Sort:
-            </span>
-            <DropdownMenu
-              trigger={
-                <button
-                  type="button"
-                  className="group flex h-7 items-center gap-1.5 rounded-md border border-studio-border bg-studio-panel px-2.5 text-[11px] font-semibold text-studio-fg shadow-xs transition-[border-color,background-color,color,transform] hover:border-brand/60 hover:bg-studio-panel-raised hover:text-brand active:scale-[0.97] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-                >
-                  <span>
-                    {sort === "newest"
-                      ? "Newest"
-                      : sort === "name"
-                        ? "Name"
-                        : "Duration"}
+      ) : (
+        <>
+          {/* FIXED TOP CONTROLS & HEADER SECTION (NON-SCROLLING) */}
+          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-studio-border/50 pb-2 lg:pb-3">
+            {/* Progress Bar during active imports */}
+            {isImporting && (
+              <div className="rounded-xl border border-studio-border bg-studio-panel p-3">
+                <div className="flex items-center justify-between text-xs font-semibold text-studio-fg mb-1.5">
+                  <span className="flex min-w-0 items-center gap-1.5 text-brand">
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Processing
+                    <span className="truncate">
+                      {importStatus?.fileName || "media assets..."}
+                    </span>
                   </span>
-                  <ChevronDown className="h-3 w-3 text-studio-muted" />
-                </button>
-              }
-            >
-              <DropdownMenuItem
-                onClick={() => setSort("newest")}
-                className={cn(
-                  "flex items-center justify-between text-[11px]",
-                  sort === "newest" && "text-brand font-bold bg-brand/10",
+                  <div className="ml-2 flex shrink-0 items-center gap-2">
+                    <span className="font-mono text-[11px] text-studio-muted">
+                      {importStatus?.phase || "validating"} · {importProgress}%
+                    </span>
+                    <button
+                      type="button"
+                      onClick={cancelImport}
+                      className="text-[10px] font-semibold text-destructive hover:underline cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                <ProgressBar value={importProgress} />
+                {importStatus?.phase === "copying" && (
+                  <p className="mt-1 text-right font-mono text-[10px] text-studio-muted">
+                    {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
+                    {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
+                  </p>
                 )}
-              >
-                <span>Newest</span>
-                {sort === "newest" && <Check className="h-3 w-3 text-brand" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSort("name")}
-                className={cn(
-                  "flex items-center justify-between text-[11px]",
-                  sort === "name" && "text-brand font-bold bg-brand/10",
-                )}
-              >
-                <span>Name</span>
-                {sort === "name" && <Check className="h-3 w-3 text-brand" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSort("duration")}
-                className={cn(
-                  "flex items-center justify-between text-[11px]",
-                  sort === "duration" && "text-brand font-bold bg-brand/10",
-                )}
-              >
-                <span>Duration</span>
-                {sort === "duration" && (
-                  <Check className="h-3 w-3 text-brand" />
-                )}
-              </DropdownMenuItem>
-            </DropdownMenu>
-          </div>
+              </div>
+            )}
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] font-semibold text-studio-muted uppercase tracking-wider shrink-0">
-              View:
-            </span>
-            <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel p-0.5">
-              <Button
-                size="sm"
-                variant={viewMode === "grid" ? "secondary" : "ghost"}
-                onClick={() => setViewMode("grid")}
-                className="h-6 w-6 p-0"
-                title="Grid View"
-              >
-                <LayoutGrid className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                onClick={() => setViewMode("list")}
-                className="h-6 w-6 p-0"
-                title="List View"
-              >
-                <List className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+            {/* Import Error Alerts */}
+            {importErrors.length > 0 && (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                <div className="flex items-center justify-between font-bold mb-1">
+                  <span className="flex items-center gap-1">
+                    <AlertCircle className="h-3.5 w-3.5" /> Import Issues
+                  </span>
+                  <button
+                    type="button"
+                    onClick={clearErrors}
+                    className="text-[10px] underline hover:opacity-80 cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+                <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
+                  {importErrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-      {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
-      <div className="shrink-0 overflow-visible pt-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden lg:pt-3 lg:pr-2 lg:pb-0 studio-scrollbar">
-        {filteredAssets.length === 0 ? (
-          <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">
-              <FolderOpen className="h-5 w-5" />
-            </div>
-            <p className="mt-3 text-xs font-semibold text-studio-fg">
-              {!hasAssets ? "No media imported yet" : "No matching media"}
-            </p>
-            <p className="mt-1 max-w-48 text-[10px] leading-4 text-studio-muted">
-              {!hasAssets
-                ? "Drop files above or choose files to start building your timeline."
-                : "Try another filename or clear the active media filter."}
-            </p>
-            {!hasAssets ? (
+            {/* Row 1: Search + Import */}
+            <div className="flex w-full min-w-0 items-center gap-2">
+              <label className="relative min-w-0 flex-1">
+                <span className="sr-only">Search media by filename</span>
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+                <Input
+                  type="search"
+                  placeholder="Search…"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className="h-8 min-w-0 pl-8 pr-8 text-xs bg-white/[0.04] border-white/10 placeholder:text-white/25 text-white focus:border-white/25 focus:bg-white/[0.06]"
+                />
+                {search ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label="Clear media search"
+                    className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-white/30 transition-colors hover:text-white/70 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                ) : null}
+              </label>
               <button
                 type="button"
                 onClick={triggerUpload}
-                className="mt-2 text-[11px] font-semibold text-brand transition-colors hover:text-brand-hover focus-visible:outline-none focus-visible:underline"
+                disabled={isImporting}
+                className="h-8 px-3 shrink-0 flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white hover:border-white/25 transition-all duration-200 cursor-pointer disabled:opacity-50"
               >
-                Choose files
+                <Plus className="h-3.5 w-3.5" />
+                <span>Import</span>
               </button>
-            ) : null}
+            </div>
+
+            {/* Row 2: Category Filter Tabs */}
+            <div className="flex w-full items-center gap-1 overflow-x-auto py-0.5 touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {(["all", "video", "image", "audio"] as const).map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setFilter(cat)}
+                  aria-pressed={filter === cat}
+                  className={cn(
+                    "flex-1 min-w-max rounded-md px-2.5 py-1.5 text-center text-[11px] font-semibold capitalize transition-all duration-200 cursor-pointer active:scale-[0.97]",
+                    filter === cat
+                      ? "bg-white/10 text-white"
+                      : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
+                  )}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Row 3: Sort + View Mode */}
+            <div className="flex items-center justify-between gap-2 w-full pt-1.5 border-t border-white/[0.06]">
+              <DropdownMenu
+                trigger={
+                  <button
+                    type="button"
+                    className="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-medium text-white/50 hover:text-white/80 transition-colors duration-200 select-none cursor-pointer"
+                  >
+                    <span>
+                      {sort === "newest"
+                        ? "Newest first"
+                        : sort === "name"
+                          ? "By name"
+                          : "By duration"}
+                    </span>
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                }
+              >
+                <DropdownMenuItem
+                  onClick={() => setSort("newest")}
+                  className={cn(
+                    "flex items-center justify-between text-[11px]",
+                    sort === "newest" && "text-white font-semibold",
+                  )}
+                >
+                  <span>Newest first</span>
+                  {sort === "newest" && <Check className="h-3 w-3" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSort("name")}
+                  className={cn(
+                    "flex items-center justify-between text-[11px]",
+                    sort === "name" && "text-white font-semibold",
+                  )}
+                >
+                  <span>By name</span>
+                  {sort === "name" && <Check className="h-3 w-3" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSort("duration")}
+                  className={cn(
+                    "flex items-center justify-between text-[11px]",
+                    sort === "duration" && "text-white font-semibold",
+                  )}
+                >
+                  <span>By duration</span>
+                  {sort === "duration" && <Check className="h-3 w-3" />}
+                </DropdownMenuItem>
+              </DropdownMenu>
+
+              <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  title="Grid View"
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded transition-all duration-200 cursor-pointer",
+                    viewMode === "grid" ? "bg-white/15 text-white" : "text-white/30 hover:text-white/60"
+                  )}
+                >
+                  <LayoutGrid className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  title="List View"
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded transition-all duration-200 cursor-pointer",
+                    viewMode === "list" ? "bg-white/15 text-white" : "text-white/30 hover:text-white/60"
+                  )}
+                >
+                  <List className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-2 gap-2 max-[300px]:grid-cols-1 min-[560px]:grid-cols-3 lg:grid-cols-2"
-                : "flex flex-col gap-2"
-            }
-          >
-            {filteredAssets.map((asset) => (
-              <AssetCard
-                key={asset.id}
-                asset={asset}
-                viewMode={viewMode}
-                onPreview={setPreviewAsset}
-              />
-            ))}
+
+          {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
+          <div className="shrink-0 overflow-visible pt-2 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden lg:pt-3 lg:pr-2 lg:pb-0 studio-scrollbar">
+            {filteredAssets.length === 0 ? (
+              <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">
+                  <FolderOpen className="h-5 w-5" />
+                </div>
+                <p className="mt-3 text-xs font-semibold text-studio-fg">
+                  No matching media
+                </p>
+                <p className="mt-1 max-w-48 text-[10px] leading-4 text-studio-muted">
+                  Try another filename or clear the active media filter.
+                </p>
+              </div>
+            ) : (
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 gap-2 max-[300px]:grid-cols-1 min-[560px]:grid-cols-3 lg:grid-cols-2"
+                    : "flex flex-col gap-2"
+                }
+              >
+                {filteredAssets.map((asset) => (
+                  <AssetCard
+                    key={asset.id}
+                    asset={asset}
+                    viewMode={viewMode}
+                    onPreview={setPreviewAsset}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       <MediaPreviewDialog
         asset={previewAsset}
