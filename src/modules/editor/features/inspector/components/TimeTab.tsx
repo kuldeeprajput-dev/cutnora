@@ -2,24 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Clock3,
-  Move,
   Scissors,
-  TimerReset,
   RotateCcw,
-  Film,
   Split,
-  ChevronsLeft,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Minus,
-  Sparkles,
+  Move,
 } from "lucide-react";
 import type { TimelineClip } from "@/modules/editor/types";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { useProjectStore } from "@/modules/projects";
-import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { cn } from "@/shared/utils/cn";
 
@@ -143,139 +133,94 @@ export function TimeTab({ clip }: TimeTabProps) {
   };
 
   return (
-    <div className="flex select-none flex-col gap-3 pb-2 text-studio-fg">
-      {/* 1. Playhead Trimming & Quick Cut Actions */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              <Clock3 className="h-3.5 w-3.5 text-brand" /> Playhead Trimming
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">
-              Trim, cut, or snap this clip using the timeline playhead
-            </p>
-          </div>
+    <div className="flex flex-col text-xs text-white pb-3 select-none">
+      {/* Row 1: Playhead Trims & Cut */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-white/50 font-medium">Playhead trims</span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-studio-muted">Playhead:</span>
-            <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                isPlayheadAtClip ? "bg-emerald-400" : "bg-white/30"
+              )}
+            />
+            <span className="font-mono text-xs text-white/80">
               {playhead.toFixed(2)}s
             </span>
           </div>
         </div>
 
-        {/* Live Playhead Context Pill */}
-        <div
-          className={cn(
-            "flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-colors",
-            isPlayheadAtClip
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-              : "border-studio-border bg-studio-panel/50 text-studio-muted",
-          )}
-        >
-          <span className="text-[11px] flex items-center gap-1.5">
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full shrink-0",
-                isPlayheadAtClip
-                  ? "bg-emerald-400 animate-pulse"
-                  : "bg-studio-muted",
-              )}
-            />
-            {isPlayheadAtClip
-              ? playheadInsideClip
-                ? "Playhead is inside clip (Ready to cut)"
-                : "Playhead is at clip boundary"
-              : playhead < clipStart
-                ? "Playhead is before clip"
-                : "Playhead is after clip"}
-          </span>
-          <span className="text-[10px] font-mono opacity-85 shrink-0">
-            {formatTime(clip.timelineStart)} → {formatTime(clipEnd)}
-          </span>
-        </div>
-
-        {/* Move to Playhead Button */}
-        <Button
-          size="sm"
-          variant="secondary"
+        {/* Action: Snap to Playhead */}
+        <button
+          type="button"
           onClick={moveToPlayhead}
-          className="w-full h-8 justify-center gap-1.5 text-xs font-semibold cursor-pointer border border-studio-border hover:border-brand/40"
+          className="w-full h-7 flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer rounded-lg border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white transition-colors mb-1.5"
           title="Snap clip start to current playhead"
         >
-          <Move className="h-3.5 w-3.5 text-brand" /> Move Clip Start to
-          Playhead ({playhead.toFixed(2)}s)
-        </Button>
+          <Move className="h-3 w-3 text-white/50" />
+          <span>Move Start to Playhead</span>
+        </button>
 
-        {/* Trimming & Splitting Action Grid */}
-        <div className="grid grid-cols-3 gap-1.5">
-          <Button
-            size="sm"
-            variant="secondary"
+        {/* Action: 3-column trim/split buttons */}
+        <div className="grid grid-cols-3 gap-1">
+          <button
+            type="button"
             onClick={trimStartToPlayhead}
             disabled={!isPlayheadAtClip || playhead <= clipStart + 0.05}
             className={cn(
-              "h-8 justify-center gap-1 text-[11px] font-semibold cursor-pointer",
-              isPlayheadAtClip &&
-                playhead > clipStart + 0.05 &&
-                "border-brand/40 bg-brand/10 text-brand",
+              "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+              isPlayheadAtClip && playhead > clipStart + 0.05
+                ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
             )}
-            title="Trim off the left side up to playhead"
+            title="Trim off left side up to playhead"
           >
-            <Scissors className="h-3 w-3" /> Trim Left
-          </Button>
+            <Scissors className="h-2.5 w-2.5 text-white/60" /> Trim Left
+          </button>
 
-          <Button
-            size="sm"
-            variant="secondary"
+          <button
+            type="button"
             onClick={handleSplitAtPlayhead}
             disabled={!playheadInsideClip}
             className={cn(
-              "h-8 justify-center gap-1 text-[11px] font-semibold cursor-pointer",
-              playheadInsideClip &&
-                "border-brand/40 bg-brand/10 text-brand font-bold",
+              "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+              playheadInsideClip
+                ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
             )}
-            title="Split clip into two separate clips at the playhead"
+            title="Split clip into two clips at playhead"
           >
-            <Split className="h-3 w-3" /> Split Clip
-          </Button>
+            <Split className="h-2.5 w-2.5 text-white/60" /> Split
+          </button>
 
-          <Button
-            size="sm"
-            variant="secondary"
+          <button
+            type="button"
             onClick={trimEndToPlayhead}
             disabled={!isPlayheadAtClip || playhead >= clipEnd - 0.05}
             className={cn(
-              "h-8 justify-center gap-1 text-[11px] font-semibold cursor-pointer",
-              isPlayheadAtClip &&
-                playhead < clipEnd - 0.05 &&
-                "border-brand/40 bg-brand/10 text-brand",
+              "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+              isPlayheadAtClip && playhead < clipEnd - 0.05
+                ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
             )}
-            title="Trim off the right side from playhead onwards"
+            title="Trim off right side from playhead onwards"
           >
-            <Scissors className="h-3 w-3" /> Trim Right
-          </Button>
+            <Scissors className="h-2.5 w-2.5 text-white/60" /> Trim Right
+          </button>
         </div>
-      </section>
+      </div>
 
-      {/* 2. Timeline Placement & Duration */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
-        <div>
-          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-            <TimerReset className="h-3.5 w-3.5 text-brand" /> Timeline Timing
-          </h3>
-          <p className="mt-0.5 text-[10px] text-studio-muted">
-            Fine-tune when the clip starts and its playback duration
-          </p>
-        </div>
-
-        {/* Inputs */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <label className="text-[10px] font-medium text-studio-muted block mb-1">
-              Start Position (Timeline)
-            </label>
+      {/* Row 2: Start Position (Timeline) */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Start position</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-white/40">
+              {formatTime(clip.timelineStart)}
+            </span>
             <div className="relative">
-              <Input
+              <input
                 type="text"
                 inputMode="decimal"
                 value={startDraft}
@@ -287,23 +232,56 @@ export function TimeTab({ clip }: TimeTabProps) {
                     e.currentTarget.blur();
                   }
                 }}
-                className="h-9 pr-7 font-mono text-xs"
+                className="h-7 w-20 rounded border border-white/10 bg-[#141414] pr-4 px-2 text-right font-mono text-xs text-white outline-none focus:border-white/30"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted font-mono">
+              <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-white/40 font-mono">
                 s
               </span>
             </div>
-            <div className="flex items-center justify-between mt-1 text-[9px] text-studio-muted">
-              <span>At {formatTime(clip.timelineStart)}</span>
-            </div>
           </div>
+        </div>
 
-          <div>
-            <label className="text-[10px] font-medium text-studio-muted block mb-1">
-              Clip Duration (Length)
-            </label>
+        {/* Nudge pills */}
+        <div className="grid grid-cols-3 gap-1 pt-1">
+          <button
+            type="button"
+            onClick={() => moveClip(clip.id, clip.trackId, 0)}
+            disabled={clip.timelineStart === 0}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Snap to 0:00"
+          >
+            0:00
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustStartBy(-1)}
+            disabled={clip.timelineStart <= 0}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Shift left by 1 second"
+          >
+            −1s
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustStartBy(1)}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+            title="Shift right by 1 second"
+          >
+            +1s
+          </button>
+        </div>
+      </div>
+
+      {/* Row 3: Clip Duration (Length) */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Clip duration</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-white/40">
+              {formatTime(clip.timelineDuration)}
+            </span>
             <div className="relative">
-              <Input
+              <input
                 type="text"
                 inputMode="decimal"
                 value={durationDraft}
@@ -315,152 +293,89 @@ export function TimeTab({ clip }: TimeTabProps) {
                     e.currentTarget.blur();
                   }
                 }}
-                className="h-9 pr-7 font-mono text-xs"
+                className="h-7 w-20 rounded border border-white/10 bg-[#141414] pr-4 px-2 text-right font-mono text-xs text-white outline-none focus:border-white/30"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted font-mono">
+              <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-white/40 font-mono">
                 s
               </span>
             </div>
-            <div className="flex items-center justify-between mt-1 text-[9px] text-studio-muted">
-              <span>Plays for {formatTime(clip.timelineDuration)}</span>
-            </div>
           </div>
         </div>
 
-        {/* Nudge & Adjust Step Buttons */}
-        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-studio-border/50">
-          <div className="space-y-1">
-            <span className="text-[9px] font-medium text-studio-muted block">
-              Shift Position
-            </span>
-            <div className="grid grid-cols-3 gap-1">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => moveClip(clip.id, clip.trackId, 0)}
-                disabled={clip.timelineStart === 0}
-                className="h-6 text-[9px] font-mono px-1"
-                title="Snap clip to timeline start (0:00)"
-              >
-                0:00
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustStartBy(-1)}
-                disabled={clip.timelineStart <= 0}
-                className="h-6 text-[9px] font-mono px-1"
-                title="Shift left by 1 second"
-              >
-                −1s
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustStartBy(1)}
-                className="h-6 text-[9px] font-mono px-1"
-                title="Shift right by 1 second"
-              >
-                +1s
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[9px] font-medium text-studio-muted block">
-              Adjust Length
-            </span>
-            <div className="grid grid-cols-4 gap-1">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustDurationBy(-5)}
-                disabled={clip.timelineDuration <= 5.1}
-                className="h-6 text-[9px] font-mono px-0.5"
-                title="Shorten duration by 5s"
-              >
-                −5s
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustDurationBy(-1)}
-                disabled={clip.timelineDuration <= 1.1}
-                className="h-6 text-[9px] font-mono px-0.5"
-                title="Shorten duration by 1s"
-              >
-                −1s
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustDurationBy(1)}
-                className="h-6 text-[9px] font-mono px-0.5"
-                title="Extend duration by 1s"
-              >
-                +1s
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => adjustDurationBy(5)}
-                className="h-6 text-[9px] font-mono px-0.5"
-                title="Extend duration by 5s"
-              >
-                +5s
-              </Button>
-            </div>
-          </div>
+        {/* Nudge pills */}
+        <div className="grid grid-cols-4 gap-1 pt-1">
+          <button
+            type="button"
+            onClick={() => adjustDurationBy(-5)}
+            disabled={clip.timelineDuration <= 5.1}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Shorten by 5s"
+          >
+            −5s
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustDurationBy(-1)}
+            disabled={clip.timelineDuration <= 1.1}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Shorten by 1s"
+          >
+            −1s
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustDurationBy(1)}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+            title="Extend by 1s"
+          >
+            +1s
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustDurationBy(5)}
+            className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+            title="Extend by 5s"
+          >
+            +5s
+          </button>
         </div>
 
-        {/* Quick Duration Buttons (for images, text, titles) */}
+        {/* Quick preset durations (for images, text, titles) */}
         {(clip.type === "image" ||
           clip.type === "text" ||
           Boolean(clip.elementStyle)) && (
-          <div className="pt-2 border-t border-studio-border/50">
-            <span className="text-[10px] font-medium text-studio-muted block mb-1.5">
-              Quick Preset Durations
-            </span>
-            <div className="grid grid-cols-4 gap-1">
-              {[2, 3, 5, 10].map((sec) => (
-                <Button
-                  key={sec}
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    trimClip(
-                      clip.id,
-                      clip.timelineStart,
-                      sec,
-                      clip.sourceStart,
-                    );
-                  }}
-                  className={cn(
-                    "h-6 text-[10px] font-mono",
-                    Math.abs(clip.timelineDuration - sec) < 0.05 &&
-                      "border-brand/40 bg-brand/15 text-brand font-semibold",
-                  )}
-                >
-                  {sec}s
-                </Button>
-              ))}
-            </div>
+          <div className="grid grid-cols-4 gap-1 pt-1.5">
+            {[2, 3, 5, 10].map((sec) => (
+              <button
+                key={sec}
+                type="button"
+                onClick={() => {
+                  trimClip(
+                    clip.id,
+                    clip.timelineStart,
+                    sec,
+                    clip.sourceStart,
+                  );
+                }}
+                className={cn(
+                  "py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border",
+                  Math.abs(clip.timelineDuration - sec) < 0.05
+                    ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                )}
+              >
+                {sec}s
+              </button>
+            ))}
           </div>
         )}
-      </section>
+      </div>
 
-      {/* 3. Original Source Media Range */}
+      {/* Row 4: Original Media Range (if asset-based clip) */}
       {clip.assetId && (
-        <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-                <Film className="h-3.5 w-3.5 text-brand" /> Original Media Range
-              </h3>
-              <p className="mt-0.5 text-[10px] text-studio-muted">
-                Portion of the raw file currently in use
-              </p>
-            </div>
+        <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-white/50 font-medium">Source range</span>
             {clip.sourceStart > 0 && (
               <button
                 type="button"
@@ -472,20 +387,20 @@ export function TimeTab({ clip }: TimeTabProps) {
                     0,
                   )
                 }
-                className="text-[10px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer transition-colors"
               >
                 Reset In-Point
               </button>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] font-medium text-studio-muted block mb-1">
-                Source Start (In-Point)
-              </label>
+              <span className="block text-[9px] text-white/40 mb-1">
+                In-Point (Start)
+              </span>
               <div className="relative">
-                <Input
+                <input
                   type="text"
                   inputMode="decimal"
                   value={sourceStartDraft}
@@ -497,47 +412,39 @@ export function TimeTab({ clip }: TimeTabProps) {
                       e.currentTarget.blur();
                     }
                   }}
-                  className="h-9 pr-7 font-mono text-xs"
+                  className="h-7 w-full rounded border border-white/10 bg-[#141414] pr-4 px-2 text-right font-mono text-xs text-white outline-none focus:border-white/30"
                 />
-                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-studio-muted font-mono">
+                <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-white/40 font-mono">
                   s
                 </span>
               </div>
-              <span className="text-[9px] text-studio-muted mt-1 block">
-                Starts at {formatTime(clip.sourceStart)}
-              </span>
             </div>
 
             <div>
-              <label className="text-[10px] font-medium text-studio-muted block mb-1">
-                Source End (Out-Point)
-              </label>
+              <span className="block text-[9px] text-white/40 mb-1">
+                Out-Point (End)
+              </span>
               <div className="relative">
-                <Input
+                <input
                   type="text"
                   disabled
                   value={`${(clip.sourceStart + clip.sourceDuration).toFixed(2)}s`}
-                  className="h-9 pr-7 font-mono text-xs opacity-80"
+                  className="h-7 w-full rounded border border-white/10 bg-[#141414] px-2 text-right font-mono text-xs text-white/50 opacity-80"
                 />
               </div>
-              <span className="text-[9px] text-studio-muted mt-1 block">
-                Ends at{" "}
-                {formatTime(clip.sourceStart + clip.sourceDuration)}
-              </span>
             </div>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* 4. Reset Button */}
-      <Button
-        size="sm"
-        variant="ghost"
+      {/* Reset Button */}
+      <button
+        type="button"
         onClick={resetTiming}
-        className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
+        className="mt-3 h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs font-medium text-white/50 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
       >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Trims & Original Timing
-      </Button>
+        <RotateCcw className="h-3.5 w-3.5 text-white/40" /> Reset Trims & Timing
+      </button>
     </div>
   );
 }
