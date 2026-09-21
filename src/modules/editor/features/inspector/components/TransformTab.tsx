@@ -482,13 +482,12 @@ export function TransformTab({ clip }: TransformTabProps) {
     <div className="flex flex-col text-xs text-white pb-3 select-none">
       {/* Row 1: Fit & Framing */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium">Framing</span>
-          <button
-            type="button"
-            onClick={() => setFramingExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs"
-          >
+        <div
+          onClick={() => setFramingExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Framing</span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             <span>
               {isCropping || hasActiveCrop
                 ? "Crop"
@@ -497,11 +496,11 @@ export function TransformTab({ clip }: TransformTabProps) {
                 : "Fit"}
             </span>
             {isFramingOpen ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Expanded Framing Controls */}
@@ -623,20 +622,19 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Row 2: Dimensions & Scale */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium">Dimensions</span>
-          <button
-            type="button"
-            onClick={() => setDimensionsExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs"
-          >
+        <div
+          onClick={() => setDimensionsExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Dimensions</span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             <span>{activeDimensionLabel}</span>
             {dimensionsExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Expanded Dimensions Controls */}
@@ -763,20 +761,19 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Row 3: Position & Alignment */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium">Position</span>
-          <button
-            type="button"
-            onClick={() => setPositionExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs"
-          >
+        <div
+          onClick={() => setPositionExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Position</span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             <span>{activeAnchor ? activeAnchor.label : "Custom"}</span>
             {positionExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Expanded Position Controls */}
@@ -879,20 +876,19 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Row 4: Flip */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium">Flip</span>
-          <button
-            type="button"
-            onClick={() => setFlipExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs"
-          >
+        <div
+          onClick={() => setFlipExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Flip</span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             <span>{activeFlipLabel}</span>
             {flipExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Expanded Flip Controls */}
@@ -932,20 +928,19 @@ export function TransformTab({ clip }: TransformTabProps) {
 
       {/* Row 5: Rotation */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium">Rotation</span>
-          <button
-            type="button"
-            onClick={() => setRotationExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs"
-          >
+        <div
+          onClick={() => setRotationExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Rotation</span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             <span className="font-mono">{draft.rotation}°</span>
             {rotationExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Expanded Rotation Controls */}
@@ -988,11 +983,13 @@ export function TransformTab({ clip }: TransformTabProps) {
         )}
       </div>
 
-      {/* Row 5: Opacity */}
-      <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-white/50 font-medium">Opacity</span>
-          <span className="font-mono text-xs text-white/90 font-medium">
+      {/* Row 6: Opacity */}
+      <div className="py-2.5 border-b border-white/[0.06] space-y-2 group select-none">
+        <div className="flex items-center justify-between">
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            Opacity
+          </span>
+          <span className="font-mono text-xs text-white/80 group-hover:text-white transition-colors font-medium">
             {Math.round(draft.opacity * 100)}%
           </span>
         </div>
@@ -1001,6 +998,8 @@ export function TransformTab({ clip }: TransformTabProps) {
           min={0}
           max={1}
           step={0.01}
+          fillClassName="bg-white/90 group-hover:bg-white"
+          trackClassName="bg-white/10"
           onValueChange={(val) => {
             setDraft((current) => ({ ...current, opacity: val }));
             commitTransform({ opacity: val });
