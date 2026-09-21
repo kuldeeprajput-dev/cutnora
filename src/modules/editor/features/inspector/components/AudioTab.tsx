@@ -8,12 +8,10 @@ import {
   Waves,
   Unlink,
   RotateCcw,
-  Sparkles,
 } from "lucide-react";
 import type { AudioSettings, TimelineClip } from "@/modules/editor/types";
 import { detachAudioFromVideo } from "@/modules/editor/features/audio/utils/detachAudio";
 import { useProjectStore } from "@/modules/projects";
-import { Button } from "@/shared/components/ui/Button";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
 
@@ -59,54 +57,41 @@ export function AudioTab({ clip }: AudioTabProps) {
   const maxFadeOut = Math.max(0, clip.timelineDuration - audio.fadeIn);
 
   return (
-    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
-      {/* 1. Volume & Audio Levels */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+    <div className="flex flex-col text-xs text-white pb-3 select-none">
+      {/* Row 1: Volume */}
+      <div className="py-2.5 border-b border-white/[0.06]">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              {audio.muted || effectiveVolume === 0 ? (
-                <VolumeX className="h-3.5 w-3.5 text-studio-muted" />
-              ) : effectiveVolume < 0.5 ? (
-                <Volume1 className="h-3.5 w-3.5 text-brand" />
-              ) : (
-                <Volume2 className="h-3.5 w-3.5 text-brand" />
-              )}
-              Volume & Levels
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">
-              Adjust clip loudness or choose a quick preset
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5">
+          <span className="text-white/50 font-medium flex items-center gap-1.5">
+            {audio.muted || effectiveVolume === 0 ? (
+              <VolumeX className="h-3.5 w-3.5 text-white/40" />
+            ) : effectiveVolume < 0.5 ? (
+              <Volume1 className="h-3.5 w-3.5 text-white/50" />
+            ) : (
+              <Volume2 className="h-3.5 w-3.5 text-white/50" />
+            )}
+            Volume
+          </span>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => updateAudio({ muted: !audio.muted })}
               className={cn(
-                "flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors cursor-pointer",
+                "h-5 px-1.5 rounded text-[10px] font-medium border transition-colors cursor-pointer",
                 audio.muted
-                  ? "border-red-500/50 bg-red-500/15 text-red-400 font-bold"
-                  : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg",
+                  ? "border-red-500/40 bg-red-500/15 text-red-400 font-semibold"
+                  : "border-white/10 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08]"
               )}
             >
-              {audio.muted ? (
-                <>
-                  <VolumeX className="h-3 w-3" /> Muted
-                </>
-              ) : (
-                <>
-                  <Volume2 className="h-3 w-3" /> Active
-                </>
-              )}
+              {audio.muted ? "Muted" : "Active"}
             </button>
-            <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
+            <span className="font-mono text-xs text-white/90 min-w-8 text-right">
               {Math.round(effectiveVolume * 100)}%
             </span>
           </div>
         </div>
 
         {/* Quick Volume Preset Chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5 mt-2">
           {VOLUME_PRESETS.map((p) => {
             const isActive = p.mute
               ? audio.muted
@@ -124,35 +109,20 @@ export function AudioTab({ clip }: AudioTabProps) {
                   }
                 }}
                 className={cn(
-                  "flex flex-col items-center justify-center p-2 rounded-lg border transition-all cursor-pointer select-none",
+                  "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                   isActive
-                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
-                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
+                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
                 )}
               >
-                <span
-                  className={cn(
-                    "text-xs font-bold",
-                    isActive ? "text-brand" : "text-studio-fg",
-                  )}
-                >
-                  {p.label}
-                </span>
-                <span
-                  className={cn(
-                    "text-[9px] mt-0.5",
-                    isActive ? "text-brand/80 font-medium" : "text-studio-muted",
-                  )}
-                >
-                  {p.sub}
-                </span>
+                {p.label}
               </button>
             );
           })}
         </div>
 
         {/* Volume Slider */}
-        <div className="pt-1">
+        <div className="pt-2">
           <Slider
             aria-label="Clip volume slider"
             value={effectiveVolume}
@@ -166,166 +136,138 @@ export function AudioTab({ clip }: AudioTabProps) {
             }}
           />
         </div>
-      </section>
+      </div>
 
-      {/* 2. Fade In & Fade Out Transitions */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3.5">
-        <div>
-          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-            <Waves className="h-3.5 w-3.5 text-brand" /> Audio Fade Transitions
-          </h3>
-          <p className="mt-0.5 text-[10px] text-studio-muted">
-            Smoothly fade audio in at the start and out at the end
-          </p>
-        </div>
-
-        {/* Fade In */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg">
-              Fade In (Start)
-            </span>
-            <div className="flex items-center gap-1.5">
-              {audio.fadeIn > 0 && (
-                <button
-                  type="button"
-                  onClick={() => updateAudio({ fadeIn: 0 })}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {audio.fadeIn.toFixed(1)}s
-              </span>
-            </div>
-          </div>
-          <Slider
-            aria-label="Audio fade in"
-            value={audio.fadeIn}
-            min={0}
-            max={maxFadeIn}
-            step={0.1}
-            onValueChange={(val) => updateAudio({ fadeIn: val })}
-          />
-          <div className="grid grid-cols-4 gap-1 pt-0.5">
-            {[
-              { label: "None (0s)", val: 0 },
-              { label: "0.5s", val: 0.5 },
-              { label: "1.0s", val: 1.0 },
-              { label: "2.0s", val: 2.0 },
-            ].map((f) => (
-              <Button
-                key={f.label}
-                size="sm"
-                variant="secondary"
-                disabled={f.val > maxFadeIn}
-                onClick={() => updateAudio({ fadeIn: f.val })}
-                className={cn(
-                  "h-6 text-[10px]",
-                  Math.abs(audio.fadeIn - f.val) < 0.05 &&
-                    "border-brand/40 bg-brand/15 text-brand font-semibold",
-                )}
+      {/* Row 2: Fade In */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Fade In (Start)</span>
+          <div className="flex items-center gap-1.5">
+            {audio.fadeIn > 0 && (
+              <button
+                type="button"
+                onClick={() => updateAudio({ fadeIn: 0 })}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
               >
-                {f.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Fade Out */}
-        <div className="space-y-1.5 pt-1.5 border-t border-studio-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg">
-              Fade Out (End)
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">
+              {audio.fadeIn.toFixed(1)}s
             </span>
-            <div className="flex items-center gap-1.5">
-              {audio.fadeOut > 0 && (
-                <button
-                  type="button"
-                  onClick={() => updateAudio({ fadeOut: 0 })}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {audio.fadeOut.toFixed(1)}s
-              </span>
-            </div>
-          </div>
-          <Slider
-            aria-label="Audio fade out"
-            value={audio.fadeOut}
-            min={0}
-            max={maxFadeOut}
-            step={0.1}
-            onValueChange={(val) => updateAudio({ fadeOut: val })}
-          />
-          <div className="grid grid-cols-4 gap-1 pt-0.5">
-            {[
-              { label: "None (0s)", val: 0 },
-              { label: "0.5s", val: 0.5 },
-              { label: "1.0s", val: 1.0 },
-              { label: "2.0s", val: 2.0 },
-            ].map((f) => (
-              <Button
-                key={f.label}
-                size="sm"
-                variant="secondary"
-                disabled={f.val > maxFadeOut}
-                onClick={() => updateAudio({ fadeOut: f.val })}
-                className={cn(
-                  "h-6 text-[10px]",
-                  Math.abs(audio.fadeOut - f.val) < 0.05 &&
-                    "border-brand/40 bg-brand/15 text-brand font-semibold",
-                )}
-              >
-                {f.label}
-              </Button>
-            ))}
           </div>
         </div>
-      </section>
+        <Slider
+          aria-label="Audio fade in"
+          value={audio.fadeIn}
+          min={0}
+          max={maxFadeIn}
+          step={0.1}
+          onValueChange={(val) => updateAudio({ fadeIn: val })}
+        />
+        <div className="grid grid-cols-4 gap-1 pt-1.5">
+          {[
+            { label: "None (0s)", val: 0 },
+            { label: "0.5s", val: 0.5 },
+            { label: "1.0s", val: 1.0 },
+            { label: "2.0s", val: 2.0 },
+          ].map((f) => (
+            <button
+              key={f.label}
+              type="button"
+              disabled={f.val > maxFadeIn}
+              onClick={() => updateAudio({ fadeIn: f.val })}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+                Math.abs(audio.fadeIn - f.val) < 0.05
+                  ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* 3. Separate Audio Track (For Video / Overlay Clips) */}
+      {/* Row 3: Fade Out */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Fade Out (End)</span>
+          <div className="flex items-center gap-1.5">
+            {audio.fadeOut > 0 && (
+              <button
+                type="button"
+                onClick={() => updateAudio({ fadeOut: 0 })}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">
+              {audio.fadeOut.toFixed(1)}s
+            </span>
+          </div>
+        </div>
+        <Slider
+          aria-label="Audio fade out"
+          value={audio.fadeOut}
+          min={0}
+          max={maxFadeOut}
+          step={0.1}
+          onValueChange={(val) => updateAudio({ fadeOut: val })}
+        />
+        <div className="grid grid-cols-4 gap-1 pt-1.5">
+          {[
+            { label: "None (0s)", val: 0 },
+            { label: "0.5s", val: 0.5 },
+            { label: "1.0s", val: 1.0 },
+            { label: "2.0s", val: 2.0 },
+          ].map((f) => (
+            <button
+              key={f.label}
+              type="button"
+              disabled={f.val > maxFadeOut}
+              onClick={() => updateAudio({ fadeOut: f.val })}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+                Math.abs(audio.fadeOut - f.val) < 0.05
+                  ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 4: Separate Audio Track */}
       {(clip.type === "video" || clip.type === "overlay") && (
-        <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-2.5">
-          <div className="flex items-start gap-2">
-            <div className="p-1.5 rounded-lg border border-studio-border bg-studio-panel text-brand shrink-0">
-              <Unlink className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-xs font-semibold text-studio-fg">
-                Separate Audio Track
-              </h3>
-              <p className="mt-0.5 text-[10px] text-studio-muted">
-                Detach this video's audio into an independent track on the
-                timeline for advanced editing.
-              </p>
-            </div>
+        <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between">
+            <span className="text-white/50 font-medium">Audio track</span>
+            <button
+              type="button"
+              onClick={() => detachAudioFromVideo(clip.id)}
+              className="h-6 px-2.5 rounded-md border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer"
+            >
+              <Unlink className="h-3 w-3 text-white/60" /> Detach to Timeline Track
+            </button>
           </div>
-
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => detachAudioFromVideo(clip.id)}
-            className="w-full h-8 justify-center gap-1.5 text-xs font-semibold text-brand hover:text-brand border-brand/30 hover:border-brand/60 bg-brand/5 hover:bg-brand/10 cursor-pointer"
-          >
-            <Unlink className="h-3.5 w-3.5" /> Detach Audio to Timeline Track
-          </Button>
-        </section>
+        </div>
       )}
 
-      {/* 4. Reset Button */}
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={resetAudio}
-        className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset Audio Controls
-      </Button>
+      {/* Row 5: Reset Audio */}
+      <div className="pt-3">
+        <button
+          type="button"
+          onClick={resetAudio}
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+        >
+          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Audio Controls
+        </button>
+      </div>
     </div>
   );
 }
