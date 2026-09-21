@@ -222,7 +222,9 @@ export const useProjectStore = create<ProjectState>()(
       });
 
       const updated = get().currentProject;
-      if (updated) autosaveService.scheduleSave(updated);
+      if (updated && options?.recordHistory !== false) {
+        autosaveService.scheduleSave(updated);
+      }
     },
 
     addAsset: (asset) => {

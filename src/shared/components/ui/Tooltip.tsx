@@ -157,7 +157,7 @@ export function Tooltip({
           ref={tooltipRef}
           role="tooltip"
           className={cn(
-            'absolute z-50 flex items-center px-3 py-1.5 text-xs font-medium text-[#E5E5E5] bg-[#383838] border border-white/5 rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-opacity duration-150 animate-in fade-in-0 zoom-in-95',
+            'absolute z-50 flex items-center px-2 py-0.5 text-[10px] font-medium text-white/90 bg-[#1c1c20] border border-white/10 rounded-md shadow-xl whitespace-nowrap pointer-events-none transition-opacity duration-150 animate-in fade-in-0 zoom-in-95',
             positionClasses[position][currentAlign],
             className
           )}
@@ -165,7 +165,7 @@ export function Tooltip({
           <span
             aria-hidden="true"
             className={cn(
-              'absolute h-2 w-2 rotate-45 bg-[#383838]',
+              'absolute h-1.5 w-1.5 rotate-45 bg-[#1c1c20]',
               arrowClasses[position][currentAlign]
             )}
           />

@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   ArrowLeftRight,
   Check,
   ChevronDown,
   ChevronRight,
+  ClipboardPaste,
+  HelpCircle,
   Link2,
   Link2Off,
+  Maximize,
   Pipette,
   RotateCcw,
   SlidersHorizontal,
+  Sparkles,
   Volume2,
 } from "lucide-react";
 import { useProjectStore } from "@/modules/projects";
 import type { AspectRatio } from "@/modules/projects/types";
-import { ColorPickerPopover } from "@/shared/components/ui/ColorPicker";
+import {
+  ColorPickerPopover,
+  PRESET_COLORS,
+  parseAnyColorString,
+  rgbToHex,
+} from "@/shared/components/ui/ColorPicker";
 import { Input } from "@/shared/components/ui/Input";
 import { Slider } from "@/shared/components/ui/Slider";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
@@ -24,7 +33,6 @@ import {
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
 import { cn } from "@/shared/utils/cn";
-
 import {
   SOCIAL_PRESETS,
   PLATFORMS,
@@ -55,6 +63,8 @@ function isLightColor(hex: string): boolean {
 }
 
 export type { SocialPreset };
+
+const CANVAS_PRESETS_SWATCHES = PRESET_COLORS;
 
 export function CanvasSettingsPanel() {
   const currentProject = useProjectStore((state) => state.currentProject);
@@ -94,26 +104,111 @@ export function CanvasSettingsPanel() {
     });
   }, [settingsWidth, settingsHeight]);
 
-  const [bgHexDraft, setBgHexDraft] = useState(settings?.backgroundColor || "#000000");
+  const [isBgInputFocused, setIsBgInputFocused] = useState(false);
+  const [bgHexDraft, setBgHexDraft] = useState("");
 
-  useEffect(() => {
-    if (settings?.backgroundColor) {
-      setBgHexDraft(settings.backgroundColor);
+  const displayedBgHex = isBgInputFocused
+    ? bgHexDraft
+    : (settings?.backgroundColor || "#000000").toUpperCase();
+
+  const handleColorChange = useCallback(
+    (hex: string) => {
+      const stageBox = document.getElementById("stage-canvas-box");
+      if (stageBox) {
+        if (hex.toLowerCase() === "transparent") {
+          stageBox.style.backgroundColor = "transparent";
+          stageBox.style.backgroundImage =
+            "repeating-conic-gradient(#23242a 0% 25%, #141519 0% 50%)";
+          stageBox.style.backgroundSize = "16px 16px";
+        } else {
+          stageBox.style.backgroundColor = hex;
+          stageBox.style.backgroundImage = "none";
+        }
+      }
+      updateSettings(
+        { backgroundColor: hex.toUpperCase() },
+        { recordHistory: false },
+      );
+    },
+    [updateSettings],
+  );
+
+  const handleColorChangeEnd = useCallback(
+    (hex: string) => {
+      updateSettings(
+        { backgroundColor: hex.toUpperCase() },
+        { recordHistory: true },
+      );
+    },
+    [updateSettings],
+  );
+
+  const previewBgColor = useMemo(() => {
+    const raw = isBgInputFocused ? bgHexDraft : settings?.backgroundColor || "#000000";
+    const trimmed = raw.trim();
+    if (trimmed.toLowerCase() === "transparent" || trimmed.toLowerCase() === "alpha") {
+      return "transparent";
     }
-  }, [settings?.backgroundColor]);
+    const parsed = parseAnyColorString(trimmed);
+    if (parsed) {
+      return rgbToHex(parsed);
+    }
+    return settings?.backgroundColor || "#000000";
+  }, [isBgInputFocused, bgHexDraft, settings?.backgroundColor]);
 
-  const handleBgHexSubmit = () => {
-    if (!settings) return;
-    const val = bgHexDraft.trim();
-    if (val.toLowerCase() === "transparent" || val.toLowerCase() === "alpha") {
+  const applyColorFromInput = (inputVal: string) => {
+    const trimmed = inputVal.trim();
+    if (trimmed.toLowerCase() === "transparent" || trimmed.toLowerCase() === "alpha") {
+      updateSettings({ backgroundColor: "transparent" });
+      return true;
+    }
+    const parsed = parseAnyColorString(trimmed);
+    if (parsed) {
+      const hex = rgbToHex(parsed);
+      updateSettings({ backgroundColor: hex });
+      return true;
+    }
+    return false;
+  };
+
+  const handleBgHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setBgHexDraft(raw);
+    applyColorFromInput(raw);
+  };
+
+  const handleBgHexBlur = () => {
+    setIsBgInputFocused(false);
+    const trimmed = bgHexDraft.trim();
+    if (trimmed.toLowerCase() === "transparent" || trimmed.toLowerCase() === "alpha") {
       updateSettings({ backgroundColor: "transparent" });
       return;
     }
-    const formatted = val.startsWith("#") ? val : "#" + val;
-    if (/^#[0-9A-Fa-f]{6}$/.test(formatted) || /^#[0-9A-Fa-f]{3}$/.test(formatted)) {
-      updateSettings({ backgroundColor: formatted.toUpperCase() });
-    } else {
-      setBgHexDraft(settings.backgroundColor || "#000000");
+    const parsed = parseAnyColorString(trimmed);
+    if (parsed) {
+      const hex = rgbToHex(parsed);
+      updateSettings({ backgroundColor: hex });
+    }
+  };
+
+  const handleBgHexKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    } else if (e.key === "Escape") {
+      setIsBgInputFocused(false);
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleBgHexPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text");
+    if (!pasted) return;
+    const parsed = parseAnyColorString(pasted.trim());
+    if (parsed) {
+      e.preventDefault();
+      const hex = rgbToHex(parsed);
+      setBgHexDraft(hex);
+      updateSettings({ backgroundColor: hex });
     }
   };
 
@@ -688,10 +783,13 @@ export function CanvasSettingsPanel() {
               <ColorPickerPopover
                 label="Background Color"
                 value={settings.backgroundColor || "#000000"}
-                presets={CANVAS_COLOR_SWATCHES.map((s) => s.hex).filter((h) => h !== "transparent")}
-                onChange={(hex) => updateSettings({ backgroundColor: hex.toUpperCase() })}
+                defaultValue="#000000"
+                onReset={() => updateSettings({ backgroundColor: "#000000" })}
+                presets={CANVAS_PRESETS_SWATCHES}
+                onChange={handleColorChange}
+                onChangeEnd={handleColorChangeEnd}
                 align="right"
-                triggerClassName="h-6 px-1.5 gap-1.5 rounded border-0 bg-transparent shadow-none hover:bg-white/[0.06] cursor-pointer text-xs font-medium text-white/90 hover:text-white transition-colors"
+                triggerClassName="h-7 px-2.5 justify-center"
               />
             </div>
 
@@ -711,7 +809,10 @@ export function CanvasSettingsPanel() {
                       <button
                         key={swatch.label}
                         type="button"
-                        onClick={() => updateSettings({ backgroundColor: swatch.hex })}
+                        onClick={() => {
+                          handleColorChange(swatch.hex);
+                          handleColorChangeEnd(swatch.hex);
+                        }}
                         aria-label={`${swatch.label} (${swatch.hex})`}
                         style={
                           isTransparent
@@ -746,29 +847,30 @@ export function CanvasSettingsPanel() {
                 <div className="flex items-center gap-1.5 pt-0.5">
                   <div className="relative flex-1 flex items-center">
                     <div
-                      className="absolute left-2.5 h-3 w-3 rounded-full border border-white/20 shrink-0 pointer-events-none"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-sm border border-white/20 shrink-0 pointer-events-none"
                       style={
-                        settings.backgroundColor === "transparent"
+                        previewBgColor === "transparent"
                           ? {
                               backgroundImage:
                                 "repeating-conic-gradient(#4a4d55 0% 25%, #2a2b30 0% 50%)",
                               backgroundSize: "6px 6px",
                             }
-                          : { backgroundColor: settings.backgroundColor || "#000000" }
+                          : { backgroundColor: previewBgColor }
                       }
                     />
                     <input
                       type="text"
-                      value={bgHexDraft}
-                      onChange={(e) => setBgHexDraft(e.target.value)}
-                      onBlur={handleBgHexSubmit}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleBgHexSubmit();
-                        if (e.key === "Escape") {
-                          setBgHexDraft(settings.backgroundColor || "#000000");
-                        }
+                      value={displayedBgHex}
+                      onFocus={() => {
+                        setIsBgInputFocused(true);
+                        setBgHexDraft(settings?.backgroundColor || "#000000");
                       }}
+                      onChange={handleBgHexChange}
+                      onBlur={handleBgHexBlur}
+                      onKeyDown={handleBgHexKeyDown}
+                      onPaste={handleBgHexPaste}
                       placeholder="#000000"
+                      spellCheck={false}
                       className="h-7 w-full rounded border-0 bg-white/[0.04] pl-7 pr-2 font-mono text-xs uppercase text-white/90 placeholder-white/30 outline-none transition-colors hover:bg-white/[0.06] focus:bg-white/[0.08] shadow-none"
                     />
                   </div>

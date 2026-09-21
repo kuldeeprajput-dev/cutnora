@@ -64,7 +64,7 @@ export default function RootLayout({
           suppressHydrationWarning
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <GlobalPopups />
       </body>
