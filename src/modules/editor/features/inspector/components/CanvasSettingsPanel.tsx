@@ -359,54 +359,101 @@ export function CanvasSettingsPanel() {
     return "Custom";
   };
 
+  const resolutionLabel = useMemo(() => {
+    if (customResolutionOpen || !settings) return "Custom";
+    const { width, height } = settings;
+    if (
+      (width === 1920 && height === 1080) ||
+      (width === 1080 && height === 1920) ||
+      (width === 1080 && height === 1080) ||
+      (width === 1080 && height === 1350)
+    ) {
+      return "1080p";
+    }
+    if (
+      (width === 3840 && height === 2160) ||
+      (width === 2160 && height === 3840)
+    ) {
+      return "4K";
+    }
+    if (
+      (width === 1280 && height === 720) ||
+      (width === 720 && height === 1280)
+    ) {
+      return "720p";
+    }
+    const matchedQuality = QUALITY_PRESETS.find((q) => {
+      const targetW = Math.round(1920 * q.scale);
+      const targetH = Math.round(1080 * q.scale);
+      return (
+        (width === targetW && height === targetH) ||
+        (width === targetH && height === targetW)
+      );
+    });
+    if (matchedQuality) {
+      return matchedQuality.label.split(" ")[0];
+    }
+    return "Custom";
+  }, [settings?.width, settings?.height, customResolutionOpen]);
+
   return (
     <div className="flex flex-col gap-3 text-white pb-3 select-none">
       <div className="flex flex-col text-xs">
           {/* Row 1: Project Name */}
-          <div className="flex items-center justify-between py-2.5 border-b border-white/[0.06]">
-            <span className="text-white/50 font-medium">Name</span>
+          <div className="py-2.5 border-b border-white/[0.06]">
             {isEditingName ? (
-              <input
-                type="text"
-                autoFocus
-                value={nameDraft}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onBlur={handleNameSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleNameSubmit();
-                  if (e.key === "Escape") {
-                    setNameDraft(currentProject?.name ?? "Untitled project");
-                    setIsEditingName(false);
-                  }
-                }}
-                className="h-7 w-48 rounded border border-white/30 bg-[#141414] px-2 text-right font-medium text-white outline-none focus:border-white"
-              />
+              <div className="flex items-center justify-between">
+                <span className="text-white/50 font-medium">Name</span>
+                <input
+                  type="text"
+                  autoFocus
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onBlur={handleNameSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleNameSubmit();
+                    if (e.key === "Escape") {
+                      setNameDraft(currentProject?.name ?? "Untitled project");
+                      setIsEditingName(false);
+                    }
+                  }}
+                  className="h-7 w-48 rounded-md border border-white/20 bg-white/[0.04] px-2.5 text-right font-medium text-white outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all text-xs"
+                />
+              </div>
             ) : (
-              <button
-                type="button"
+              <div
                 onClick={() => setIsEditingName(true)}
+                className="flex items-center justify-between cursor-pointer group select-none py-0.5"
                 title="Click to rename"
-                className="max-w-[200px] truncate text-right font-medium text-white/90 hover:text-white hover:underline decoration-white/30 underline-offset-4 cursor-pointer"
               >
-                {nameDraft || "Untitled project"}
-              </button>
+                <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+                  Name
+                </span>
+                <span className="max-w-[200px] truncate text-right font-medium text-white/90 group-hover:text-white transition-colors">
+                  {nameDraft || "Untitled project"}
+                </span>
+              </div>
             )}
           </div>
 
           {/* Row 2: Frame rate */}
-          <div className="flex items-center justify-between py-2.5 border-b border-white/[0.06]">
-            <span className="text-white/50 font-medium">Frame rate</span>
+          <div className="py-2.5 border-b border-white/[0.06]">
             <DropdownMenu
               align="right"
+              matchTriggerWidth={false}
+              triggerClassName="w-full"
               className="w-36 min-w-[130px] rounded-2xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/80 backdrop-blur-md"
               trigger={(isOpen) => (
-                <div className="flex items-center gap-1 font-medium text-white/90 hover:text-white transition-colors cursor-pointer text-xs">
-                  <span>{settings?.fps ?? 30} fps</span>
-                  {isOpen ? (
-                    <ChevronDown className="h-3.5 w-3.5 text-white/50" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-white/50" />
-                  )}
+                <div className="flex items-center justify-between w-full cursor-pointer group py-0.5">
+                  <span className="text-white/50 group-hover:text-white font-medium transition-colors">Frame rate</span>
+                  <div className="flex items-center gap-1 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+                    <span>{settings?.fps ?? 30} fps</span>
+                    {isOpen ? (
+                      <ChevronDown className="h-3.5 w-3.5 text-white/50 group-hover:text-white" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 text-white/50 group-hover:text-white" />
+                    )}
+                  </div>
                 </div>
               )}
             >
@@ -437,32 +484,33 @@ export function CanvasSettingsPanel() {
 
           {/* Row 3: Aspect ratio */}
           <div className="py-2.5 border-b border-white/[0.06]">
-            <div className="flex items-center justify-between">
-              <span className="text-white/50 font-medium">Aspect ratio</span>
-              <div className="flex items-center gap-2">
+            <div
+              onClick={() => setAspectRatioExpanded((prev) => !prev)}
+              className="flex items-center justify-between cursor-pointer group select-none"
+            >
+              <span className="text-white/50 group-hover:text-white font-medium transition-colors">Aspect ratio</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-xs font-medium text-white/90 group-hover:text-white transition-colors">
+                  {getRatioLabel(settings.aspectRatio)}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setAspectRatioExpanded((prev) => !prev)}
-                  className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer"
-                >
-                  <span className="font-mono text-xs">{settings.aspectRatio}</span>
-                  <span className="text-[11px] text-white/45">
-                    ({getRatioLabel(settings.aspectRatio)})
-                  </span>
-                  {aspectRatioExpanded ? (
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-white/40" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSwapOrientation}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSwapOrientation();
+                  }}
                   title="Swap orientation (Rotate ⇄)"
                   className="flex h-6 w-6 items-center justify-center rounded text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5" />
                 </button>
+                <div className="flex items-center justify-center text-white/40 group-hover:text-white transition-colors p-0.5">
+                  {aspectRatioExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -624,22 +672,21 @@ export function CanvasSettingsPanel() {
 
           {/* Row 4: Resolution */}
           <div className="py-2.5 border-b border-white/[0.06]">
-            <div className="flex items-center justify-between">
-              <span className="text-white/50 font-medium">Resolution</span>
-              <button
-                type="button"
-                onClick={() => setResolutionExpanded((prev) => !prev)}
-                className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer"
-              >
+            <div
+              onClick={() => setResolutionExpanded((prev) => !prev)}
+              className="flex items-center justify-between cursor-pointer group select-none"
+            >
+              <span className="text-white/50 group-hover:text-white font-medium transition-colors">Resolution</span>
+              <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors">
                 <span className="font-mono text-xs">
-                  {settings.width} × {settings.height}
+                  {resolutionLabel}
                 </span>
                 {resolutionExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                  <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+                  <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
                 )}
-              </button>
+              </div>
             </div>
 
             {/* Resolution Tier Pills & Custom Dimension Inputs */}
@@ -707,56 +754,71 @@ export function CanvasSettingsPanel() {
 
                 {/* Custom Width & Height Inputs */}
                 {customResolutionOpen && (
-                  <div className="flex items-center gap-2 pt-1.5">
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        min={64}
-                        max={7680}
+                  <div className="flex items-center gap-1.5 pt-1.5">
+                    {/* W Input */}
+                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-1.5">
+                      <span className="text-[10px] font-mono font-medium text-white/40 select-none shrink-0">
+                        W
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
                         value={dimensionDraft.width}
                         onChange={(e) =>
                           setDimensionDraft((cur) => ({ ...cur, width: e.target.value }))
                         }
                         onBlur={() => commitDimension("width")}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") e.currentTarget.blur();
+                          if (e.key === "Enter") {
+                            commitDimension("width");
+                            e.currentTarget.blur();
+                          }
                         }}
-                        className="h-8 pr-6 font-mono text-xs bg-[#141414] border-white/10"
+                        className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
                       />
-                      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/40">
-                        W
+                      <span className="text-[10px] font-mono text-white/30 select-none shrink-0">
+                        px
                       </span>
                     </div>
 
+                    {/* Aspect Ratio Lock Button */}
                     <button
                       type="button"
                       onClick={() => setLinked(!linked)}
                       title={linked ? "Proportions locked (click to unlock)" : "Free size (click to lock)"}
                       className={cn(
-                        "h-8 w-8 rounded flex items-center justify-center border transition-colors cursor-pointer",
-                        linked ? "border-white/20 bg-white/10 text-white" : "border-white/10 text-white/40 hover:text-white"
+                        "h-[30px] w-[30px] rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0",
+                        linked
+                          ? "border-white/25 bg-white/15 text-white shadow-xs"
+                          : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white hover:bg-white/[0.06]"
                       )}
                     >
                       {linked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
                     </button>
 
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        min={64}
-                        max={7680}
+                    {/* H Input */}
+                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-1.5">
+                      <span className="text-[10px] font-mono font-medium text-white/40 select-none shrink-0">
+                        H
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
                         value={dimensionDraft.height}
                         onChange={(e) =>
                           setDimensionDraft((cur) => ({ ...cur, height: e.target.value }))
                         }
                         onBlur={() => commitDimension("height")}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") e.currentTarget.blur();
+                          if (e.key === "Enter") {
+                            commitDimension("height");
+                            e.currentTarget.blur();
+                          }
                         }}
-                        className="h-8 pr-6 font-mono text-xs bg-[#141414] border-white/10"
+                        className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
                       />
-                      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/40">
-                        H
+                      <span className="text-[10px] font-mono text-white/30 select-none shrink-0">
+                        px
                       </span>
                     </div>
                   </div>
@@ -767,30 +829,35 @@ export function CanvasSettingsPanel() {
 
           {/* Row 5: Background */}
           <div className="py-2.5 border-b border-white/[0.06]">
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setBgColorsExpanded((prev) => !prev)}
-                className="flex items-center gap-1.5 font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
-              >
-                <span>Background</span>
-                {bgColorsExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5 text-white/40" />
-                )}
-              </button>
-              <ColorPickerPopover
-                label="Background Color"
-                value={settings.backgroundColor || "#000000"}
-                defaultValue="#000000"
-                onReset={() => updateSettings({ backgroundColor: "#000000" })}
-                presets={CANVAS_PRESETS_SWATCHES}
-                onChange={handleColorChange}
-                onChangeEnd={handleColorChangeEnd}
-                align="right"
-                triggerClassName="h-7 px-2.5 justify-center"
-              />
+            <div
+              onClick={() => setBgColorsExpanded((prev) => !prev)}
+              className="flex items-center justify-between cursor-pointer group select-none"
+            >
+              <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+                Background
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ColorPickerPopover
+                    label="Background Color"
+                    value={settings.backgroundColor || "#000000"}
+                    defaultValue="#000000"
+                    onReset={() => updateSettings({ backgroundColor: "#000000" })}
+                    presets={CANVAS_PRESETS_SWATCHES}
+                    onChange={handleColorChange}
+                    onChangeEnd={handleColorChangeEnd}
+                    align="right"
+                    triggerClassName="h-7 px-2.5 justify-center"
+                  />
+                </div>
+                <div className="flex items-center justify-center text-white/40 group-hover:text-white transition-colors p-0.5">
+                  {bgColorsExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Expanded Swatches & Controls */}
@@ -845,7 +912,7 @@ export function CanvasSettingsPanel() {
 
                 {/* Bottom Custom Color & Tools Row */}
                 <div className="flex items-center gap-1.5 pt-0.5">
-                  <div className="relative flex-1 flex items-center">
+                  <div className="relative flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all">
                     <div
                       className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-sm border border-white/20 shrink-0 pointer-events-none"
                       style={
@@ -871,7 +938,7 @@ export function CanvasSettingsPanel() {
                       onPaste={handleBgHexPaste}
                       placeholder="#000000"
                       spellCheck={false}
-                      className="h-7 w-full rounded border-0 bg-white/[0.04] pl-7 pr-2 font-mono text-xs uppercase text-white/90 placeholder-white/30 outline-none transition-colors hover:bg-white/[0.06] focus:bg-white/[0.08] shadow-none"
+                      className="h-full w-full rounded-md border-0 bg-transparent pl-8 pr-2 font-mono text-xs uppercase text-white/90 placeholder-white/30 outline-none transition-colors p-0 focus:outline-none focus:ring-0 shadow-none"
                     />
                   </div>
 
@@ -918,13 +985,15 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 6: Master Audio */}
-          <div className="py-2.5 border-b border-white/[0.06] space-y-2">
+          <div className="py-2.5 border-b border-white/[0.06] space-y-2 group select-none">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Volume2 className="h-3.5 w-3.5 text-white/40" />
-                <span className="text-white/50 font-medium">Master volume</span>
+                <Volume2 className="h-3.5 w-3.5 text-white/40 group-hover:text-white transition-colors" />
+                <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+                  Master volume
+                </span>
               </div>
-              <span className="font-mono text-xs text-white/80">
+              <span className="font-mono text-xs text-white/80 group-hover:text-white transition-colors">
                 {Math.round(settings.masterVolume * 100)}%
               </span>
             </div>
@@ -933,7 +1002,7 @@ export function CanvasSettingsPanel() {
               min={0}
               max={1}
               step={0.01}
-              fillClassName="bg-white/90"
+              fillClassName="bg-white/90 group-hover:bg-white"
               trackClassName="bg-white/10"
               onValueChange={(val) => updateSettings({ masterVolume: val })}
             />
