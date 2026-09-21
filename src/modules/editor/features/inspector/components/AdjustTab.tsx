@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Palette,
   Sparkles,
@@ -10,11 +10,12 @@ import {
   RotateCcw,
   Sliders,
   Check,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import type { Adjustments, TimelineClip } from "@/modules/editor/types";
 import { useProjectStore } from "@/modules/projects";
 import { Slider } from "@/shared/components/ui/Slider";
-import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 
 export interface AdjustTabProps {
@@ -66,36 +67,49 @@ const FILTER_PRESETS: ColorFilterPreset[] = [
   },
   {
     id: "warm",
-    name: "Warm Glow",
-    subtitle: "Golden sunset",
+    name: "Warm Gold",
+    subtitle: "Cozy sunset tone",
     values: {
-      brightness: 1.05,
-      contrast: 1.1,
+      brightness: 1.02,
+      contrast: 1.05,
       saturation: 1.15,
       blur: 0,
       grayscale: 0,
-      sepia: 0.35,
+      sepia: 0.25,
     },
   },
   {
     id: "cool",
-    name: "Cool Drama",
-    subtitle: "Cinematic moody",
+    name: "Cool Crisp",
+    subtitle: "Fresh & sharp",
     values: {
-      brightness: 0.95,
-      contrast: 1.25,
-      saturation: 0.85,
+      brightness: 0.98,
+      contrast: 1.15,
+      saturation: 0.9,
       blur: 0,
       grayscale: 0,
       sepia: 0,
     },
   },
   {
-    id: "bw",
-    name: "Classic B&W",
-    subtitle: "Monochrome film",
+    id: "cinema",
+    name: "Moody Cinema",
+    subtitle: "Dramatic shadow look",
     values: {
-      brightness: 1.05,
+      brightness: 0.92,
+      contrast: 1.3,
+      saturation: 0.85,
+      blur: 0,
+      grayscale: 0,
+      sepia: 0.1,
+    },
+  },
+  {
+    id: "bw",
+    name: "Pure B&W",
+    subtitle: "Classic monochrome",
+    values: {
+      brightness: 1,
       contrast: 1.25,
       saturation: 0,
       blur: 0,
@@ -105,15 +119,28 @@ const FILTER_PRESETS: ColorFilterPreset[] = [
   },
   {
     id: "vintage",
-    name: "Vintage Film",
-    subtitle: "Nostalgic retro",
+    name: "Vintage Sepia",
+    subtitle: "Retro nostalgic warmth",
     values: {
       brightness: 0.95,
-      contrast: 1.15,
-      saturation: 0.9,
+      contrast: 0.95,
+      saturation: 0.7,
       blur: 0,
       grayscale: 0,
-      sepia: 0.6,
+      sepia: 0.75,
+    },
+  },
+  {
+    id: "dreamy",
+    name: "Dreamy Soft",
+    subtitle: "Ethereal glow",
+    values: {
+      brightness: 1.1,
+      contrast: 0.9,
+      saturation: 1.1,
+      blur: 3,
+      grayscale: 0,
+      sepia: 0.05,
     },
   },
 ];
@@ -121,6 +148,7 @@ const FILTER_PRESETS: ColorFilterPreset[] = [
 export function AdjustTab({ clip }: AdjustTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const adjustments = clip.adjustments || defaultAdjustments;
+  const [presetsExpanded, setPresetsExpanded] = useState(false);
 
   const updateAdjustment = (key: keyof Adjustments, value: number) => {
     updateClip(clip.id, {
@@ -160,408 +188,334 @@ export function AdjustTab({ clip }: AdjustTabProps) {
   });
 
   return (
-    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
-      {/* 1. 1-Click Color Filter Looks */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3">
+    <div className="flex flex-col text-xs text-white pb-3 select-none">
+      {/* Row 1: Color Look / Presets */}
+      <div className="py-2.5 border-b border-white/[0.06]">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-brand" /> 1-Click Color Looks
-            </h3>
-            <p className="mt-0.5 text-[10px] text-studio-muted">
-              Choose an instant artistic color filter
-            </p>
-          </div>
-          {activePreset?.id !== "normal" && (
-            <button
-              type="button"
-              onClick={resetAll}
-              className="text-[10px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-            >
-              Reset Filter
-            </button>
-          )}
+          <span className="text-white/50 font-medium">Color look</span>
+          <button
+            type="button"
+            onClick={() => setPresetsExpanded((prev) => !prev)}
+            className="flex items-center gap-1.5 font-medium text-white/90 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>{activePreset?.name || "Custom"}</span>
+            {presetsExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-white/40" />
+            )}
+          </button>
         </div>
 
-        {/* Filter Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {FILTER_PRESETS.map((preset) => {
-            const isActive = activePreset?.id === preset.id;
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => applyFilterPreset(preset)}
-                className={cn(
-                  "relative flex flex-col items-start p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none",
-                  isActive
-                    ? "border-brand bg-brand/15 text-brand shadow-xs ring-1 ring-brand/50 scale-[1.01]"
-                    : "border-studio-border bg-studio-panel text-studio-muted hover:border-brand/40 hover:bg-studio-panel-raised hover:text-studio-fg",
-                )}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className={cn(
-                      "text-xs font-bold truncate",
-                      isActive ? "text-brand" : "text-studio-fg",
-                    )}
-                  >
-                    {preset.name}
-                  </span>
-                  {isActive && (
-                    <Check className="h-3.5 w-3.5 text-brand shrink-0 ml-1" />
-                  )}
-                </div>
-                <span
+        {/* Presets Grid when expanded */}
+        {presetsExpanded && (
+          <div className="mt-2 grid grid-cols-4 gap-1.5 pt-1">
+            {FILTER_PRESETS.map((preset) => {
+              const isActive = activePreset?.id === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => applyFilterPreset(preset)}
                   className={cn(
-                    "text-[9px] mt-1 truncate",
-                    isActive ? "text-brand/80 font-medium" : "text-studio-muted",
+                    "py-1.5 px-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer truncate",
+                    isActive
+                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
                   )}
+                  title={`${preset.name} (${preset.subtitle})`}
                 >
-                  {preset.subtitle}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 2. Tone & Lighting (Brightness, Contrast, Saturation) */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3.5">
-        <div>
-          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-            <Palette className="h-3.5 w-3.5 text-brand" /> Tone & Lighting
-          </h3>
-          <p className="mt-0.5 text-[10px] text-studio-muted">
-            Fine-tune brightness, contrast, and color vibrance
-          </p>
-        </div>
-
-        {/* Brightness Control */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg flex items-center gap-1.5">
-              <Sun className="h-3 w-3 text-studio-muted" /> Brightness
-            </span>
-            <div className="flex items-center gap-1.5">
-              {adjustments.brightness !== 1 && (
-                <button
-                  type="button"
-                  onClick={() => resetAdjustment("brightness")}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                  title="Reset brightness"
-                >
-                  Reset
+                  {preset.name}
                 </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {Math.round(adjustments.brightness * 100)}%
-              </span>
-            </div>
+              );
+            })}
           </div>
-          <Slider
-            value={adjustments.brightness}
-            min={0}
-            max={2}
-            step={0.05}
-            onValueChange={(val) => updateAdjustment("brightness", val)}
-          />
-          <div className="grid grid-cols-3 gap-1 pt-0.5">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("brightness", 0.8)}
-              className="h-6 text-[10px]"
-            >
-              Darker (80%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("brightness", 1)}
-              className="h-6 text-[10px]"
-            >
-              Normal (100%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("brightness", 1.2)}
-              className="h-6 text-[10px]"
-            >
-              Brighter (120%)
-            </Button>
-          </div>
-        </div>
+        )}
+      </div>
 
-        {/* Contrast Control */}
-        <div className="space-y-1.5 pt-1 border-t border-studio-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg flex items-center gap-1.5">
-              <Contrast className="h-3 w-3 text-studio-muted" /> Contrast
-            </span>
-            <div className="flex items-center gap-1.5">
-              {adjustments.contrast !== 1 && (
-                <button
-                  type="button"
-                  onClick={() => resetAdjustment("contrast")}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                  title="Reset contrast"
-                >
-                  Reset
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {Math.round(adjustments.contrast * 100)}%
-              </span>
-            </div>
-          </div>
-          <Slider
-            value={adjustments.contrast}
-            min={0}
-            max={2}
-            step={0.05}
-            onValueChange={(val) => updateAdjustment("contrast", val)}
-          />
-          <div className="grid grid-cols-3 gap-1 pt-0.5">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("contrast", 0.85)}
-              className="h-6 text-[10px]"
-            >
-              Soft (85%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("contrast", 1)}
-              className="h-6 text-[10px]"
-            >
-              Normal (100%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("contrast", 1.3)}
-              className="h-6 text-[10px]"
-            >
-              High Pop (130%)
-            </Button>
-          </div>
-        </div>
-
-        {/* Saturation Control */}
-        <div className="space-y-1.5 pt-1 border-t border-studio-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg flex items-center gap-1.5">
-              <Droplets className="h-3 w-3 text-studio-muted" /> Color Saturation
-            </span>
-            <div className="flex items-center gap-1.5">
-              {adjustments.saturation !== 1 && (
-                <button
-                  type="button"
-                  onClick={() => resetAdjustment("saturation")}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                  title="Reset saturation"
-                >
-                  Reset
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {Math.round(adjustments.saturation * 100)}%
-              </span>
-            </div>
-          </div>
-          <Slider
-            value={adjustments.saturation}
-            min={0}
-            max={2}
-            step={0.05}
-            onValueChange={(val) => updateAdjustment("saturation", val)}
-          />
-          <div className="grid grid-cols-3 gap-1 pt-0.5">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("saturation", 0.5)}
-              className="h-6 text-[10px]"
-            >
-              Muted (50%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("saturation", 1)}
-              className="h-6 text-[10px]"
-            >
-              Natural (100%)
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => updateAdjustment("saturation", 1.4)}
-              className="h-6 text-[10px]"
-            >
-              Vibrant (140%)
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Visual Effects (Blur & Stylization) */}
-      <section className="rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 space-y-3.5">
-        <div>
-          <h3 className="text-xs font-semibold text-studio-fg flex items-center gap-1.5">
-            <Sliders className="h-3.5 w-3.5 text-brand" /> Visual Effects & Blur
-          </h3>
-          <p className="mt-0.5 text-[10px] text-studio-muted">
-            Add softening blur, black & white, or vintage sepia
-          </p>
-        </div>
-
-        {/* Blur Control */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-studio-fg">
-              Softness & Blur
-            </span>
-            <div className="flex items-center gap-1.5">
-              {adjustments.blur > 0 && (
-                <button
-                  type="button"
-                  onClick={() => resetAdjustment("blur")}
-                  className="text-[9px] text-studio-muted hover:text-brand transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md">
-                {adjustments.blur}px
-              </span>
-            </div>
-          </div>
-          <Slider
-            value={adjustments.blur}
-            min={0}
-            max={20}
-            step={1}
-            onValueChange={(val) => updateAdjustment("blur", val)}
-          />
-          <div className="grid grid-cols-4 gap-1 pt-0.5">
-            {[
-              { label: "Off", val: 0 },
-              { label: "Soft", val: 3 },
-              { label: "Medium", val: 8 },
-              { label: "Heavy", val: 15 },
-            ].map((b) => (
-              <Button
-                key={b.label}
-                size="sm"
-                variant="secondary"
-                onClick={() => updateAdjustment("blur", b.val)}
-                className={cn(
-                  "h-6 text-[10px]",
-                  adjustments.blur === b.val &&
-                    "border-brand/40 bg-brand/15 text-brand font-semibold",
-                )}
+      {/* Row 2: Brightness */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Brightness</span>
+          <div className="flex items-center gap-1.5">
+            {adjustments.brightness !== 1 && (
+              <button
+                type="button"
+                onClick={() => resetAdjustment("brightness")}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
               >
-                {b.label}
-              </Button>
-            ))}
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">
+              {Math.round(adjustments.brightness * 100)}%
+            </span>
           </div>
         </div>
+        <Slider
+          value={adjustments.brightness}
+          min={0}
+          max={2}
+          step={0.05}
+          onValueChange={(val) => updateAdjustment("brightness", val)}
+        />
+        <div className="grid grid-cols-3 gap-1 pt-1.5">
+          {[
+            { label: "Dark (80%)", val: 0.8 },
+            { label: "Normal (100%)", val: 1 },
+            { label: "Bright (120%)", val: 1.2 },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => updateAdjustment("brightness", item.val)}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                Math.abs(adjustments.brightness - item.val) < 0.03
+                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* Color Tints: Black & White and Sepia */}
-        <div className="pt-2 border-t border-studio-border/50 space-y-2.5">
-          <span className="text-[11px] font-medium text-studio-fg block">
-            Special Color Style
+      {/* Row 3: Contrast */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Contrast</span>
+          <div className="flex items-center gap-1.5">
+            {adjustments.contrast !== 1 && (
+              <button
+                type="button"
+                onClick={() => resetAdjustment("contrast")}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">
+              {Math.round(adjustments.contrast * 100)}%
+            </span>
+          </div>
+        </div>
+        <Slider
+          value={adjustments.contrast}
+          min={0}
+          max={2}
+          step={0.05}
+          onValueChange={(val) => updateAdjustment("contrast", val)}
+        />
+        <div className="grid grid-cols-3 gap-1 pt-1.5">
+          {[
+            { label: "Soft (85%)", val: 0.85 },
+            { label: "Normal (100%)", val: 1 },
+            { label: "Pop (130%)", val: 1.3 },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => updateAdjustment("contrast", item.val)}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                Math.abs(adjustments.contrast - item.val) < 0.03
+                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 4: Saturation */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Saturation</span>
+          <div className="flex items-center gap-1.5">
+            {adjustments.saturation !== 1 && (
+              <button
+                type="button"
+                onClick={() => resetAdjustment("saturation")}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">
+              {Math.round(adjustments.saturation * 100)}%
+            </span>
+          </div>
+        </div>
+        <Slider
+          value={adjustments.saturation}
+          min={0}
+          max={2}
+          step={0.05}
+          onValueChange={(val) => updateAdjustment("saturation", val)}
+        />
+        <div className="grid grid-cols-3 gap-1 pt-1.5">
+          {[
+            { label: "Muted (50%)", val: 0.5 },
+            { label: "Normal (100%)", val: 1 },
+            { label: "Vibrant (140%)", val: 1.4 },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => updateAdjustment("saturation", item.val)}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                Math.abs(adjustments.saturation - item.val) < 0.03
+                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 5: Blur */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-white/50 font-medium">Blur</span>
+          <div className="flex items-center gap-1.5">
+            {adjustments.blur > 0 && (
+              <button
+                type="button"
+                onClick={() => resetAdjustment("blur")}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+            <span className="font-mono text-xs text-white/90">{adjustments.blur}px</span>
+          </div>
+        </div>
+        <Slider
+          value={adjustments.blur}
+          min={0}
+          max={20}
+          step={1}
+          onValueChange={(val) => updateAdjustment("blur", val)}
+        />
+        <div className="grid grid-cols-4 gap-1 pt-1.5">
+          {[
+            { label: "Off", val: 0 },
+            { label: "Soft", val: 3 },
+            { label: "Med", val: 8 },
+            { label: "Heavy", val: 15 },
+          ].map((b) => (
+            <button
+              key={b.label}
+              type="button"
+              onClick={() => updateAdjustment("blur", b.val)}
+              className={cn(
+                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                adjustments.blur === b.val
+                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+              )}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 6: Color Style (Full, B&W, Sepia) */}
+      <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-white/50 font-medium">Color mode</span>
+          <span className="font-mono text-xs text-white/80">
+            {adjustments.grayscale > 0
+              ? "B&W"
+              : adjustments.sepia > 0
+                ? "Sepia"
+                : "Full Color"}
           </span>
-          <div className="grid grid-cols-3 gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                updateClip(clip.id, {
-                  adjustments: {
-                    ...adjustments,
-                    grayscale: 0,
-                    sepia: 0,
-                  },
-                });
-              }}
-              className={cn(
-                "p-2 rounded-lg border text-center transition-all cursor-pointer select-none",
-                adjustments.grayscale === 0 && adjustments.sepia === 0
-                  ? "border-brand bg-brand/15 text-brand font-bold shadow-xs ring-1 ring-brand/50"
-                  : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg",
-              )}
-            >
-              <span className="text-[11px] font-bold block">Full Color</span>
-              <span className="text-[9px] text-studio-muted mt-0.5 block">
-                Standard
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                updateClip(clip.id, {
-                  adjustments: {
-                    ...adjustments,
-                    grayscale: 1,
-                    sepia: 0,
-                  },
-                });
-              }}
-              className={cn(
-                "p-2 rounded-lg border text-center transition-all cursor-pointer select-none",
-                adjustments.grayscale > 0
-                  ? "border-brand bg-brand/15 text-brand font-bold shadow-xs ring-1 ring-brand/50"
-                  : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg",
-              )}
-            >
-              <span className="text-[11px] font-bold block">B & W</span>
-              <span className="text-[9px] text-studio-muted mt-0.5 block">
-                Grayscale
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                updateClip(clip.id, {
-                  adjustments: {
-                    ...adjustments,
-                    grayscale: 0,
-                    sepia: 0.6,
-                  },
-                });
-              }}
-              className={cn(
-                "p-2 rounded-lg border text-center transition-all cursor-pointer select-none",
-                adjustments.sepia > 0
-                  ? "border-brand bg-brand/15 text-brand font-bold shadow-xs ring-1 ring-brand/50"
-                  : "border-studio-border bg-studio-panel text-studio-muted hover:text-studio-fg",
-              )}
-            >
-              <span className="text-[11px] font-bold block">Sepia</span>
-              <span className="text-[9px] text-studio-muted mt-0.5 block">
-                Vintage
-              </span>
-            </button>
-          </div>
         </div>
-      </section>
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              updateClip(clip.id, {
+                adjustments: {
+                  ...adjustments,
+                  grayscale: 0,
+                  sepia: 0,
+                },
+              });
+            }}
+            className={cn(
+              "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+              adjustments.grayscale === 0 && adjustments.sepia === 0
+                ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+            )}
+          >
+            Full Color
+          </button>
 
-      {/* 4. Reset Button */}
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={resetAll}
-        className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:bg-studio-panel-raised hover:text-studio-fg cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5" /> Reset All Color Adjustments
-      </Button>
+          <button
+            type="button"
+            onClick={() => {
+              updateClip(clip.id, {
+                adjustments: {
+                  ...adjustments,
+                  grayscale: 1,
+                  sepia: 0,
+                },
+              });
+            }}
+            className={cn(
+              "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+              adjustments.grayscale > 0
+                ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+            )}
+          >
+            B & W
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              updateClip(clip.id, {
+                adjustments: {
+                  ...adjustments,
+                  grayscale: 0,
+                  sepia: 0.6,
+                },
+              });
+            }}
+            className={cn(
+              "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+              adjustments.sepia > 0
+                ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+            )}
+          >
+            Sepia
+          </button>
+        </div>
+      </div>
+
+      {/* Row 7: Reset Action */}
+      <div className="pt-3">
+        <button
+          type="button"
+          onClick={resetAll}
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+        >
+          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Adjustments
+        </button>
+      </div>
     </div>
   );
 }
