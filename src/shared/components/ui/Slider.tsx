@@ -47,9 +47,9 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
           </div>
         )}
         <div className="group/slider relative flex items-center w-full h-5 touch-none select-none">
-          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-studio-border")}>
+          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-white/10")}>
             <div
-              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-brand")}
+              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-white/90")}
               style={{ width: `${percentage}%` }}
             />
           </div>

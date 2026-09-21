@@ -40,7 +40,7 @@ const fontFamilies = [
 ];
 
 const formatButtonClass =
-  "flex h-8 items-center justify-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand";
+  "flex h-7 items-center justify-center rounded-md border text-xs transition-colors focus-visible:outline-none cursor-pointer";
 
 export function TextInspectorTab({ clip }: TextInspectorTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
@@ -65,30 +65,28 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
     });
   };
 
-  const activeClass = "border-brand bg-brand text-white";
+  const activeClass = "border-white/25 bg-white/15 text-white font-semibold shadow-xs";
   const idleClass =
-    "border-studio-border bg-studio-bg/45 text-studio-muted hover:border-brand/40 hover:text-studio-fg";
+    "border-white/[0.06] bg-white/[0.03] text-white/60 hover:border-white/20 hover:bg-white/[0.06] hover:text-white";
 
   return (
-    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
+    <div className="flex flex-col text-xs text-white pb-3 select-none">
       <InspectorSection
         icon={Type}
         title="Text content"
-        description="Edit the words displayed on the canvas."
       >
         <textarea
           aria-label="Text content"
           rows={3}
           value={textStyle.text}
           onChange={(event) => updateTextStyle({ text: event.target.value })}
-          className="w-full resize-none rounded-lg border border-studio-border bg-studio-bg/45 p-2.5 text-xs leading-5 text-studio-fg focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full resize-none rounded-lg border border-white/10 bg-[#141414] p-2.5 text-xs leading-5 text-white focus:border-white/30 focus:outline-none"
         />
       </InspectorSection>
 
       <InspectorSection
         icon={Type}
         title="Typography"
-        description="Choose the font, size, style, and spacing."
       >
         <div className="grid grid-cols-[minmax(0,1fr)_88px] gap-2.5">
           <div className="min-w-0">
@@ -136,7 +134,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
         </div>
 
         <InspectorControlLabel>Style & alignment</InspectorControlLabel>
-        <div className="mt-1.5 grid grid-cols-5 gap-1 rounded-lg border border-studio-border bg-studio-bg/50 p-1">
+        <div className="mt-1.5 grid grid-cols-5 gap-1 rounded-lg border border-white/10 bg-white/[0.02] p-1">
           <button
             type="button"
             aria-label="Bold"
@@ -235,7 +233,6 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
       <InspectorSection
         icon={Palette}
         title="Colors"
-        description="Set the foreground and text background colors."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <InspectorColorControl
@@ -256,7 +253,6 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
       <InspectorSection
         icon={Square}
         title="Text background"
-        description="Adjust spacing and corner shape behind the text."
       >
         <div className="space-y-3.5">
           <div>
@@ -297,7 +293,6 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
       <InspectorSection
         icon={Sparkles}
         title="Outline & shadow"
-        description="Improve separation from the video underneath."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <InspectorColorControl
