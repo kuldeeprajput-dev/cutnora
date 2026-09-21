@@ -217,17 +217,42 @@ export const FPS_OPTIONS = [
   { value: 120, label: "120 fps", desc: "High frame rate" },
 ];
 
+export interface CanvasQuickPreset {
+  id: string;
+  label: string;
+  hex: string;
+  desc: string;
+  isTransparent?: boolean;
+}
+
+export const CANVAS_QUICK_PRESETS: CanvasQuickPreset[] = [
+  { id: "black", label: "Black", hex: "#000000", desc: "Studio Video Black" },
+  { id: "dark", label: "Dark", hex: "#121316", desc: "Charcoal Contrast" },
+  { id: "white", label: "White", hex: "#FFFFFF", desc: "Clean White Canvas" },
+  { id: "chroma", label: "Chroma", hex: "#00FF00", desc: "Green Screen Key" },
+  { id: "transparent", label: "Alpha", hex: "transparent", desc: "Transparent Canvas", isTransparent: true },
+];
+
 export const CANVAS_COLOR_SWATCHES = [
-  { label: "Black", hex: "#000000" },
-  { label: "Studio Dark", hex: "#08090A" },
-  { label: "Charcoal", hex: "#18191D" },
-  { label: "Slate", hex: "#374151" },
-  { label: "White", hex: "#FFFFFF" },
-  { label: "Brand Orange", hex: "#CC5600" },
-  { label: "Midnight Blue", hex: "#1E293B" },
-  { label: "Deep Crimson", hex: "#881337" },
-  { label: "Forest Emerald", hex: "#064E3B" },
-  { label: "Royal Purple", hex: "#581C87" },
+  // Neutrals & Studio
+  { label: "Pure Black", hex: "#000000" },
+  { label: "Studio Dark", hex: "#121316" },
+  { label: "Slate", hex: "#1E293B" },
+  { label: "Steel Gray", hex: "#334155" },
+  { label: "Cool Gray", hex: "#64748B" },
+  { label: "Silver", hex: "#94A3B8" },
+  { label: "Pure White", hex: "#FFFFFF" },
+  // Chroma & Studio Production
+  { label: "Green Screen", hex: "#00FF00" },
+  { label: "Chroma Blue", hex: "#0066FF" },
+  // Creative & Brand
+  { label: "Sunset Orange", hex: "#F97316" },
+  { label: "Crimson Red", hex: "#EF4444" },
+  { label: "Neon Purple", hex: "#8B5CF6" },
+  { label: "Electric Cyan", hex: "#06B6D4" },
+  { label: "Emerald Green", hex: "#10B981" },
+  { label: "Amber Gold", hex: "#F59E0B" },
+  { label: "Transparent", hex: "transparent" },
 ] as const;
 
 export function getAspectRatioMultiplier(ratio: AspectRatio, width: number, height: number) {

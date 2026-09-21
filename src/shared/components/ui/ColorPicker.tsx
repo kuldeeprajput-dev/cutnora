@@ -932,11 +932,18 @@ export function ColorPickerPopover({
         )}
       >
         <span
-          className="h-5 w-6 shrink-0 rounded border border-white/10 shadow-sm ring-1 ring-black/30"
-          style={{ backgroundColor: currentHex }}
+          className="h-3.5 w-3.5 shrink-0 rounded-sm border border-white/20"
+          style={
+            currentHex === "TRANSPARENT"
+              ? {
+                  backgroundImage: "repeating-conic-gradient(#3a3d45 0% 25%, #222327 0% 50%)",
+                  backgroundSize: "6px 6px",
+                }
+              : { backgroundColor: currentHex }
+          }
         />
         <span className="font-mono text-xs font-semibold uppercase text-studio-fg">
-          {currentHex}
+          {currentHex === "TRANSPARENT" ? "Alpha" : currentHex}
         </span>
       </button>
 

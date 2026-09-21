@@ -456,7 +456,16 @@ export function CanvasStage() {
           style={{
             width: `${stageDisplayWidth}px`,
             height: `${stageDisplayHeight}px`,
-            backgroundColor: projectSettings.backgroundColor || '#000000',
+            backgroundColor:
+              projectSettings.backgroundColor === 'transparent'
+                ? 'transparent'
+                : projectSettings.backgroundColor || '#000000',
+            backgroundImage:
+              projectSettings.backgroundColor === 'transparent'
+                ? 'repeating-conic-gradient(#23242a 0% 25%, #141519 0% 50%)'
+                : undefined,
+            backgroundSize:
+              projectSettings.backgroundColor === 'transparent' ? '16px 16px' : undefined,
             transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
           className="relative overflow-hidden rounded-sm border border-white/10 shadow-[0_18px_55px_rgba(0,0,0,0.55)] ring-1 ring-black/40 transition-none lg:transition-transform lg:duration-75"

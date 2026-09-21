@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Link2,
   Link2Off,
+  Pipette,
   RotateCcw,
   SlidersHorizontal,
   Volume2,
@@ -17,6 +18,7 @@ import type { AspectRatio } from "@/modules/projects/types";
 import { ColorPickerPopover } from "@/shared/components/ui/ColorPicker";
 import { Input } from "@/shared/components/ui/Input";
 import { Slider } from "@/shared/components/ui/Slider";
+import { Tooltip } from "@/shared/components/ui/Tooltip";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -33,6 +35,24 @@ import {
   getAspectRatioMultiplier,
   type SocialPreset,
 } from "../constants/canvasPresets";
+
+function isLightColor(hex: string): boolean {
+  if (!hex || hex === "transparent") return false;
+  const clean = hex.replace("#", "");
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+  }
+  if (clean.length === 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+  }
+  return false;
+}
 
 export type { SocialPreset };
 
@@ -73,6 +93,58 @@ export function CanvasSettingsPanel() {
       height: String(settingsHeight),
     });
   }, [settingsWidth, settingsHeight]);
+
+  const [bgHexDraft, setBgHexDraft] = useState(settings?.backgroundColor || "#000000");
+
+  useEffect(() => {
+    if (settings?.backgroundColor) {
+      setBgHexDraft(settings.backgroundColor);
+    }
+  }, [settings?.backgroundColor]);
+
+  const handleBgHexSubmit = () => {
+    if (!settings) return;
+    const val = bgHexDraft.trim();
+    if (val.toLowerCase() === "transparent" || val.toLowerCase() === "alpha") {
+      updateSettings({ backgroundColor: "transparent" });
+      return;
+    }
+    const formatted = val.startsWith("#") ? val : "#" + val;
+    if (/^#[0-9A-Fa-f]{6}$/.test(formatted) || /^#[0-9A-Fa-f]{3}$/.test(formatted)) {
+      updateSettings({ backgroundColor: formatted.toUpperCase() });
+    } else {
+      setBgHexDraft(settings.backgroundColor || "#000000");
+    }
+  };
+
+  const supportsEyeDropper = typeof window !== "undefined" && "EyeDropper" in window;
+
+  const handleEyeDropper = async (e?: React.MouseEvent) => {
+    if (e?.currentTarget) {
+      (e.currentTarget as HTMLElement).blur();
+    }
+    if (supportsEyeDropper) {
+      try {
+        const eyeDropper = new (window as any).EyeDropper();
+        const result = await eyeDropper.open();
+        if (result?.sRGBHex) {
+          updateSettings({ backgroundColor: result.sRGBHex.toUpperCase() });
+        }
+      } catch {
+        // Eyedropper dismissed or aborted by user
+      } finally {
+        if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }
+    }
+  };
+
+  const hasBgReset = Boolean(
+    settings?.backgroundColor &&
+    settings.backgroundColor.toLowerCase() !== "#000000" &&
+    settings.backgroundColor.toLowerCase() !== "#000"
+  );
 
   if (!settings) return null;
 
@@ -616,41 +688,52 @@ export function CanvasSettingsPanel() {
               <ColorPickerPopover
                 label="Background Color"
                 value={settings.backgroundColor || "#000000"}
-                presets={CANVAS_COLOR_SWATCHES.map((s) => s.hex)}
+                presets={CANVAS_COLOR_SWATCHES.map((s) => s.hex).filter((h) => h !== "transparent")}
                 onChange={(hex) => updateSettings({ backgroundColor: hex.toUpperCase() })}
                 align="right"
-                triggerClassName="h-6 px-2 gap-1.5 rounded border border-white/10 bg-[#141414] hover:border-white/20 hover:bg-white/[0.04] cursor-pointer text-xs"
+                triggerClassName="h-6 px-1.5 gap-1.5 rounded border-0 bg-transparent shadow-none hover:bg-white/[0.06] cursor-pointer text-xs font-medium text-white/90 hover:text-white transition-colors"
               />
             </div>
 
-            {/* Quick Swatches & Preset Styles */}
+            {/* Expanded Swatches & Controls */}
             {bgColorsExpanded && (
               <div className="mt-3 space-y-2.5 pl-0.5">
-                {/* Swatches */}
-                <div className="flex flex-wrap gap-1.5">
+                {/* 16-Swatch Palette Grid (8 cols x 2 rows) */}
+                <div className="grid grid-cols-8 gap-1.5">
                   {CANVAS_COLOR_SWATCHES.map((swatch) => {
+                    const isTransparent = swatch.hex === "transparent";
                     const isSelected =
-                      (settings.backgroundColor || "#000000").toUpperCase() ===
-                      swatch.hex.toUpperCase();
+                      (settings.backgroundColor || "#000000").toLowerCase() ===
+                      swatch.hex.toLowerCase();
+                    const isLight = isLightColor(swatch.hex);
+
                     return (
                       <button
-                        key={swatch.hex}
+                        key={swatch.label}
                         type="button"
                         onClick={() => updateSettings({ backgroundColor: swatch.hex })}
-                        title={`${swatch.label} (${swatch.hex})`}
-                        style={{ backgroundColor: swatch.hex }}
+                        aria-label={`${swatch.label} (${swatch.hex})`}
+                        style={
+                          isTransparent
+                            ? {
+                                backgroundImage:
+                                  "repeating-conic-gradient(#3e4149 0% 25%, #232428 0% 50%)",
+                                backgroundSize: "8px 8px",
+                              }
+                            : { backgroundColor: swatch.hex }
+                        }
                         className={cn(
-                          "relative h-6 w-6 rounded border transition-all cursor-pointer",
+                          "group relative flex aspect-square w-full items-center justify-center rounded-lg border transition-all cursor-pointer",
                           isSelected
-                            ? "border-white ring-2 ring-white/40 scale-105"
-                            : "border-white/15 hover:border-white/40"
+                            ? "border-transparent ring-2 ring-white ring-offset-2 ring-offset-[#141416]"
+                            : "border-white/10 hover:border-white/40 hover:scale-105 active:scale-95"
                         )}
                       >
                         {isSelected && (
                           <Check
                             className={cn(
-                              "absolute inset-0 m-auto h-3 w-3 drop-shadow-md",
-                              swatch.hex === "#FFFFFF" ? "text-black" : "text-white"
+                              "h-3.5 w-3.5 stroke-[2.5]",
+                              isLight ? "text-black" : "text-white"
                             )}
                           />
                         )}
@@ -659,45 +742,74 @@ export function CanvasSettingsPanel() {
                   })}
                 </div>
 
-                {/* Preset Themes (Light, Medium, Heavy) */}
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    {
-                      name: "Light",
-                      color: "#18191D",
-                      previewClass: "bg-gradient-to-br from-neutral-800 to-neutral-900",
-                    },
-                    {
-                      name: "Medium",
-                      color: "#08090A",
-                      previewClass: "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black",
-                    },
-                    {
-                      name: "Heavy",
-                      color: "#000000",
-                      previewClass: "bg-black",
-                    },
-                  ].map((style) => {
-                    const isSelected =
-                      (settings.backgroundColor || "#000000").toUpperCase() ===
-                      style.color.toUpperCase();
-                    return (
+                {/* Bottom Custom Color & Tools Row */}
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <div className="relative flex-1 flex items-center">
+                    <div
+                      className="absolute left-2.5 h-3 w-3 rounded-full border border-white/20 shrink-0 pointer-events-none"
+                      style={
+                        settings.backgroundColor === "transparent"
+                          ? {
+                              backgroundImage:
+                                "repeating-conic-gradient(#4a4d55 0% 25%, #2a2b30 0% 50%)",
+                              backgroundSize: "6px 6px",
+                            }
+                          : { backgroundColor: settings.backgroundColor || "#000000" }
+                      }
+                    />
+                    <input
+                      type="text"
+                      value={bgHexDraft}
+                      onChange={(e) => setBgHexDraft(e.target.value)}
+                      onBlur={handleBgHexSubmit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleBgHexSubmit();
+                        if (e.key === "Escape") {
+                          setBgHexDraft(settings.backgroundColor || "#000000");
+                        }
+                      }}
+                      placeholder="#000000"
+                      className="h-7 w-full rounded border-0 bg-white/[0.04] pl-7 pr-2 font-mono text-xs uppercase text-white/90 placeholder-white/30 outline-none transition-colors hover:bg-white/[0.06] focus:bg-white/[0.08] shadow-none"
+                    />
+                  </div>
+
+                  {supportsEyeDropper && (
+                    <Tooltip
+                      content={
+                        <div className="flex flex-col items-center text-center gap-0.5 py-0.5">
+                          <span className="font-semibold text-white text-[11px]">Pick color from screen</span>
+                          <span className="text-[10px] text-white/60">Click anywhere to sample color</span>
+                        </div>
+                      }
+                      position="top"
+                      align={hasBgReset ? "center" : "right"}
+                      delayMs={120}
+                    >
                       <button
-                        key={style.name}
                         type="button"
-                        onClick={() => updateSettings({ backgroundColor: style.color })}
-                        className={cn(
-                          "group flex h-7 items-center justify-center rounded border text-[10px] font-medium transition-all cursor-pointer",
-                          style.previewClass,
-                          isSelected
-                            ? "border-white text-white ring-1 ring-white/40"
-                            : "border-white/10 text-white/60 hover:text-white hover:border-white/20"
-                        )}
+                        onClick={(e) => {
+                          e.currentTarget.blur();
+                          handleEyeDropper(e);
+                        }}
+                        aria-label="Pick color from screen"
+                        className="flex h-7 w-7 items-center justify-center rounded border-0 bg-transparent text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer shrink-0 shadow-none"
                       >
-                        <span>{style.name}</span>
+                        <Pipette className="h-3.5 w-3.5" />
                       </button>
-                    );
-                  })}
+                    </Tooltip>
+                  )}
+
+                  {hasBgReset && (
+                    <button
+                      type="button"
+                      onClick={() => updateSettings({ backgroundColor: "#000000" })}
+                      aria-label="Reset to black"
+                      className="flex h-7 items-center gap-1 px-2 rounded border-0 bg-transparent text-[11px] font-medium text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer shrink-0 shadow-none"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      <span>Reset</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
