@@ -31,6 +31,7 @@ import {
 } from "@dnd-kit/sortable";
 import {
   FileVideo,
+  Video,
   GripVertical,
   Image as ImageIcon,
   Music,
@@ -83,30 +84,30 @@ function getPreferredTrack(clipType: TimelineClip["type"]): {
 function getDragClipColor(clipType: TimelineClip["type"]) {
   switch (clipType) {
     case "video":
-      return "bg-brand/30 border-brand text-brand";
+      return "bg-studio-panel border-white/40 text-white";
     case "image":
-      return "bg-selection/30 border-selection text-selection";
+      return "bg-studio-panel border-white/40 text-white";
     case "audio":
-      return "bg-mkt-success/30 border-mkt-success text-mkt-success";
+      return "bg-emerald-950/40 border-emerald-500/50 text-emerald-300";
     case "text":
-      return "bg-mkt-info/30 border-mkt-info text-mkt-info";
+      return "bg-studio-panel-raised border-white/30 text-studio-fg";
     case "overlay":
-      return "bg-overlay/30 border-overlay text-overlay";
+      return "bg-studio-panel-raised border-white/30 text-studio-fg";
   }
 }
 
 function renderDragClipIcon(clipType: TimelineClip["type"]) {
   switch (clipType) {
     case "video":
-      return <FileVideo className="h-3 w-3 shrink-0" />;
+      return <Video className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
     case "image":
-      return <ImageIcon className="h-3 w-3 shrink-0" />;
+      return <ImageIcon className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
     case "audio":
-      return <Music className="h-3 w-3 shrink-0" />;
+      return <Music className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
     case "text":
-      return <Type className="h-3 w-3 shrink-0" />;
+      return <Type className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
     case "overlay":
-      return <Shapes className="h-3 w-3 shrink-0" />;
+      return <Shapes className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
   }
 }
 
@@ -748,16 +749,16 @@ export function TimelineEditor() {
                       style={{
                         width: `${Math.max(176, trackHeaderWidth - 8)}px`,
                       }}
-                      className="pointer-events-none flex h-12 items-center gap-2 rounded-lg border border-brand/70 bg-studio-panel-raised/95 px-2 text-studio-fg shadow-2xl ring-1 ring-brand/30 backdrop-blur-md"
+                      className="pointer-events-none flex h-12 items-center gap-2 rounded-lg border border-white/60 bg-studio-panel-raised/95 px-2 text-studio-fg shadow-2xl ring-1 ring-white/30 backdrop-blur-md"
                     >
-                      <span className="flex h-7 w-6 shrink-0 items-center justify-center rounded bg-brand/15 text-brand">
+                      <span className="flex h-6 w-4 shrink-0 items-center justify-center text-studio-muted">
                         <GripVertical className="h-4 w-4" />
                       </span>
                       <span className="shrink-0">
                         {renderDragClipIcon(activeTrackDrag.type)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-semibold">
+                        <div className="truncate text-xs font-semibold text-white">
                           {activeTrackDrag.name}
                         </div>
                         <div className="text-[9px] text-studio-muted">
@@ -767,7 +768,7 @@ export function TimelineEditor() {
                             : "clips"}
                         </div>
                       </div>
-                      <span className="shrink-0 rounded bg-brand/15 px-1.5 py-0.5 text-[9px] font-semibold text-brand">
+                      <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white">
                         Moving
                       </span>
                     </div>
@@ -777,8 +778,8 @@ export function TimelineEditor() {
               )}
           </DndContext>
           {clipDragPreview?.createTrack && (
-            <div className="flex h-12 shrink-0 items-center gap-2 border-y border-dashed border-brand/60 bg-brand/10 px-3 text-brand">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand/20">
+            <div className="flex h-12 shrink-0 items-center gap-2 border-y border-dashed border-white/30 bg-white/5 px-3 text-studio-fg">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/10 text-white">
                 <Plus className="h-3.5 w-3.5" />
               </span>
               <div className="min-w-0">
@@ -797,7 +798,7 @@ export function TimelineEditor() {
         <div
           onPointerDown={handleStartResizeTrackHeader}
           className={cn(
-            "w-px bg-studio-border hover:bg-brand active:bg-brand hover:w-[3px] z-30 cursor-col-resize transition-all shrink-0 h-full",
+            "w-px bg-studio-border hover:bg-white/40 active:bg-white/60 hover:w-[3px] z-30 cursor-col-resize transition-all shrink-0 h-full",
             !showTrackHeaders && "hidden",
           )}
           title="Drag to resize track headers"

@@ -39,17 +39,17 @@ export function TrackLane({
         dropState === "invalid" &&
           "bg-destructive/10 ring-1 ring-inset ring-destructive/50",
         reorderState === "active" && "opacity-35",
-        reorderState === "over" && "bg-brand/10",
+        reorderState === "over" && "bg-white/5",
       )}
     >
       {reorderState === "over" && (
         <div
           className={cn(
-            "pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-brand shadow-[0_0_8px_rgba(234,88,12,0.8)]",
+            "pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]",
             reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
           )}
         >
-          <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-brand" />
+          <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-white" />
         </div>
       )}
       {track.clips.map((clip) => (
