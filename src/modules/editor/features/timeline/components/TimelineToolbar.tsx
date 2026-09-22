@@ -34,6 +34,7 @@ import { IconButton } from "@/shared/components/ui/IconButton";
 import { Button } from "@/shared/components/ui/Button";
 import { Slider } from "@/shared/components/ui/Slider";
 import { Select } from "@/shared/components/ui/Select";
+import { Tooltip } from "@/shared/components/ui/Tooltip";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -228,55 +229,65 @@ export function TimelineToolbar({
       {/* Left: Timeline Edit Actions */}
       <div className="z-10 flex shrink-0 items-center gap-0.5">
         <IconButton
-          label="Split clip at playhead (S)"
+          label="Split"
+          shortcut="S"
           size="sm"
           variant="ghost"
           disabled={!hasSelection}
           onClick={handleSplit}
+          tooltipPosition="top"
           className="cursor-pointer"
         >
           <Scissors className="h-3.5 w-3.5" />
         </IconButton>
 
         <IconButton
-          label="Trim left to playhead (Q)"
+          label="Trim Left"
+          shortcut="Q"
           size="sm"
           variant="ghost"
           disabled={!hasSelection}
           onClick={handleTrimLeft}
+          tooltipPosition="top"
           className="cursor-pointer"
         >
           <ArrowLeftToLine className="h-3.5 w-3.5" />
         </IconButton>
 
         <IconButton
-          label="Trim right to playhead (W)"
+          label="Trim Right"
+          shortcut="W"
           size="sm"
           variant="ghost"
           disabled={!hasSelection}
           onClick={handleTrimRight}
+          tooltipPosition="top"
           className="cursor-pointer"
         >
           <ArrowRightToLine className="h-3.5 w-3.5" />
         </IconButton>
 
         <IconButton
-          label="Duplicate selection (Ctrl+D)"
+          label="Duplicate"
+          shortcut="Ctrl+D"
           size="sm"
           variant="ghost"
           disabled={!hasSelection}
           onClick={handleDuplicate}
+          tooltipPosition="top"
           className="cursor-pointer"
         >
           <Copy className="h-3.5 w-3.5" />
         </IconButton>
 
         <IconButton
-          label="Delete selection (Delete)"
+          label="Delete"
+          shortcut="Del"
           size="sm"
           variant="ghost"
           disabled={!hasSelection}
           onClick={handleDelete}
+          tooltipPosition="top"
           className="cursor-pointer"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -317,10 +328,11 @@ export function TimelineToolbar({
         <div className="mx-0.5 h-3.5 w-px bg-studio-border" />
 
         <IconButton
-          label={showTrackHeaders ? "Hide track headers" : "Show track headers"}
+          label={showTrackHeaders ? "Hide tracks" : "Show tracks"}
           size="sm"
           variant="ghost"
           onClick={toggleTrackHeaders}
+          tooltipPosition="top"
           className={cn(
             "cursor-pointer h-7 w-7 transition-colors",
             !showTrackHeaders
@@ -364,10 +376,12 @@ export function TimelineToolbar({
         {/* Transport Playback Controls & Timecode */}
         <div className="flex items-center gap-1.5">
           <IconButton
-            label="Step 1 frame backward"
+            label="Step backward 1 frame"
+            shortcut="←"
             size="sm"
             variant="ghost"
             onClick={stepBackward}
+            tooltipPosition="top"
             className="cursor-pointer"
           >
             <SkipBack className="h-3.5 w-3.5" />
@@ -375,9 +389,11 @@ export function TimelineToolbar({
 
           <IconButton
             label={isPlaying ? "Pause" : "Play"}
+            shortcut="Space"
             size="sm"
             variant="primary"
             onClick={togglePlay}
+            tooltipPosition="top"
             className="cursor-pointer"
           >
             {isPlaying ? (
@@ -388,10 +404,12 @@ export function TimelineToolbar({
           </IconButton>
 
           <IconButton
-            label="Step 1 frame forward"
+            label="Step forward 1 frame"
+            shortcut="→"
             size="sm"
             variant="ghost"
             onClick={stepForward}
+            tooltipPosition="top"
             className="cursor-pointer"
           >
             <SkipForward className="h-3.5 w-3.5" />
@@ -402,6 +420,7 @@ export function TimelineToolbar({
             size="sm"
             variant={isLooping ? "selection" : "ghost"}
             onClick={toggleLooping}
+            tooltipPosition="top"
             className="cursor-pointer"
           >
             <Repeat className="h-3.5 w-3.5" />
@@ -413,9 +432,11 @@ export function TimelineToolbar({
           </span>
 
           <IconButton
-            label="Toggle fullscreen video stage"
+            label="Toggle fullscreen"
+            shortcut="F"
             size="sm"
             variant="ghost"
+            tooltipPosition="top"
             onClick={() => {
               const stageContainer =
                 document.getElementById("stage-fullscreen-container") ||
@@ -459,30 +480,32 @@ export function TimelineToolbar({
 
         {/* Timeline Zoom Slider Controls */}
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Reset zoom"
-            title="Reset zoom"
-            className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
-            onClick={handleResetZoom}
-            disabled={!hasTimelineMedia}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-
-          <div className="flex items-center gap-1 w-24">
+          <Tooltip content="Reset zoom" position="top">
             <button
               type="button"
-              aria-label="Zoom out"
-              title="Zoom out"
+              aria-label="Reset zoom"
               className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
-              onClick={() =>
-                setZoom(getNextTimelineZoom(zoom, "out", minimumTimelineZoom))
-              }
-              disabled={!hasTimelineMedia || zoom <= minimumTimelineZoom}
+              onClick={handleResetZoom}
+              disabled={!hasTimelineMedia}
             >
-              <ZoomOut className="h-3.5 w-3.5" />
+              <RotateCcw className="h-3.5 w-3.5" />
             </button>
+          </Tooltip>
+
+          <div className="flex items-center gap-1 w-24">
+            <Tooltip content="Zoom out" shortcut="-" position="top">
+              <button
+                type="button"
+                aria-label="Zoom out"
+                className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
+                onClick={() =>
+                  setZoom(getNextTimelineZoom(zoom, "out", minimumTimelineZoom))
+                }
+                disabled={!hasTimelineMedia || zoom <= minimumTimelineZoom}
+              >
+                <ZoomOut className="h-3.5 w-3.5" />
+              </button>
+            </Tooltip>
             <Slider
               value={timelineZoomToSliderValue(zoom, minimumTimelineZoom)}
               min={0}
@@ -493,18 +516,19 @@ export function TimelineToolbar({
                 setZoom(sliderValueToTimelineZoom(value, minimumTimelineZoom))
               }
             />
-            <button
-              type="button"
-              aria-label="Zoom in"
-              title="Zoom in"
-              className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
-              onClick={() =>
-                setZoom(getNextTimelineZoom(zoom, "in", minimumTimelineZoom))
-              }
-              disabled={!hasTimelineMedia || zoom >= MAX_TIMELINE_ZOOM}
-            >
-              <ZoomIn className="h-3.5 w-3.5" />
-            </button>
+            <Tooltip content="Zoom in" shortcut="+" position="top">
+              <button
+                type="button"
+                aria-label="Zoom in"
+                className="p-1 rounded text-studio-fg/85 hover:text-studio-fg bg-transparent hover:bg-transparent cursor-pointer transition-colors"
+                onClick={() =>
+                  setZoom(getNextTimelineZoom(zoom, "in", minimumTimelineZoom))
+                }
+                disabled={!hasTimelineMedia || zoom >= MAX_TIMELINE_ZOOM}
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>

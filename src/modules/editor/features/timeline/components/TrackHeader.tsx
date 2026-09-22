@@ -239,6 +239,7 @@ export function TrackHeader({
               size="sm"
               variant="ghost"
               onClick={handleToggleLock}
+              tooltipPosition="top"
               className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
             >
               {track.locked ? (
@@ -250,10 +251,11 @@ export function TrackHeader({
 
             {track.type !== "audio" && (
               <IconButton
-                label={track.hidden ? "Show track" : "Hide track"}
+                label={track.hidden ? "Enable track" : "Hide track"}
                 size="sm"
                 variant="ghost"
                 onClick={handleToggleHide}
+                tooltipPosition="top"
                 className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
               >
                 {track.hidden ? (
@@ -270,6 +272,7 @@ export function TrackHeader({
                 size="sm"
                 variant="ghost"
                 onClick={handleToggleMute}
+                tooltipPosition="top"
                 className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
               >
                 {track.muted ? (

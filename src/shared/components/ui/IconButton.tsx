@@ -1,11 +1,17 @@
 import React, { forwardRef } from "react";
 import { cn } from "@/shared/utils/cn";
 import { ButtonVariant, ButtonSize } from "./Button";
+import { Tooltip } from "./Tooltip";
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
+  shortcut?: string;
+  tooltipPosition?: "top" | "bottom" | "left" | "right";
+  tooltipAlign?: "center" | "left" | "right";
+  tooltipDelayMs?: number;
+  showTooltip?: boolean;
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -28,18 +34,31 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (
-    { className, label, variant = "ghost", size = "md", children, ...props },
+    {
+      className,
+      label,
+      variant = "ghost",
+      size = "md",
+      shortcut,
+      tooltipPosition = "top",
+      tooltipAlign = "center",
+      tooltipDelayMs = 150,
+      showTooltip = true,
+      children,
+      title,
+      ...props
+    },
     ref,
   ) => {
-    return (
+    const button = (
       <button
         ref={ref}
         aria-label={label}
-        title={label}
+        title={!showTooltip ? (title ?? label) : undefined}
         className={cn(
           "inline-flex items-center justify-center font-medium transition-colors select-none shrink-0 cursor-pointer",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-studio-bg",
-          "disabled:opacity-50 disabled:pointer-events-none motion-reduce:transition-none",
+          "disabled:opacity-40 disabled:cursor-not-allowed motion-reduce:transition-none",
           variantClasses[variant],
           sizeClasses[size],
           className,
@@ -48,6 +67,22 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       >
         {children}
       </button>
+    );
+
+    if (!showTooltip || !label) {
+      return button;
+    }
+
+    return (
+      <Tooltip
+        content={label}
+        shortcut={shortcut}
+        position={tooltipPosition}
+        align={tooltipAlign}
+        delayMs={tooltipDelayMs}
+      >
+        {button}
+      </Tooltip>
     );
   },
 );
