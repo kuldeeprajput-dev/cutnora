@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
-  Volume2,
-  VolumeX,
-  Volume1,
-  Waves,
+  ChevronDown,
+  ChevronRight,
   Unlink,
   RotateCcw,
 } from "lucide-react";
@@ -37,6 +35,10 @@ export function AudioTab({ clip }: AudioTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const audio = clip.audio || defaultAudio;
 
+  const [volumeExpanded, setVolumeExpanded] = useState(false);
+  const [fadeInExpanded, setFadeInExpanded] = useState(false);
+  const [fadeOutExpanded, setFadeOutExpanded] = useState(false);
+
   const updateAudio = (updates: Partial<AudioSettings>) => {
     updateClip(clip.id, {
       audio: {
@@ -56,197 +58,254 @@ export function AudioTab({ clip }: AudioTabProps) {
   const maxFadeIn = Math.max(0, clip.timelineDuration - audio.fadeOut);
   const maxFadeOut = Math.max(0, clip.timelineDuration - audio.fadeIn);
 
+  const activeVolumePreset = VOLUME_PRESETS.find((p) => {
+    if (p.mute) return audio.muted;
+    return !audio.muted && Math.abs(audio.volume - p.val) < 0.005;
+  });
+
+  const volumeDisplay = activeVolumePreset
+    ? activeVolumePreset.label
+    : `${Math.round(effectiveVolume * 100)}%`;
+
   return (
     <div className="flex flex-col text-xs text-white pb-3 select-none">
       {/* Row 1: Volume */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between">
-          <span className="text-white/50 font-medium flex items-center gap-1.5">
-            {audio.muted || effectiveVolume === 0 ? (
-              <VolumeX className="h-3.5 w-3.5 text-white/40" />
-            ) : effectiveVolume < 0.5 ? (
-              <Volume1 className="h-3.5 w-3.5 text-white/50" />
-            ) : (
-              <Volume2 className="h-3.5 w-3.5 text-white/50" />
-            )}
+        <div
+          onClick={() => setVolumeExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
             Volume
           </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => updateAudio({ muted: !audio.muted })}
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+            {(audio.volume !== 1 || audio.muted) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateAudio({ volume: 1, muted: false });
+                }}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+              >
+                Reset
+              </button>
+            )}
+            <span
               className={cn(
-                "h-5 px-1.5 rounded text-[10px] font-medium border transition-colors cursor-pointer",
-                audio.muted
-                  ? "border-red-500/40 bg-red-500/15 text-red-400 font-semibold"
-                  : "border-white/10 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08]"
+                activeVolumePreset ? "" : "font-mono",
+                audio.muted && "text-red-400 font-semibold"
               )}
             >
-              {audio.muted ? "Muted" : "Active"}
-            </button>
-            <span className="font-mono text-xs text-white/90 min-w-8 text-right">
-              {Math.round(effectiveVolume * 100)}%
+              {volumeDisplay}
             </span>
+            {volumeExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            )}
           </div>
         </div>
 
-        {/* Quick Volume Preset Chips */}
-        <div className="grid grid-cols-4 gap-1.5 mt-2">
-          {VOLUME_PRESETS.map((p) => {
-            const isActive = p.mute
-              ? audio.muted
-              : !audio.muted && Math.abs(audio.volume - p.val) < 0.05;
+        {/* Volume Controls when expanded */}
+        {volumeExpanded && (
+          <div className="mt-2.5 space-y-2 pt-0.5">
+            <Slider
+              aria-label="Clip volume slider"
+              value={effectiveVolume}
+              min={0}
+              max={1}
+              step={0.01}
+              fillClassName="bg-white/90"
+              trackClassName="bg-white/10"
+              onValueChange={(val) => {
+                updateAudio({ volume: val, muted: false });
+              }}
+            />
+            <div className="grid grid-cols-4 gap-1 pt-1">
+              {VOLUME_PRESETS.map((p) => {
+                const isActive = p.mute
+                  ? audio.muted
+                  : !audio.muted && Math.abs(audio.volume - p.val) < 0.005;
 
-            return (
-              <button
-                key={p.label}
-                type="button"
-                onClick={() => {
-                  if (p.mute) {
-                    updateAudio({ muted: true });
-                  } else {
-                    updateAudio({ volume: p.val, muted: false });
-                  }
-                }}
-                className={cn(
-                  "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
-                  isActive
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
-                )}
-              >
-                {p.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Volume Slider */}
-        <div className="pt-2">
-          <Slider
-            aria-label="Clip volume slider"
-            value={effectiveVolume}
-            min={0}
-            max={1}
-            step={0.01}
-            disabled={audio.muted}
-            onValueChange={(val) => {
-              if (audio.muted) updateAudio({ muted: false });
-              updateAudio({ volume: val, muted: false });
-            }}
-          />
-        </div>
+                return (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => {
+                      if (p.mute) {
+                        updateAudio({ muted: true });
+                      } else {
+                        updateAudio({ volume: p.val, muted: false });
+                      }
+                    }}
+                    className={cn(
+                      "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
+                      isActive
+                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
+                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Row 2: Fade In */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-white/50 font-medium">Fade In (Start)</span>
-          <div className="flex items-center gap-1.5">
+        <div
+          onClick={() => setFadeInExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            Fade In (Start)
+          </span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             {audio.fadeIn > 0 && (
               <button
                 type="button"
-                onClick={() => updateAudio({ fadeIn: 0 })}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateAudio({ fadeIn: 0 });
+                }}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
               >
                 Reset
               </button>
             )}
-            <span className="font-mono text-xs text-white/90">
+            <span className="font-mono text-xs">
               {audio.fadeIn.toFixed(1)}s
             </span>
+            {fadeInExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            )}
           </div>
         </div>
-        <Slider
-          aria-label="Audio fade in"
-          value={audio.fadeIn}
-          min={0}
-          max={maxFadeIn}
-          step={0.1}
-          onValueChange={(val) => updateAudio({ fadeIn: val })}
-        />
-        <div className="grid grid-cols-4 gap-1 pt-1.5">
-          {[
-            { label: "None (0s)", val: 0 },
-            { label: "0.5s", val: 0.5 },
-            { label: "1.0s", val: 1.0 },
-            { label: "2.0s", val: 2.0 },
-          ].map((f) => (
-            <button
-              key={f.label}
-              type="button"
-              disabled={f.val > maxFadeIn}
-              onClick={() => updateAudio({ fadeIn: f.val })}
-              className={cn(
-                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
-                Math.abs(audio.fadeIn - f.val) < 0.05
-                  ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+
+        {fadeInExpanded && (
+          <div className="mt-2.5 space-y-2 pt-0.5">
+            <Slider
+              aria-label="Audio fade in"
+              value={audio.fadeIn}
+              min={0}
+              max={Math.max(0.1, maxFadeIn)}
+              step={0.1}
+              fillClassName="bg-white/90"
+              trackClassName="bg-white/10"
+              onValueChange={(val) => updateAudio({ fadeIn: val })}
+            />
+            <div className="grid grid-cols-4 gap-1 pt-1">
+              {[
+                { label: "None (0s)", val: 0 },
+                { label: "0.5s", val: 0.5 },
+                { label: "1.0s", val: 1.0 },
+                { label: "2.0s", val: 2.0 },
+              ].map((f) => (
+                <button
+                  key={f.label}
+                  type="button"
+                  disabled={f.val > maxFadeIn}
+                  onClick={() => updateAudio({ fadeIn: f.val })}
+                  className={cn(
+                    "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+                    Math.abs(audio.fadeIn - f.val) < 0.05
+                      ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Row 3: Fade Out */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-white/50 font-medium">Fade Out (End)</span>
-          <div className="flex items-center gap-1.5">
+        <div
+          onClick={() => setFadeOutExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            Fade Out (End)
+          </span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             {audio.fadeOut > 0 && (
               <button
                 type="button"
-                onClick={() => updateAudio({ fadeOut: 0 })}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateAudio({ fadeOut: 0 });
+                }}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
               >
                 Reset
               </button>
             )}
-            <span className="font-mono text-xs text-white/90">
+            <span className="font-mono text-xs">
               {audio.fadeOut.toFixed(1)}s
             </span>
+            {fadeOutExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            )}
           </div>
         </div>
-        <Slider
-          aria-label="Audio fade out"
-          value={audio.fadeOut}
-          min={0}
-          max={maxFadeOut}
-          step={0.1}
-          onValueChange={(val) => updateAudio({ fadeOut: val })}
-        />
-        <div className="grid grid-cols-4 gap-1 pt-1.5">
-          {[
-            { label: "None (0s)", val: 0 },
-            { label: "0.5s", val: 0.5 },
-            { label: "1.0s", val: 1.0 },
-            { label: "2.0s", val: 2.0 },
-          ].map((f) => (
-            <button
-              key={f.label}
-              type="button"
-              disabled={f.val > maxFadeOut}
-              onClick={() => updateAudio({ fadeOut: f.val })}
-              className={cn(
-                "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
-                Math.abs(audio.fadeOut - f.val) < 0.05
-                  ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+
+        {fadeOutExpanded && (
+          <div className="mt-2.5 space-y-2 pt-0.5">
+            <Slider
+              aria-label="Audio fade out"
+              value={audio.fadeOut}
+              min={0}
+              max={Math.max(0.1, maxFadeOut)}
+              step={0.1}
+              fillClassName="bg-white/90"
+              trackClassName="bg-white/10"
+              onValueChange={(val) => updateAudio({ fadeOut: val })}
+            />
+            <div className="grid grid-cols-4 gap-1 pt-1">
+              {[
+                { label: "None (0s)", val: 0 },
+                { label: "0.5s", val: 0.5 },
+                { label: "1.0s", val: 1.0 },
+                { label: "2.0s", val: 2.0 },
+              ].map((f) => (
+                <button
+                  key={f.label}
+                  type="button"
+                  disabled={f.val > maxFadeOut}
+                  onClick={() => updateAudio({ fadeOut: f.val })}
+                  className={cn(
+                    "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
+                    Math.abs(audio.fadeOut - f.val) < 0.05
+                      ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Row 4: Separate Audio Track */}
       {(clip.type === "video" || clip.type === "overlay") && (
-        <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="py-2.5 border-b border-white/[0.06] group select-none">
           <div className="flex items-center justify-between">
-            <span className="text-white/50 font-medium">Audio track</span>
+            <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+              Audio track
+            </span>
             <button
               type="button"
               onClick={() => detachAudioFromVideo(clip.id)}
