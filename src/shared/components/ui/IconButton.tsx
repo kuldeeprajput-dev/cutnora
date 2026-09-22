@@ -54,7 +54,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       <button
         ref={ref}
         aria-label={label}
-        title={!showTooltip ? (title ?? label) : undefined}
+        title={title}
         className={cn(
           "inline-flex items-center justify-center font-medium transition-colors select-none shrink-0 cursor-pointer",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-studio-bg",

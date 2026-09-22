@@ -35,11 +35,7 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [coords, setCoords] = useState<Coords>({
-    top: 0,
-    left: 0,
-    actualPosition: position,
-  });
+  const [coords, setCoords] = useState<Coords | null>(null);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -58,8 +54,8 @@ export function Tooltip({
     const tooltipEl = tooltipRef.current;
 
     // Exact measured dimensions or realistic fallbacks
-    const tooltipWidth = tooltipEl ? tooltipEl.offsetWidth : 90;
-    const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 28;
+    const tooltipWidth = tooltipEl ? tooltipEl.offsetWidth : 80;
+    const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 26;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const padding = 10;
@@ -118,6 +114,7 @@ export function Tooltip({
     if (disabled || !content) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
+      updatePosition();
       setIsVisible(true);
     }, delayMs);
   };
@@ -128,6 +125,7 @@ export function Tooltip({
       timeoutRef.current = null;
     }
     setIsVisible(false);
+    setCoords(null);
   };
 
   const handleClick = () => {
@@ -137,6 +135,7 @@ export function Tooltip({
         timeoutRef.current = null;
       }
       setIsVisible(false);
+      setCoords(null);
     }
   };
 
@@ -196,7 +195,7 @@ export function Tooltip({
       onPointerDown={handleClick}
     >
       {children}
-      {isVisible && mounted && typeof document !== 'undefined' &&
+      {isVisible && mounted && coords && typeof document !== 'undefined' &&
         createPortal(
           <div
             ref={tooltipRef}
@@ -208,7 +207,7 @@ export function Tooltip({
               zIndex: 9999,
             }}
             className={cn(
-              'pointer-events-none flex items-center rounded-md border border-white/[0.12] bg-[#141416]/95 px-2.5 py-1 text-[11px] font-medium text-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)] backdrop-blur-md whitespace-nowrap select-none animate-in fade-in-0 zoom-in-95 duration-100 ease-out',
+              'pointer-events-none flex items-center rounded-md border border-white/[0.12] bg-[#141416] px-2.5 py-1 text-[11px] font-medium text-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)] backdrop-blur-md whitespace-nowrap select-none',
               className
             )}
           >

@@ -504,12 +504,12 @@ export function CanvasStage() {
             <button
               type="button"
               onClick={handleFullscreenPlayback}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black hover:bg-zinc-200 transition-all cursor-pointer shadow-md active:scale-95"
             >
               {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
+                <Pause className="h-5 w-5 fill-black text-black" />
               ) : (
-                <Play className="h-5 w-5 fill-current ml-0.5" />
+                <Play className="h-5 w-5 fill-black text-black ml-0.5" />
               )}
             </button>
 

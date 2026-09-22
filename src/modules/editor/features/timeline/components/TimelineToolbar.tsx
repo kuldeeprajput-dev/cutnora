@@ -16,6 +16,7 @@ import {
   SkipBack,
   SkipForward,
   Repeat,
+  Repeat1,
   Maximize2,
   Video,
   Music,
@@ -23,6 +24,7 @@ import {
   Type,
   ChevronDown,
   Layers,
+  Check,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -33,7 +35,6 @@ import { useProjectStore } from "@/modules/projects";
 import { IconButton } from "@/shared/components/ui/IconButton";
 import { Button } from "@/shared/components/ui/Button";
 import { Slider } from "@/shared/components/ui/Slider";
-import { Select } from "@/shared/components/ui/Select";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
 import {
   DropdownMenu,
@@ -46,6 +47,16 @@ import {
   sliderValueToTimelineZoom,
   timelineZoomToSliderValue,
 } from "../utils/timeline-zoom-utils";
+
+const STAGE_ZOOM_OPTIONS: Array<{ label: string; value: "fit" | number }> = [
+  { label: "Fit Stage", value: "fit" },
+  { label: "25%", value: 25 },
+  { label: "50%", value: 50 },
+  { label: "75%", value: 75 },
+  { label: "100%", value: 100 },
+  { label: "150%", value: 150 },
+  { label: "200%", value: 200 },
+];
 
 function truncateFileName(name: string, maxLength = 22): string {
   if (!name || name.length <= maxLength) return name;
@@ -352,65 +363,90 @@ export function TimelineToolbar({
       {/* Center: Stage Controls + Transport Playback Controls (Always Centered) */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex shrink-0 items-center gap-2">
         {/* Canvas Stage View Controls (Fit Stage) */}
-        <div className="flex items-center gap-1">
-          <Select
-            value={zoomMode === "fit" ? "fit" : String(zoomMode)}
-            onChange={(e) => {
-              const val = e.target.value;
-              setZoomMode(val === "fit" ? "fit" : parseInt(val, 10));
-            }}
-            className="h-6 text-[11px] w-24 py-0 pl-1.5 pr-5 border-studio-border/60 bg-transparent rounded-md cursor-pointer hover:border-studio-border"
+        <div className="flex items-center shrink-0 w-[78px]">
+          <DropdownMenu
+            align="left"
+            className="w-28 p-1"
+            trigger={(isOpen) => (
+              <button
+                type="button"
+                className={cn(
+                  "flex h-7 w-[78px] items-center justify-between rounded-md bg-transparent px-1.5 text-xs font-medium text-studio-fg transition-colors cursor-pointer select-none",
+                  "hover:bg-studio-panel-raised hover:text-white",
+                  "focus-visible:outline-none focus-visible:bg-studio-panel-raised",
+                  isOpen && "bg-studio-panel-raised text-white"
+                )}
+              >
+                <span className="truncate">
+                  {zoomMode === "fit" ? "Fit Stage" : `${zoomMode}%`}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 text-studio-muted transition-transform duration-150 shrink-0",
+                    isOpen && "rotate-180 text-studio-fg"
+                  )}
+                />
+              </button>
+            )}
           >
-            <option value="fit">Fit Stage</option>
-            <option value="25">25%</option>
-            <option value="50">50%</option>
-            <option value="75">75%</option>
-            <option value="100">100%</option>
-            <option value="150">150%</option>
-            <option value="200">200%</option>
-          </Select>
+            {STAGE_ZOOM_OPTIONS.map((opt) => {
+              const isSelected = zoomMode === opt.value;
+              return (
+                <DropdownMenuItem
+                  key={opt.label}
+                  onClick={() => setZoomMode(opt.value)}
+                  className={cn(
+                    "flex items-center justify-between px-2 py-1 text-xs rounded-md font-medium cursor-pointer transition-colors",
+                    isSelected
+                      ? "bg-white/10 text-white font-semibold"
+                      : "text-studio-muted hover:text-studio-fg hover:bg-white/5"
+                  )}
+                >
+                  <span>{opt.label}</span>
+                  {isSelected && <Check className="h-3 w-3 text-white shrink-0" />}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenu>
         </div>
 
         <div className="h-3.5 w-px bg-studio-border" />
 
         {/* Transport Playback Controls & Timecode */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <IconButton
             label="Step backward 1 frame"
-            shortcut="←"
             size="sm"
             variant="ghost"
             onClick={stepBackward}
-            tooltipPosition="top"
-            className="cursor-pointer"
+            showTooltip={false}
+            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised"
           >
             <SkipBack className="h-3.5 w-3.5" />
           </IconButton>
 
           <IconButton
             label={isPlaying ? "Pause" : "Play"}
-            shortcut="Space"
             size="sm"
-            variant="primary"
+            variant="ghost"
             onClick={togglePlay}
-            tooltipPosition="top"
-            className="cursor-pointer"
+            showTooltip={false}
+            className="cursor-pointer rounded-md bg-white text-black hover:bg-zinc-200 active:scale-95 transition-all shadow-xs flex items-center justify-center"
           >
             {isPlaying ? (
-              <Pause className="h-3.5 w-3.5 fill-current" />
+              <Pause className="h-3.5 w-3.5 fill-black text-black" />
             ) : (
-              <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
+              <Play className="h-3.5 w-3.5 fill-black text-black ml-0.5" />
             )}
           </IconButton>
 
           <IconButton
             label="Step forward 1 frame"
-            shortcut="→"
             size="sm"
             variant="ghost"
             onClick={stepForward}
-            tooltipPosition="top"
-            className="cursor-pointer"
+            showTooltip={false}
+            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised"
           >
             <SkipForward className="h-3.5 w-3.5" />
           </IconButton>
@@ -418,25 +454,36 @@ export function TimelineToolbar({
           <IconButton
             label={isLooping ? "Disable loop" : "Enable loop"}
             size="sm"
-            variant={isLooping ? "selection" : "ghost"}
+            variant="ghost"
             onClick={toggleLooping}
-            tooltipPosition="top"
-            className="cursor-pointer"
+            showTooltip={false}
+            className={cn(
+              "cursor-pointer transition-colors hover:bg-studio-panel-raised",
+              isLooping
+                ? "text-white"
+                : "text-studio-muted hover:text-studio-fg",
+            )}
           >
-            <Repeat className="h-3.5 w-3.5" />
+            {isLooping ? (
+              <Repeat1 className="h-3.5 w-3.5" />
+            ) : (
+              <Repeat className="h-3.5 w-3.5" />
+            )}
           </IconButton>
 
-          <span className="ml-2 font-mono text-[11px] font-semibold text-studio-fg whitespace-nowrap">
-            {formatTimecode(playhead, fps, false)} /{" "}
-            {formatTimecode(duration, fps, false)}
+          <span className="ml-1.5 font-mono text-[11px] font-semibold text-studio-fg whitespace-nowrap select-none">
+            {formatTimecode(playhead, fps, false)}{" "}
+            <span className="text-studio-muted font-normal">/</span>{" "}
+            <span className="text-studio-muted font-normal">
+              {formatTimecode(duration, fps, false)}
+            </span>
           </span>
 
           <IconButton
             label="Toggle fullscreen"
-            shortcut="F"
             size="sm"
             variant="ghost"
-            tooltipPosition="top"
+            showTooltip={false}
             onClick={() => {
               const stageContainer =
                 document.getElementById("stage-fullscreen-container") ||
@@ -448,7 +495,7 @@ export function TimelineToolbar({
               }
               useEditorUIStore.getState().toggleFullscreen();
             }}
-            className="cursor-pointer ml-1"
+            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised ml-0.5"
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </IconButton>
@@ -492,7 +539,7 @@ export function TimelineToolbar({
             </button>
           </Tooltip>
 
-          <div className="flex items-center gap-1 w-24">
+          <div className="flex items-center gap-1 w-40">
             <Tooltip content="Zoom out" shortcut="-" position="top">
               <button
                 type="button"
