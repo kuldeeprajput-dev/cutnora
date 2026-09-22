@@ -114,22 +114,25 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   const canRedo = historyManager.canRedo();
 
   return (
-    <header className="flex h-[56px] w-full shrink-0 items-center justify-between gap-3 border-b border-studio-border bg-[#0D0D0D] px-3 text-studio-fg select-none xl:px-4">
+    <header className="relative flex h-[56px] w-full shrink-0 items-center justify-between border-b border-studio-border bg-[#0D0D0D] pr-2.5 text-studio-fg select-none">
       {/* Left: Logo, Title & Autosave Status */}
-      <div className="flex min-w-0 items-center gap-3 xl:gap-4">
-        <Link
-          href="/"
-          className="flex items-center group"
-          title="Return to home"
-        >
-          <BrandMark
-            size={28}
-            className="transition-transform group-hover:-rotate-3"
-          />
-        </Link>
+      <div className="flex min-w-0 items-center">
+        {/* Logo aligned with sidebar rail center axis (10px padding + 1px border + 32px center = 43px) */}
+        <div className="ml-[11px] flex w-[64px] shrink-0 items-center justify-center">
+          <Link
+            href="/"
+            className="flex items-center justify-center group"
+            title="Return to home"
+          >
+            <BrandMark
+              size={28}
+              className="transition-transform group-hover:-rotate-3"
+            />
+          </Link>
+        </div>
 
         {/* Editable Project Name */}
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 pl-2">
           {isEditingName ? (
             <input
               type="text"
@@ -138,7 +141,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
               onBlur={handleNameBlur}
               onKeyDown={handleNameKeyDown}
               autoFocus
-              className="h-7 rounded border border-brand bg-studio-panel px-2 text-xs font-semibold text-studio-fg focus:outline-none"
+              className="h-7 rounded-md border border-white/20 bg-studio-panel px-2 text-xs font-semibold text-studio-fg focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all"
             />
           ) : (
             <button
@@ -157,16 +160,16 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
             className="flex items-center gap-1 text-[11px] text-studio-muted max-[1180px]:hidden"
           >
             {saveStatus === "saving" && (
-              <span className="inline-flex items-center gap-1 text-selection">
-                <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+              <span className="inline-flex items-center gap-1 text-studio-muted">
+                <Loader2 className="h-3 w-3 animate-spin text-studio-muted" /> Saving...
               </span>
             )}
             {saveStatus === "saved" && (
               <span
-                className="inline-flex items-center gap-1 text-mkt-success"
+                className="inline-flex items-center gap-1 text-studio-muted"
                 title="All changes saved locally"
               >
-                <Check className="h-3 w-3" /> Saved
+                <Check className="h-3 w-3 text-studio-muted" /> Saved
               </span>
             )}
             {saveStatus === "error" && (
@@ -181,8 +184,8 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
         </div>
       </div>
 
-      {/* Middle: Undo & Redo Controls */}
-      <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-transparent px-0.5">
+      {/* Middle: Undo & Redo Controls (Always Centered) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex shrink-0 items-center gap-0.5">
         <IconButton
           label="Undo (Ctrl+Z)"
           size="sm"
