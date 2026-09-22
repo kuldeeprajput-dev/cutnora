@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { TimelineClip, CropSettings } from "@/modules/editor/types";
 import { useProjectStore } from "@/modules/projects";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
@@ -22,82 +22,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
 
 export interface TransformTabProps {
   clip: TimelineClip;
-}
-
-interface TransformDraft {
-  sourceClipId: string;
-  sourceX: number;
-  sourceY: number;
-  sourceWidth: number;
-  sourceHeight: number;
-  sourceRotation: number;
-  sourceOpacity: number;
-  x: string;
-  y: string;
-  width: string;
-  height: string;
-  rotation: number;
-  opacity: number;
-}
-
-function createTransformDraft(
-  clipId: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rotation: number,
-  opacity: number,
-): TransformDraft {
-  return {
-    sourceClipId: clipId,
-    sourceX: x,
-    sourceY: y,
-    sourceWidth: width,
-    sourceHeight: height,
-    sourceRotation: rotation,
-    sourceOpacity: opacity,
-    x: String(Math.round(x * 10) / 10),
-    y: String(Math.round(y * 10) / 10),
-    width: String(Math.round(width * 10) / 10),
-    height: String(Math.round(height * 10) / 10),
-    rotation: Math.round(rotation * 10) / 10,
-    opacity,
-  };
-}
-
-function draftMatchesSource(
-  draft: TransformDraft,
-  clipId: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rotation: number,
-  opacity: number,
-) {
-  if (!draft || draft.sourceClipId !== clipId) return false;
-
-  const numEq = (a?: number, b?: number) => {
-    if (a === b) return true;
-    if (Number.isNaN(a) && Number.isNaN(b)) return true;
-    if (typeof a === "number" && typeof b === "number") {
-      return Math.abs(a - b) < 0.001;
-    }
-    return false;
-  };
-
-  return (
-    numEq(draft.sourceX, x) &&
-    numEq(draft.sourceY, y) &&
-    numEq(draft.sourceWidth, width) &&
-    numEq(draft.sourceHeight, height) &&
-    numEq(draft.sourceRotation, rotation) &&
-    numEq(draft.sourceOpacity, opacity)
-  );
 }
 
 const SIZE_PRESETS = [
@@ -135,12 +63,6 @@ const ANCHOR_CONFIG: AnchorPointConfig[] = [
   { id: "bottom-right", label: "Bottom Right" },
 ];
 
-import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
-
-export interface TransformTabProps {
-  clip: TimelineClip;
-}
-
 export function TransformTab({ clip }: TransformTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const currentProject = useProjectStore((state) => state.currentProject);
@@ -148,6 +70,9 @@ export function TransformTab({ clip }: TransformTabProps) {
 
   const [isAspectLocked, setIsAspectLocked] = useState(true);
   const [customSizeOpen, setCustomSizeOpen] = useState(false);
+  const [editingField, setEditingField] = useState<"width" | "height" | "x" | "y" | null>(null);
+  const [inputValue, setInputValue] = useState("");
+
   const [framingExpanded, toggleFramingExpanded] = useInspectorExpanded("transform.framing", false);
   const [dimensionsExpanded, toggleDimensionsExpanded] = useInspectorExpanded("transform.dimensions", false);
   const [positionExpanded, togglePositionExpanded] = useInspectorExpanded("transform.position", false);
@@ -164,25 +89,6 @@ export function TransformTab({ clip }: TransformTabProps) {
   const hasActiveCrop =
     crop.top > 0 || crop.right > 0 || crop.bottom > 0 || crop.left > 0;
 
-  const tX = clip.transform.x;
-  const tY = clip.transform.y;
-  const tW = clip.transform.width;
-  const tH = clip.transform.height;
-  const tRot = clip.transform.rotation;
-  const tOp = clip.transform.opacity;
-
-  const [draft, setDraft] = useState(() =>
-    createTransformDraft(clip.id, tX, tY, tW, tH, tRot, tOp),
-  );
-
-  useEffect(() => {
-    setDraft((current) =>
-      draftMatchesSource(current, clip.id, tX, tY, tW, tH, tRot, tOp)
-        ? current
-        : createTransformDraft(clip.id, tX, tY, tW, tH, tRot, tOp),
-    );
-  }, [clip.id, tX, tY, tW, tH, tRot, tOp]);
-
   const commitTransform = (updates: Partial<TimelineClip["transform"]>) => {
     updateClip(clip.id, {
       transform: {
@@ -195,28 +101,17 @@ export function TransformTab({ clip }: TransformTabProps) {
   const projW = currentProject?.settings.width || 1920;
   const projH = currentProject?.settings.height || 1080;
 
-  const commitDimension = (key: "width" | "height") => {
-    const raw = draft[key].trim();
+  const commitDimension = (key: "width" | "height", explicitVal?: string) => {
+    const raw = (explicitVal !== undefined ? explicitVal : inputValue).trim();
     const parsed = Number.parseFloat(raw);
 
     if (!raw || !Number.isFinite(parsed) || parsed <= 0) {
-      setDraft((current) => ({
-        ...current,
-        width: String(Math.round(clip.transform.width * 10) / 10),
-        height: String(Math.round(clip.transform.height * 10) / 10),
-      }));
       return;
     }
 
     const value = Math.max(10, Math.min(7680, Math.round(parsed)));
-    let nextW =
-      key === "width"
-        ? value
-        : Number.parseFloat(draft.width) || clip.transform.width;
-    let nextH =
-      key === "height"
-        ? value
-        : Number.parseFloat(draft.height) || clip.transform.height;
+    let nextW = key === "width" ? value : clip.transform.width;
+    let nextH = key === "height" ? value : clip.transform.height;
 
     if (
       isAspectLocked &&
@@ -231,32 +126,18 @@ export function TransformTab({ clip }: TransformTabProps) {
       }
     }
 
-    setDraft((current) => ({
-      ...current,
-      width: String(nextW),
-      height: String(nextH),
-    }));
     commitTransform({ width: nextW, height: nextH });
   };
 
-  const commitPosition = (key: "x" | "y") => {
-    const raw = draft[key].trim();
+  const commitPosition = (key: "x" | "y", explicitVal?: string) => {
+    const raw = (explicitVal !== undefined ? explicitVal : inputValue).trim();
     const parsed = Number.parseFloat(raw);
 
     if (!raw || !Number.isFinite(parsed)) {
-      setDraft((current) => ({
-        ...current,
-        x: String(Math.round(clip.transform.x * 10) / 10),
-        y: String(Math.round(clip.transform.y * 10) / 10),
-      }));
       return;
     }
 
     const value = Math.round(parsed * 10) / 10;
-    setDraft((current) => ({
-      ...current,
-      [key]: String(value),
-    }));
     commitTransform({ [key]: value });
   };
 
@@ -272,13 +153,6 @@ export function TransformTab({ clip }: TransformTabProps) {
       newY = Math.max(0, projH - newH - 40);
     }
 
-    setDraft((current) => ({
-      ...current,
-      width: String(newW),
-      height: String(newH),
-      x: String(newX),
-      y: String(newY),
-    }));
     commitTransform({
       width: newW,
       height: newH,
@@ -289,8 +163,8 @@ export function TransformTab({ clip }: TransformTabProps) {
   };
 
   const getActiveAnchor = (): AnchorPointConfig | null => {
-    const curW = Number.parseFloat(draft.width) || clip.transform.width;
-    const curH = Number.parseFloat(draft.height) || clip.transform.height;
+    const curW = clip.transform.width;
+    const curH = clip.transform.height;
     const x = Math.round(clip.transform.x);
     const y = Math.round(clip.transform.y);
 
@@ -324,8 +198,8 @@ export function TransformTab({ clip }: TransformTabProps) {
 
   const getActiveDimensionLabel = (): string => {
     if (customSizeOpen) return "Custom";
-    const curW = Number.parseFloat(draft.width) || clip.transform.width;
-    const curH = Number.parseFloat(draft.height) || clip.transform.height;
+    const curW = clip.transform.width;
+    const curH = clip.transform.height;
 
     for (const p of SIZE_PRESETS) {
       const targetW = Math.round(projW * p.scale);
@@ -361,10 +235,10 @@ export function TransformTab({ clip }: TransformTabProps) {
   const activeFlipLabel = getFlipLabel();
 
   const handleAlign = (position: AnchorPosition) => {
-    const curW = Number.parseFloat(draft.width) || clip.transform.width;
-    const curH = Number.parseFloat(draft.height) || clip.transform.height;
-    let nextX = Number.parseFloat(draft.x) || 0;
-    let nextY = Number.parseFloat(draft.y) || 0;
+    const curW = clip.transform.width;
+    const curH = clip.transform.height;
+    let nextX = clip.transform.x;
+    let nextY = clip.transform.y;
 
     switch (position) {
       case "center":
@@ -405,11 +279,6 @@ export function TransformTab({ clip }: TransformTabProps) {
         break;
     }
 
-    setDraft((current) => ({
-      ...current,
-      x: String(nextX),
-      y: String(nextY),
-    }));
     commitTransform({ x: nextX, y: nextY });
   };
 
@@ -661,8 +530,8 @@ export function TransformTab({ clip }: TransformTabProps) {
               {SIZE_PRESETS.map((p) => {
                 const targetW = Math.round(projW * p.scale);
                 const targetH = Math.round(projH * p.scale);
-                const curW = Number.parseFloat(draft.width) || clip.transform.width;
-                const curH = Number.parseFloat(draft.height) || clip.transform.height;
+                const curW = clip.transform.width;
+                const curH = clip.transform.height;
                 const isActive =
                   !customSizeOpen &&
                   Math.abs(curW - targetW) <= 2 &&
@@ -710,15 +579,26 @@ export function TransformTab({ clip }: TransformTabProps) {
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={draft.width}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setDraft((current) => ({ ...current, width: val }));
+                    value={
+                      editingField === "width"
+                        ? inputValue
+                        : String(Math.round(clip.transform.width * 10) / 10)
+                    }
+                    onFocus={() => {
+                      setEditingField("width");
+                      setInputValue(String(Math.round(clip.transform.width * 10) / 10));
                     }}
-                    onBlur={() => commitDimension("width")}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                    }}
+                    onBlur={() => {
+                      commitDimension("width", inputValue);
+                      setEditingField(null);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        commitDimension("width");
+                        commitDimension("width", inputValue);
+                        setEditingField(null);
                         e.currentTarget.blur();
                       }
                     }}
@@ -752,15 +632,26 @@ export function TransformTab({ clip }: TransformTabProps) {
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={draft.height}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setDraft((current) => ({ ...current, height: val }));
+                    value={
+                      editingField === "height"
+                        ? inputValue
+                        : String(Math.round(clip.transform.height * 10) / 10)
+                    }
+                    onFocus={() => {
+                      setEditingField("height");
+                      setInputValue(String(Math.round(clip.transform.height * 10) / 10));
                     }}
-                    onBlur={() => commitDimension("height")}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                    }}
+                    onBlur={() => {
+                      commitDimension("height", inputValue);
+                      setEditingField(null);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        commitDimension("height");
+                        commitDimension("height", inputValue);
+                        setEditingField(null);
                         e.currentTarget.blur();
                       }
                     }}
@@ -841,15 +732,26 @@ export function TransformTab({ clip }: TransformTabProps) {
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={draft.x}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDraft((current) => ({ ...current, x: val }));
+                  value={
+                    editingField === "x"
+                      ? inputValue
+                      : String(Math.round(clip.transform.x * 10) / 10)
+                  }
+                  onFocus={() => {
+                    setEditingField("x");
+                    setInputValue(String(Math.round(clip.transform.x * 10) / 10));
                   }}
-                  onBlur={() => commitPosition("x")}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                  }}
+                  onBlur={() => {
+                    commitPosition("x", inputValue);
+                    setEditingField(null);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      commitPosition("x");
+                      commitPosition("x", inputValue);
+                      setEditingField(null);
                       e.currentTarget.blur();
                     }
                   }}
@@ -868,15 +770,26 @@ export function TransformTab({ clip }: TransformTabProps) {
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={draft.y}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDraft((current) => ({ ...current, y: val }));
+                  value={
+                    editingField === "y"
+                      ? inputValue
+                      : String(Math.round(clip.transform.y * 10) / 10)
+                  }
+                  onFocus={() => {
+                    setEditingField("y");
+                    setInputValue(String(Math.round(clip.transform.y * 10) / 10));
                   }}
-                  onBlur={() => commitPosition("y")}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                  }}
+                  onBlur={() => {
+                    commitPosition("y", inputValue);
+                    setEditingField(null);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      commitPosition("y");
+                      commitPosition("y", inputValue);
+                      setEditingField(null);
                       e.currentTarget.blur();
                     }
                   }}
@@ -951,7 +864,7 @@ export function TransformTab({ clip }: TransformTabProps) {
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Rotation</span>
           <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
-            <span className="font-mono">{draft.rotation}°</span>
+            <span className="font-mono">{clip.transform.rotation ?? 0}°</span>
             {rotationExpanded ? (
               <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
             ) : (
@@ -964,24 +877,22 @@ export function TransformTab({ clip }: TransformTabProps) {
         {rotationExpanded && (
           <div className="mt-2.5 space-y-1.5">
             <Slider
-              value={draft.rotation}
+              value={clip.transform.rotation ?? 0}
               min={0}
               max={360}
               step={1}
               onValueChange={(val) => {
-                setDraft((current) => ({ ...current, rotation: val }));
                 commitTransform({ rotation: val });
               }}
             />
             <div className="grid grid-cols-4 gap-1 pt-0.5">
               {[0, 90, 180, 270].map((angle) => {
-                const isActive = draft.rotation === angle;
+                const isActive = (clip.transform.rotation ?? 0) === angle;
                 return (
                   <button
                     key={angle}
                     type="button"
                     onClick={() => {
-                      setDraft((current) => ({ ...current, rotation: angle }));
                       commitTransform({ rotation: angle });
                     }}
                     className={cn(
@@ -1007,18 +918,17 @@ export function TransformTab({ clip }: TransformTabProps) {
             Opacity
           </span>
           <span className="font-mono text-xs text-white/80 group-hover:text-white transition-colors font-medium">
-            {Math.round(draft.opacity * 100)}%
+            {Math.round((clip.transform.opacity ?? 1) * 100)}%
           </span>
         </div>
         <Slider
-          value={draft.opacity}
+          value={clip.transform.opacity ?? 1}
           min={0}
           max={1}
           step={0.01}
           fillClassName="bg-white/90 group-hover:bg-white"
           trackClassName="bg-white/10"
           onValueChange={(val) => {
-            setDraft((current) => ({ ...current, opacity: val }));
             commitTransform({ opacity: val });
           }}
         />

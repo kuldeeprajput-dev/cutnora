@@ -12,7 +12,6 @@ import { ElementLayer } from './ElementLayer';
 import { SelectionOverlay } from './SelectionOverlay';
 import { CropOverlay } from './CropOverlay';
 import { useTransformHandler, type TransformMode } from '../hooks/useTransformHandler';
-import type { GuideLine } from '../utils/snapping-utils';
 import { ContextMenu, type ContextMenuItemData } from '@/shared/components/ui/ContextMenu';
 import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { Scissors, Copy, Trash2, ArrowUp, ArrowDown, Lock, EyeOff } from 'lucide-react';
@@ -20,10 +19,9 @@ import { Scissors, Copy, Trash2, ArrowUp, ArrowDown, Lock, EyeOff } from 'lucide
 export interface CanvasRendererProps {
   stageScale: number;
   isFullscreenActive?: boolean;
-  onGuidesChange?: (guides: GuideLine[]) => void;
 }
 
-export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuidesChange }: CanvasRendererProps) {
+export function CanvasRenderer({ stageScale, isFullscreenActive = false }: CanvasRendererProps) {
   const { currentProject, duplicateClips, deleteClips, reorderTracks } = useProjectStore();
   const { playhead } = usePlaybackStore();
   const {
@@ -35,12 +33,8 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false, onGuide
     inspectorMode,
     isFullscreen,
   } = useEditorUIStore();
-  const { startTransform, isDragging, activeGuides } = useTransformHandler(stageScale);
+  const { startTransform, isDragging } = useTransformHandler(stageScale);
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; clip: TimelineClip; track: Track } | null>(null);
-
-  React.useEffect(() => {
-    if (onGuidesChange) onGuidesChange(activeGuides);
-  }, [activeGuides, onGuidesChange]);
 
   if (!currentProject) return null;
 
