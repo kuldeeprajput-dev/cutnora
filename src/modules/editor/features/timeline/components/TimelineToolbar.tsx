@@ -307,32 +307,66 @@ export function TimelineToolbar({
         <div className="mx-1 h-3.5 w-px bg-studio-border" />
 
         <DropdownMenu
-          trigger={
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs gap-1 cursor-pointer"
+          align="left"
+          className="min-w-0 w-[136px] p-1 rounded-xl border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150"
+          trigger={(isOpen) => (
+            <button
+              type="button"
+              className={cn(
+                "group flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors cursor-pointer select-none",
+                isOpen
+                  ? "bg-studio-panel-raised text-white shadow-xs"
+                  : "text-studio-fg/90 hover:bg-studio-panel-raised hover:text-white"
+              )}
             >
-              <Plus className="h-3.5 w-3.5" /> Add Track{" "}
-              <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
-            </Button>
-          }
+              <Plus
+                className={cn(
+                  "h-3.5 w-3.5 transition-colors",
+                  isOpen
+                    ? "text-white"
+                    : "text-studio-muted group-hover:text-white"
+                )}
+              />
+              <span>Add Track</span>
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 text-studio-muted transition-transform duration-150 ml-0.5",
+                  isOpen && "rotate-180 text-white"
+                )}
+              />
+            </button>
+          )}
         >
-          <DropdownMenuItem onClick={() => addTrack("video", "Video Track")}>
-            <Video className="h-3.5 w-3.5 text-blue-400" />
-            <span>Video Track</span>
+          <DropdownMenuItem
+            onClick={() => addTrack("video", "Video Track")}
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Video className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <span className="truncate">Video Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack("audio", "Audio Track")}>
-            <Music className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Audio Track</span>
+
+          <DropdownMenuItem
+            onClick={() => addTrack("audio", "Audio Track")}
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Music className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <span className="truncate">Audio Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack("overlay", "Image Track")}>
-            <ImageIcon className="h-3.5 w-3.5 text-purple-400" />
-            <span>Image Track</span>
+
+          <DropdownMenuItem
+            onClick={() => addTrack("overlay", "Image Track")}
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <ImageIcon className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <span className="truncate">Image Track</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addTrack("text", "Text Track")}>
-            <Type className="h-3.5 w-3.5 text-amber-400" />
-            <span>Text Track</span>
+
+          <DropdownMenuItem
+            onClick={() => addTrack("text", "Text Track")}
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Type className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <span className="truncate">Text Track</span>
           </DropdownMenuItem>
         </DropdownMenu>
 

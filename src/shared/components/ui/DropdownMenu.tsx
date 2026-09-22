@@ -139,7 +139,9 @@ export function DropdownMenu({
               zIndex: 9000,
             }}
             className={cn(
-              matchTriggerWidth ? 'min-w-0' : 'min-w-[160px]',
+              matchTriggerWidth || className?.includes('min-w-') || className?.includes('w-')
+                ? 'min-w-0'
+                : 'min-w-[160px]',
               'rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-md p-1.5 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150',
               className
             )}

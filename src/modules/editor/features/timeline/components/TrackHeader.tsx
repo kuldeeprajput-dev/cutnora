@@ -307,23 +307,23 @@ export function TrackHeader({
                 </IconButton>
               }
               align="right"
-              className="min-w-0 w-[124px] p-1 border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl rounded-lg"
+              className="min-w-0 w-[112px] p-0.5 border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl rounded-lg"
             >
               <DropdownMenuItem
                 onClick={() => setIsRenaming(true)}
-                className="gap-1.5 px-2 py-1 text-[11px] text-studio-fg/90 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
+                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-studio-fg/90 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
               >
-                <Edit2 className="h-3 w-3 text-studio-muted" />
-                <span>Rename Track</span>
+                <Edit2 className="h-3 w-3 text-studio-muted shrink-0" />
+                <span className="truncate">Rename Track</span>
               </DropdownMenuItem>
               <div className="my-0.5 h-px bg-white/10" />
               <DropdownMenuItem
                 destructive
                 onClick={handleDeleteTrack}
-                className="gap-1.5 px-2 py-1 text-[11px] text-destructive hover:bg-destructive/15 rounded-md transition-colors cursor-pointer"
+                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-destructive hover:bg-destructive/15 rounded-md transition-colors cursor-pointer"
               >
-                <Trash2 className="h-3 w-3 text-destructive" />
-                <span>Delete Track</span>
+                <Trash2 className="h-3 w-3 text-destructive shrink-0" />
+                <span className="truncate">Delete Track</span>
               </DropdownMenuItem>
             </DropdownMenu>
           </div>
