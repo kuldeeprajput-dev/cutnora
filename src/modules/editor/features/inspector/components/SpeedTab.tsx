@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { RotateCcw } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import type { TimelineClip } from "@/modules/editor/types";
 import { useProjectStore } from "@/modules/projects";
 import { Slider } from "@/shared/components/ui/Slider";
@@ -36,6 +36,8 @@ export function SpeedTab({ clip }: SpeedTabProps) {
   const currentProject = useProjectStore((state) => state.currentProject);
   const projectFps = currentProject?.settings.fps || 30;
 
+  const [speedExpanded, setSpeedExpanded] = useState(true);
+
   const currentSpeed = clip.speed ?? 1.0;
 
   const changeSpeed = (newSpeed: number) => {
@@ -50,111 +52,149 @@ export function SpeedTab({ clip }: SpeedTabProps) {
 
   const estimatedEffectiveFps = Math.round(projectFps * currentSpeed);
 
+  const activeSpeedPreset = SPEED_PRESETS.find(
+    (p) => Math.abs(currentSpeed - p.speed) < 0.02
+  );
+
+  const speedDisplay = activeSpeedPreset
+    ? activeSpeedPreset.label
+    : `${currentSpeed.toFixed(2)}×`;
+
   return (
     <div className="flex flex-col text-xs text-white pb-3 select-none">
-      {/* Row 1: Playback Speed */}
+      {/* Row: Playback Speed & Duration Impact */}
       <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-white/50 font-medium">Playback speed</span>
-          <div className="flex items-center gap-1.5">
+        <div
+          onClick={() => setSpeedExpanded((prev) => !prev)}
+          className="flex items-center justify-between cursor-pointer group select-none"
+        >
+          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            Playback speed
+          </span>
+          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
             {currentSpeed !== 1.0 && (
               <button
                 type="button"
-                onClick={() => changeSpeed(1.0)}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  changeSpeed(1.0);
+                }}
+                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
               >
                 Reset
               </button>
             )}
-            <span className="font-mono text-xs text-white/90">
-              {currentSpeed.toFixed(2)}×
+            <span className="font-mono text-xs">{speedDisplay}</span>
+            <span className="text-[11px] text-white/40 font-mono">
+              ({formatTime(clip.timelineDuration)})
             </span>
+            {speedExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+            )}
           </div>
         </div>
 
-        {/* Speed Slider */}
-        <Slider
-          aria-label="Speed multiplier slider"
-          value={currentSpeed}
-          min={0.1}
-          max={4.0}
-          step={0.05}
-          onValueChange={changeSpeed}
-        />
+        {/* Expanded Controls: Slider, Presets & Duration Impact Cards */}
+        {speedExpanded && (
+          <div className="mt-2.5 space-y-2.5 pt-0.5">
+            <Slider
+              aria-label="Speed multiplier slider"
+              value={currentSpeed}
+              min={0.1}
+              max={4.0}
+              step={0.05}
+              fillClassName="bg-white/90"
+              trackClassName="bg-white/10"
+              onValueChange={changeSpeed}
+            />
 
-        {/* Speed Preset Pills */}
-        <div className="grid grid-cols-4 gap-1 pt-2">
-          {SPEED_PRESETS.map((p) => {
-            const isActive = Math.abs(currentSpeed - p.speed) < 0.03;
-            return (
-              <button
-                key={p.speed}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => changeSpeed(p.speed)}
-                className={cn(
-                  "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border",
-                  isActive
-                    ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
-                )}
-                title={p.sub}
-              >
-                {p.label}
-              </button>
-            );
-          })}
-        </div>
+            {/* Speed Preset Chips */}
+            <div className="grid grid-cols-4 gap-1 pt-0.5">
+              {SPEED_PRESETS.map((p) => {
+                const isActive = Math.abs(currentSpeed - p.speed) < 0.02;
+                return (
+                  <button
+                    key={p.speed}
+                    type="button"
+                    onClick={() => changeSpeed(p.speed)}
+                    className={cn(
+                      "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border",
+                      isActive
+                        ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
+                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                    )}
+                    title={`${p.label} (${p.sub})`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Source vs Timeline Duration Cards */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 hover:border-white/15 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                    Source
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+                </div>
+                <div className="mt-1 font-mono text-sm font-semibold text-white/90">
+                  {formatTime(clip.sourceDuration)}
+                </div>
+                <div className="text-[10px] text-white/40 mt-0.5 font-mono">
+                  {clip.sourceDuration.toFixed(2)}s raw
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 hover:border-white/15 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                    Timeline
+                  </span>
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      currentSpeed === 1
+                        ? "bg-white/40"
+                        : currentSpeed > 1
+                          ? "bg-amber-400"
+                          : "bg-sky-400"
+                    )}
+                  />
+                </div>
+                <div className="mt-1 font-mono text-sm font-semibold text-white/90">
+                  {formatTime(clip.timelineDuration)}
+                </div>
+                <div className="text-[10px] text-white/40 mt-0.5 font-mono flex items-center justify-between">
+                  <span>
+                    {currentSpeed === 1
+                      ? "Realtime"
+                      : currentSpeed > 1
+                        ? `${currentSpeed}× Fast`
+                        : `${currentSpeed}× Slow`}
+                  </span>
+                  <span className="text-white/30">~{estimatedEffectiveFps} fps</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Row 2: Duration Impact */}
-      <div className="py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-white/50 font-medium">Duration impact</span>
-          <span className="font-mono text-[11px] text-white/40">
-            ~{estimatedEffectiveFps} fps
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
-            <span className="block text-[9px] font-medium uppercase tracking-wide text-white/40">
-              Source
-            </span>
-            <span className="mt-0.5 block font-mono text-xs font-semibold text-white/90">
-              {formatTime(clip.sourceDuration)}
-            </span>
-            <span className="text-[9px] text-white/40 mt-0.5 block font-mono">
-              {clip.sourceDuration.toFixed(2)}s raw
-            </span>
-          </div>
-
-          <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
-            <span className="block text-[9px] font-medium uppercase tracking-wide text-white/40">
-              Timeline
-            </span>
-            <span className="mt-0.5 block font-mono text-xs font-semibold text-white/90">
-              {formatTime(clip.timelineDuration)}
-            </span>
-            <span className="text-[9px] text-white/40 mt-0.5 block font-mono">
-              {currentSpeed === 1
-                ? "Realtime"
-                : currentSpeed > 1
-                  ? `${Math.round((1 / currentSpeed) * 100)}% shorter`
-                  : `${Math.round((1 / currentSpeed) * 100)}% longer`}
-            </span>
-          </div>
-        </div>
+      {/* Reset Action */}
+      <div className="pt-3">
+        <button
+          type="button"
+          onClick={() => changeSpeed(1.0)}
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+        >
+          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Speed (1.0×)
+        </button>
       </div>
-
-      {/* Reset Button */}
-      <button
-        type="button"
-        onClick={() => changeSpeed(1.0)}
-        className="mt-3 h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs font-medium text-white/50 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5 text-white/40" /> Reset Speed (1.0×)
-      </button>
     </div>
   );
 }
