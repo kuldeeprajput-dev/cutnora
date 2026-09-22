@@ -346,6 +346,7 @@ export function TimelineClipItem({
     {
       id: "delete",
       label: "Delete",
+      destructive: true,
       icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
       shortcut: "Del",
       onClick: () => deleteClips([clip.id]),

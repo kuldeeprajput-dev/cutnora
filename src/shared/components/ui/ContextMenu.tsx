@@ -114,50 +114,66 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
         left: `${renderPos?.x ?? position.x}px`,
         visibility: adjustedPos ? 'visible' : 'hidden',
       }}
-      className="fixed z-[99999] min-w-[180px] rounded-lg border border-studio-border bg-studio-panel p-1.5 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+      className={cn(
+        "fixed z-[99999] min-w-[190px] rounded-xl border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md p-1 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100",
+        className
+      )}
       onClick={handleClose}
     >
       {items ? (
         <div className="flex flex-col gap-0.5">
-              {items.map((item, idx) => {
-                if (item.isDivider) {
-                  return <div key={item.id || idx} className="my-1 h-px bg-studio-border" />;
-                }
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    disabled={item.disabled}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!item.disabled) {
-                        item.onClick();
-                        handleClose();
-                      }
-                    }}
-                    className={cn(
-                      'flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none',
-                      item.disabled && 'opacity-40 cursor-not-allowed',
-                      !item.disabled &&
-                        (item.destructive
-                          ? 'text-destructive hover:bg-destructive/10'
-                          : 'text-studio-fg hover:bg-studio-hover')
-                    )}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
+          {items.map((item, idx) => {
+            if (item.isDivider) {
+              return <div key={item.id || idx} className="my-1 h-px bg-white/10" />;
+            }
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={item.disabled}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!item.disabled) {
+                    item.onClick();
+                    handleClose();
+                  }
+                }}
+                className={cn(
+                  'group flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none cursor-pointer',
+                  item.disabled && 'opacity-35 cursor-not-allowed hover:bg-transparent',
+                  !item.disabled &&
+                    (item.destructive
+                      ? 'text-destructive hover:bg-destructive/15'
+                      : 'text-studio-fg/90 hover:text-white hover:bg-white/10')
+                )}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {item.icon && (
+                    <span
+                      className={cn(
+                        "shrink-0 transition-colors",
+                        item.destructive
+                          ? "text-destructive"
+                          : "text-studio-muted group-hover:text-white"
+                      )}
+                    >
                       {item.icon}
-                      <span className="truncate">{item.label}</span>
-                    </div>
-                    {item.shortcut && (
-                      <span className="font-mono text-[10px] text-studio-muted shrink-0">{item.shortcut}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            menu
-          )}
+                    </span>
+                  )}
+                  <span className="truncate">{item.label}</span>
+                </div>
+                {item.shortcut && (
+                  <span className="font-mono text-[10px] text-studio-muted/70 group-hover:text-white/80 transition-colors shrink-0 ml-auto pl-2">
+                    {item.shortcut}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        menu
+      )}
     </div>
   ) : null;
 
@@ -179,9 +195,9 @@ export function ContextMenuItem({ className, children, destructive, ...props }: 
       type="button"
       role="menuitem"
       className={cn(
-        'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-left transition-colors select-none',
-        'focus-visible:outline-none focus-visible:bg-studio-hover',
-        destructive ? 'text-destructive hover:bg-destructive/10' : 'text-studio-fg hover:bg-studio-hover',
+        'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none cursor-pointer',
+        'focus-visible:outline-none focus-visible:bg-white/10',
+        destructive ? 'text-destructive hover:bg-destructive/15' : 'text-studio-fg/90 hover:text-white hover:bg-white/10',
         className
       )}
       {...props}
