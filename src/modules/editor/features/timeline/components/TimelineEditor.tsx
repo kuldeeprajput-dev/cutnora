@@ -905,7 +905,7 @@ export function TimelineEditor() {
                       : undefined
                   }
                   aria-hidden="true"
-                  className="relative h-12 w-full border-y border-dashed border-brand/60 bg-brand/[0.07] shadow-[inset_0_0_18px_rgba(234,88,12,0.06)]"
+                  className="relative h-12 w-full border-y border-dashed border-white/30 bg-white/5 shadow-[inset_0_0_18px_rgba(255,255,255,0.02)]"
                 />
               )}
 
@@ -930,7 +930,7 @@ export function TimelineEditor() {
                       {clipDragPreview.clipName}
                     </span>
                   </div>
-                  <span className="ml-2 shrink-0 rounded bg-studio-bg/70 px-1 text-[9px] font-medium text-studio-fg">
+                  <span className="ml-2 shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white">
                     {clipDragPreview.createTrack
                       ? "New track"
                       : clipDragPreview.valid
@@ -940,14 +940,14 @@ export function TimelineEditor() {
                 </div>
               )}
 
-              {/* Red Continuous Scrubber Line */}
+              {/* Studio White Scrubber Line */}
               <div
                 style={{
                   left: `${playheadLeftPx}px`,
                   height:
                     playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0,
                 }}
-                className={`absolute top-0 w-0.5 bg-brand z-30 pointer-events-none shadow-md -translate-x-1/2 ${
+                className={`absolute top-0 w-0.5 bg-white z-30 pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.8)] -translate-x-1/2 ${
                   playheadLineHeight === 0 ? "hidden" : ""
                 }`}
               />
@@ -956,7 +956,7 @@ export function TimelineEditor() {
               {activeSnapLine !== null && (
                 <div
                   style={{ left: `${16 + activeSnapLine * zoom}px` }}
-                  className="absolute top-0 bottom-0 w-0.5 bg-selection z-40 pointer-events-none -translate-x-1/2"
+                  className="absolute top-0 bottom-0 w-0.5 bg-white z-40 pointer-events-none shadow-[0_0_6px_rgba(255,255,255,0.8)] -translate-x-1/2"
                 />
               )}
             </div>

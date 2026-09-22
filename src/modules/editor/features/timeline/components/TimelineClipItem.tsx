@@ -337,7 +337,7 @@ export function TimelineClipItem({
           {
             id: "detach-audio",
             label: "Detach audio",
-            icon: <Unlink className="h-3.5 w-3.5 text-brand" />,
+            icon: <Unlink className="h-3.5 w-3.5 text-white/90" />,
             onClick: () => detachAudioFromVideo(clip.id),
           },
         ]
@@ -370,9 +370,9 @@ export function TimelineClipItem({
           "group relative flex touch-none items-center justify-between rounded-lg select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
           getBgColor(),
           isSelected
-            ? "border-2 border-selection ring-1 ring-selection/40 shadow-xs"
+            ? "border-2 border-white ring-1 ring-white/30 shadow-md"
             : "border-2 border-white/10 hover:border-white/25",
-          isDragging && "opacity-40 ring-2 ring-selection",
+          isDragging && "opacity-40 ring-2 ring-white/60",
           track.locked && "opacity-60 cursor-not-allowed",
         )}
       >
@@ -383,7 +383,7 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-start", e);
             }}
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip start"
           />
         )}
@@ -480,7 +480,7 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-end", e);
             }}
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip end"
           />
         )}
