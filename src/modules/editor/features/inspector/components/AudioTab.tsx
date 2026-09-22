@@ -13,6 +13,8 @@ import { useProjectStore } from "@/modules/projects";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
 
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
+
 export interface AudioTabProps {
   clip: TimelineClip;
 }
@@ -35,9 +37,9 @@ export function AudioTab({ clip }: AudioTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const audio = clip.audio || defaultAudio;
 
-  const [volumeExpanded, setVolumeExpanded] = useState(false);
-  const [fadeInExpanded, setFadeInExpanded] = useState(false);
-  const [fadeOutExpanded, setFadeOutExpanded] = useState(false);
+  const [volumeExpanded, toggleVolumeExpanded] = useInspectorExpanded("audio.volume", false);
+  const [fadeInExpanded, toggleFadeInExpanded] = useInspectorExpanded("audio.fadeIn", false);
+  const [fadeOutExpanded, toggleFadeOutExpanded] = useInspectorExpanded("audio.fadeOut", false);
 
   const updateAudio = (updates: Partial<AudioSettings>) => {
     updateClip(clip.id, {
@@ -72,7 +74,7 @@ export function AudioTab({ clip }: AudioTabProps) {
       {/* Row 1: Volume */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setVolumeExpanded((prev) => !prev)}
+          onClick={toggleVolumeExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -158,7 +160,7 @@ export function AudioTab({ clip }: AudioTabProps) {
       {/* Row 2: Fade In */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setFadeInExpanded((prev) => !prev)}
+          onClick={toggleFadeInExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -230,7 +232,7 @@ export function AudioTab({ clip }: AudioTabProps) {
       {/* Row 3: Fade Out */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setFadeOutExpanded((prev) => !prev)}
+          onClick={toggleFadeOutExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">

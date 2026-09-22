@@ -43,6 +43,7 @@ import {
   getAspectRatioMultiplier,
   type SocialPreset,
 } from "../constants/canvasPresets";
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
 
 function isLightColor(hex: string): boolean {
   if (!hex || hex === "transparent") return false;
@@ -73,9 +74,12 @@ export function CanvasSettingsPanel() {
     (state) => state.updateProjectSettings,
   );
 
-  const [aspectRatioExpanded, setAspectRatioExpanded] = useState(false);
-  const [resolutionExpanded, setResolutionExpanded] = useState(false);
-  const [bgColorsExpanded, setBgColorsExpanded] = useState(false);
+  const [aspectRatioExpanded, toggleAspectRatioExpanded] =
+    useInspectorExpanded("canvas.aspectRatio", false);
+  const [resolutionExpanded, toggleResolutionExpanded, setResolutionExpanded] =
+    useInspectorExpanded("canvas.resolution", false);
+  const [bgColorsExpanded, toggleBgColorsExpanded] =
+    useInspectorExpanded("canvas.background", false);
 
   const [nameDraft, setNameDraft] = useState(currentProject?.name ?? "Untitled project");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -485,7 +489,7 @@ export function CanvasSettingsPanel() {
           {/* Row 3: Aspect ratio */}
           <div className="py-2.5 border-b border-white/[0.06]">
             <div
-              onClick={() => setAspectRatioExpanded((prev) => !prev)}
+              onClick={toggleAspectRatioExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
               <span className="text-white/50 group-hover:text-white font-medium transition-colors">Aspect ratio</span>
@@ -673,7 +677,7 @@ export function CanvasSettingsPanel() {
           {/* Row 4: Resolution */}
           <div className="py-2.5 border-b border-white/[0.06]">
             <div
-              onClick={() => setResolutionExpanded((prev) => !prev)}
+              onClick={toggleResolutionExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
               <span className="text-white/50 group-hover:text-white font-medium transition-colors">Resolution</span>
@@ -830,7 +834,7 @@ export function CanvasSettingsPanel() {
           {/* Row 5: Background */}
           <div className="py-2.5 border-b border-white/[0.06]">
             <div
-              onClick={() => setBgColorsExpanded((prev) => !prev)}
+              onClick={toggleBgColorsExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
               <span className="text-white/50 group-hover:text-white font-medium transition-colors">

@@ -35,6 +35,31 @@ import {
   Clock,
 } from "lucide-react";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import type { TimelineClip } from "@/modules/editor/types";
+
+function getValidTabsForClip(clip: TimelineClip): string[] {
+  const isVisual =
+    clip.type === "video" || clip.type === "image" || clip.type === "overlay";
+  const hasAudio = clip.type === "video" || clip.type === "audio";
+  const isText = clip.type === "text";
+  const isElement = clip.type === "overlay";
+
+  const tabs: string[] = [];
+  if (isText) tabs.push("text");
+  if (isElement) tabs.push("element");
+  if (clip.type !== "audio" && clip.type !== "text") tabs.push("transform");
+  if (isVisual) tabs.push("adjust");
+  if (hasAudio) tabs.push("audio", "speed");
+  tabs.push("time");
+  return tabs;
+}
+
+function getDefaultTabForClip(clip: TimelineClip): string {
+  if (clip.type === "text") return "text";
+  if (clip.type === "overlay") return "element";
+  if (clip.type === "audio") return "audio";
+  return "transform";
+}
 
 interface InspectorTabItem {
   value: string;
@@ -193,14 +218,10 @@ export function InspectorPanel() {
           .currentProject?.tracks.flatMap((t) => t.clips) || [];
       const firstClip = clips.find((c) => selectedClipIds.includes(c.id));
       if (firstClip) {
-        if (firstClip.type === "text") {
-          setActiveInspectorTab("text");
-        } else if (firstClip.type === "overlay") {
-          setActiveInspectorTab("element");
-        } else if (firstClip.type === "audio") {
-          setActiveInspectorTab("audio");
-        } else {
-          setActiveInspectorTab("transform");
+        const validTabs = getValidTabsForClip(firstClip);
+        const currentTab = useEditorUIStore.getState().activeInspectorTab;
+        if (!validTabs.includes(currentTab)) {
+          setActiveInspectorTab(getDefaultTabForClip(firstClip));
         }
 
         // Auto-seek playhead to selected clip start if playhead is out of bounds
@@ -220,22 +241,11 @@ export function InspectorPanel() {
     .flatMap((t) => t.clips)
     .filter((c) => selectedClipIds.includes(c.id));
 
-  // Render Canvas settings if mode is 'canvas' or no clips selected
-  if (inspectorMode === "canvas" || selectedClips.length === 0) {
+  // Render Canvas settings if no clips selected
+  if (selectedClips.length === 0) {
     return (
       <StudioPanel
         title="Canvas Settings"
-        actions={
-          selectedClips.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => setInspectorMode("clip")}
-              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
-            >
-              Clip Properties
-            </button>
-          ) : null
-        }
         className="h-full w-full"
       >
         <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
@@ -377,93 +387,121 @@ export function InspectorPanel() {
     ),
   });
 
+  const isCanvasMode = inspectorMode === "canvas";
+
   return (
-    <StudioPanel
-      title={clip.name}
-      actions={
-        <button
-          type="button"
-          onClick={() => setInspectorMode("canvas")}
-          className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Canvas Settings View (when user toggled to Canvas Settings while a clip is selected) */}
+      <div className={cn("h-full w-full", isCanvasMode ? "block" : "hidden")}>
+        <StudioPanel
+          title="Canvas Settings"
+          actions={
+            <button
+              type="button"
+              onClick={() => setInspectorMode("clip")}
+              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+            >
+              Clip Properties
+            </button>
+          }
+          className="h-full w-full"
         >
-          Canvas Settings
-        </button>
-      }
-      className="h-full w-full"
-    >
-      <div
-        ref={containerRef}
-        className="h-full w-full overflow-y-auto p-3 studio-scrollbar"
-      >
-        <Tabs
-          defaultValue={isText ? "text" : isElement ? "element" : "transform"}
-          value={activeInspectorTab}
-          onValueChange={setActiveInspectorTab}
-          variant="line"
-        >
-          {isNarrow ? (
-            /* Custom Responsive Dropdown when panel is narrow (< 340px) */
-            <InspectorTabDropdown
-              tabs={availableTabs}
-              activeTab={activeInspectorTab}
-              onTabChange={setActiveInspectorTab}
-            />
-          ) : (
-            /* Horizontal Tabs Bar when panel width is wide (>= 360px) */
-            <TabList className="mb-3 flex w-full shrink-0 items-center gap-0 overflow-x-auto studio-scrollbar">
-              {availableTabs.map((t) => (
-                <TabTrigger
-                  key={t.value}
-                  value={t.value}
-                >
-                  {t.icon}
-                  <span>{t.label}</span>
-                </TabTrigger>
-              ))}
-            </TabList>
-          )}
-
-          {isText && (
-            <TabContent value="text">
-              <TextInspectorTab clip={clip} />
-            </TabContent>
-          )}
-
-          {isElement && (
-            <TabContent value="element">
-              <ElementInspectorTab clip={clip} />
-            </TabContent>
-          )}
-
-          {clip.type !== "audio" && clip.type !== "text" && (
-            <TabContent value="transform">
-              <TransformTab clip={clip} />
-            </TabContent>
-          )}
-
-          {isVisual && (
-            <TabContent value="adjust">
-              <AdjustTab clip={clip} />
-            </TabContent>
-          )}
-
-          {hasAudio && (
-            <TabContent value="audio">
-              <AudioTab clip={clip} />
-            </TabContent>
-          )}
-
-          {hasAudio && (
-            <TabContent value="speed">
-              <SpeedTab clip={clip} />
-            </TabContent>
-          )}
-
-          <TabContent value="time">
-            <TimeTab clip={clip} />
-          </TabContent>
-        </Tabs>
+          <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
+            <CanvasSettingsPanel />
+          </div>
+        </StudioPanel>
       </div>
-    </StudioPanel>
+
+      {/* Clip Properties View */}
+      <div className={cn("h-full w-full", !isCanvasMode ? "block" : "hidden")}>
+        <StudioPanel
+          title={clip.name}
+          actions={
+            <button
+              type="button"
+              onClick={() => setInspectorMode("canvas")}
+              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+            >
+              Canvas Settings
+            </button>
+          }
+          className="h-full w-full"
+        >
+          <div
+            ref={containerRef}
+            className="h-full w-full overflow-y-auto p-3 studio-scrollbar"
+          >
+            <Tabs
+              defaultValue={isText ? "text" : isElement ? "element" : "transform"}
+              value={activeInspectorTab}
+              onValueChange={setActiveInspectorTab}
+              variant="line"
+            >
+              {isNarrow ? (
+                /* Custom Responsive Dropdown when panel is narrow (< 340px) */
+                <InspectorTabDropdown
+                  tabs={availableTabs}
+                  activeTab={activeInspectorTab}
+                  onTabChange={setActiveInspectorTab}
+                />
+              ) : (
+                /* Horizontal Tabs Bar when panel width is wide (>= 360px) */
+                <TabList className="mb-3 flex w-full shrink-0 items-center gap-0 overflow-x-auto studio-scrollbar">
+                  {availableTabs.map((t) => (
+                    <TabTrigger
+                      key={t.value}
+                      value={t.value}
+                    >
+                      {t.icon}
+                      <span>{t.label}</span>
+                    </TabTrigger>
+                  ))}
+                </TabList>
+              )}
+
+              {isText && (
+                <TabContent value="text">
+                  <TextInspectorTab clip={clip} />
+                </TabContent>
+              )}
+
+              {isElement && (
+                <TabContent value="element">
+                  <ElementInspectorTab clip={clip} />
+                </TabContent>
+              )}
+
+              {clip.type !== "audio" && clip.type !== "text" && (
+                <TabContent value="transform">
+                  <TransformTab clip={clip} />
+                </TabContent>
+              )}
+
+              {isVisual && (
+                <TabContent value="adjust">
+                  <AdjustTab clip={clip} />
+                </TabContent>
+              )}
+
+              {hasAudio && (
+                <TabContent value="audio">
+                  <AudioTab clip={clip} />
+                </TabContent>
+              )}
+
+              {hasAudio && (
+                <TabContent value="speed">
+                  <SpeedTab clip={clip} />
+                </TabContent>
+              )}
+
+              <TabContent value="time">
+                <TimeTab clip={clip} />
+              </TabContent>
+            </Tabs>
+          </div>
+        </StudioPanel>
+      </div>
+    </div>
   );
 }

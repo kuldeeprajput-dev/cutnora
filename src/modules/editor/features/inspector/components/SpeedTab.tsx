@@ -7,6 +7,8 @@ import { useProjectStore } from "@/modules/projects";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
 
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
+
 export interface SpeedTabProps {
   clip: TimelineClip;
 }
@@ -36,7 +38,7 @@ export function SpeedTab({ clip }: SpeedTabProps) {
   const currentProject = useProjectStore((state) => state.currentProject);
   const projectFps = currentProject?.settings.fps || 30;
 
-  const [speedExpanded, setSpeedExpanded] = useState(true);
+  const [speedExpanded, toggleSpeedExpanded] = useInspectorExpanded("speed.playbackSpeed", true);
 
   const currentSpeed = clip.speed ?? 1.0;
 
@@ -65,7 +67,7 @@ export function SpeedTab({ clip }: SpeedTabProps) {
       {/* Row: Playback Speed & Duration Impact */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setSpeedExpanded((prev) => !prev)}
+          onClick={toggleSpeedExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">

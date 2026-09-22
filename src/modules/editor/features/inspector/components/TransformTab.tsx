@@ -79,14 +79,24 @@ function draftMatchesSource(
   rotation: number,
   opacity: number,
 ) {
+  if (!draft || draft.sourceClipId !== clipId) return false;
+
+  const numEq = (a?: number, b?: number) => {
+    if (a === b) return true;
+    if (Number.isNaN(a) && Number.isNaN(b)) return true;
+    if (typeof a === "number" && typeof b === "number") {
+      return Math.abs(a - b) < 0.001;
+    }
+    return false;
+  };
+
   return (
-    draft.sourceClipId === clipId &&
-    Object.is(draft.sourceX, x) &&
-    Object.is(draft.sourceY, y) &&
-    Object.is(draft.sourceWidth, width) &&
-    Object.is(draft.sourceHeight, height) &&
-    Object.is(draft.sourceRotation, rotation) &&
-    Object.is(draft.sourceOpacity, opacity)
+    numEq(draft.sourceX, x) &&
+    numEq(draft.sourceY, y) &&
+    numEq(draft.sourceWidth, width) &&
+    numEq(draft.sourceHeight, height) &&
+    numEq(draft.sourceRotation, rotation) &&
+    numEq(draft.sourceOpacity, opacity)
   );
 }
 
@@ -125,17 +135,24 @@ const ANCHOR_CONFIG: AnchorPointConfig[] = [
   { id: "bottom-right", label: "Bottom Right" },
 ];
 
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
+
+export interface TransformTabProps {
+  clip: TimelineClip;
+}
+
 export function TransformTab({ clip }: TransformTabProps) {
-  const { updateClip, currentProject } = useProjectStore();
+  const updateClip = useProjectStore((state) => state.updateClip);
+  const currentProject = useProjectStore((state) => state.currentProject);
   const { activeTool, setActiveTool } = useEditorUIStore();
 
   const [isAspectLocked, setIsAspectLocked] = useState(true);
   const [customSizeOpen, setCustomSizeOpen] = useState(false);
-  const [framingExpanded, setFramingExpanded] = useState(false);
-  const [dimensionsExpanded, setDimensionsExpanded] = useState(false);
-  const [positionExpanded, setPositionExpanded] = useState(false);
-  const [flipExpanded, setFlipExpanded] = useState(false);
-  const [rotationExpanded, setRotationExpanded] = useState(false);
+  const [framingExpanded, toggleFramingExpanded] = useInspectorExpanded("transform.framing", false);
+  const [dimensionsExpanded, toggleDimensionsExpanded] = useInspectorExpanded("transform.dimensions", false);
+  const [positionExpanded, togglePositionExpanded] = useInspectorExpanded("transform.position", false);
+  const [flipExpanded, toggleFlipExpanded] = useInspectorExpanded("transform.flip", false);
+  const [rotationExpanded, toggleRotationExpanded] = useInspectorExpanded("transform.rotation", false);
 
   const isCropping = activeTool === "crop";
   const crop: CropSettings = clip.transform.crop || {
@@ -483,7 +500,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       {/* Row 1: Fit & Framing */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setFramingExpanded((prev) => !prev)}
+          onClick={toggleFramingExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Framing</span>
@@ -623,7 +640,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       {/* Row 2: Dimensions & Scale */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setDimensionsExpanded((prev) => !prev)}
+          onClick={toggleDimensionsExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Dimensions</span>
@@ -762,7 +779,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       {/* Row 3: Position & Alignment */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setPositionExpanded((prev) => !prev)}
+          onClick={togglePositionExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Position</span>
@@ -877,7 +894,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       {/* Row 4: Flip */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setFlipExpanded((prev) => !prev)}
+          onClick={toggleFlipExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Flip</span>
@@ -929,7 +946,7 @@ export function TransformTab({ clip }: TransformTabProps) {
       {/* Row 5: Rotation */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setRotationExpanded((prev) => !prev)}
+          onClick={toggleRotationExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">Rotation</span>

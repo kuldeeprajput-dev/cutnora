@@ -18,6 +18,8 @@ import { useProjectStore } from "@/modules/projects";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
 
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
+
 export interface AdjustTabProps {
   clip: TimelineClip;
 }
@@ -148,12 +150,12 @@ const FILTER_PRESETS: ColorFilterPreset[] = [
 export function AdjustTab({ clip }: AdjustTabProps) {
   const updateClip = useProjectStore((state) => state.updateClip);
   const adjustments = clip.adjustments || defaultAdjustments;
-  const [presetsExpanded, setPresetsExpanded] = useState(false);
-  const [brightnessExpanded, setBrightnessExpanded] = useState(false);
-  const [contrastExpanded, setContrastExpanded] = useState(false);
-  const [saturationExpanded, setSaturationExpanded] = useState(false);
-  const [blurExpanded, setBlurExpanded] = useState(false);
-  const [colorModeExpanded, setColorModeExpanded] = useState(false);
+  const [presetsExpanded, togglePresetsExpanded] = useInspectorExpanded("adjust.colorLook", false);
+  const [brightnessExpanded, toggleBrightnessExpanded] = useInspectorExpanded("adjust.brightness", false);
+  const [contrastExpanded, toggleContrastExpanded] = useInspectorExpanded("adjust.contrast", false);
+  const [saturationExpanded, toggleSaturationExpanded] = useInspectorExpanded("adjust.saturation", false);
+  const [blurExpanded, toggleBlurExpanded] = useInspectorExpanded("adjust.blur", false);
+  const [colorModeExpanded, toggleColorModeExpanded] = useInspectorExpanded("adjust.colorMode", false);
 
   const updateAdjustment = (key: keyof Adjustments, value: number) => {
     updateClip(clip.id, {
@@ -197,7 +199,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 1: Color Look / Presets */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setPresetsExpanded((prev) => !prev)}
+          onClick={togglePresetsExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -242,7 +244,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 2: Brightness */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setBrightnessExpanded((prev) => !prev)}
+          onClick={toggleBrightnessExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -311,7 +313,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 3: Contrast */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setContrastExpanded((prev) => !prev)}
+          onClick={toggleContrastExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -380,7 +382,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 4: Saturation */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setSaturationExpanded((prev) => !prev)}
+          onClick={toggleSaturationExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -449,7 +451,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 5: Blur */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setBlurExpanded((prev) => !prev)}
+          onClick={toggleBlurExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -519,7 +521,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       {/* Row 6: Color Style (Full, B&W, Sepia) */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setColorModeExpanded((prev) => !prev)}
+          onClick={toggleColorModeExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">

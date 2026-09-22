@@ -221,6 +221,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         trackHeaderWidth: state.trackHeaderWidth,
         showTrackHeaders: state.showTrackHeaders,
         previewScale: state.previewScale,
+        activeInspectorTab: state.activeInspectorTab,
       }),
     },
   ),

@@ -100,19 +100,22 @@ export function TabTrigger({ value, className, children, ...props }: TabTriggerP
 
 export interface TabContentProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
+  forceMount?: boolean;
 }
 
-export function TabContent({ value, className, children, ...props }: TabContentProps) {
+export function TabContent({ value, className, children, forceMount = false, ...props }: TabContentProps) {
   const context = useContext(TabsContext);
   if (!context) throw new Error('TabContent must be used within Tabs');
 
-  if (context.activeTab !== value) return null;
+  const isActive = context.activeTab === value;
+  if (!isActive && !forceMount) return null;
 
   return (
     <div
       role="tabpanel"
       tabIndex={0}
-      className={cn('mt-2 focus-visible:outline-none', className)}
+      hidden={!isActive}
+      className={cn('mt-2 focus-visible:outline-none', !isActive && 'hidden', className)}
       {...props}
     >
       {children}

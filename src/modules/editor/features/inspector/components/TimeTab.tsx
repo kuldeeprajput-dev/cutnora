@@ -14,6 +14,8 @@ import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { useProjectStore } from "@/modules/projects";
 import { cn } from "@/shared/utils/cn";
 
+import { useInspectorExpanded } from "../hooks/useInspectorAccordion";
+
 export interface TimeTabProps {
   clip: TimelineClip;
 }
@@ -34,10 +36,10 @@ export function TimeTab({ clip }: TimeTabProps) {
   const splitClip = useProjectStore((state) => state.splitClip);
   const playhead = usePlaybackStore((state) => state.playhead);
 
-  const [playheadExpanded, setPlayheadExpanded] = useState(false);
-  const [startExpanded, setStartExpanded] = useState(false);
-  const [durationExpanded, setDurationExpanded] = useState(false);
-  const [sourceRangeExpanded, setSourceRangeExpanded] = useState(false);
+  const [playheadExpanded, togglePlayheadExpanded] = useInspectorExpanded("time.playheadTrims", false);
+  const [startExpanded, toggleStartExpanded] = useInspectorExpanded("time.startPosition", false);
+  const [durationExpanded, toggleDurationExpanded] = useInspectorExpanded("time.clipDuration", false);
+  const [sourceRangeExpanded, toggleSourceRangeExpanded] = useInspectorExpanded("time.sourceRange", false);
 
   const clipStart = clip.timelineStart;
   const clipEnd = clip.timelineStart + clip.timelineDuration;
@@ -143,7 +145,7 @@ export function TimeTab({ clip }: TimeTabProps) {
       {/* Row 1: Playhead Trims & Cut */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setPlayheadExpanded((prev) => !prev)}
+          onClick={togglePlayheadExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -232,7 +234,7 @@ export function TimeTab({ clip }: TimeTabProps) {
       {/* Row 2: Start Position (Timeline) */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setStartExpanded((prev) => !prev)}
+          onClick={toggleStartExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -327,7 +329,7 @@ export function TimeTab({ clip }: TimeTabProps) {
       {/* Row 3: Clip Duration (Length) */}
       <div className="py-2.5 border-b border-white/[0.06]">
         <div
-          onClick={() => setDurationExpanded((prev) => !prev)}
+          onClick={toggleDurationExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
           <span className="text-white/50 group-hover:text-white font-medium transition-colors">
@@ -449,7 +451,7 @@ export function TimeTab({ clip }: TimeTabProps) {
       {clip.assetId && (
         <div className="py-2.5 border-b border-white/[0.06]">
           <div
-            onClick={() => setSourceRangeExpanded((prev) => !prev)}
+            onClick={toggleSourceRangeExpanded}
             className="flex items-center justify-between cursor-pointer group select-none"
           >
             <span className="text-white/50 group-hover:text-white font-medium transition-colors">
