@@ -6,7 +6,7 @@ import { useProjectStore } from '@/modules/projects';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import type { TimelineClip, TextStyle } from '@/modules/editor/types';
-import { Search, Sparkles, ChevronDown, Check, Type, Subtitles, Quote, Flame } from 'lucide-react';
+import { Search, Sparkles, ChevronDown, Check, Type, Subtitles, Quote, Flame, Plus } from 'lucide-react';
 
 export interface TextPreset {
   id: string;
@@ -533,22 +533,26 @@ function CategoryDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-9 w-full items-center justify-between rounded-lg border bg-studio-panel px-3 text-xs transition-all cursor-pointer select-none ${
+        className={`flex h-9 w-full items-center justify-between rounded-xl border bg-white/[0.03] px-3 text-xs text-white transition-all cursor-pointer select-none ${
           isOpen
-            ? 'border-brand ring-1 ring-brand/50 shadow-md bg-studio-panel-raised'
-            : 'border-studio-border hover:border-brand/50 hover:bg-studio-panel-raised'
+            ? 'border-white/30 ring-1 ring-white/30 bg-white/[0.06]'
+            : 'border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
         }`}
       >
-        <span className="flex items-center gap-2 font-semibold text-studio-fg">
-          <Icon className="h-3.5 w-3.5 text-brand shrink-0" />
+        <span className="flex items-center gap-2 font-medium text-white truncate">
+          <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />
           <span className="truncate">{selectedObj.label}</span>
         </span>
-        <ChevronDown className={`h-4 w-4 text-studio-muted shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-brand' : ''}`} />
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-studio-muted shrink-0 transition-transform duration-200 ml-2 ${
+            isOpen ? 'rotate-180 text-white' : ''
+          }`}
+        />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-lg border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in-80 text-studio-fg">
-          <div className="flex flex-col gap-1">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-xl border border-white/10 bg-[#141416]/95 p-1 shadow-2xl backdrop-blur-xl animate-in fade-in-80 text-studio-fg">
+          <div className="flex flex-col gap-0.5">
             {CATEGORY_OPTIONS.map((cat) => {
               const CatIcon = cat.icon;
               const isSelected = cat.id === activeCategory;
@@ -560,17 +564,17 @@ function CategoryDropdown({
                     onCategoryChange(cat.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs transition-colors cursor-pointer ${
+                  className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer select-none ${
                     isSelected
-                      ? 'bg-brand/20 text-brand font-bold border border-brand/40'
-                      : 'text-studio-fg hover:bg-studio-panel-raised hover:text-brand'
+                      ? 'bg-white/10 text-white font-semibold'
+                      : 'text-studio-fg/90 hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 font-medium truncate">
-                    <CatIcon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-brand' : 'text-studio-muted'}`} />
+                  <div className="flex items-center gap-2 font-medium truncate">
+                    <CatIcon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-white' : 'text-studio-muted'}`} />
                     <span className="truncate">{cat.label}</span>
                   </div>
-                  {isSelected && <Check className="h-4 w-4 text-brand shrink-0 ml-2" />}
+                  {isSelected && <Check className="h-3.5 w-3.5 text-white stroke-[2.5] shrink-0 ml-2" />}
                 </button>
               );
             })}
@@ -681,16 +685,16 @@ export function TextPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-3 text-studio-fg select-none h-full overflow-y-auto studio-scrollbar">
+    <div className="flex flex-col gap-3 p-3 text-studio-fg select-none h-full overflow-y-auto overscroll-contain studio-scrollbar">
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-studio-muted" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-studio-muted pointer-events-none" />
         <input
           type="text"
           placeholder="Search text styles..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-8.5 w-full rounded-lg border border-studio-border bg-studio-bg pl-8 pr-3 text-xs text-studio-fg placeholder:text-studio-muted focus:border-brand focus:outline-none transition-colors"
+          className="h-9 w-full rounded-xl border border-white/10 bg-white/[0.03] pl-9 pr-3 text-xs text-white placeholder:text-studio-muted focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all"
         />
       </div>
 
@@ -701,7 +705,7 @@ export function TextPanel() {
           onCategoryChange={setActiveCategory}
         />
       ) : (
-        <div className="flex items-center gap-1.5 overflow-x-auto studio-scrollbar py-1 text-[11px] shrink-0 min-h-[36px]">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs shrink-0 min-h-[36px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {(
             [
               { id: 'all', label: 'All' },
@@ -710,52 +714,59 @@ export function TextPanel() {
               { id: 'creative', label: 'Creative' },
               { id: 'effects', label: 'Effects' },
             ] as const
-          ).map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setActiveCategory(cat.id)}
-              className={`h-7 px-3 rounded-md min-w-max shrink-0 cursor-pointer font-medium text-xs flex items-center justify-center transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-brand text-white font-bold shadow-sm'
-                  : 'bg-studio-panel hover:bg-studio-panel-raised text-studio-muted hover:text-studio-fg border border-studio-border'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+          ).map((cat) => {
+            const isSelected = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={`h-7.5 px-3 rounded-lg min-w-max shrink-0 cursor-pointer font-medium text-xs flex items-center justify-center transition-all ${
+                  isSelected
+                    ? 'bg-white text-zinc-950 font-semibold shadow-xs'
+                    : 'bg-white/5 border border-white/10 text-studio-muted hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* Grid of Text Style Cards (3 Columns) */}
-      <div className="grid grid-cols-3 gap-2 pt-1">
+      <div className="grid grid-cols-3 gap-2 pt-1 pb-4">
         {filteredPresets.map((preset) => (
           <button
             key={preset.id}
             type="button"
             onClick={() => handleAddPreset(preset)}
-            className="group relative flex h-20 flex-col items-center justify-between rounded-lg border border-studio-border bg-studio-panel p-1.5 text-center cursor-pointer transition-all duration-150 hover:border-brand hover:bg-studio-panel-raised hover:scale-[1.03] active:scale-[0.98] shadow-sm overflow-hidden"
+            title={`Add "${preset.name}" to timeline`}
+            className="group relative flex h-21 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.025] hover:bg-white/[0.07] hover:border-white/30 p-2 text-center cursor-pointer transition-all duration-150 active:scale-[0.98] shadow-xs overflow-hidden"
           >
-            {/* Visual Preview Container */}
-            <div className="flex flex-1 w-full items-center justify-center overflow-hidden rounded bg-[#141518] p-1">
-              <span style={preset.previewInlineStyle} className="truncate max-w-full leading-tight">
+            {/* Visual Preview */}
+            <div className="flex w-full items-center justify-center overflow-hidden">
+              <span
+                style={preset.previewInlineStyle}
+                className="truncate max-w-full leading-tight transition-transform duration-200 group-hover:scale-105 select-none"
+              >
                 {preset.previewText}
               </span>
             </div>
 
-            {/* Tiny Label Badge at Bottom */}
-            <span className="text-[9px] font-semibold text-studio-muted group-hover:text-brand transition-colors truncate max-w-full pt-1">
-              {preset.name}
-            </span>
+            {/* Subtle Quick Add Badge on Hover */}
+            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white text-zinc-950 shadow-sm scale-90 group-hover:scale-100 pointer-events-none">
+              <Plus className="h-3 w-3 stroke-[2.5]" />
+            </div>
           </button>
         ))}
       </div>
 
       {filteredPresets.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center text-studio-muted">
-          <Sparkles className="h-8 w-8 mb-2 opacity-50 text-brand" />
-          <p className="text-xs font-semibold">No text styles found</p>
-          <p className="text-[10px] opacity-75">Try searching for a different keyword</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center text-studio-muted">
+          <Sparkles className="h-7 w-7 mb-2 opacity-40 text-white" />
+          <p className="text-xs font-semibold text-white/80">No text styles found</p>
+          <p className="text-[11px] text-studio-muted mt-0.5">Try searching for a different keyword</p>
         </div>
       )}
     </div>
