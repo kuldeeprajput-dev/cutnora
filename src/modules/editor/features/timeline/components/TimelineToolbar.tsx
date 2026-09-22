@@ -3,6 +3,8 @@
 import React from "react";
 import {
   Scissors,
+  ArrowLeftToLine,
+  ArrowRightToLine,
   Copy,
   Trash2,
   ZoomIn,
@@ -93,7 +95,7 @@ export function TimelineToolbar({
     stepBackward,
   } = usePlaybackStore();
 
-  const { currentProject, splitClip, duplicateClips, deleteClips, addTrack } =
+  const { currentProject, splitClip, trimClip, duplicateClips, deleteClips, addTrack } =
     useProjectStore();
 
   const projectSettings = currentProject?.settings || {
@@ -176,6 +178,34 @@ export function TimelineToolbar({
     }
   };
 
+  const handleTrimLeft = () => {
+    if (selectedClips.length > 0) {
+      selectedClips.forEach((clip) => {
+        const clipStart = clip.timelineStart;
+        const clipEnd = clip.timelineStart + clip.timelineDuration;
+        if (playhead > clipStart && playhead <= clipEnd) {
+          const newDuration = Math.max(0.1, clipEnd - playhead);
+          const delta = playhead - clipStart;
+          const newSourceStart = clip.sourceStart + delta * (clip.speed ?? 1);
+          trimClip(clip.id, playhead, newDuration, newSourceStart);
+        }
+      });
+    }
+  };
+
+  const handleTrimRight = () => {
+    if (selectedClips.length > 0) {
+      selectedClips.forEach((clip) => {
+        const clipStart = clip.timelineStart;
+        const clipEnd = clip.timelineStart + clip.timelineDuration;
+        if (playhead >= clipStart && playhead < clipEnd) {
+          const newDuration = Math.max(0.1, playhead - clipStart);
+          trimClip(clip.id, clipStart, newDuration, clip.sourceStart);
+        }
+      });
+    }
+  };
+
   const handleDuplicate = () => {
     if (selectedClipIds.length > 0) {
       duplicateClips(selectedClipIds);
@@ -209,6 +239,28 @@ export function TimelineToolbar({
         </IconButton>
 
         <IconButton
+          label="Trim left to playhead (Q)"
+          size="sm"
+          variant="ghost"
+          disabled={!hasSelection}
+          onClick={handleTrimLeft}
+          className="cursor-pointer"
+        >
+          <ArrowLeftToLine className="h-3.5 w-3.5" />
+        </IconButton>
+
+        <IconButton
+          label="Trim right to playhead (W)"
+          size="sm"
+          variant="ghost"
+          disabled={!hasSelection}
+          onClick={handleTrimRight}
+          className="cursor-pointer"
+        >
+          <ArrowRightToLine className="h-3.5 w-3.5" />
+        </IconButton>
+
+        <IconButton
           label="Duplicate selection (Ctrl+D)"
           size="sm"
           variant="ghost"
@@ -227,7 +279,7 @@ export function TimelineToolbar({
           onClick={handleDelete}
           className="cursor-pointer"
         >
-          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+          <Trash2 className="h-3.5 w-3.5" />
         </IconButton>
 
         <div className="mx-1 h-3.5 w-px bg-studio-border" />
