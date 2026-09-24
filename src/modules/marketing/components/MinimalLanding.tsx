@@ -1,4 +1,4 @@
-import { Layers3 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
 import {
   LandingHeaderNav,
@@ -31,38 +31,40 @@ const questions = [
 
 export function MinimalLanding() {
   return (
-    <div className="min-h-screen overflow-x-clip bg-mkt-bg text-mkt-fg">
+    <div className="min-h-screen overflow-x-clip bg-mkt-bg text-mkt-fg transition-colors duration-300">
       <LandingHeaderNav />
 
       <main>
         <HeroIntroSection />
         <MinimalFeaturesSection />
 
+        {/* FAQ Section */}
         <section
           id="faq"
-          className="mx-auto max-w-[760px] scroll-mt-20 px-5 pb-24 sm:px-8 sm:pb-32"
+          className="mx-auto max-w-[800px] scroll-mt-20 px-5 pt-8 pb-24 sm:px-8 sm:pb-32"
         >
           <div className="landing-reveal text-center">
-            <span className="font-mono text-[10px] tracking-[0.18em] text-brand uppercase">
+            <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-medium tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
+              <span className="h-1 w-1 rounded-full bg-zinc-400 dark:bg-[#808080]" />
               Questions
             </span>
-            <h2 className="mt-3 text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
+            <h2 className="mt-3.5 text-balance text-3xl font-medium tracking-[-0.04em] text-zinc-950 dark:text-[#DEDEDE] sm:text-4xl lg:text-5xl">
               The useful answers.
             </h2>
           </div>
-          <div className="landing-reveal landing-reveal-delay-1 mt-10 space-y-2">
+          <div className="landing-reveal landing-reveal-delay-1 mt-12 sm:mt-16 border-t border-zinc-200 dark:border-white/[0.08]">
             {questions.map(({ question, answer }) => (
               <details
                 key={question}
-                className="group rounded-xl border border-mkt-border bg-mkt-surface px-5 transition-colors duration-300 hover:-translate-y-0.5 hover:bg-mkt-surface-secondary open:bg-mkt-surface-secondary"
+                className="group border-b border-zinc-200 dark:border-white/[0.08] transition-colors duration-200"
               >
-                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg py-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg">
-                  {question}
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-mkt-border text-mkt-muted transition-transform group-open:rotate-45">
-                    +
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 sm:py-6 text-left text-[15px] sm:text-[17px] font-medium tracking-[-0.02em] text-zinc-950 dark:text-[#DEDEDE] transition-colors duration-200 hover:text-zinc-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current select-none">
+                  <span>{question}</span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center text-zinc-400 dark:text-[#808080] transition-colors duration-300 group-hover:text-zinc-950 dark:group-hover:text-[#DEDEDE]">
+                    <Plus className="h-4 w-4 transition-transform duration-300 group-open:rotate-45" />
                   </span>
                 </summary>
-                <p className="max-w-xl pb-5 pr-8 text-sm leading-6 text-mkt-muted">
+                <p className="pb-6 pr-10 text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-[#808080]">
                   {answer}
                 </p>
               </details>
@@ -70,40 +72,55 @@ export function MinimalLanding() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1120px] px-5 pb-8 sm:px-8">
-          <div className="landing-reveal rounded-[24px] border border-mkt-border bg-mkt-surface p-7 shadow-[0_18px_70px_rgb(0_0_0_/_0.08)] sm:p-10">
-            <div className="rounded-[18px] bg-mkt-surface-secondary px-6 py-12 text-center sm:px-10 sm:py-16">
-              <Layers3
-                className="mx-auto h-6 w-6 text-brand"
-                aria-hidden="true"
+        {/* Final CTA */}
+        <section className="relative mx-auto w-full max-w-[1720px] px-4 sm:px-6 lg:px-8 border-t border-zinc-200 dark:border-white/[0.08] pt-20 sm:pt-28 pb-20 sm:pb-32 text-center overflow-hidden">
+          {/* Subtle luminous ambient glow */}
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[340px] w-full max-w-[700px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.03),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(222,222,222,0.06),transparent_70%)] blur-3xl opacity-100 transition-opacity duration-500"
+            aria-hidden="true"
+          />
+
+          <div className="landing-reveal relative z-10 mx-auto max-w-2xl">
+            <div className="inline-flex items-center justify-center">
+              <BrandMark
+                size={34}
+                variant="marketing"
+                className="transition-transform duration-300 hover:scale-105"
               />
-              <span className="mt-5 block font-mono text-[10px] tracking-[0.18em] text-brand uppercase">
+            </div>
+
+            <div className="mt-5">
+              <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-medium tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
+                <span className="h-1 w-1 rounded-full bg-zinc-400 dark:bg-[#808080]" />
                 Ready when you are
               </span>
-              <h2 className="mx-auto mt-3 max-w-xl text-balance text-3xl font-medium tracking-[-0.045em] sm:text-5xl">
-                Your next cut starts here.
-              </h2>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-mkt-muted">
-                Open a local project and start editing. Nothing to install and
-                nothing to upload.
-              </p>
-              <div className="mt-7">
-                <PrimaryLink>Open Cutnora</PrimaryLink>
-              </div>
+            </div>
+
+            <h2 className="mt-4 text-balance text-3xl font-medium tracking-[-0.04em] text-zinc-950 dark:text-[#DEDEDE] sm:text-5xl lg:text-6xl leading-[1.08]">
+              Your next cut starts here.
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-md text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-[#808080]">
+              Open a local project and start editing. Nothing to install and nothing to upload.
+            </p>
+
+            <div className="mt-8 flex items-center justify-center">
+              <PrimaryLink>Open Cutnora</PrimaryLink>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-mkt-border bg-mkt-surface py-10 text-xs text-mkt-muted">
-        <div className="mx-auto flex max-w-[1120px] flex-col items-center justify-between gap-4 px-5 sm:flex-row sm:px-8">
-          <div className="flex items-center gap-2">
-            <BrandMark size={24} />
-            <span className="font-bold tracking-[0.16em] uppercase text-mkt-fg">
+      {/* Footer */}
+      <footer className="w-full border-t border-zinc-200 dark:border-mkt-border bg-mkt-bg py-10 text-xs text-zinc-500 dark:text-[#808080] transition-colors duration-300">
+        <div className="mx-auto flex w-full max-w-[1720px] flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2.5">
+            <BrandMark size={24} variant="marketing" />
+            <span className="text-[12px] font-bold tracking-[0.18em] text-zinc-950 dark:text-[#DEDEDE] uppercase">
               Cutnora
             </span>
           </div>
-          <p>
+          <p className="text-zinc-500 dark:text-[#808080]">
             © {new Date().getFullYear()} Cutnora. Browser-native video editing.
           </p>
         </div>
