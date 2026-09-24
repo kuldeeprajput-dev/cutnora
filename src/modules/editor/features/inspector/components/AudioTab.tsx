@@ -70,17 +70,17 @@ export function AudioTab({ clip }: AudioTabProps) {
     : `${Math.round(effectiveVolume * 100)}%`;
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       {/* Row 1: Volume */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleVolumeExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Volume
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {(audio.volume !== 1 || audio.muted) && (
               <button
                 type="button"
@@ -88,7 +88,7 @@ export function AudioTab({ clip }: AudioTabProps) {
                   e.stopPropagation();
                   updateAudio({ volume: 1, muted: false });
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -102,9 +102,9 @@ export function AudioTab({ clip }: AudioTabProps) {
               {volumeDisplay}
             </span>
             {volumeExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -118,8 +118,8 @@ export function AudioTab({ clip }: AudioTabProps) {
               min={0}
               max={1}
               step={0.01}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => {
                 updateAudio({ volume: val, muted: false });
               }}
@@ -144,8 +144,8 @@ export function AudioTab({ clip }: AudioTabProps) {
                     className={cn(
                       "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                       isActive
-                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                        : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                     )}
                   >
                     {p.label}
@@ -158,15 +158,15 @@ export function AudioTab({ clip }: AudioTabProps) {
       </div>
 
       {/* Row 2: Fade In */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleFadeInExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Fade In (Start)
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {audio.fadeIn > 0 && (
               <button
                 type="button"
@@ -174,7 +174,7 @@ export function AudioTab({ clip }: AudioTabProps) {
                   e.stopPropagation();
                   updateAudio({ fadeIn: 0 });
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -183,9 +183,9 @@ export function AudioTab({ clip }: AudioTabProps) {
               {audio.fadeIn.toFixed(1)}s
             </span>
             {fadeInExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -198,8 +198,8 @@ export function AudioTab({ clip }: AudioTabProps) {
               min={0}
               max={Math.max(0.1, maxFadeIn)}
               step={0.1}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAudio({ fadeIn: val })}
             />
             <div className="grid grid-cols-4 gap-1 pt-1">
@@ -217,8 +217,8 @@ export function AudioTab({ clip }: AudioTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
                     Math.abs(audio.fadeIn - f.val) < 0.05
-                      ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                   )}
                 >
                   {f.label}
@@ -230,15 +230,15 @@ export function AudioTab({ clip }: AudioTabProps) {
       </div>
 
       {/* Row 3: Fade Out */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleFadeOutExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Fade Out (End)
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {audio.fadeOut > 0 && (
               <button
                 type="button"
@@ -246,7 +246,7 @@ export function AudioTab({ clip }: AudioTabProps) {
                   e.stopPropagation();
                   updateAudio({ fadeOut: 0 });
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -255,9 +255,9 @@ export function AudioTab({ clip }: AudioTabProps) {
               {audio.fadeOut.toFixed(1)}s
             </span>
             {fadeOutExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -270,8 +270,8 @@ export function AudioTab({ clip }: AudioTabProps) {
               min={0}
               max={Math.max(0.1, maxFadeOut)}
               step={0.1}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAudio({ fadeOut: val })}
             />
             <div className="grid grid-cols-4 gap-1 pt-1">
@@ -289,8 +289,8 @@ export function AudioTab({ clip }: AudioTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
                     Math.abs(audio.fadeOut - f.val) < 0.05
-                      ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                   )}
                 >
                   {f.label}
@@ -303,17 +303,17 @@ export function AudioTab({ clip }: AudioTabProps) {
 
       {/* Row 4: Separate Audio Track */}
       {(clip.type === "video" || clip.type === "overlay") && (
-        <div className="py-2.5 border-b border-white/[0.06] group select-none">
+        <div className="py-2.5 border-b border-studio-border group select-none">
           <div className="flex items-center justify-between">
-            <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
               Audio track
             </span>
             <button
               type="button"
               onClick={() => detachAudioFromVideo(clip.id)}
-              className="h-6 px-2.5 rounded-md border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer"
+              className="h-6 px-2.5 rounded-md border border-studio-border bg-studio-panel-raised/50 hover:bg-studio-hover text-studio-muted hover:text-studio-fg flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer"
             >
-              <Unlink className="h-3 w-3 text-white/60" /> Detach to Timeline Track
+              <Unlink className="h-3 w-3 text-studio-muted" /> Detach to Timeline Track
             </button>
           </div>
         </div>
@@ -324,9 +324,9 @@ export function AudioTab({ clip }: AudioTabProps) {
         <button
           type="button"
           onClick={resetAudio}
-          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/40 text-xs text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg cursor-pointer transition-all"
         >
-          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Audio Controls
+          <RotateCcw className="h-3 w-3 text-studio-muted" /> Reset Audio Controls
         </button>
       </div>
     </div>

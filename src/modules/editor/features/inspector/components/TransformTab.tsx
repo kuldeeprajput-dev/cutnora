@@ -365,15 +365,15 @@ export function TransformTab({ clip }: TransformTabProps) {
   const isFramingOpen = framingExpanded || isCropping;
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       {/* Row 1: Fit & Framing */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleFramingExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Framing</span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Framing</span>
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span>
               {isCropping || hasActiveCrop
                 ? "Crop"
@@ -382,9 +382,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                 : "Fit"}
             </span>
             {isFramingOpen ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -399,8 +399,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-1.5 rounded-md flex items-center justify-center gap-1 text-[10px] font-medium transition-all cursor-pointer",
                   clip.transform.fitMode === "contain" && !isCropping && !hasActiveCrop
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 <Maximize2 className="h-3 w-3" /> Fit
@@ -411,8 +411,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-1.5 rounded-md flex items-center justify-center gap-1 text-[10px] font-medium transition-all cursor-pointer",
                   clip.transform.fitMode === "cover" && !isCropping && !hasActiveCrop
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 Fill
@@ -423,8 +423,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-1.5 rounded-md flex items-center justify-center gap-1 text-[10px] font-medium transition-all cursor-pointer",
                   isCropping || hasActiveCrop
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 <Crop className="h-3 w-3" /> {isCropping ? "Cropping" : "Crop"}
@@ -433,14 +433,14 @@ export function TransformTab({ clip }: TransformTabProps) {
 
             {/* Inset Sliders when cropping or has active crop */}
             {(isCropping || hasActiveCrop) && (
-              <div className="space-y-2 pt-2 border-t border-white/[0.04]">
+              <div className="space-y-2 pt-2 border-t border-studio-border">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-white/40">Crop Insets (%)</span>
+                  <span className="text-studio-muted">Crop Insets (%)</span>
                   {hasActiveCrop && (
                     <button
                       type="button"
                       onClick={handleResetCrop}
-                      className="text-[10px] text-white/40 hover:text-white underline cursor-pointer"
+                      className="text-[10px] text-studio-muted hover:text-studio-fg underline cursor-pointer"
                     >
                       Reset
                     </button>
@@ -448,9 +448,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div>
-                    <div className="flex justify-between mb-0.5 text-[10px] text-white/45">
+                    <div className="flex justify-between mb-0.5 text-[10px] text-studio-muted">
                       <span>Top</span>
-                      <span className="font-mono text-white/80">{crop.top}%</span>
+                      <span className="font-mono text-studio-fg">{crop.top}%</span>
                     </div>
                     <Slider
                       value={crop.top}
@@ -461,9 +461,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                     />
                   </div>
                   <div>
-                    <div className="flex justify-between mb-0.5 text-[10px] text-white/45">
+                    <div className="flex justify-between mb-0.5 text-[10px] text-studio-muted">
                       <span>Bottom</span>
-                      <span className="font-mono text-white/80">{crop.bottom}%</span>
+                      <span className="font-mono text-studio-fg">{crop.bottom}%</span>
                     </div>
                     <Slider
                       value={crop.bottom}
@@ -474,9 +474,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                     />
                   </div>
                   <div>
-                    <div className="flex justify-between mb-0.5 text-[10px] text-white/45">
+                    <div className="flex justify-between mb-0.5 text-[10px] text-studio-muted">
                       <span>Left</span>
-                      <span className="font-mono text-white/80">{crop.left}%</span>
+                      <span className="font-mono text-studio-fg">{crop.left}%</span>
                     </div>
                     <Slider
                       value={crop.left}
@@ -487,9 +487,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                     />
                   </div>
                   <div>
-                    <div className="flex justify-between mb-0.5 text-[10px] text-white/45">
+                    <div className="flex justify-between mb-0.5 text-[10px] text-studio-muted">
                       <span>Right</span>
-                      <span className="font-mono text-white/80">{crop.right}%</span>
+                      <span className="font-mono text-studio-fg">{crop.right}%</span>
                     </div>
                     <Slider
                       value={crop.right}
@@ -507,18 +507,18 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Row 2: Dimensions & Scale */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleDimensionsExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Dimensions</span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Dimensions</span>
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span>{activeDimensionLabel}</span>
             {dimensionsExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -545,8 +545,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                     className={cn(
                       "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                       isActive
-                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                        : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                     )}
                   >
                     {p.label.split(" ")[0]}
@@ -560,8 +560,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                   customSizeOpen
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 Custom
@@ -572,8 +572,8 @@ export function TransformTab({ clip }: TransformTabProps) {
             {customSizeOpen && (
               <div className="flex items-center gap-1.5 pt-1">
                 {/* W Input */}
-                <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-                  <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+                <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+                  <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                     W
                   </span>
                   <input
@@ -602,9 +602,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                         e.currentTarget.blur();
                       }
                     }}
-                    className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                    className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                   />
-                  <span className="text-[10px] font-mono text-white/30 select-none">
+                  <span className="text-[10px] font-mono text-studio-muted select-none">
                     px
                   </span>
                 </div>
@@ -617,16 +617,16 @@ export function TransformTab({ clip }: TransformTabProps) {
                   className={cn(
                     "h-[30px] w-[30px] rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0",
                     isAspectLocked
-                      ? "border-white/25 bg-white/15 text-white shadow-xs"
-                      : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white hover:bg-white/[0.06]"
+                      ? "border-studio-border bg-studio-hover text-studio-fg shadow-xs"
+                      : "border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:text-studio-fg hover:bg-studio-hover"
                   )}
                 >
                   {isAspectLocked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
                 </button>
 
                 {/* H Input */}
-                <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-                  <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+                <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+                  <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                     H
                   </span>
                   <input
@@ -655,9 +655,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                         e.currentTarget.blur();
                       }
                     }}
-                    className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                    className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                   />
-                  <span className="text-[10px] font-mono text-white/30 select-none">
+                  <span className="text-[10px] font-mono text-studio-muted select-none">
                     px
                   </span>
                 </div>
@@ -668,18 +668,18 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Row 3: Position & Alignment */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={togglePositionExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Position</span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Position</span>
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span>{activeAnchor ? activeAnchor.label : "Custom"}</span>
             {positionExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -689,7 +689,7 @@ export function TransformTab({ clip }: TransformTabProps) {
           <div className="mt-2.5 flex items-center gap-2">
             {/* 3x3 Canvas Anchor Pinpad */}
             <div
-              className="relative w-[64px] h-[64px] p-1 rounded-md bg-white/[0.03] border border-white/10 select-none shrink-0 shadow-xs"
+              className="relative w-[64px] h-[64px] p-1 rounded-md bg-studio-panel-raised/60 border border-studio-border select-none shrink-0 shadow-xs"
               title="Canvas Alignment Anchor"
             >
               <div className="grid grid-cols-3 grid-rows-3 w-full h-full gap-0.5">
@@ -704,16 +704,16 @@ export function TransformTab({ clip }: TransformTabProps) {
                       className={cn(
                         "group/pt flex items-center justify-center rounded-sm transition-all cursor-pointer",
                         isActive
-                          ? "bg-white/15 border border-white/25 shadow-xs"
-                          : "border border-transparent hover:bg-white/[0.06]"
+                          ? "bg-studio-hover border border-studio-border shadow-xs"
+                          : "border border-transparent hover:bg-studio-hover"
                       )}
                     >
                       <span
                         className={cn(
                           "rounded-full transition-all duration-150",
                           isActive
-                            ? "w-2 h-2 bg-white"
-                            : "w-1.5 h-1.5 bg-white/30 group-hover/pt:bg-white/70"
+                            ? "w-2 h-2 bg-studio-fg"
+                            : "w-1.5 h-1.5 bg-studio-muted/40 group-hover/pt:bg-studio-fg"
                         )}
                       />
                     </button>
@@ -725,8 +725,8 @@ export function TransformTab({ clip }: TransformTabProps) {
             {/* Stacked X & Y Coordinate Inputs */}
             <div className="flex-1 flex flex-col justify-between h-[64px] gap-1">
               {/* X Input */}
-              <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-                <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+              <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+                <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                   X
                 </span>
                 <input
@@ -755,16 +755,16 @@ export function TransformTab({ clip }: TransformTabProps) {
                       e.currentTarget.blur();
                     }
                   }}
-                  className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                  className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                 />
-                <span className="text-[10px] font-mono text-white/30 select-none">
+                <span className="text-[10px] font-mono text-studio-muted select-none">
                   px
                 </span>
               </div>
 
               {/* Y Input */}
-              <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-                <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+              <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+                <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                   Y
                 </span>
                 <input
@@ -793,9 +793,9 @@ export function TransformTab({ clip }: TransformTabProps) {
                       e.currentTarget.blur();
                     }
                   }}
-                  className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                  className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                 />
-                <span className="text-[10px] font-mono text-white/30 select-none">
+                <span className="text-[10px] font-mono text-studio-muted select-none">
                   px
                 </span>
               </div>
@@ -805,18 +805,18 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Row 4: Flip */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleFlipExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Flip</span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Flip</span>
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span>{activeFlipLabel}</span>
             {flipExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -831,8 +831,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-2 rounded-md flex items-center justify-center gap-2 text-xs font-medium transition-all cursor-pointer",
                   clip.transform.scaleX === -1
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 <FlipHorizontal className="h-3.5 w-3.5" />
@@ -844,8 +844,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                 className={cn(
                   "py-2 rounded-md flex items-center justify-center gap-2 text-xs font-medium transition-all cursor-pointer",
                   clip.transform.scaleY === -1
-                    ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                 )}
               >
                 <FlipVertical className="h-3.5 w-3.5" />
@@ -857,18 +857,18 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Row 5: Rotation */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleRotationExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">Rotation</span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Rotation</span>
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span className="font-mono">{clip.transform.rotation ?? 0}°</span>
             {rotationExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -898,8 +898,8 @@ export function TransformTab({ clip }: TransformTabProps) {
                     className={cn(
                       "py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer",
                       isActive
-                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                        : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                     )}
                   >
                     {angle}°
@@ -912,12 +912,12 @@ export function TransformTab({ clip }: TransformTabProps) {
       </div>
 
       {/* Row 6: Opacity */}
-      <div className="py-2.5 border-b border-white/[0.06] space-y-2 group select-none">
+      <div className="py-2.5 border-b border-studio-border space-y-2 group select-none">
         <div className="flex items-center justify-between">
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Opacity
           </span>
-          <span className="font-mono text-xs text-white/80 group-hover:text-white transition-colors font-medium">
+          <span className="font-mono text-xs text-studio-fg transition-colors font-medium">
             {Math.round((clip.transform.opacity ?? 1) * 100)}%
           </span>
         </div>
@@ -926,8 +926,8 @@ export function TransformTab({ clip }: TransformTabProps) {
           min={0}
           max={1}
           step={0.01}
-          fillClassName="bg-white/90 group-hover:bg-white"
-          trackClassName="bg-white/10"
+          fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+          trackClassName="bg-studio-hover"
           onValueChange={(val) => {
             commitTransform({ opacity: val });
           }}
@@ -939,9 +939,9 @@ export function TransformTab({ clip }: TransformTabProps) {
         <button
           type="button"
           onClick={handleReset}
-          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/40 text-xs text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg cursor-pointer transition-all"
         >
-          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Transform
+          <RotateCcw className="h-3 w-3 text-studio-muted" /> Reset Transform
         </button>
       </div>
     </div>
