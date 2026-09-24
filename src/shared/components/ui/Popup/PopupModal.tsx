@@ -107,7 +107,7 @@ export function PopupModal() {
         <div className="pointer-events-none absolute -top-12 -left-12 h-36 w-36 rounded-full bg-brand/15 blur-3xl" />
         <div className="relative flex items-start justify-between gap-3">
           <div className="flex items-start gap-3.5">
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-brand/35 bg-gradient-to-b from-brand/20 to-brand/10 text-brand shadow-[0_0_18px_rgba(255,90,54,0.18)]">
+            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-brand/25 bg-gradient-to-b from-brand/15 to-brand/5 text-brand shadow-sm">
               <IconComponent className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1 pt-0.5">
@@ -150,7 +150,7 @@ export function PopupModal() {
             variant="primary"
             size="md"
             onClick={() => close(true)}
-            className="h-10 w-full touch-manipulation text-xs font-semibold sm:h-9 sm:w-auto sm:text-sm shadow-[0_2px_12px_rgba(255,90,54,0.35)] hover:shadow-[0_4px_16px_rgba(255,90,54,0.45)] active:scale-[0.98] transition-all"
+            className="h-10 w-full touch-manipulation text-xs font-semibold sm:h-9 sm:w-auto sm:text-sm shadow-sm hover:shadow active:scale-[0.98] transition-all"
           >
             {options.confirmText || (isConfirm ? "Confirm" : "OK")}
           </Button>

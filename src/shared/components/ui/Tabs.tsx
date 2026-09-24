@@ -45,7 +45,7 @@ export function TabList({ className, children, ...props }: React.HTMLAttributes<
       role="tablist"
       className={cn(
         isLine
-          ? 'flex w-full items-center gap-1 border-b border-white/[0.08] bg-transparent p-0'
+          ? 'flex w-full items-center gap-1 border-b border-studio-border bg-transparent p-0'
           : 'inline-flex items-center gap-1 rounded-lg bg-studio-topbar p-1 border border-studio-border',
         className
       )}
@@ -80,8 +80,8 @@ export function TabTrigger({ value, className, children, ...props }: TabTriggerP
           ? cn(
               'relative min-h-8 flex-1 cursor-pointer justify-center gap-1.5 whitespace-nowrap bg-transparent shadow-none border-0 px-2 py-1.5 text-[11px]',
               isActive
-                ? 'text-white font-semibold after:absolute after:bottom-0 after:inset-x-2 after:h-0.5 after:bg-white after:rounded-full'
-                : 'text-white/50 hover:text-white/80'
+                ? 'text-studio-fg font-semibold after:absolute after:bottom-0 after:inset-x-2 after:h-0.5 after:bg-studio-fg after:rounded-full'
+                : 'text-studio-muted hover:text-studio-fg'
             )
           : cn(
               'px-3 py-1 text-xs font-medium rounded-md',

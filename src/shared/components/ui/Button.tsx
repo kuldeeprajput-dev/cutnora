@@ -19,7 +19,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-white hover:bg-brand-hover active:bg-brand-active",
+    "bg-brand text-brand-contrast hover:bg-brand-hover active:bg-brand-active",
   secondary:
     "bg-studio-panel-raised text-studio-fg hover:bg-studio-hover border border-studio-border",
   outline:
@@ -29,7 +29,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   selection:
     "bg-selection text-studio-bg font-semibold hover:bg-selection-hover",
   marketing:
-    "bg-brand text-white font-medium hover:bg-brand-hover shadow-sm",
+    "bg-brand text-brand-contrast font-medium hover:bg-brand-hover shadow-sm",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

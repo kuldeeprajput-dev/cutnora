@@ -160,20 +160,20 @@ export function TrackHeader({
           "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-transparent px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
           !isCompact ? "justify-between" : "justify-between gap-1",
           isSelected &&
-            "bg-studio-panel-raised shadow-[inset_2.5px_0_0_#ffffff,inset_0_1px_0_rgba(255,255,255,0.025)]",
+            "bg-studio-panel-raised shadow-[inset_2.5px_0_0_var(--studio-fg)]",
           reorderState === "active" &&
-            "border-y border-dashed border-white/30 bg-white/5",
-          reorderState === "over" && "bg-white/10",
+            "border-y border-dashed border-studio-border bg-studio-panel-raised/50",
+          reorderState === "over" && "bg-studio-hover",
         )}
       >
         {reorderState === "over" && (
           <div
             className={cn(
-              "pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]",
+              "pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-studio-fg shadow-sm",
               reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
             )}
           >
-            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-white" />
+            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-studio-fg" />
           </div>
         )}
 
@@ -216,7 +216,7 @@ export function TrackHeader({
                 if (e.key === "Escape") setIsRenaming(false);
               }}
               autoFocus
-              className="h-6 flex-1 min-w-[60px] rounded bg-studio-panel-raised border border-white/20 px-1.5 text-xs font-medium text-studio-fg focus:outline-none focus:ring-1 focus:ring-white/30 z-10"
+              className="h-6 flex-1 min-w-[60px] rounded bg-studio-panel-raised border border-studio-border px-1.5 text-xs font-medium text-studio-fg focus:outline-none focus:ring-1 focus:ring-studio-fg/30 z-10"
             />
           ) : !isCompact ? (
             <span
@@ -240,7 +240,7 @@ export function TrackHeader({
               className={cn(
                 "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
                 track.locked
-                  ? "text-white hover:text-white"
+                  ? "text-studio-fg hover:text-studio-fg"
                   : "text-studio-muted hover:text-studio-fg",
               )}
             >
@@ -261,7 +261,7 @@ export function TrackHeader({
                 className={cn(
                   "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
                   track.hidden
-                    ? "text-white hover:text-white"
+                    ? "text-studio-fg hover:text-studio-fg"
                     : "text-studio-muted hover:text-studio-fg",
                 )}
               >
@@ -283,7 +283,7 @@ export function TrackHeader({
                 className={cn(
                   "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
                   track.muted
-                    ? "text-white hover:text-white"
+                    ? "text-studio-fg hover:text-studio-fg"
                     : "text-studio-muted hover:text-studio-fg",
                 )}
               >
@@ -307,16 +307,16 @@ export function TrackHeader({
                 </IconButton>
               }
               align="right"
-              className="min-w-0 w-[112px] p-0.5 border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl rounded-lg"
+              className="min-w-0 w-[112px] p-0.5 border border-studio-border bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl rounded-lg"
             >
               <DropdownMenuItem
                 onClick={() => setIsRenaming(true)}
-                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-studio-fg/90 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
+                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover rounded-md transition-colors cursor-pointer"
               >
                 <Edit2 className="h-3 w-3 text-studio-muted shrink-0" />
                 <span className="truncate">Rename Track</span>
               </DropdownMenuItem>
-              <div className="my-0.5 h-px bg-white/10" />
+              <div className="my-0.5 h-px bg-studio-border" />
               <DropdownMenuItem
                 destructive
                 onClick={handleDeleteTrack}

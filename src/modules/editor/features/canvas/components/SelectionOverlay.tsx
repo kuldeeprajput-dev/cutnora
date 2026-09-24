@@ -126,11 +126,11 @@ export function SelectionOverlay({
       {/* Rotation Handle - Positioned below top selection line */}
       <div
         onPointerDown={(e) => onStartTransform(clip, "rotate", e)}
-        className="pointer-events-auto absolute left-1/2 top-2 z-40 flex h-10 w-10 -translate-x-1/2 touch-none items-center justify-center rounded-full border border-white/30 bg-[#141416]/90 text-white shadow-xl backdrop-blur-md transition-all active:scale-95 active:cursor-grabbing hover:bg-black hover:border-white hover:scale-110 lg:top-3 lg:h-6.5 lg:w-6.5 lg:cursor-grab lg:border-white/40 lg:bg-[#18181b]/95"
+        className="pointer-events-auto absolute left-1/2 top-2 z-40 flex h-10 w-10 -translate-x-1/2 touch-none items-center justify-center rounded-full border border-studio-border bg-studio-panel-raised/95 text-studio-fg shadow-xl backdrop-blur-md transition-all active:scale-95 active:cursor-grabbing hover:bg-studio-hover hover:border-studio-border-strong hover:scale-110 lg:top-3 lg:h-6.5 lg:w-6.5 lg:cursor-grab lg:border-studio-border lg:bg-studio-panel-raised/95"
         title="Drag to rotate"
         aria-label="Rotate selected media"
       >
-        <RotateCw className="h-4.5 w-4.5 text-white/90 lg:h-3.5 lg:w-3.5" />
+        <RotateCw className="h-4.5 w-4.5 text-studio-fg lg:h-3.5 lg:w-3.5" />
       </div>
 
       {/* 8 Resize Handles */}

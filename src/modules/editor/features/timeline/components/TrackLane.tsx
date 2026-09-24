@@ -35,21 +35,21 @@ export function TrackLane({
       style={totalWidthPx > 0 ? { minWidth: `${totalWidthPx}px` } : undefined}
       className={cn(
         "relative h-12 w-full bg-transparent select-none transition-[background-color,opacity,box-shadow]",
-        dropState === "valid" && "bg-white/5 ring-1 ring-inset ring-white/30",
+        dropState === "valid" && "bg-studio-hover/60 ring-1 ring-inset ring-studio-border-strong",
         dropState === "invalid" &&
           "bg-destructive/10 ring-1 ring-inset ring-destructive/50",
         reorderState === "active" && "opacity-35",
-        reorderState === "over" && "bg-white/5",
+        reorderState === "over" && "bg-studio-hover/60",
       )}
     >
       {reorderState === "over" && (
         <div
           className={cn(
-            "pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]",
+            "pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-studio-fg shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_rgba(255,255,255,0.8)]",
             reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
           )}
         >
-          <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-white" />
+          <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-studio-fg" />
         </div>
       )}
       {track.clips.map((clip) => (

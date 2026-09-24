@@ -267,7 +267,7 @@ export function ExportModal() {
               <a
                 href={exportBlobUrl}
                 download={`${filename}.${exportFormat}`}
-                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-white hover:bg-brand/90 transition-colors"
+                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-brand-contrast hover:bg-brand/90 transition-colors"
               >
                 <Download className="h-4 w-4" /> Download Video File
               </a>

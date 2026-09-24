@@ -114,7 +114,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
   const canRedo = historyManager.canRedo();
 
   return (
-    <header className="relative flex h-[56px] w-full shrink-0 items-center justify-between border-b border-studio-border bg-[#0D0D0D] pr-2.5 text-studio-fg select-none">
+    <header className="relative flex h-[56px] w-full shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar pr-2.5 text-studio-fg select-none">
       {/* Left: Logo, Title & Autosave Status */}
       <div className="flex min-w-0 items-center">
         {/* Logo aligned with sidebar rail center axis (10px padding + 1px border + 32px center = 43px) */}
@@ -141,7 +141,7 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
               onBlur={handleNameBlur}
               onKeyDown={handleNameKeyDown}
               autoFocus
-              className="h-7 rounded-md border border-white/20 bg-studio-panel px-2 text-xs font-semibold text-studio-fg focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all"
+              className="h-7 rounded-md border border-studio-border bg-studio-panel px-2 text-xs font-semibold text-studio-fg focus:outline-none focus:border-studio-border-strong focus:ring-1 focus:ring-studio-border transition-all"
             />
           ) : (
             <button

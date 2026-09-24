@@ -121,18 +121,18 @@ export function StudioShell() {
   };
 
   return (
-    <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-[#0D0D0D] text-studio-fg select-none">
+    <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
       {/* Top 56px Bar */}
       <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
       {/* Main Workspace Area with outer margins and matching 8px gap */}
-      <div className="flex flex-1 flex-col overflow-hidden relative px-2.5 pb-2.5 pt-1.5 bg-[#0D0D0D]">
+      <div className="flex flex-1 flex-col overflow-hidden relative px-2.5 pb-2.5 pt-1.5 bg-studio-bg">
         {/* Upper Workspace: Left Sidebar Card + Preview Stage Card */}
         <div className="flex flex-1 min-h-0 relative">
           {/* Left Sidebar Card: Tool Rail + Contextual Panel */}
           <div
             data-studio-sidebar
-            className="flex h-full shrink-0 overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs"
+            className="flex h-full shrink-0 overflow-hidden rounded-md border border-studio-border bg-studio-panel shadow-xs"
           >
             {/* Left 64px Tool Rail */}
             <StudioToolRail />
@@ -164,7 +164,7 @@ export function StudioShell() {
           />
 
           {/* Center Preview Stage Card */}
-          <div className="flex-1 h-full min-w-0 overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs">
+          <div className="flex-1 h-full min-w-0 overflow-hidden rounded-md border border-studio-border bg-studio-panel shadow-xs">
             <ErrorBoundary
               fallbackTitle="Stage Preview Error"
               fallbackMessage="Stage failed to render preview frame."
@@ -186,7 +186,7 @@ export function StudioShell() {
             height: `${timelineHeight}px`,
             maxHeight: "45dvh",
           }}
-          className="shrink-0 w-full overflow-hidden rounded-md border border-studio-border bg-[#1A1A1A] shadow-xs"
+          className="shrink-0 w-full overflow-hidden rounded-md border border-studio-border bg-studio-panel shadow-xs"
         >
           <ErrorBoundary
             fallbackTitle="Timeline Error"

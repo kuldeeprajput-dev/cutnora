@@ -59,10 +59,10 @@ export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
               }}
               className={cn(
                 'relative flex h-12 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors cursor-pointer',
-                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40',
+                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-border-strong',
                 isActive
-                  ? 'bg-white/10 text-white font-semibold shadow-xs'
-                  : 'text-studio-muted hover:bg-white/5 hover:text-white'
+                  ? 'bg-studio-hover text-studio-fg font-semibold shadow-xs'
+                  : 'text-studio-muted hover:bg-studio-hover/70 hover:text-studio-fg'
               )}
             >
               <Icon className="h-4 w-4" />

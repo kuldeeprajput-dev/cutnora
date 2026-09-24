@@ -115,7 +115,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
         visibility: adjustedPos ? 'visible' : 'hidden',
       }}
       className={cn(
-        "fixed z-[99999] min-w-[190px] rounded-xl border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md p-1 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100",
+        "fixed z-[99999] min-w-[190px] rounded-xl border border-studio-border bg-studio-panel-raised/95 backdrop-blur-md p-1 text-studio-fg shadow-2xl animate-in fade-in zoom-in-95 duration-100",
         className
       )}
       onClick={handleClose}
@@ -124,7 +124,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
         <div className="flex flex-col gap-0.5">
           {items.map((item, idx) => {
             if (item.isDivider) {
-              return <div key={item.id || idx} className="my-1 h-px bg-white/10" />;
+              return <div key={item.id || idx} className="my-1 h-px bg-studio-border" />;
             }
             return (
               <button
@@ -144,7 +144,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
                   !item.disabled &&
                     (item.destructive
                       ? 'text-destructive hover:bg-destructive/15'
-                      : 'text-studio-fg/90 hover:text-white hover:bg-white/10')
+                      : 'text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover')
                 )}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -154,7 +154,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
                         "shrink-0 transition-colors",
                         item.destructive
                           ? "text-destructive"
-                          : "text-studio-muted group-hover:text-white"
+                          : "text-studio-muted group-hover:text-studio-fg"
                       )}
                     >
                       {item.icon}
@@ -163,7 +163,7 @@ export function ContextMenu({ children, menu, items, x, y, onClose, className }:
                   <span className="truncate">{item.label}</span>
                 </div>
                 {item.shortcut && (
-                  <span className="font-mono text-[10px] text-studio-muted/70 group-hover:text-white/80 transition-colors shrink-0 ml-auto pl-2">
+                  <span className="font-mono text-[10px] text-studio-muted/70 group-hover:text-studio-fg/80 transition-colors shrink-0 ml-auto pl-2">
                     {item.shortcut}
                   </span>
                 )}
@@ -196,8 +196,8 @@ export function ContextMenuItem({ className, children, destructive, ...props }: 
       role="menuitem"
       className={cn(
         'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none cursor-pointer',
-        'focus-visible:outline-none focus-visible:bg-white/10',
-        destructive ? 'text-destructive hover:bg-destructive/15' : 'text-studio-fg/90 hover:text-white hover:bg-white/10',
+        'focus-visible:outline-none focus-visible:bg-studio-hover',
+        destructive ? 'text-destructive hover:bg-destructive/15' : 'text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover',
         className
       )}
       {...props}

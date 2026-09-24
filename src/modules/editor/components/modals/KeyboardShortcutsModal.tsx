@@ -73,7 +73,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap ${
                 activeCategory === cat.id
-                  ? 'bg-brand text-white'
+                  ? 'bg-brand text-brand-contrast'
                   : 'text-studio-muted hover:bg-studio-panel-raised hover:text-studio-fg'
               }`}
             >

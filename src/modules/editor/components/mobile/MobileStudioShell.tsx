@@ -363,7 +363,7 @@ export function MobileStudioShell() {
               type="button"
               onClick={handleMobilePlayback}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-2xl bg-brand text-white shadow-lg shadow-brand/20 active:scale-95"
+              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-2xl bg-brand text-brand-contrast shadow-lg shadow-brand/20 active:scale-95"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5 fill-current" />
@@ -541,7 +541,7 @@ function MobileNavButton({
           "flex h-9 w-9 items-center justify-center rounded-xl",
           active && "bg-brand/12",
           prominent &&
-            "rounded-full bg-brand text-white shadow-lg shadow-brand/25",
+            "rounded-full bg-brand text-brand-contrast shadow-lg shadow-brand/25",
         )}
       >
         <Icon className="h-4.5 w-4.5" />

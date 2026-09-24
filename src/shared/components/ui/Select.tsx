@@ -255,11 +255,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           className={cn(
-            'flex h-9 w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] pl-3 pr-2.5 py-1 text-xs text-white transition-all select-none cursor-pointer',
-            'hover:bg-white/[0.06] hover:border-white/20',
-            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:border-white/30',
-            isOpen && 'border-white/30 ring-1 ring-white/30 bg-white/[0.06]',
-            disabled && 'cursor-not-allowed opacity-50 hover:bg-white/[0.03] hover:border-white/10',
+            'flex h-9 w-full items-center justify-between rounded-xl border border-studio-border bg-studio-panel-raised/60 pl-3 pr-2.5 py-1 text-xs text-studio-fg transition-all select-none cursor-pointer',
+            'hover:bg-studio-hover/50 hover:border-studio-border-strong',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-border-strong focus-visible:border-studio-border-strong',
+            isOpen && 'border-studio-border-strong ring-1 ring-studio-border-strong bg-studio-panel-raised',
+            disabled && 'cursor-not-allowed opacity-50 hover:bg-studio-panel-raised hover:border-studio-border',
             error && 'border-destructive focus-visible:ring-destructive',
             className
           )}
@@ -268,7 +268,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <ChevronDown
             className={cn(
               'h-3.5 w-3.5 text-studio-muted transition-transform duration-200 shrink-0 ml-2',
-              isOpen && 'rotate-180 text-white'
+              isOpen && 'rotate-180 text-studio-fg'
             )}
           />
         </button>
@@ -287,7 +287,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 width: `${coords.width}px`,
                 zIndex: 9999,
               }}
-              className="max-h-60 overflow-y-auto overflow-x-hidden rounded-xl border border-white/10 bg-[#141416]/95 backdrop-blur-xl p-1 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="max-h-60 overflow-y-auto overflow-x-hidden rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-xl p-1 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {options.length === 0 ? (
                 <div className="px-3 py-2 text-xs text-studio-muted text-center">No options available</div>
@@ -305,13 +305,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                       className={cn(
                         'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none cursor-pointer',
                         isSelected
-                          ? 'bg-white/10 text-white font-semibold'
-                          : 'text-studio-fg/90 hover:bg-white/5 hover:text-white',
+                          ? 'bg-studio-hover text-studio-fg font-semibold'
+                          : 'text-studio-fg/90 hover:bg-studio-hover/60 hover:text-studio-fg',
                         opt.disabled && 'cursor-not-allowed opacity-40 hover:bg-transparent'
                       )}
                     >
                       <span className="truncate">{opt.label}</span>
-                      {isSelected && <Check className="h-3.5 w-3.5 text-white stroke-[2.5] shrink-0 ml-2" />}
+                      {isSelected && <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5] shrink-0 ml-2" />}
                     </button>
                   );
                 })

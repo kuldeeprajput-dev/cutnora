@@ -139,9 +139,9 @@ export function TimelineClipItem({
   const getBgColor = () => {
     switch (clip.type) {
       case "video":
-        return "bg-studio-panel text-white";
+        return "bg-studio-panel text-studio-fg";
       case "image":
-        return "bg-studio-panel text-white";
+        return "bg-studio-panel text-studio-fg";
       case "audio":
         return "bg-emerald-950/40 text-emerald-300";
       case "text":
@@ -371,9 +371,9 @@ export function TimelineClipItem({
           "group relative flex touch-none items-center justify-between rounded-lg select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
           getBgColor(),
           isSelected
-            ? "border-2 border-white ring-1 ring-white/30 shadow-md"
-            : "border-2 border-white/10 hover:border-white/25",
-          isDragging && "opacity-40 ring-2 ring-white/60",
+            ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
+            : "border-2 border-studio-border hover:border-studio-border-strong",
+          isDragging && "opacity-40 ring-2 ring-studio-fg/60",
           track.locked && "opacity-60 cursor-not-allowed",
         )}
       >
@@ -384,7 +384,7 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-start", e);
             }}
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-studio-fg/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip start"
           />
         )}
@@ -481,7 +481,7 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-end", e);
             }}
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-studio-fg/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip end"
           />
         )}

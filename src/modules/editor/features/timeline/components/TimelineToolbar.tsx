@@ -308,30 +308,30 @@ export function TimelineToolbar({
 
         <DropdownMenu
           align="left"
-          className="min-w-0 w-[136px] p-1 rounded-xl border border-white/10 bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150"
+          className="min-w-0 w-[136px] p-1 rounded-xl border border-studio-border bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150"
           trigger={(isOpen) => (
             <button
               type="button"
               className={cn(
                 "group flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors cursor-pointer select-none",
                 isOpen
-                  ? "bg-studio-panel-raised text-white shadow-xs"
-                  : "text-studio-fg/90 hover:bg-studio-panel-raised hover:text-white"
+                  ? "bg-studio-hover text-studio-fg shadow-xs"
+                  : "text-studio-fg/90 hover:bg-studio-hover hover:text-studio-fg"
               )}
             >
               <Plus
                 className={cn(
                   "h-3.5 w-3.5 transition-colors",
                   isOpen
-                    ? "text-white"
-                    : "text-studio-muted group-hover:text-white"
+                    ? "text-studio-fg"
+                    : "text-studio-muted group-hover:text-studio-fg"
                 )}
               />
               <span>Add Track</span>
               <ChevronDown
                 className={cn(
                   "h-3 w-3 text-studio-muted transition-transform duration-150 ml-0.5",
-                  isOpen && "rotate-180 text-white"
+                  isOpen && "rotate-180 text-studio-fg"
                 )}
               />
             </button>
@@ -339,33 +339,33 @@ export function TimelineToolbar({
         >
           <DropdownMenuItem
             onClick={() => addTrack("video", "Video Track")}
-            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
           >
-            <Video className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <Video className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg transition-colors shrink-0" />
             <span className="truncate">Video Track</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => addTrack("audio", "Audio Track")}
-            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
           >
-            <Music className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <Music className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg transition-colors shrink-0" />
             <span className="truncate">Audio Track</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => addTrack("overlay", "Image Track")}
-            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
           >
-            <ImageIcon className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <ImageIcon className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg transition-colors shrink-0" />
             <span className="truncate">Image Track</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => addTrack("text", "Text Track")}
-            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
           >
-            <Type className="h-3.5 w-3.5 text-studio-muted group-hover:text-white transition-colors shrink-0" />
+            <Type className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg transition-colors shrink-0" />
             <span className="truncate">Text Track</span>
           </DropdownMenuItem>
         </DropdownMenu>
@@ -406,9 +406,9 @@ export function TimelineToolbar({
                 type="button"
                 className={cn(
                   "flex h-7 w-[78px] items-center justify-between rounded-md bg-transparent px-1.5 text-xs font-medium text-studio-fg transition-colors cursor-pointer select-none",
-                  "hover:bg-studio-panel-raised hover:text-white",
+                  "hover:bg-studio-panel-raised hover:text-studio-fg",
                   "focus-visible:outline-none focus-visible:bg-studio-panel-raised",
-                  isOpen && "bg-studio-panel-raised text-white"
+                  isOpen && "bg-studio-panel-raised text-studio-fg"
                 )}
               >
                 <span className="truncate">
@@ -432,12 +432,12 @@ export function TimelineToolbar({
                   className={cn(
                     "flex items-center justify-between px-2 py-1 text-xs rounded-md font-medium cursor-pointer transition-colors",
                     isSelected
-                      ? "bg-white/10 text-white font-semibold"
-                      : "text-studio-muted hover:text-studio-fg hover:bg-white/5"
+                      ? "bg-studio-hover text-studio-fg font-semibold"
+                      : "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised/50"
                   )}
                 >
                   <span>{opt.label}</span>
-                  {isSelected && <Check className="h-3 w-3 text-white shrink-0" />}
+                  {isSelected && <Check className="h-3 w-3 text-studio-fg shrink-0" />}
                 </DropdownMenuItem>
               );
             })}
@@ -465,12 +465,12 @@ export function TimelineToolbar({
             variant="ghost"
             onClick={togglePlay}
             showTooltip={false}
-            className="cursor-pointer rounded-md bg-white text-black hover:bg-zinc-200 active:scale-95 transition-all shadow-xs flex items-center justify-center"
+            className="cursor-pointer rounded-md bg-studio-fg text-studio-bg hover:opacity-90 active:scale-95 transition-all shadow-xs flex items-center justify-center"
           >
             {isPlaying ? (
-              <Pause className="h-3.5 w-3.5 fill-black text-black" />
+              <Pause className="h-3.5 w-3.5 fill-current text-current" />
             ) : (
-              <Play className="h-3.5 w-3.5 fill-black text-black ml-0.5" />
+              <Play className="h-3.5 w-3.5 fill-current text-current ml-0.5" />
             )}
           </IconButton>
 
@@ -494,7 +494,7 @@ export function TimelineToolbar({
             className={cn(
               "cursor-pointer transition-colors hover:bg-studio-panel-raised",
               isLooping
-                ? "text-white"
+                ? "text-studio-fg"
                 : "text-studio-muted hover:text-studio-fg",
             )}
           >

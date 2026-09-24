@@ -47,15 +47,15 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
           </div>
         )}
         <div className="group/slider relative flex items-center w-full h-5 touch-none select-none">
-          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-white/10")}>
+          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-studio-border dark:bg-white/10")}>
             <div
-              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-white/90")}
+              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-studio-fg dark:bg-white/90")}
               style={{ width: `${percentage}%` }}
             />
           </div>
           {/* Draggable visual thumb handle */}
           <div
-            className="pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-white shadow-md border border-black/20 transition-transform group-hover/slider:scale-125"
+            className="pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-studio-topbar shadow-md border border-studio-border-strong transition-transform group-hover/slider:scale-125"
             style={{ left: `${percentage}%` }}
           />
           <input
