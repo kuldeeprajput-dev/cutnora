@@ -2,109 +2,65 @@
 @import "./landing.css";
 @import "./themes.css";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
 @theme {
   --font-sans: "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
-  --color-brand: #ea580c;
-  --color-brand-hover: #c2410c;
-  --color-brand-soft: #25160d;
-  --color-brand-contrast: #ffffff;
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-contrast: var(--brand-contrast);
 
-  --color-background: var(--background, #0d0d0d);
-  --color-foreground: var(--foreground, #f4f2ed);
-  --color-muted: var(--muted, #161618);
-  --color-muted-foreground: var(--muted-foreground, #9ca3af);
-  --color-border: var(--border, #27272a);
-  --color-input: var(--input, #161618);
-  --color-accent: var(--accent, #26262a);
-  --color-accent-foreground: var(--accent-foreground, #ffffff);
-  --color-card: var(--card, #0d0d0d);
-  --color-card-foreground: var(--card-foreground, #ffffff);
-  --color-primary: var(--primary, #ea580c);
-  --color-primary-foreground: var(--primary-foreground, #ffffff);
-  --color-destructive: var(--destructive, #ef4444);
-  --color-destructive-foreground: var(--destructive-foreground, #ffffff);
-  --color-ring: var(--ring, #ea580c);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
 
-  --color-mkt-bg: #f8f9fb;
-  --color-mkt-surface: #ffffff;
-  --color-mkt-surface-secondary: #f0f1f3;
-  --color-mkt-fg: #0b0b0b;
-  --color-mkt-muted: #6d7075;
-  --color-mkt-border: #dedfe2;
-  --color-mkt-accent: #c45100;
-  --color-mkt-accent-hover: #a94400;
-  --color-mkt-accent-soft: #f4e5d7;
-  --color-mkt-success: #317a58;
-  --color-mkt-info: #6d7075;
+  --color-mkt-bg: var(--mkt-bg);
+  --color-mkt-surface: var(--mkt-surface);
+  --color-mkt-surface-secondary: var(--mkt-surface-secondary);
+  --color-mkt-fg: var(--mkt-fg);
+  --color-mkt-muted: var(--mkt-muted);
+  --color-mkt-border: var(--mkt-border);
+  --color-mkt-accent: var(--mkt-accent);
+  --color-mkt-accent-hover: var(--mkt-accent-hover);
+  --color-mkt-accent-soft: var(--mkt-accent-soft);
+  --color-mkt-success: var(--mkt-success);
+  --color-mkt-info: var(--mkt-info);
 
-  --color-studio-bg: #f6f7f9;
-  --color-studio-topbar: #ffffff;
-  --color-studio-panel: #ffffff;
-  --color-studio-panel-raised: #f0f1f3;
-  --color-studio-hover: #e9eaed;
-  --color-studio-border: #dcdde1;
-  --color-studio-border-strong: #b9bbc1;
-  --color-studio-fg: #0b0b0b;
-  --color-studio-muted: #6c7078;
-  --color-timeline-bg: #f1f2f4;
-  --color-canvas-bg: #e7e9ed;
-  --color-selection: #c45100;
-  --color-selection-hover: #a94400;
-  --color-destructive: #c43b30;
-  --color-destructive-hover: #a92f27;
-  --color-overlay: #777b82;
-  --color-brand-active: #913a00;
+  --color-studio-bg: var(--studio-bg);
+  --color-studio-topbar: var(--studio-topbar);
+  --color-studio-panel: var(--studio-panel);
+  --color-studio-panel-raised: var(--studio-panel-raised);
+  --color-studio-hover: var(--studio-hover);
+  --color-studio-border: var(--studio-border);
+  --color-studio-border-strong: var(--studio-border-strong);
+  --color-studio-fg: var(--studio-fg);
+  --color-studio-muted: var(--studio-muted);
+  --color-timeline-bg: var(--timeline-bg);
+  --color-canvas-bg: var(--canvas-bg);
+  --color-selection: var(--selection);
+  --color-selection-hover: var(--selection-hover);
+  --color-destructive: var(--destructive);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-overlay: var(--overlay);
+  --color-brand-active: var(--brand-active);
 }
 
 @layer base {
-  :root {
-    color-scheme: light;
-    --scrollbar-thumb: rgba(0, 0, 0, 0.22);
-    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
-    --brand: #c45100;
-    --brand-hover: #a94400;
-    --brand-soft: #f4e5d7;
-    --brand-contrast: #ffffff;
-    --mkt-bg: #f8f9fb;
-    --mkt-surface: #ffffff;
-    --mkt-surface-secondary: #f0f1f3;
-    --mkt-fg: #0b0b0b;
-    --mkt-muted: #6d7075;
-    --mkt-border: #dedfe2;
-    --mkt-success: #317a58;
-    --mkt-info: #6d7075;
-    --studio-bg: #f6f7f9;
-    --studio-topbar: #ffffff;
-    --studio-panel: #ffffff;
-    --studio-panel-raised: #f0f1f3;
-    --studio-hover: #e9eaed;
-    --studio-border: #dcdde1;
-    --studio-border-strong: #b9bbc1;
-    --studio-fg: #0b0b0b;
-    --studio-muted: #6c7078;
-    --timeline-bg: #f1f2f4;
-    --canvas-bg: #e7e9ed;
-    --selection: #c45100;
-    --selection-hover: #a94400;
-    --background: #0d0d0d;
-    --foreground: #f4f2ed;
-    --muted: #161618;
-    --muted-foreground: #9ca3af;
-    --border: #27272a;
-    --input: #161618;
-    --accent: #26262a;
-    --accent-foreground: #ffffff;
-    --card: #0d0d0d;
-    --card-foreground: #ffffff;
-    --primary: #ea580c;
-    --primary-foreground: #ffffff;
-    --destructive: #ef4444;
-    --destructive-hover: #dc2626;
-    --ring: #ea580c;
-    --overlay: #777b82;
-  }
 
   /* Firefox Custom Thin Scrollbar */
   @supports (-moz-appearance: none) {
@@ -183,13 +139,17 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   ::selection {
-    background: var(--brand);
-    color: white;
+    background: var(--selection);
+    color: inherit;
   }
 
   :focus-visible {
-    outline-color: var(--brand);
+    outline-color: var(--ring);
   }
 }
 
