@@ -298,24 +298,24 @@ export function RecordPanel() {
         }}
         className="flex flex-col flex-1 min-h-0"
       >
-        <TabList className="grid grid-cols-3 gap-1 mb-4 bg-white/[0.04] p-1 rounded-xl border border-white/10 shrink-0">
+        <TabList className="grid grid-cols-3 gap-1 mb-4 bg-studio-panel-raised p-1 rounded-xl border border-studio-border shrink-0">
           <TabTrigger
             value="mic"
-            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-white hover:bg-white/5 transition-all"
+            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-studio-hover data-[state=active]:text-studio-fg data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-studio-fg hover:bg-studio-hover/50 transition-all"
             disabled={isRecording}
           >
             <Mic className="h-3.5 w-3.5" /> Mic
           </TabTrigger>
           <TabTrigger
             value="screen"
-            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-white hover:bg-white/5 transition-all"
+            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-studio-hover data-[state=active]:text-studio-fg data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-studio-fg hover:bg-studio-hover/50 transition-all"
             disabled={isRecording}
           >
             <Monitor className="h-3.5 w-3.5" /> Screen
           </TabTrigger>
           <TabTrigger
             value="camera"
-            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-white hover:bg-white/5 transition-all"
+            className="text-xs py-1.5 gap-1.5 rounded-lg data-[state=active]:bg-studio-hover data-[state=active]:text-studio-fg data-[state=active]:font-semibold data-[state=active]:shadow-xs text-studio-muted hover:text-studio-fg hover:bg-studio-hover/50 transition-all"
             disabled={isRecording}
           >
             <Camera className="h-3.5 w-3.5" /> Camera
@@ -374,7 +374,7 @@ export function RecordPanel() {
               <button
                 type="button"
                 onClick={handleCancelRecording}
-                className="h-10 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-studio-muted hover:text-white font-medium text-xs transition-colors cursor-pointer select-none"
+                className="h-10 px-4 rounded-xl border border-studio-border bg-studio-panel-raised hover:bg-studio-hover text-studio-muted hover:text-studio-fg font-medium text-xs transition-colors cursor-pointer select-none"
               >
                 Cancel
               </button>
@@ -383,7 +383,7 @@ export function RecordPanel() {
             <button
               type="button"
               onClick={handleStartRecording}
-              className="w-full h-10 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-xs tracking-wide hover:bg-zinc-200 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer select-none"
+              className="w-full h-10 px-4 rounded-xl bg-studio-fg text-studio-bg font-semibold text-xs tracking-wide hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer select-none"
             >
               <Circle className="h-3.5 w-3.5 fill-rose-600 text-rose-600" />
               <span>Start Recording</span>
@@ -391,7 +391,7 @@ export function RecordPanel() {
           )}
 
           {lastRecordedAssetId && !isRecording && (
-            <div className="flex flex-col gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-3.5 mt-2 transition-all">
+            <div className="flex flex-col gap-2.5 rounded-xl border border-studio-border bg-studio-panel-raised p-3.5 mt-2 transition-all">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="relative flex h-2 w-2 shrink-0">
@@ -400,7 +400,7 @@ export function RecordPanel() {
                   </span>
                   <span className="font-semibold text-xs text-emerald-400 truncate">Recording Saved!</span>
                 </div>
-                <span className="text-[10px] font-mono text-studio-muted bg-white/5 border border-white/10 px-2 py-0.5 rounded-md shrink-0">
+                <span className="text-[10px] font-mono text-studio-muted bg-studio-hover border border-studio-border px-2 py-0.5 rounded-md shrink-0">
                   {lastRecordedDuration.toFixed(1)}s
                 </span>
               </div>
@@ -412,7 +412,7 @@ export function RecordPanel() {
               <button
                 type="button"
                 onClick={handleAddToTimeline}
-                className="w-full h-9 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer select-none"
+                className="w-full h-9 rounded-xl bg-studio-fg text-studio-bg font-semibold text-xs hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer select-none"
               >
                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                 <span>Add to Timeline</span>

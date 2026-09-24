@@ -360,12 +360,12 @@ function MasonryMediaTile({
       onClick={() => onAdd(item)}
       disabled={isAdding}
       title={`Add ${item.name}`}
-      className="group relative mb-2.5 block w-full break-inside-avoid overflow-hidden rounded-lg border border-white/[0.04] bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-white/15 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
+      className="group relative mb-2.5 block w-full break-inside-avoid overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-studio-border-strong hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
       style={{ aspectRatio: ratio }}
     >
       {/* Original source URLs preserve Openverse GIF animation and resolution. */}
       {!isLoaded && (
-        <span className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent" />
+        <span className="absolute inset-0 animate-pulse bg-studio-hover/50" />
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

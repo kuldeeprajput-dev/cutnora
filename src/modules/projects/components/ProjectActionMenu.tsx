@@ -32,7 +32,7 @@ export function ProjectActionMenu({
   return (
     <div
       className={cn(
-        "absolute right-0 z-50 w-44 rounded-2xl border border-border bg-[#161618] p-1.5 shadow-2xl animate-in fade-in-50",
+        "absolute right-0 z-50 w-44 rounded-2xl border border-border bg-card text-card-foreground p-1.5 shadow-2xl animate-in fade-in-50",
         className || "top-full mt-1.5",
       )}
     >
@@ -44,9 +44,9 @@ export function ProjectActionMenu({
             onClose();
             onSelect(e);
           }}
-          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors cursor-pointer"
         >
-          <CheckSquare className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+          <CheckSquare className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
           <span>{isSelected ? "Deselect" : "Select"}</span>
         </button>
       )}
@@ -58,9 +58,9 @@ export function ProjectActionMenu({
           onClose();
           onRename(e);
         }}
-        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors cursor-pointer"
       >
-        <Pencil className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <Pencil className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         <span>Rename</span>
       </button>
 
@@ -71,9 +71,9 @@ export function ProjectActionMenu({
           onClose();
           onDuplicate(e);
         }}
-        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors cursor-pointer"
       >
-        <Copy className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <Copy className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         <span>Duplicate</span>
       </button>
 
@@ -84,9 +84,9 @@ export function ProjectActionMenu({
           onClose();
           onInfo(e);
         }}
-        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-[#26262a] hover:text-white transition-colors cursor-pointer"
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors cursor-pointer"
       >
-        <Info className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
+        <Info className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         <span>Info</span>
       </button>
 
@@ -97,9 +97,9 @@ export function ProjectActionMenu({
           onClose();
           onDelete(e);
         }}
-        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
       >
-        <Trash2 className="h-4 w-4 text-red-500" />
+        <Trash2 className="h-4 w-4 text-destructive" />
         <span>Delete</span>
       </button>
     </div>

@@ -98,10 +98,7 @@ export default function StudioDashboardPage() {
   }, [handleKeyDown]);
 
   return (
-    <div
-      className="bg-background min-h-screen text-foreground select-none max-w-full overflow-x-hidden"
-      style={{ backgroundColor: "#0d0d0d" }}
-    >
+    <div className="bg-background min-h-screen text-foreground select-none max-w-full overflow-x-hidden">
       {/* Top Header */}
       <StudioHeader
         viewMode={viewMode}

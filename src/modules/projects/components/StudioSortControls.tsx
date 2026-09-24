@@ -102,7 +102,7 @@ export function StudioSortControls({
             role="menu"
             aria-orientation="vertical"
             aria-label="Sort options"
-            className="absolute -left-1 top-full mt-2 z-40 w-[184px] rounded-xl border border-border bg-[#161618] p-1 shadow-2xl animate-in fade-in-50"
+            className="absolute -left-1 top-full mt-2 z-40 w-[184px] rounded-xl border border-border bg-card text-card-foreground p-1 shadow-2xl animate-in fade-in-50"
           >
             {sortOptions.map((option) => {
               const isActive = sortBy === option;

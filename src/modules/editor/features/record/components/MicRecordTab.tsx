@@ -36,7 +36,7 @@ export function MicRecordTab({
             value={selectedAudioDevice}
             onChange={(e) => setSelectedAudioDevice(e.target.value)}
             disabled={isRecording}
-            className="h-9 text-xs border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white rounded-xl"
+            className="h-9 text-xs border-studio-border bg-studio-panel-raised/60 hover:bg-studio-hover text-studio-fg rounded-xl"
           >
             {audioInputDevices.map((d) => (
               <option key={d.deviceId} value={d.deviceId}>
@@ -47,13 +47,13 @@ export function MicRecordTab({
         </div>
       )}
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 flex flex-col items-center justify-center gap-3.5 min-h-[160px]">
+      <div className="rounded-xl border border-studio-border bg-studio-panel-raised/30 p-6 flex flex-col items-center justify-center gap-3.5 min-h-[160px]">
         <div
           className={cn(
             'flex h-12 w-12 items-center justify-center rounded-full transition-all',
             isRecording
               ? 'bg-rose-500/15 border border-rose-500/40 text-rose-500 animate-pulse shadow-[0_0_16px_rgba(244,63,94,0.25)]'
-              : 'bg-white/5 border border-white/10 text-white/80'
+              : 'bg-studio-hover border border-studio-border text-studio-fg'
           )}
         >
           <Mic className="h-5 w-5" />
@@ -69,7 +69,7 @@ export function MicRecordTab({
           </div>
         ) : (
           <div className="text-center">
-            <span className="text-xs font-semibold text-white tracking-wide">Voiceover Recording</span>
+            <span className="text-xs font-semibold text-studio-fg tracking-wide">Voiceover Recording</span>
             <p className="text-[11px] text-studio-muted mt-1">Click below to start narration recording.</p>
           </div>
         )}

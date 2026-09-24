@@ -33,20 +33,20 @@ export function RenameModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-zinc-800/80 bg-[#111113] p-6 shadow-2xl animate-in zoom-in-95"
+        className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header without cross icon */}
         <div className="pb-4">
-          <h3 className="text-base font-semibold text-white">Rename project</h3>
+          <h3 className="text-base font-semibold text-foreground">Rename project</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-1">
-          <label className="block text-xs text-zinc-400 font-normal mb-2">
+          <label className="block text-xs text-muted-foreground font-normal mb-2">
             New name
           </label>
           <input
@@ -54,21 +54,21 @@ export function RenameModal({
             value={inputName}
             onChange={(e) => setInputName(e.target.value)}
             autoFocus
-            className="w-full rounded-xl border border-zinc-800 bg-[#0d0d0f] px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+            className="w-full rounded-xl border border-border bg-input px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
           />
 
           {/* Footer Divider & Buttons */}
-          <div className="mt-6 pt-4 border-t border-zinc-800/60 flex items-center justify-end gap-2.5">
+          <div className="mt-6 pt-4 border-t border-border flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-zinc-800 bg-transparent px-4 py-2 text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+              className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-[#e4e4e7] px-4 py-2 text-xs font-semibold text-black hover:bg-white active:scale-95 transition-all cursor-pointer"
+              className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all cursor-pointer"
             >
               Rename
             </button>

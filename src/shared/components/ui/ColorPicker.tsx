@@ -671,7 +671,7 @@ export function ColorPicker({
             }}
             aria-label="Hex color value"
             placeholder="#000000"
-            className="h-8 w-full bg-transparent px-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-white/90 placeholder-white/30 outline-none"
+            className="h-8 w-full bg-transparent px-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-studio-fg placeholder:text-studio-muted outline-none"
           />
         </div>
 
@@ -684,7 +684,7 @@ export function ColorPicker({
             "flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-all active:scale-95 cursor-pointer",
             pasted
               ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-              : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20 hover:bg-white/[0.08] hover:text-white",
+              : "border-studio-border bg-studio-panel-raised text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg",
           )}
         >
           {pasted ? (
@@ -702,7 +702,7 @@ export function ColorPicker({
               type="button"
               onClick={handleEyeDropper}
               aria-label="Sample color from screen"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-all hover:border-white/20 hover:bg-white/[0.08] hover:text-white active:scale-95 cursor-pointer"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-studio-muted transition-all hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg active:scale-95 cursor-pointer"
             >
               <Pipette className="h-3.5 w-3.5" />
             </button>
@@ -723,10 +723,10 @@ export function ColorPicker({
               disabled={!canReset}
               aria-label="Reset color to default"
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] transition-all",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised transition-all",
                 canReset
-                  ? "text-white/70 hover:border-white/20 hover:bg-white/[0.08] hover:text-white active:scale-95 cursor-pointer"
-                  : "text-white/25 opacity-35 cursor-not-allowed",
+                  ? "text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg active:scale-95 cursor-pointer"
+                  : "text-studio-muted/40 opacity-35 cursor-not-allowed",
               )}
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -737,8 +737,8 @@ export function ColorPicker({
 
       {/* Editable Interactive RGB Inputs */}
       <div className="grid grid-cols-3 gap-1.5">
-        <div className="flex items-center rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 transition-all hover:border-white/20 focus-within:border-white/30 focus-within:bg-white/[0.06] focus-within:ring-1 focus-within:ring-white/20">
-          <span className="mr-1.5 font-mono text-[9px] font-bold text-white/40 select-none">R</span>
+        <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel-raised px-2 py-1 transition-all hover:border-studio-border-strong focus-within:border-studio-border-strong focus-within:ring-1 focus-within:ring-studio-border-strong">
+          <span className="mr-1.5 font-mono text-[9px] font-bold text-studio-muted select-none">R</span>
           <input
             type="number"
             min={0}
@@ -751,12 +751,12 @@ export function ColorPicker({
               if (e.key === "Enter") handleRgbBlur();
             }}
             aria-label="Red value 0-255"
-            className="w-full bg-transparent font-mono text-xs font-semibold text-white/90 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-full bg-transparent font-mono text-xs font-semibold text-studio-fg focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
 
-        <div className="flex items-center rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 transition-all hover:border-white/20 focus-within:border-white/30 focus-within:bg-white/[0.06] focus-within:ring-1 focus-within:ring-white/20">
-          <span className="mr-1.5 font-mono text-[9px] font-bold text-white/40 select-none">G</span>
+        <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel-raised px-2 py-1 transition-all hover:border-studio-border-strong focus-within:border-studio-border-strong focus-within:ring-1 focus-within:ring-studio-border-strong">
+          <span className="mr-1.5 font-mono text-[9px] font-bold text-studio-muted select-none">G</span>
           <input
             type="number"
             min={0}
@@ -769,12 +769,12 @@ export function ColorPicker({
               if (e.key === "Enter") handleRgbBlur();
             }}
             aria-label="Green value 0-255"
-            className="w-full bg-transparent font-mono text-xs font-semibold text-white/90 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-full bg-transparent font-mono text-xs font-semibold text-studio-fg focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
 
-        <div className="flex items-center rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 transition-all hover:border-white/20 focus-within:border-white/30 focus-within:bg-white/[0.06] focus-within:ring-1 focus-within:ring-white/20">
-          <span className="mr-1.5 font-mono text-[9px] font-bold text-white/40 select-none">B</span>
+        <div className="flex items-center rounded-lg border border-studio-border bg-studio-panel-raised px-2 py-1 transition-all hover:border-studio-border-strong focus-within:border-studio-border-strong focus-within:ring-1 focus-within:ring-studio-border-strong">
+          <span className="mr-1.5 font-mono text-[9px] font-bold text-studio-muted select-none">B</span>
           <input
             type="number"
             min={0}
@@ -787,7 +787,7 @@ export function ColorPicker({
               if (e.key === "Enter") handleRgbBlur();
             }}
             aria-label="Blue value 0-255"
-            className="w-full bg-transparent font-mono text-xs font-semibold text-white/90 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-full bg-transparent font-mono text-xs font-semibold text-studio-fg focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
       </div>
@@ -796,8 +796,8 @@ export function ColorPicker({
 
   // Render Preset Swatches
   const renderSwatches = () => (
-    <div className="border-t border-white/[0.08] pt-2.5 w-full">
-      <div className="mb-1.5 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.14em] text-white/40">
+    <div className="border-t border-studio-border pt-2.5 w-full">
+      <div className="mb-1.5 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.14em] text-studio-muted">
         <span>Swatches</span>
       </div>
       <div className="grid grid-cols-5 gap-1.5">
@@ -842,8 +842,8 @@ export function ColorPicker({
               className={cn(
                 "relative h-5 w-full rounded-md border transition-all hover:scale-105 active:scale-95 focus-visible:outline-none cursor-pointer",
                 isSelected
-                  ? "ring-2 ring-white ring-offset-2 ring-offset-[#18181b] border-transparent scale-105 z-10 shadow-sm"
-                  : "border-white/10 hover:border-white/30",
+                  ? "ring-2 ring-studio-fg ring-offset-2 ring-offset-studio-panel border-transparent scale-105 z-10 shadow-sm"
+                  : "border-studio-border hover:border-studio-border-strong",
               )}
             />
           );
@@ -857,7 +857,7 @@ export function ColorPicker({
     return (
       <div
         className={cn(
-          "flex w-full flex-col gap-3 rounded-2xl border border-white/12 bg-[#18181b] p-3.5 text-white shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] select-none",
+          "flex w-full flex-col gap-3 rounded-2xl border border-studio-border bg-studio-panel p-3.5 text-studio-fg shadow-2xl select-none",
           className,
         )}
       >
@@ -872,7 +872,7 @@ export function ColorPicker({
   return (
     <div
       className={cn(
-        "flex w-full items-stretch gap-3.5 rounded-2xl border border-white/12 bg-[#18181b] p-3.5 text-white shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] select-none",
+        "flex w-full items-stretch gap-3.5 rounded-2xl border border-studio-border bg-studio-panel p-3.5 text-studio-fg shadow-2xl select-none",
         className,
       )}
     >
@@ -1077,12 +1077,12 @@ export function ColorPickerPopover({
           "group flex h-7 items-center justify-center gap-2 rounded-lg px-2 text-center text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20",
           triggerClassName,
           isOpen
-            ? "border border-white/25 bg-white/[0.08] ring-1 ring-white/15 text-white shadow-none"
-            : "border border-transparent bg-transparent text-white/85 shadow-none hover:bg-white/[0.06] hover:text-white hover:border-transparent",
+            ? "border border-studio-border-strong bg-studio-hover text-studio-fg shadow-none"
+            : "border border-transparent bg-transparent text-studio-fg shadow-none hover:bg-studio-hover hover:text-studio-fg hover:border-transparent",
         )}
       >
         <span
-          className="h-3.5 w-3.5 shrink-0 rounded-sm border border-white/20"
+          className="h-3.5 w-3.5 shrink-0 rounded-sm border border-studio-border"
           style={
             currentHex === "TRANSPARENT"
               ? {
@@ -1092,7 +1092,7 @@ export function ColorPickerPopover({
               : { backgroundColor: currentHex }
           }
         />
-        <span className="font-mono text-xs font-semibold uppercase text-white/90">
+        <span className="font-mono text-xs font-semibold uppercase text-studio-fg">
           {currentHex === "TRANSPARENT" ? "Alpha" : currentHex}
         </span>
       </button>

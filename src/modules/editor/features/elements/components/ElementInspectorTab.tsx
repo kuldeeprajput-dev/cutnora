@@ -36,7 +36,7 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
   };
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       <InspectorSection
         icon={Palette}
         title="Shape colors"

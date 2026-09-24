@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/shared/utils/cn";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { ViewModeToggle } from "./ViewModeToggle";
 
 export interface StudioHeaderProps {
@@ -86,8 +87,9 @@ export function StudioHeader({
           />
         </div>
 
-        {/* Right: Search & New Project Button */}
-        <div className="flex items-center gap-3 md:gap-4">
+        {/* Right: Search, Theme Toggle & New Project Button */}
+        <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
+          <ThemeToggle className="shrink-0" />
           <div className="relative hidden md:block">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +118,7 @@ export function StudioHeader({
             </svg>
             <div className="relative">
               <input
-                className="file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
+                className="text-foreground file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -192,7 +194,7 @@ export function StudioHeader({
         </svg>
         <div className="relative">
           <input
-            className="file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
+            className="text-foreground file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}

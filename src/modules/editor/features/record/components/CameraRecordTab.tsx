@@ -32,7 +32,7 @@ export function CameraRecordTab({
             value={selectedVideoDevice}
             onChange={(e) => setSelectedVideoDevice(e.target.value)}
             disabled={isRecording}
-            className="h-9 text-xs border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white rounded-xl"
+            className="h-9 text-xs border-studio-border bg-studio-panel-raised/60 hover:bg-studio-hover text-studio-fg rounded-xl"
           >
             {videoInputDevices.map((d) => (
               <option key={d.deviceId} value={d.deviceId}>
@@ -44,7 +44,7 @@ export function CameraRecordTab({
       )}
 
       {/* Live Camera Viewport */}
-      <div className="relative aspect-video w-full rounded-xl border border-white/10 bg-black/70 overflow-hidden flex items-center justify-center shadow-inner">
+      <div className="relative aspect-video w-full rounded-xl border border-studio-border bg-black/10 dark:bg-black/70 overflow-hidden flex items-center justify-center shadow-inner">
         <video ref={previewVideoRef} autoPlay muted playsInline className="h-full w-full object-cover" />
         {isRecording && (
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-lg bg-black/80 px-2.5 py-1 text-xs font-mono font-bold text-rose-500 border border-rose-500/30 backdrop-blur shadow-sm">
