@@ -410,16 +410,24 @@ export function TimelineClipItem({
           </div>
         )}
 
-        {/* Clip Background Image Thumbnail */}
+        {/* Clip Background Image Thumbnail Filmstrip */}
         {thumbUrl && clip.type === "image" && (
           <div className="absolute inset-0 z-0 flex overflow-hidden pointer-events-none select-none">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={thumbUrl}
-              alt=""
-              className="h-full w-full object-cover pointer-events-none select-none"
-              draggable={false}
-            />
+            {Array.from({ length: frameCount }).map((_, i) => (
+              <div
+                key={i}
+                className="relative shrink-0 border-r border-black/50 overflow-hidden"
+                style={{ width: `${frameWidth}px`, height: "100%" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbUrl}
+                  alt=""
+                  className="h-full w-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
+              </div>
+            ))}
           </div>
         )}
 
@@ -461,8 +469,8 @@ export function TimelineClipItem({
           </div>
         )}
 
-        {/* Duration Badge (Only for non-video) */}
-        {clip.type !== "video" && showDuration && (
+        {/* Duration Badge (Only for non-media: audio, text, overlay) */}
+        {clip.type !== "video" && clip.type !== "image" && showDuration && (
           <span
             className={cn(
               "z-10 ml-auto shrink-0 font-mono text-[9px] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pr-2",
