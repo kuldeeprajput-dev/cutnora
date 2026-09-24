@@ -51,10 +51,10 @@ export function MediaDropzone({
       onClick={() => fileInputRef.current?.click()}
       className={cn(
         "group relative flex flex-1 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 sm:p-8 lg:p-10 text-center transition-all duration-300 select-none cursor-pointer overflow-hidden",
-        "bg-[#1A1A1A]",
+        "bg-studio-panel-raised",
         isDragOver
-          ? "border-white/60 bg-white/[0.04] scale-[0.99]"
-          : "border-white/15 hover:border-white/35 hover:bg-white/[0.02]",
+          ? "border-studio-fg/60 bg-studio-hover scale-[0.99]"
+          : "border-studio-border hover:border-studio-border-strong hover:bg-studio-hover/50",
       )}
     >
       <input
@@ -71,13 +71,13 @@ export function MediaDropzone({
       <div className="relative mb-3.5 flex items-center justify-center">
         <div
           className={cn(
-            "text-white transition-transform duration-300 animate-dropzone-float",
+            "text-studio-fg transition-transform duration-300 animate-dropzone-float",
             isDragOver && "scale-115",
           )}
         >
           <UploadCloud
             className={cn(
-              "h-11 w-11 sm:h-12 sm:w-12 text-white stroke-[1.75] transition-transform duration-300",
+              "h-11 w-11 sm:h-12 sm:w-12 text-studio-fg stroke-[1.75] transition-transform duration-300",
               isDragOver ? "animate-bounce" : "group-hover:-translate-y-1",
             )}
           />
@@ -85,12 +85,12 @@ export function MediaDropzone({
       </div>
 
       {/* Primary Headline */}
-      <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">
+      <h4 className="text-sm sm:text-base font-bold text-studio-fg tracking-tight">
         Click to upload
       </h4>
 
       {/* Subtitle */}
-      <p className="mt-1 text-xs text-neutral-400">
+      <p className="mt-1 text-xs text-studio-muted">
         or drag &amp; drop file here
       </p>
     </div>

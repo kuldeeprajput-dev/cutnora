@@ -533,25 +533,25 @@ function CategoryDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-9 w-full items-center justify-between rounded-xl border bg-white/[0.03] px-3 text-xs text-white transition-all cursor-pointer select-none ${
+        className={`flex h-9 w-full items-center justify-between rounded-xl border bg-studio-panel-raised/60 px-3 text-xs text-studio-fg transition-all cursor-pointer select-none ${
           isOpen
-            ? 'border-white/30 ring-1 ring-white/30 bg-white/[0.06]'
-            : 'border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
+            ? 'border-studio-fg/30 ring-1 ring-studio-fg/30 bg-studio-hover'
+            : 'border-studio-border hover:border-studio-border-strong hover:bg-studio-hover'
         }`}
       >
-        <span className="flex items-center gap-2 font-medium text-white truncate">
-          <Icon className="h-3.5 w-3.5 text-white/70 shrink-0" />
+        <span className="flex items-center gap-2 font-medium text-studio-fg truncate">
+          <Icon className="h-3.5 w-3.5 text-studio-muted shrink-0" />
           <span className="truncate">{selectedObj.label}</span>
         </span>
         <ChevronDown
           className={`h-3.5 w-3.5 text-studio-muted shrink-0 transition-transform duration-200 ml-2 ${
-            isOpen ? 'rotate-180 text-white' : ''
+            isOpen ? 'rotate-180 text-studio-fg' : ''
           }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-xl border border-white/10 bg-[#141416]/95 p-1 shadow-2xl backdrop-blur-xl animate-in fade-in-80 text-studio-fg">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-xl border border-studio-border bg-studio-panel/95 p-1 shadow-2xl backdrop-blur-xl animate-in fade-in-80 text-studio-fg">
           <div className="flex flex-col gap-0.5">
             {CATEGORY_OPTIONS.map((cat) => {
               const CatIcon = cat.icon;
@@ -566,15 +566,15 @@ function CategoryDropdown({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer select-none ${
                     isSelected
-                      ? 'bg-white/10 text-white font-semibold'
-                      : 'text-studio-fg/90 hover:bg-white/5 hover:text-white'
+                      ? 'bg-studio-hover text-studio-fg font-semibold'
+                      : 'text-studio-fg/90 hover:bg-studio-hover hover:text-studio-fg'
                   }`}
                 >
                   <div className="flex items-center gap-2 font-medium truncate">
-                    <CatIcon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-white' : 'text-studio-muted'}`} />
+                    <CatIcon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-studio-fg' : 'text-studio-muted'}`} />
                     <span className="truncate">{cat.label}</span>
                   </div>
-                  {isSelected && <Check className="h-3.5 w-3.5 text-white stroke-[2.5] shrink-0 ml-2" />}
+                  {isSelected && <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5] shrink-0 ml-2" />}
                 </button>
               );
             })}
@@ -694,7 +694,7 @@ export function TextPanel() {
           placeholder="Search text styles..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-9 w-full rounded-xl border border-white/10 bg-white/[0.03] pl-9 pr-3 text-xs text-white placeholder:text-studio-muted focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all"
+          className="h-9 w-full rounded-xl border border-studio-border bg-studio-panel-raised/60 pl-9 pr-3 text-xs text-studio-fg placeholder:text-studio-muted focus:border-studio-fg/40 focus:ring-1 focus:ring-studio-fg/20 focus:outline-none transition-all"
         />
       </div>
 
@@ -723,8 +723,8 @@ export function TextPanel() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`h-7.5 px-3 rounded-lg min-w-max shrink-0 cursor-pointer font-medium text-xs flex items-center justify-center transition-all ${
                   isSelected
-                    ? 'bg-white text-zinc-950 font-semibold shadow-xs'
-                    : 'bg-white/5 border border-white/10 text-studio-muted hover:text-white hover:bg-white/10'
+                    ? 'bg-studio-fg text-studio-bg font-semibold shadow-xs'
+                    : 'bg-studio-panel-raised/60 border border-studio-border text-studio-muted hover:text-studio-fg hover:bg-studio-hover'
                 }`}
               >
                 {cat.label}
@@ -742,7 +742,7 @@ export function TextPanel() {
             type="button"
             onClick={() => handleAddPreset(preset)}
             title={`Add "${preset.name}" to timeline`}
-            className="group relative flex h-21 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.025] hover:bg-white/[0.07] hover:border-white/30 p-2 text-center cursor-pointer transition-all duration-150 active:scale-[0.98] shadow-xs overflow-hidden"
+            className="group relative flex h-21 flex-col items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised/40 hover:bg-studio-hover hover:border-studio-border-strong p-2 text-center cursor-pointer transition-all duration-150 active:scale-[0.98] shadow-xs overflow-hidden"
           >
             {/* Visual Preview */}
             <div className="flex w-full items-center justify-center overflow-hidden">
@@ -755,7 +755,7 @@ export function TextPanel() {
             </div>
 
             {/* Subtle Quick Add Badge on Hover */}
-            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white text-zinc-950 shadow-sm scale-90 group-hover:scale-100 pointer-events-none">
+            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-studio-fg text-studio-bg shadow-sm scale-90 group-hover:scale-100 pointer-events-none">
               <Plus className="h-3 w-3 stroke-[2.5]" />
             </div>
           </button>
@@ -764,8 +764,8 @@ export function TextPanel() {
 
       {filteredPresets.length === 0 && (
         <div className="flex flex-col items-center justify-center py-10 text-center text-studio-muted">
-          <Sparkles className="h-7 w-7 mb-2 opacity-40 text-white" />
-          <p className="text-xs font-semibold text-white/80">No text styles found</p>
+          <Sparkles className="h-7 w-7 mb-2 opacity-40 text-studio-muted" />
+          <p className="text-xs font-semibold text-studio-fg">No text styles found</p>
           <p className="text-[11px] text-studio-muted mt-0.5">Try searching for a different keyword</p>
         </div>
       )}

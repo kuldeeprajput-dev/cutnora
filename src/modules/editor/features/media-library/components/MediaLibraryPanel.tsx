@@ -159,12 +159,12 @@ export function MediaLibraryPanel() {
 
       {/* Drag & Drop Overlay when assets exist */}
       {isDragOver && hasAssets && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#1A1A1A]/95 backdrop-blur-sm border-2 border-dashed border-white/60 rounded-2xl p-4 text-center">
-          <UploadCloud className="h-10 w-10 text-white animate-bounce mb-2" />
-          <p className="text-xs font-bold text-white">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-studio-panel/95 backdrop-blur-sm border-2 border-dashed border-studio-fg/60 rounded-2xl p-4 text-center">
+          <UploadCloud className="h-10 w-10 text-studio-fg animate-bounce mb-2" />
+          <p className="text-xs font-bold text-studio-fg">
             Drop media files to import
           </p>
-          <p className="text-[11px] text-white/60 mt-1">
+          <p className="text-[11px] text-studio-muted mt-1">
             Supports Videos, Images, and Audio
           </p>
         </div>
@@ -181,25 +181,25 @@ export function MediaLibraryPanel() {
       ) : (
         <div className="flex h-full w-full flex-1 min-h-0 flex-col overflow-hidden">
           {/* FIXED TOP CONTROLS & HEADER SECTION (NON-SCROLLING) */}
-          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-white/[0.06] pb-2 lg:pb-3">
+          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 border-b border-studio-border pb-2 lg:pb-3">
             {/* Row 1: Search + Import */}
             <div className="flex w-full min-w-0 items-center gap-2">
               <label className="relative min-w-0 flex-1">
                 <span className="sr-only">Search media by filename</span>
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
                 <Input
                   type="search"
                   placeholder="Search…"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="h-8 min-w-0 pl-8 pr-8 text-xs bg-white/[0.04] border-white/10 placeholder:text-white/25 text-white focus:border-white/25 focus:bg-white/[0.06]"
+                  className="h-8 min-w-0 pl-8 pr-8 text-xs bg-studio-panel-raised/60 border-studio-border placeholder:text-studio-muted text-studio-fg focus:border-studio-border-strong focus:bg-studio-panel-raised"
                 />
                 {search ? (
                   <button
                     type="button"
                     onClick={() => setSearch("")}
                     aria-label="Clear media search"
-                    className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-white/30 transition-colors hover:text-white/70 cursor-pointer"
+                    className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-studio-muted transition-colors hover:text-studio-fg cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -209,7 +209,7 @@ export function MediaLibraryPanel() {
                 type="button"
                 onClick={triggerUpload}
                 disabled={isImporting}
-                className="h-8 px-3 shrink-0 flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white hover:border-white/25 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                className="h-8 px-3 shrink-0 flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-studio-border text-studio-fg bg-studio-panel-raised/60 hover:bg-studio-hover hover:text-studio-fg transition-all duration-200 cursor-pointer disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Import</span>
@@ -227,8 +227,8 @@ export function MediaLibraryPanel() {
                   className={cn(
                     "flex-1 min-w-max rounded-md px-2.5 py-1.5 text-center text-[11px] font-semibold capitalize transition-all duration-200 cursor-pointer active:scale-[0.97]",
                     filter === cat
-                      ? "bg-white/10 text-white"
-                      : "text-white/35 hover:text-white/60 hover:bg-white/[0.04]"
+                      ? "bg-studio-hover text-studio-fg font-semibold shadow-xs"
+                      : "text-studio-muted hover:text-studio-fg hover:bg-studio-hover/60"
                   )}
                 >
                   {cat}
@@ -237,12 +237,12 @@ export function MediaLibraryPanel() {
             </div>
 
             {/* Row 3: Sort + View Mode */}
-            <div className="flex items-center justify-between gap-2 w-full pt-1.5 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between gap-2 w-full pt-1.5 border-t border-studio-border">
               <DropdownMenu
                 trigger={
                   <button
                     type="button"
-                    className="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-medium text-white/50 hover:text-white/80 transition-colors duration-200 select-none cursor-pointer"
+                    className="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-medium text-studio-muted hover:text-studio-fg transition-colors duration-200 select-none cursor-pointer"
                   >
                     <span>
                       {sort === "newest"
@@ -259,7 +259,7 @@ export function MediaLibraryPanel() {
                   onClick={() => setSort("newest")}
                   className={cn(
                     "flex items-center justify-between text-[11px]",
-                    sort === "newest" && "text-white font-semibold",
+                    sort === "newest" && "text-studio-fg font-semibold",
                   )}
                 >
                   <span>Newest first</span>
@@ -269,7 +269,7 @@ export function MediaLibraryPanel() {
                   onClick={() => setSort("name")}
                   className={cn(
                     "flex items-center justify-between text-[11px]",
-                    sort === "name" && "text-white font-semibold",
+                    sort === "name" && "text-studio-fg font-semibold",
                   )}
                 >
                   <span>By name</span>
@@ -279,7 +279,7 @@ export function MediaLibraryPanel() {
                   onClick={() => setSort("duration")}
                   className={cn(
                     "flex items-center justify-between text-[11px]",
-                    sort === "duration" && "text-white font-semibold",
+                    sort === "duration" && "text-studio-fg font-semibold",
                   )}
                 >
                   <span>By duration</span>
@@ -287,14 +287,14 @@ export function MediaLibraryPanel() {
                 </DropdownMenuItem>
               </DropdownMenu>
 
-              <div className="flex items-center rounded-md bg-white/[0.04] p-0.5">
+              <div className="flex items-center rounded-md bg-studio-panel-raised p-0.5 border border-studio-border">
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
                   title="Grid View"
                   className={cn(
                     "flex h-6 w-6 items-center justify-center rounded transition-all duration-200 cursor-pointer",
-                    viewMode === "grid" ? "bg-white/15 text-white" : "text-white/30 hover:text-white/60"
+                    viewMode === "grid" ? "bg-studio-hover text-studio-fg font-semibold" : "text-studio-muted hover:text-studio-fg"
                   )}
                 >
                   <LayoutGrid className="h-3 w-3" />
@@ -305,7 +305,7 @@ export function MediaLibraryPanel() {
                   title="List View"
                   className={cn(
                     "flex h-6 w-6 items-center justify-center rounded transition-all duration-200 cursor-pointer",
-                    viewMode === "list" ? "bg-white/15 text-white" : "text-white/30 hover:text-white/60"
+                    viewMode === "list" ? "bg-studio-hover text-studio-fg font-semibold" : "text-studio-muted hover:text-studio-fg"
                   )}
                 >
                   <List className="h-3 w-3" />
@@ -318,13 +318,13 @@ export function MediaLibraryPanel() {
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-2 pb-1 studio-scrollbar">
             {filteredAssets.length === 0 ? (
               <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-white/40">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">
                   <FolderOpen className="h-5 w-5" />
                 </div>
-                <p className="mt-3 text-xs font-semibold text-white/80">
+                <p className="mt-3 text-xs font-semibold text-studio-fg">
                   No matching media
                 </p>
-                <p className="mt-1 max-w-48 text-[10px] leading-4 text-white/40">
+                <p className="mt-1 max-w-48 text-[10px] leading-4 text-studio-muted">
                   Try another filename or clear the active media filter.
                 </p>
               </div>
@@ -352,28 +352,28 @@ export function MediaLibraryPanel() {
 
       {/* DOCKED BOTTOM IMPORT STATUS BAR (ALWAYS AT THE BOTTOM!) */}
       {isImporting && (
-        <div className="shrink-0 pt-2.5 border-t border-white/[0.06] mt-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] backdrop-blur-md p-2.5">
+        <div className="shrink-0 pt-2.5 border-t border-studio-border mt-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="relative overflow-hidden rounded-xl border border-studio-border bg-studio-panel-raised p-2.5">
             {/* Top row: Icon, File name, Status phase, Percentage & Cancel button */}
             <div className="flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-white" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-studio-hover text-studio-fg">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-studio-fg" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 min-w-0">
                     <p
-                      className="text-xs font-semibold text-white truncate max-w-[130px] sm:max-w-[170px]"
+                      className="text-xs font-semibold text-studio-fg truncate max-w-[130px] sm:max-w-[170px]"
                       title={importStatus?.fileName || "Processing media..."}
                     >
                       {importStatus?.fileName || "Processing media..."}
                     </p>
-                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-white/[0.06] text-white/50 capitalize shrink-0">
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-studio-hover text-studio-muted capitalize shrink-0">
                       {importStatus?.phase || "importing"}
                     </span>
                   </div>
                   {importStatus?.phase === "copying" && importStatus.totalBytes > 0 && (
-                    <p className="font-mono text-[9px] text-white/40 mt-0.5">
+                    <p className="font-mono text-[9px] text-studio-muted mt-0.5">
                       {(importStatus.bytesProcessed / 1024 ** 2).toFixed(1)} MB /{" "}
                       {(importStatus.totalBytes / 1024 ** 2).toFixed(1)} MB
                     </p>
@@ -382,13 +382,13 @@ export function MediaLibraryPanel() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className="font-mono text-xs font-bold text-white/90 bg-white/[0.08] px-2 py-0.5 rounded-md">
+                <span className="font-mono text-xs font-bold text-studio-fg bg-studio-hover px-2 py-0.5 rounded-md">
                   {importProgress}%
                 </span>
                 <button
                   type="button"
                   onClick={cancelImport}
-                  className="rounded-md px-2 py-1 text-[11px] font-medium text-white/40 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="rounded-md px-2 py-1 text-[11px] font-medium text-studio-muted hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
                   title="Cancel import"
                 >
                   Cancel
@@ -397,9 +397,9 @@ export function MediaLibraryPanel() {
             </div>
 
             {/* Sleek Progress Bar */}
-            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-studio-border">
               <div
-                className="h-full rounded-full bg-white transition-all duration-300 ease-out"
+                className="h-full rounded-full bg-studio-fg transition-all duration-300 ease-out"
                 style={{ width: `${importProgress}%` }}
               />
             </div>
@@ -409,7 +409,7 @@ export function MediaLibraryPanel() {
 
       {/* Import Error Alerts at bottom */}
       {importErrors.length > 0 && (
-        <div className="shrink-0 pt-2.5 border-t border-white/[0.06] mt-auto">
+        <div className="shrink-0 pt-2.5 border-t border-studio-border mt-auto">
           <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-2.5 text-xs text-red-300">
             <div className="flex items-center justify-between font-semibold mb-1">
               <span className="flex items-center gap-1.5 text-[11px] text-red-200">

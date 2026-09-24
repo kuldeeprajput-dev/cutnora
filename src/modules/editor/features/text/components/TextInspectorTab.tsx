@@ -65,12 +65,12 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
     });
   };
 
-  const activeClass = "border-white/25 bg-white/15 text-white font-semibold shadow-xs";
+  const activeClass = "border-studio-border bg-studio-hover text-studio-fg font-semibold shadow-xs";
   const idleClass =
-    "border-white/[0.06] bg-white/[0.03] text-white/60 hover:border-white/20 hover:bg-white/[0.06] hover:text-white";
+    "border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg";
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       <InspectorSection
         icon={Type}
         title="Text content"
@@ -80,7 +80,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
           rows={3}
           value={textStyle.text}
           onChange={(event) => updateTextStyle({ text: event.target.value })}
-          className="w-full resize-none rounded-lg border border-white/10 bg-[#141414] p-2.5 text-xs leading-5 text-white focus:border-white/30 focus:outline-none"
+          className="w-full resize-none rounded-lg border border-studio-border bg-studio-panel-raised/60 p-2.5 text-xs leading-5 text-studio-fg focus:border-studio-fg/40 focus:outline-none"
         />
       </InspectorSection>
 
@@ -134,7 +134,7 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
         </div>
 
         <InspectorControlLabel>Style & alignment</InspectorControlLabel>
-        <div className="mt-1.5 grid grid-cols-5 gap-1 rounded-lg border border-white/10 bg-white/[0.02] p-1">
+        <div className="mt-1.5 grid grid-cols-5 gap-1 rounded-lg border border-studio-border bg-studio-panel-raised/50 p-1">
           <button
             type="button"
             aria-label="Bold"
