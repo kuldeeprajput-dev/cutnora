@@ -72,10 +72,10 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     setContextMenu({ x: e.clientX, y: e.clientY, clip, track });
   };
 
-  const renderClipContent = (clip: TimelineClip) => {
+  const renderClipContent = (clip: TimelineClip, track: Track) => {
     switch (clip.type) {
       case 'video':
-        return <VideoLayer clip={clip} />;
+        return <VideoLayer clip={clip} trackMuted={track.muted || track.hidden} />;
       case 'image':
         return <ImageLayer clip={clip} />;
       case 'text':
@@ -208,7 +208,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
             onContextMenu={(e) => handleContextMenu(clip, track, e)}
             className="group absolute"
           >
-            {renderClipContent(clip)}
+            {renderClipContent(clip, track)}
 
             {/* Selection & Transform Overlays */}
             {canShowCrop && (

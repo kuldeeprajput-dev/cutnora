@@ -10,9 +10,10 @@ import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 
 export interface VideoLayerProps {
   clip: TimelineClip;
+  trackMuted?: boolean;
 }
 
-export function VideoLayer({ clip }: VideoLayerProps) {
+export function VideoLayer({ clip, trackMuted = false }: VideoLayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [posterUrl, setPosterUrl] = useState<string | null>(null);
@@ -56,56 +57,62 @@ export function VideoLayer({ clip }: VideoLayerProps) {
     };
   }, [asset, clip.assetId]);
 
+  const wasPlayingRef = useRef(false);
+  const lastPlayheadRef = useRef<number | null>(null);
+
   // Synchronize playback time and play/pause state without video decoding stutters
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoUrl) return;
 
+    const speed = clip.speed || 1;
+    const isMuted = trackMuted || clip.audio?.muted;
+    video.playbackRate = speed;
+    video.muted = isMuted;
+    video.volume = isMuted ? 0 : (clip.audio?.volume ?? 1);
+
     const targetTime = Math.max(
       0,
-      clip.sourceStart + (playhead - clip.timelineStart) * clip.speed,
+      clip.sourceStart + (playhead - clip.timelineStart) * speed,
     );
 
-    const synchronizeVideo = () => {
-      if (video.readyState < HTMLMediaElement.HAVE_METADATA) return;
+    const safeTarget = Number.isFinite(video.duration) && video.duration > 0
+      ? Math.min(targetTime, Math.max(0, video.duration - 0.005))
+      : targetTime;
 
-      video.playbackRate = clip.speed;
-      video.volume = clip.audio?.muted ? 0 : (clip.audio?.volume ?? 1);
-      const safeTarget = Number.isFinite(video.duration)
-        ? Math.min(targetTime, Math.max(0, video.duration - 0.001))
-        : targetTime;
+    const prevPlaying = wasPlayingRef.current;
+    wasPlayingRef.current = isPlaying;
 
-      try {
-        if (isPlaying) {
-          if (video.paused) {
+    const prevPlayhead = lastPlayheadRef.current;
+    lastPlayheadRef.current = playhead;
+
+    const isManualSeek =
+      prevPlayhead !== null &&
+      Math.abs(playhead - prevPlayhead) > 0.35 * speed;
+
+    try {
+      if (isPlaying) {
+        if (!prevPlaying || video.paused || isManualSeek) {
+          if (Math.abs(video.currentTime - safeTarget) > 0.05) {
             video.currentTime = safeTarget;
-            void video.play().catch(() => {});
-          } else {
-            // While actively playing, only resynchronize meaningful drift.
-            const drift = Math.abs(video.currentTime - safeTarget);
-            if (drift > 0.4) video.currentTime = safeTarget;
           }
+          void video.play().catch(() => {});
         } else {
-          if (!video.paused) video.pause();
-          if (Math.abs(video.currentTime - safeTarget) > 0.02) {
+          // While actively playing, only resynchronize if drift > 0.8s
+          const drift = Math.abs(video.currentTime - safeTarget);
+          if (drift > 0.8) {
             video.currentTime = safeTarget;
           }
         }
-      } catch {
-        // Mobile browsers can reject seeks until their first decoded frame.
+      } else {
+        if (!video.paused) video.pause();
+        if (Math.abs(video.currentTime - safeTarget) > 0.03) {
+          video.currentTime = safeTarget;
+        }
       }
-    };
-
-    synchronizeVideo();
-    video.addEventListener("loadedmetadata", synchronizeVideo);
-    video.addEventListener("loadeddata", synchronizeVideo);
-    video.addEventListener("canplay", synchronizeVideo);
-
-    return () => {
-      video.removeEventListener("loadedmetadata", synchronizeVideo);
-      video.removeEventListener("loadeddata", synchronizeVideo);
-      video.removeEventListener("canplay", synchronizeVideo);
-    };
+    } catch {
+      // Mobile browsers can reject seeks until their first decoded frame.
+    }
   }, [
     playhead,
     isPlaying,
@@ -115,6 +122,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
     clip.audio?.volume,
     clip.sourceStart,
     clip.timelineStart,
+    trackMuted,
   ]);
 
   if (!videoUrl) return null;
@@ -155,7 +163,7 @@ export function VideoLayer({ clip }: VideoLayerProps) {
       poster={posterUrl ?? undefined}
       preload="metadata"
       controls={false}
-      muted={clip.audio?.muted}
+      muted={trackMuted || clip.audio?.muted}
       playsInline
       className="h-full w-full pointer-events-none"
       style={{
