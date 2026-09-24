@@ -145,6 +145,32 @@ const FILTER_PRESETS: ColorFilterPreset[] = [
       sepia: 0.05,
     },
   },
+  {
+    id: "faded",
+    name: "Faded Film",
+    subtitle: "Low contrast matte blacks",
+    values: {
+      brightness: 1.04,
+      contrast: 0.88,
+      saturation: 0.85,
+      blur: 0,
+      grayscale: 0,
+      sepia: 0.12,
+    },
+  },
+  {
+    id: "cyber",
+    name: "Cyber Neon",
+    subtitle: "High contrast electric punch",
+    values: {
+      brightness: 1.05,
+      contrast: 1.35,
+      saturation: 1.45,
+      blur: 0,
+      grayscale: 0,
+      sepia: 0,
+    },
+  },
 ];
 
 export function AdjustTab({ clip }: AdjustTabProps) {
@@ -195,22 +221,31 @@ export function AdjustTab({ clip }: AdjustTabProps) {
   });
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       {/* Row 1: Color Look / Presets */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={presetsExpanded}
           onClick={togglePresetsExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              togglePresetsExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Color look
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span>{activePreset?.name || "Custom"}</span>
             {presetsExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -228,8 +263,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   className={cn(
                     "py-1.5 px-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer truncate",
                     isActive
-                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                   )}
                   title={`${preset.name} (${preset.subtitle})`}
                 >
@@ -242,15 +277,24 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Row 2: Brightness */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={brightnessExpanded}
           onClick={toggleBrightnessExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleBrightnessExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Brightness
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {adjustments.brightness !== 1 && (
               <button
                 type="button"
@@ -258,7 +302,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   e.stopPropagation();
                   resetAdjustment("brightness");
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -267,9 +311,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               {Math.round(adjustments.brightness * 100)}%
             </span>
             {brightnessExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -281,8 +325,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               min={0}
               max={2}
               step={0.05}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAdjustment("brightness", val)}
             />
             <div className="grid grid-cols-3 gap-1 pt-1">
@@ -298,8 +342,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                     Math.abs(adjustments.brightness - item.val) < 0.03
-                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                   )}
                 >
                   {item.label}
@@ -311,15 +355,24 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Row 3: Contrast */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={contrastExpanded}
           onClick={toggleContrastExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleContrastExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Contrast
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {adjustments.contrast !== 1 && (
               <button
                 type="button"
@@ -327,7 +380,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   e.stopPropagation();
                   resetAdjustment("contrast");
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -336,9 +389,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               {Math.round(adjustments.contrast * 100)}%
             </span>
             {contrastExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -350,8 +403,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               min={0}
               max={2}
               step={0.05}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAdjustment("contrast", val)}
             />
             <div className="grid grid-cols-3 gap-1 pt-1">
@@ -367,8 +420,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                     Math.abs(adjustments.contrast - item.val) < 0.03
-                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                   )}
                 >
                   {item.label}
@@ -380,15 +433,24 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Row 4: Saturation */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={saturationExpanded}
           onClick={toggleSaturationExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleSaturationExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Saturation
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {adjustments.saturation !== 1 && (
               <button
                 type="button"
@@ -396,7 +458,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   e.stopPropagation();
                   resetAdjustment("saturation");
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -405,9 +467,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               {Math.round(adjustments.saturation * 100)}%
             </span>
             {saturationExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -419,8 +481,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               min={0}
               max={2}
               step={0.05}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAdjustment("saturation", val)}
             />
             <div className="grid grid-cols-3 gap-1 pt-1">
@@ -436,8 +498,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                     Math.abs(adjustments.saturation - item.val) < 0.03
-                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                   )}
                 >
                   {item.label}
@@ -449,15 +511,24 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Row 5: Blur */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={blurExpanded}
           onClick={toggleBlurExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleBlurExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Blur
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {adjustments.blur > 0 && (
               <button
                 type="button"
@@ -465,7 +536,7 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   e.stopPropagation();
                   resetAdjustment("blur");
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -474,9 +545,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               {adjustments.blur === 0 ? "Off" : `${adjustments.blur}px`}
             </span>
             {blurExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -488,8 +559,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               min={0}
               max={20}
               step={1}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={(val) => updateAdjustment("blur", val)}
             />
             <div className="grid grid-cols-4 gap-1 pt-1">
@@ -506,8 +577,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   className={cn(
                     "py-1 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                     adjustments.blur === b.val
-                      ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                      : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                      ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                      : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                   )}
                 >
                   {b.label}
@@ -519,15 +590,24 @@ export function AdjustTab({ clip }: AdjustTabProps) {
       </div>
 
       {/* Row 6: Color Style (Full, B&W, Sepia) */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={colorModeExpanded}
           onClick={toggleColorModeExpanded}
-          className="flex items-center justify-between cursor-pointer group select-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleColorModeExpanded();
+            }
+          }}
+          className="flex items-center justify-between cursor-pointer group select-none rounded-sm px-1 -mx-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-fg/40"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Color mode
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span className="font-mono text-xs">
               {adjustments.grayscale > 0
                 ? "B&W"
@@ -536,9 +616,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
                   : "Full Color"}
             </span>
             {colorModeExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -559,8 +639,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               className={cn(
                 "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                 adjustments.grayscale === 0 && adjustments.sepia === 0
-                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                  ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                  : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
               )}
             >
               Full Color
@@ -580,8 +660,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               className={cn(
                 "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                 adjustments.grayscale > 0
-                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                  ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                  : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
               )}
             >
               B & W
@@ -601,8 +681,8 @@ export function AdjustTab({ clip }: AdjustTabProps) {
               className={cn(
                 "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                 adjustments.sepia > 0
-                  ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                  : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                  ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border shadow-xs"
+                  : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
               )}
             >
               Sepia
@@ -616,9 +696,9 @@ export function AdjustTab({ clip }: AdjustTabProps) {
         <button
           type="button"
           onClick={resetAll}
-          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/40 text-xs text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg cursor-pointer transition-all"
         >
-          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Adjustments
+          <RotateCcw className="h-3 w-3 text-studio-muted" /> Reset Adjustments
         </button>
       </div>
     </div>
