@@ -114,7 +114,7 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
               disabled={trackIndex >= totalTracks - 1}
               className={inspectorActionClass}
             >
-              <ArrowUp className="h-3.5 w-3.5 text-white/60" /> Bring forward
+              <ArrowUp className="h-3.5 w-3.5 text-studio-muted" /> Bring forward
             </Button>
             <Button
               size="sm"
@@ -123,7 +123,7 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
               disabled={trackIndex <= 0}
               className={inspectorActionClass}
             >
-              <ArrowDown className="h-3.5 w-3.5 text-white/60" /> Send backward
+              <ArrowDown className="h-3.5 w-3.5 text-studio-muted" /> Send backward
             </Button>
             <Button
               size="sm"
@@ -132,7 +132,7 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
               disabled={trackIndex >= totalTracks - 1}
               className={inspectorActionClass}
             >
-              <ChevronsUp className="h-3.5 w-3.5 text-white/60" /> Bring to front
+              <ChevronsUp className="h-3.5 w-3.5 text-studio-muted" /> Bring to front
             </Button>
             <Button
               size="sm"
@@ -141,7 +141,7 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
               disabled={trackIndex <= 0}
               className={inspectorActionClass}
             >
-              <ChevronsDown className="h-3.5 w-3.5 text-white/60" /> Send to back
+              <ChevronsDown className="h-3.5 w-3.5 text-studio-muted" /> Send to back
             </Button>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
             onClick={duplicate}
             className={inspectorActionClass}
           >
-            <Copy className="h-3.5 w-3.5 text-white/60" /> Duplicate
+            <Copy className="h-3.5 w-3.5 text-studio-muted" /> Duplicate
           </Button>
           <Button
             size="sm"
@@ -165,9 +165,9 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
             className={inspectorActionClass}
           >
             {track?.locked ? (
-              <Unlock className="h-3.5 w-3.5 text-white/60" />
+              <Unlock className="h-3.5 w-3.5 text-studio-muted" />
             ) : (
-              <Lock className="h-3.5 w-3.5 text-white/60" />
+              <Lock className="h-3.5 w-3.5 text-studio-muted" />
             )}
             {track?.locked ? "Unlock track" : "Lock track"}
           </Button>
@@ -179,9 +179,9 @@ export function LayerOperations({ clip }: LayerOperationsProps) {
               className={inspectorActionClass}
             >
               {track?.hidden ? (
-                <Eye className="h-3.5 w-3.5 text-white/60" />
+                <Eye className="h-3.5 w-3.5 text-studio-muted" />
               ) : (
-                <EyeOff className="h-3.5 w-3.5 text-white/60" />
+                <EyeOff className="h-3.5 w-3.5 text-studio-muted" />
               )}
               {track?.hidden ? "Show track" : "Hide track"}
             </Button>

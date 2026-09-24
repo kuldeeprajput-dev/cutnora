@@ -63,17 +63,17 @@ export function SpeedTab({ clip }: SpeedTabProps) {
     : `${currentSpeed.toFixed(2)}×`;
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       {/* Row: Playback Speed & Duration Impact */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleSpeedExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Playback speed
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {currentSpeed !== 1.0 && (
               <button
                 type="button"
@@ -81,19 +81,19 @@ export function SpeedTab({ clip }: SpeedTabProps) {
                   e.stopPropagation();
                   changeSpeed(1.0);
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
             )}
             <span className="font-mono text-xs">{speedDisplay}</span>
-            <span className="text-[11px] text-white/40 font-mono">
+            <span className="text-[11px] text-studio-muted font-mono">
               ({formatTime(clip.timelineDuration)})
             </span>
             {speedExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -107,8 +107,8 @@ export function SpeedTab({ clip }: SpeedTabProps) {
               min={0.1}
               max={4.0}
               step={0.05}
-              fillClassName="bg-white/90"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-hover"
               onValueChange={changeSpeed}
             />
 
@@ -124,8 +124,8 @@ export function SpeedTab({ clip }: SpeedTabProps) {
                     className={cn(
                       "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer border",
                       isActive
-                        ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                        : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                     )}
                     title={`${p.label} (${p.sub})`}
                   >
@@ -137,41 +137,41 @@ export function SpeedTab({ clip }: SpeedTabProps) {
 
             {/* Source vs Timeline Duration Cards */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 hover:border-white/15 transition-colors">
+              <div className="rounded-lg border border-studio-border bg-studio-panel-raised/50 p-2.5 hover:border-studio-border-strong transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-studio-muted">
                     Source
                   </span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-studio-muted/40" />
                 </div>
-                <div className="mt-1 font-mono text-sm font-semibold text-white/90">
+                <div className="mt-1 font-mono text-sm font-semibold text-studio-fg">
                   {formatTime(clip.sourceDuration)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-0.5 font-mono">
+                <div className="text-[10px] text-studio-muted mt-0.5 font-mono">
                   {clip.sourceDuration.toFixed(2)}s raw
                 </div>
               </div>
 
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 hover:border-white/15 transition-colors">
+              <div className="rounded-lg border border-studio-border bg-studio-panel-raised/50 p-2.5 hover:border-studio-border-strong transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-studio-muted">
                     Timeline
                   </span>
                   <span
                     className={cn(
                       "h-1.5 w-1.5 rounded-full",
                       currentSpeed === 1
-                        ? "bg-white/40"
+                        ? "bg-studio-muted/40"
                         : currentSpeed > 1
                           ? "bg-amber-400"
                           : "bg-sky-400"
                     )}
                   />
                 </div>
-                <div className="mt-1 font-mono text-sm font-semibold text-white/90">
+                <div className="mt-1 font-mono text-sm font-semibold text-studio-fg">
                   {formatTime(clip.timelineDuration)}
                 </div>
-                <div className="text-[10px] text-white/40 mt-0.5 font-mono flex items-center justify-between">
+                <div className="text-[10px] text-studio-muted mt-0.5 font-mono flex items-center justify-between">
                   <span>
                     {currentSpeed === 1
                       ? "Realtime"
@@ -179,7 +179,7 @@ export function SpeedTab({ clip }: SpeedTabProps) {
                         ? `${currentSpeed}× Fast`
                         : `${currentSpeed}× Slow`}
                   </span>
-                  <span className="text-white/30">~{estimatedEffectiveFps} fps</span>
+                  <span className="text-studio-muted">~{estimatedEffectiveFps} fps</span>
                 </div>
               </div>
             </div>
@@ -192,9 +192,9 @@ export function SpeedTab({ clip }: SpeedTabProps) {
         <button
           type="button"
           onClick={() => changeSpeed(1.0)}
-          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/40 text-xs text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg cursor-pointer transition-all"
         >
-          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Speed (1.0×)
+          <RotateCcw className="h-3 w-3 text-studio-muted" /> Reset Speed (1.0×)
         </button>
       </div>
     </div>

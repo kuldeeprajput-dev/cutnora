@@ -141,28 +141,28 @@ export function TimeTab({ clip }: TimeTabProps) {
   };
 
   return (
-    <div className="flex flex-col text-xs text-white pb-3 select-none">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       {/* Row 1: Playhead Trims & Cut */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={togglePlayheadExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Playhead trims
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span
               className={cn(
                 "h-1.5 w-1.5 rounded-full",
-                isPlayheadAtClip ? "bg-emerald-400" : "bg-white/30"
+                isPlayheadAtClip ? "bg-emerald-400" : "bg-studio-muted/40"
               )}
             />
             <span className="font-mono text-xs">{playhead.toFixed(2)}s</span>
             {playheadExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -173,10 +173,10 @@ export function TimeTab({ clip }: TimeTabProps) {
             <button
               type="button"
               onClick={moveToPlayhead}
-              className="w-full h-7 flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer rounded-lg border border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white transition-colors"
+              className="w-full h-7 flex items-center justify-center gap-1.5 text-xs font-medium cursor-pointer rounded-lg border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg transition-colors"
               title="Snap clip start to current playhead"
             >
-              <Move className="h-3 w-3 text-white/50" />
+              <Move className="h-3 w-3 text-studio-muted" />
               <span>Move Start to Playhead</span>
             </button>
 
@@ -189,12 +189,12 @@ export function TimeTab({ clip }: TimeTabProps) {
                 className={cn(
                   "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
                   isPlayheadAtClip && playhead > clipStart + 0.05
-                    ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                 )}
                 title="Trim off left side up to playhead"
               >
-                <Scissors className="h-2.5 w-2.5 text-white/60" /> Trim Left
+                <Scissors className="h-2.5 w-2.5 text-studio-muted" /> Trim Left
               </button>
 
               <button
@@ -204,12 +204,12 @@ export function TimeTab({ clip }: TimeTabProps) {
                 className={cn(
                   "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
                   playheadInsideClip
-                    ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                 )}
                 title="Split clip into two clips at playhead"
               >
-                <Split className="h-2.5 w-2.5 text-white/60" /> Split
+                <Split className="h-2.5 w-2.5 text-studio-muted" /> Split
               </button>
 
               <button
@@ -219,12 +219,12 @@ export function TimeTab({ clip }: TimeTabProps) {
                 className={cn(
                   "h-7 flex items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-all cursor-pointer border disabled:opacity-40 disabled:cursor-not-allowed",
                   isPlayheadAtClip && playhead < clipEnd - 0.05
-                    ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                    : "bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                    ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                    : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                 )}
                 title="Trim off right side from playhead onwards"
               >
-                <Scissors className="h-2.5 w-2.5 text-white/60" /> Trim Right
+                <Scissors className="h-2.5 w-2.5 text-studio-muted" /> Trim Right
               </button>
             </div>
           </div>
@@ -232,15 +232,15 @@ export function TimeTab({ clip }: TimeTabProps) {
       </div>
 
       {/* Row 2: Start Position (Timeline) */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleStartExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Start position
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             {clip.timelineStart > 0 && (
               <button
                 type="button"
@@ -248,7 +248,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                   e.stopPropagation();
                   moveClip(clip.id, clip.trackId, 0);
                 }}
-                className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
               >
                 Reset
               </button>
@@ -256,13 +256,13 @@ export function TimeTab({ clip }: TimeTabProps) {
             <span className="font-mono text-xs">
               {formatTime(clip.timelineStart)}
             </span>
-            <span className="text-[11px] text-white/40 font-mono">
+            <span className="text-[11px] text-studio-muted font-mono">
               ({clip.timelineStart.toFixed(2)}s)
             </span>
             {startExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -270,8 +270,8 @@ export function TimeTab({ clip }: TimeTabProps) {
         {startExpanded && (
           <div className="mt-2.5 space-y-2 pt-0.5">
             {/* Input */}
-            <div className="flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-              <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+            <div className="flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+              <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                 Start
               </span>
               <input
@@ -286,9 +286,9 @@ export function TimeTab({ clip }: TimeTabProps) {
                     e.currentTarget.blur();
                   }
                 }}
-                className="w-full bg-transparent text-right text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                className="w-full bg-transparent text-right text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
               />
-              <span className="text-[10px] font-mono text-white/30 select-none">
+              <span className="text-[10px] font-mono text-studio-muted select-none">
                 s
               </span>
             </div>
@@ -299,7 +299,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                 type="button"
                 onClick={() => moveClip(clip.id, clip.trackId, 0)}
                 disabled={clip.timelineStart === 0}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Snap to 0:00"
               >
                 0:00
@@ -308,7 +308,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                 type="button"
                 onClick={() => adjustStartBy(-1)}
                 disabled={clip.timelineStart <= 0}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Shift left by 1 second"
               >
                 −1s
@@ -316,7 +316,7 @@ export function TimeTab({ clip }: TimeTabProps) {
               <button
                 type="button"
                 onClick={() => adjustStartBy(1)}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg"
                 title="Shift right by 1 second"
               >
                 +1s
@@ -327,25 +327,25 @@ export function TimeTab({ clip }: TimeTabProps) {
       </div>
 
       {/* Row 3: Clip Duration (Length) */}
-      <div className="py-2.5 border-b border-white/[0.06]">
+      <div className="py-2.5 border-b border-studio-border">
         <div
           onClick={toggleDurationExpanded}
           className="flex items-center justify-between cursor-pointer group select-none"
         >
-          <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+          <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
             Clip duration
           </span>
-          <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+          <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
             <span className="font-mono text-xs">
               {formatTime(clip.timelineDuration)}
             </span>
-            <span className="text-[11px] text-white/40 font-mono">
+            <span className="text-[11px] text-studio-muted font-mono">
               ({clip.timelineDuration.toFixed(2)}s)
             </span>
             {durationExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+              <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
             )}
           </div>
         </div>
@@ -353,8 +353,8 @@ export function TimeTab({ clip }: TimeTabProps) {
         {durationExpanded && (
           <div className="mt-2.5 space-y-2 pt-0.5">
             {/* Input */}
-            <div className="flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-              <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+            <div className="flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+              <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                 Length
               </span>
               <input
@@ -369,9 +369,9 @@ export function TimeTab({ clip }: TimeTabProps) {
                     e.currentTarget.blur();
                   }
                 }}
-                className="w-full bg-transparent text-right text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                className="w-full bg-transparent text-right text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
               />
-              <span className="text-[10px] font-mono text-white/30 select-none">
+              <span className="text-[10px] font-mono text-studio-muted select-none">
                 s
               </span>
             </div>
@@ -382,7 +382,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                 type="button"
                 onClick={() => adjustDurationBy(-5)}
                 disabled={clip.timelineDuration <= 5.1}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Shorten by 5s"
               >
                 −5s
@@ -391,7 +391,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                 type="button"
                 onClick={() => adjustDurationBy(-1)}
                 disabled={clip.timelineDuration <= 1.1}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Shorten by 1s"
               >
                 −1s
@@ -399,7 +399,7 @@ export function TimeTab({ clip }: TimeTabProps) {
               <button
                 type="button"
                 onClick={() => adjustDurationBy(1)}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg"
                 title="Extend by 1s"
               >
                 +1s
@@ -407,7 +407,7 @@ export function TimeTab({ clip }: TimeTabProps) {
               <button
                 type="button"
                 onClick={() => adjustDurationBy(5)}
-                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-white/[0.06] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                className="py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border border-studio-border bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg"
                 title="Extend by 5s"
               >
                 +5s
@@ -434,8 +434,8 @@ export function TimeTab({ clip }: TimeTabProps) {
                     className={cn(
                       "py-1 rounded-md text-center text-[10px] font-mono font-medium transition-all cursor-pointer border",
                       Math.abs(clip.timelineDuration - sec) < 0.05
-                        ? "bg-white/15 text-white font-semibold border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border-studio-border shadow-xs"
+                        : "bg-studio-panel-raised/50 text-studio-muted hover:bg-studio-hover hover:text-studio-fg border-studio-border"
                     )}
                   >
                     {sec}s
@@ -449,15 +449,15 @@ export function TimeTab({ clip }: TimeTabProps) {
 
       {/* Row 4: Original Media Range (if asset-based clip) */}
       {clip.assetId && (
-        <div className="py-2.5 border-b border-white/[0.06]">
+        <div className="py-2.5 border-b border-studio-border">
           <div
             onClick={toggleSourceRangeExpanded}
             className="flex items-center justify-between cursor-pointer group select-none"
           >
-            <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+            <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
               Source range
             </span>
-            <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-studio-fg transition-colors text-xs">
               {clip.sourceStart > 0 && (
                 <button
                   type="button"
@@ -470,7 +470,7 @@ export function TimeTab({ clip }: TimeTabProps) {
                       0,
                     );
                   }}
-                  className="text-[10px] text-white/40 hover:text-white cursor-pointer mr-0.5"
+                  className="text-[10px] text-studio-muted hover:text-studio-fg cursor-pointer mr-0.5"
                 >
                   Reset
                 </button>
@@ -479,9 +479,9 @@ export function TimeTab({ clip }: TimeTabProps) {
                 {clip.sourceStart.toFixed(2)}s – {(clip.sourceStart + clip.sourceDuration).toFixed(2)}s
               </span>
               {sourceRangeExpanded ? (
-                <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+                <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+                <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
               )}
             </div>
           </div>
@@ -490,11 +490,11 @@ export function TimeTab({ clip }: TimeTabProps) {
             <div className="mt-2.5 space-y-2 pt-0.5">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="block text-[9px] uppercase tracking-wider text-white/40 mb-1 font-semibold">
+                  <span className="block text-[9px] uppercase tracking-wider text-studio-muted mb-1 font-semibold">
                     In-Point (Start)
                   </span>
-                  <div className="flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-2">
-                    <span className="text-[10px] font-mono font-medium text-white/40 select-none">
+                  <div className="flex items-center h-[30px] rounded-md bg-studio-panel-raised/60 border border-studio-border hover:border-studio-border-strong focus-within:border-studio-fg/40 focus-within:ring-1 focus-within:ring-studio-fg/20 transition-all px-2.5 gap-2">
+                    <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                       In
                     </span>
                     <input
@@ -509,26 +509,26 @@ export function TimeTab({ clip }: TimeTabProps) {
                           e.currentTarget.blur();
                         }
                       }}
-                      className="w-full bg-transparent text-right text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                      className="w-full bg-transparent text-right text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                     />
-                    <span className="text-[10px] font-mono text-white/30 select-none">
+                    <span className="text-[10px] font-mono text-studio-muted select-none">
                       s
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="block text-[9px] uppercase tracking-wider text-white/40 mb-1 font-semibold">
+                  <span className="block text-[9px] uppercase tracking-wider text-studio-muted mb-1 font-semibold">
                     Out-Point (End)
                   </span>
-                  <div className="flex items-center h-[30px] rounded-md bg-white/[0.015] border border-white/[0.06] px-2.5 gap-2 opacity-75">
-                    <span className="text-[10px] font-mono font-medium text-white/30 select-none">
+                  <div className="flex items-center h-[30px] rounded-md bg-studio-panel-raised/30 border border-studio-border px-2.5 gap-2 opacity-75">
+                    <span className="text-[10px] font-mono font-medium text-studio-muted select-none">
                       Out
                     </span>
-                    <span className="w-full text-right font-mono text-xs text-white/60">
+                    <span className="w-full text-right font-mono text-xs text-studio-muted">
                       {(clip.sourceStart + clip.sourceDuration).toFixed(2)}
                     </span>
-                    <span className="text-[10px] font-mono text-white/25 select-none">
+                    <span className="text-[10px] font-mono text-studio-muted select-none">
                       s
                     </span>
                   </div>
@@ -544,9 +544,9 @@ export function TimeTab({ clip }: TimeTabProps) {
         <button
           type="button"
           onClick={resetTiming}
-          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs text-white/50 hover:border-white/20 hover:bg-white/[0.06] hover:text-white cursor-pointer transition-all"
+          className="h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/40 text-xs text-studio-muted hover:border-studio-border-strong hover:bg-studio-hover hover:text-studio-fg cursor-pointer transition-all"
         >
-          <RotateCcw className="h-3 w-3 text-white/40" /> Reset Trims & Timing
+          <RotateCcw className="h-3 w-3 text-studio-muted" /> Reset Trims & Timing
         </button>
       </div>
     </div>
