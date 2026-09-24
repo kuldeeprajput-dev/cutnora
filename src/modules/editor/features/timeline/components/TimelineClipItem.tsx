@@ -14,6 +14,8 @@ import { useClipboardStore } from "@/modules/editor/store/useClipboardStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { WaveformCanvas } from "@/modules/editor/features/audio/components/WaveformCanvas";
 import { detachAudioFromVideo } from "@/modules/editor/features/audio/utils/detachAudio";
+import { resolveMediaAssetBlob } from "@/modules/core/storage/media-source-service";
+import { extractAudioPeaks } from "@/modules/editor/features/audio/utils/audio-peaks";
 import {
   FileVideo,
   Image as ImageIcon,
@@ -69,11 +71,10 @@ export function TimelineClipItem({
   const widthPx = Math.max(12, clip.timelineDuration * zoom);
   const leftPx = 16 + clip.timelineStart * zoom;
   const durationLabel = `${clip.timelineDuration.toFixed(1)}s`;
-  const showDuration = widthPx >= 36;
-  const showIcon = widthPx >= 58;
+  // Only display seconds duration when clip has enough width to prevent overlapping labels
+  const showDuration = widthPx >= 75;
   const showName = widthPx >= 96;
   const showStatusDetails = widthPx >= 150;
-  const durationOnly = showDuration && !showIcon;
 
   const frameHeight = 40;
   const frameWidth = Math.max(30, Math.round(frameHeight * assetAspectRatio));
@@ -99,6 +100,34 @@ export function TimelineClipItem({
             setWaveformPeaks(asset.waveformPeaks);
           } else if (asset.waveformStatus === "deferred") {
             setWaveformPeaks(Array.from({ length: 80 }, () => 0.18));
+          }
+        }
+
+        // Dynamically upgrade low-resolution or flat/uniform waveform peaks to high-detail RMS dynamics
+        if (clip.type === "audio") {
+          const existingPeaks = asset.waveformPeaks;
+          const isOldResolution = !existingPeaks || existingPeaks.length < 800;
+          const isQuietOrFlat =
+            existingPeaks &&
+            (existingPeaks.every((p) => p < 0.22) ||
+              existingPeaks.slice(0, 30).every((p) => Math.abs(p - existingPeaks[0]) < 0.03));
+          const needsUpgrade = isOldResolution || isQuietOrFlat;
+
+          if (needsUpgrade) {
+            resolveMediaAssetBlob(asset)
+              .then(async (blob) => {
+                const freshPeaks = await extractAudioPeaks(blob);
+                if (freshPeaks && freshPeaks.length > 0 && isMounted) {
+                  setWaveformPeaks(freshPeaks);
+                  void db.assets
+                    .update(asset.id, {
+                      waveformPeaks: freshPeaks,
+                      waveformStatus: "ready",
+                    })
+                    .catch(() => {});
+                }
+              })
+              .catch(() => {});
           }
         }
 
@@ -136,19 +165,21 @@ export function TimelineClipItem({
     onStartDrag(clip, "move", e);
   };
 
-  const getBgColor = () => {
-    switch (clip.type) {
-      case "video":
-        return "bg-studio-panel text-studio-fg";
-      case "image":
-        return "bg-studio-panel text-studio-fg";
-      case "audio":
-        return "bg-emerald-950/40 text-emerald-300";
-      case "text":
-        return "bg-studio-panel-raised text-studio-fg";
-      case "overlay":
-        return "bg-studio-panel-raised text-studio-fg";
+  const getClipStyling = () => {
+    if (clip.type === "audio") {
+      return {
+        bg: "bg-zinc-200/70 dark:bg-studio-panel text-studio-fg",
+        border: isSelected
+          ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
+          : "border-2 border-studio-border hover:border-studio-border-strong",
+      };
     }
+    return {
+      bg: "bg-studio-panel text-studio-fg",
+      border: isSelected
+        ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
+        : "border-2 border-studio-border hover:border-studio-border-strong",
+    };
   };
 
   const renderIcon = () => {
@@ -353,6 +384,8 @@ export function TimelineClipItem({
     },
   ];
 
+  const clipStyling = getClipStyling();
+
   return (
     <>
       <div
@@ -369,10 +402,8 @@ export function TimelineClipItem({
         onContextMenu={handleContextMenu}
         className={cn(
           "group relative flex touch-none items-center justify-between rounded-lg select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
-          getBgColor(),
-          isSelected
-            ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
-            : "border-2 border-studio-border hover:border-studio-border-strong",
+          clipStyling.bg,
+          clipStyling.border,
           isDragging && "opacity-40 ring-2 ring-studio-fg/60",
           track.locked && "opacity-60 cursor-not-allowed",
         )}
@@ -433,31 +464,55 @@ export function TimelineClipItem({
 
         {/* Waveform Canvas Layer for Audio clips only */}
         {clip.type === "audio" && waveformPeaks && (
-          <div className="absolute inset-0 z-0 opacity-80 px-1 pt-1 pointer-events-none">
+          <div className="absolute inset-0 z-0 px-2 py-1 pointer-events-none">
             <WaveformCanvas
               peaks={waveformPeaks}
               sourceStart={clip.sourceStart}
-              sourceDuration={clip.sourceDuration}
+              sourceDuration={clip.timelineDuration * (clip.speed || 1)}
               totalAssetDuration={assetDuration}
               isMuted={isAudioMuted}
+              width={Math.max(10, widthPx - 16)}
             />
           </div>
         )}
 
-        {/* Clip Content Label */}
-        {widthPx >= 28 && (
+        {/* Text Clip Content Label */}
+        {clip.type === "text" && widthPx >= 28 && (
+          <div className="z-10 absolute inset-y-0 left-2 right-10 flex items-center gap-1.5 pointer-events-none select-none">
+            <Type className="h-3 w-3 shrink-0 text-studio-muted" />
+            <span className="truncate text-xs font-medium text-studio-fg tracking-tight">
+              “{clip.textStyle?.text || clip.name}”
+            </span>
+          </div>
+        )}
+
+        {/* Audio Clip Content Label */}
+        {clip.type === "audio" && widthPx >= 28 && (
+          <div className="z-10 absolute top-1 left-2 flex min-w-0 max-w-[calc(100%-48px)] items-center gap-1.5 pointer-events-none select-none leading-none">
+            <Music className="h-3 w-3 shrink-0 text-studio-muted" />
+            <span className="truncate text-[10px] font-medium text-studio-fg tracking-tight">
+              {clip.name}
+            </span>
+            {showStatusDetails && isAudioMuted && (
+              <span className="flex items-center gap-0.5 rounded bg-destructive/90 px-1 py-0.5 text-[8px] font-bold text-white shadow-xs leading-none">
+                <VolumeX className="h-2.5 w-2.5" /> Muted
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Video, Image, Overlay Clip Content Label */}
+        {clip.type !== "text" && clip.type !== "audio" && widthPx >= 28 && (
           <div className="z-10 absolute top-1 left-1.5 flex min-w-0 max-w-[calc(100%-12px)] items-center gap-1 pointer-events-none select-none leading-none">
             {clip.type !== "video" && clip.type !== "image" && renderIcon()}
             <span className="truncate text-[10px] font-medium text-white/95 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] tracking-tight">
               {clip.name}
             </span>
-            {showStatusDetails &&
-              isAudioMuted &&
-              (clip.type === "audio" || clip.type === "video") && (
-                <span title="Audio muted" className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
-                  <VolumeX className="h-2.5 w-2.5 shrink-0 text-white/80" />
-                </span>
-              )}
+            {showStatusDetails && isAudioMuted && clip.type === "video" && (
+              <span title="Audio muted" className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                <VolumeX className="h-2.5 w-2.5 shrink-0 text-white/80" />
+              </span>
+            )}
             {showStatusDetails && isMissingAsset && (
               <span
                 className="flex items-center gap-0.5 rounded bg-destructive/90 px-1 py-0.5 text-[8px] font-bold text-white shadow-xs leading-none"
@@ -469,15 +524,14 @@ export function TimelineClipItem({
           </div>
         )}
 
-        {/* Duration Badge (Only for non-media: audio, text, overlay) */}
-        {clip.type !== "video" && clip.type !== "image" && showDuration && (
-          <span
-            className={cn(
-              "z-10 ml-auto shrink-0 font-mono text-[9px] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pr-2",
-              durationOnly &&
-                "pointer-events-none absolute inset-0 ml-0 flex items-center justify-center text-white",
-            )}
-          >
+        {/* Duration Label in Bottom Right (No box effect, only when width is sufficient) */}
+        {(clip.type === "text" || clip.type === "audio") && showDuration && (
+          <span className="z-10 absolute bottom-1 right-2 font-mono text-[8.5px] font-medium text-studio-muted/80 pointer-events-none select-none leading-none">
+            {durationLabel}
+          </span>
+        )}
+        {clip.type !== "video" && clip.type !== "image" && clip.type !== "text" && clip.type !== "audio" && showDuration && (
+          <span className="z-10 absolute bottom-1 right-2 font-mono text-[8.5px] font-medium text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pointer-events-none select-none leading-none">
             {durationLabel}
           </span>
         )}

@@ -151,7 +151,7 @@ export async function processAndStoreMediaFile(
         file.size <= WAVEFORM_SIZE_LIMIT &&
         duration <= WAVEFORM_DURATION_LIMIT
       ) {
-        waveformPeaks = await extractAudioPeaks(file, 200);
+        waveformPeaks = await extractAudioPeaks(file);
         waveformStatus = "ready";
       } else {
         waveformStatus = "deferred";
@@ -169,7 +169,7 @@ export async function processAndStoreMediaFile(
         file.size <= WAVEFORM_SIZE_LIMIT &&
         duration <= WAVEFORM_DURATION_LIMIT
       ) {
-        waveformPeaks = await extractAudioPeaks(file, 200);
+        waveformPeaks = await extractAudioPeaks(file);
         waveformStatus = "ready";
       } else {
         waveformStatus = "deferred";
