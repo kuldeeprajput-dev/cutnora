@@ -401,13 +401,13 @@ export function CanvasSettingsPanel() {
   }, [settings?.width, settings?.height, customResolutionOpen]);
 
   return (
-    <div className="flex flex-col gap-3 text-white pb-3 select-none">
+    <div className="flex flex-col gap-3 text-studio-fg pb-3 select-none">
       <div className="flex flex-col text-xs">
           {/* Row 1: Project Name */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             {isEditingName ? (
               <div className="flex items-center justify-between">
-                <span className="text-white/50 font-medium">Name</span>
+                <span className="text-studio-muted font-medium">Name</span>
                 <input
                   type="text"
                   autoFocus
@@ -421,7 +421,7 @@ export function CanvasSettingsPanel() {
                       setIsEditingName(false);
                     }
                   }}
-                  className="h-7 w-48 rounded-md border border-white/20 bg-white/[0.04] px-2.5 text-right font-medium text-white outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all text-xs"
+                  className="h-7 w-48 rounded-md border border-studio-border bg-studio-panel-raised px-2.5 text-right font-medium text-studio-fg outline-none focus:border-studio-border-strong focus:ring-1 focus:ring-studio-border-strong transition-all text-xs"
                 />
               </div>
             ) : (
@@ -430,10 +430,10 @@ export function CanvasSettingsPanel() {
                 className="flex items-center justify-between cursor-pointer group select-none py-0.5"
                 title="Click to rename"
               >
-                <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+                <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
                   Name
                 </span>
-                <span className="max-w-[200px] truncate text-right font-medium text-white/90 group-hover:text-white transition-colors">
+                <span className="max-w-[200px] truncate text-right font-medium text-studio-fg group-hover:text-studio-fg transition-colors">
                   {nameDraft || "Untitled project"}
                 </span>
               </div>
@@ -441,21 +441,21 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 2: Frame rate */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             <DropdownMenu
               align="right"
               matchTriggerWidth={false}
               triggerClassName="w-full"
-              className="w-36 min-w-[130px] rounded-2xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/80 backdrop-blur-md"
+              className="w-36 min-w-[130px] rounded-2xl border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md"
               trigger={(isOpen) => (
                 <div className="flex items-center justify-between w-full cursor-pointer group py-0.5">
-                  <span className="text-white/50 group-hover:text-white font-medium transition-colors">Frame rate</span>
-                  <div className="flex items-center gap-1 font-medium text-white/90 group-hover:text-white transition-colors text-xs">
+                  <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Frame rate</span>
+                  <div className="flex items-center gap-1 font-medium text-studio-fg group-hover:text-studio-fg transition-colors text-xs">
                     <span>{settings?.fps ?? 30} fps</span>
                     {isOpen ? (
-                      <ChevronDown className="h-3.5 w-3.5 text-white/50 group-hover:text-white" />
+                      <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
                     ) : (
-                      <ChevronRight className="h-3.5 w-3.5 text-white/50 group-hover:text-white" />
+                      <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
                     )}
                   </div>
                 </div>
@@ -470,13 +470,13 @@ export function CanvasSettingsPanel() {
                     className={cn(
                       "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors",
                       isSelected
-                        ? "text-white"
-                        : "text-white/80 hover:text-white hover:bg-white/[0.08]"
+                        ? "text-studio-fg font-semibold bg-studio-hover"
+                        : "text-studio-muted hover:text-studio-fg hover:bg-studio-hover"
                     )}
                   >
                     <span className="w-4 h-4 flex items-center justify-center shrink-0">
                       {isSelected && (
-                        <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />
+                        <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5]" />
                       )}
                     </span>
                     <span>{opt.label}</span>
@@ -487,14 +487,14 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 3: Aspect ratio */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             <div
               onClick={toggleAspectRatioExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
-              <span className="text-white/50 group-hover:text-white font-medium transition-colors">Aspect ratio</span>
+              <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Aspect ratio</span>
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-xs font-medium text-white/90 group-hover:text-white transition-colors">
+                <span className="font-mono text-xs font-medium text-studio-fg group-hover:text-studio-fg transition-colors">
                   {getRatioLabel(settings.aspectRatio)}
                 </span>
                 <button
@@ -504,11 +504,11 @@ export function CanvasSettingsPanel() {
                     handleSwapOrientation();
                   }}
                   title="Swap orientation (Rotate ⇄)"
-                  className="flex h-6 w-6 items-center justify-center rounded text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  className="flex h-6 w-6 items-center justify-center rounded text-studio-muted hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer"
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5" />
                 </button>
-                <div className="flex items-center justify-center text-white/40 group-hover:text-white transition-colors p-0.5">
+                <div className="flex items-center justify-center text-studio-muted group-hover:text-studio-fg transition-colors p-0.5">
                   {aspectRatioExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5" />
                   ) : (
@@ -526,14 +526,14 @@ export function CanvasSettingsPanel() {
                   <DropdownMenu
                     matchTriggerWidth
                     triggerClassName="w-full"
-                    className="max-h-72 w-full overflow-y-auto studio-scrollbar rounded-xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/90 backdrop-blur-md"
+                    className="max-h-72 w-full overflow-y-auto studio-scrollbar rounded-xl border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md"
                     trigger={(isOpen) => (
                       <div
                         className={cn(
                           "flex h-8 w-full items-center justify-between gap-2 rounded-lg border px-2.5 text-xs transition-all cursor-pointer",
                           isOpen
-                            ? "border-white/30 bg-white/[0.06] text-white"
-                            : "border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
+                            ? "border-studio-border-strong bg-studio-hover text-studio-fg"
+                            : "border-studio-border bg-studio-panel-raised text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong"
                         )}
                       >
                         <span className="truncate">
@@ -542,9 +542,9 @@ export function CanvasSettingsPanel() {
                             : "Platform templates (YouTube, TikTok, Reels...)"}
                         </span>
                         {isOpen ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-white/60 shrink-0" />
+                          <ChevronDown className="h-3.5 w-3.5 text-studio-muted shrink-0" />
                         ) : (
-                          <ChevronRight className="h-3.5 w-3.5 text-white/40 shrink-0" />
+                          <ChevronRight className="h-3.5 w-3.5 text-studio-muted shrink-0" />
                         )}
                       </div>
                     )}
@@ -554,10 +554,10 @@ export function CanvasSettingsPanel() {
                         const presets = SOCIAL_PRESETS.filter((p) => p.platform === platform);
                         if (presets.length === 0) return null;
                         return (
-                          <div key={platform} className={cn(idx > 0 && "pt-1.5 mt-1 border-t border-white/[0.06]")}>
+                          <div key={platform} className={cn(idx > 0 && "pt-1.5 mt-1 border-t border-studio-border")}>
                             <div
                               onClick={(e) => e.stopPropagation()}
-                              className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/35 select-none"
+                              className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-studio-muted select-none"
                             >
                               {platform}
                             </div>
@@ -579,20 +579,20 @@ export function CanvasSettingsPanel() {
                                     className={cn(
                                       "flex w-full items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-left",
                                       isSelected
-                                        ? "bg-white/10 text-white font-medium"
-                                        : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+                                        ? "bg-studio-hover text-studio-fg font-medium"
+                                        : "text-studio-muted hover:bg-studio-hover hover:text-studio-fg"
                                     )}
                                   >
                                     <div className="flex items-center gap-2 min-w-0 truncate">
                                       <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
-                                        {isSelected && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                                        {isSelected && <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5]" />}
                                       </span>
                                       <span className="truncate">{preset.formatName}</span>
-                                      <span className="font-mono text-[10px] text-white/40 shrink-0">
+                                      <span className="font-mono text-[10px] text-studio-muted shrink-0">
                                         ({preset.aspectRatio})
                                       </span>
                                     </div>
-                                    <span className="font-mono text-[10px] text-white/35 shrink-0 ml-auto pl-2">
+                                    <span className="font-mono text-[10px] text-studio-muted shrink-0 ml-auto pl-2">
                                       {preset.width}×{preset.height}
                                     </span>
                                   </DropdownMenuItem>
@@ -624,19 +624,19 @@ export function CanvasSettingsPanel() {
                       className={cn(
                         "group flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-all cursor-pointer",
                         active
-                          ? "bg-white/[0.08] text-white font-medium border border-white/10 shadow-xs"
-                          : "text-white/65 hover:bg-white/[0.04] hover:text-white border border-transparent"
+                          ? "bg-studio-hover text-studio-fg font-medium border border-studio-border shadow-xs"
+                          : "text-studio-muted hover:bg-studio-hover/70 hover:text-studio-fg border border-transparent"
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <item.Icon className={cn("h-3.5 w-3.5 shrink-0 transition-colors", active ? "text-white" : "text-white/40 group-hover:text-white/70")} />
+                        <item.Icon className={cn("h-3.5 w-3.5 shrink-0 transition-colors", active ? "text-studio-fg" : "text-studio-muted group-hover:text-studio-fg")} />
                         <span className="font-mono text-xs w-9 text-left font-medium shrink-0">{item.ratio}</span>
-                        <span className="text-[11px] text-white/50 group-hover:text-white/70 truncate">{item.title}</span>
+                        <span className="text-[11px] text-studio-muted group-hover:text-studio-fg truncate">{item.title}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] text-white/35 group-hover:text-white/50">{item.subtitle}</span>
+                        <span className="text-[10px] text-studio-muted group-hover:text-studio-fg">{item.subtitle}</span>
                         <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
-                          {active && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                          {active && <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5]" />}
                         </span>
                       </div>
                     </button>
@@ -654,19 +654,19 @@ export function CanvasSettingsPanel() {
                   className={cn(
                     "group flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-all cursor-pointer",
                     customResolutionOpen
-                      ? "bg-white/[0.08] text-white font-medium border border-white/10 shadow-xs"
-                      : "text-white/65 hover:bg-white/[0.04] hover:text-white border border-transparent"
+                      ? "bg-studio-hover text-studio-fg font-medium border border-studio-border shadow-xs"
+                      : "text-studio-muted hover:bg-studio-hover/70 hover:text-studio-fg border border-transparent"
                   )}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <SlidersHorizontal className={cn("h-3.5 w-3.5 shrink-0 transition-colors", customResolutionOpen ? "text-white" : "text-white/40 group-hover:text-white/70")} />
+                    <SlidersHorizontal className={cn("h-3.5 w-3.5 shrink-0 transition-colors", customResolutionOpen ? "text-studio-fg" : "text-studio-muted group-hover:text-studio-fg")} />
                     <span className="font-mono text-xs w-9 text-left font-medium shrink-0">Custom</span>
-                    <span className="text-[11px] text-white/50 group-hover:text-white/70 truncate">Free size</span>
+                    <span className="text-[11px] text-studio-muted group-hover:text-studio-fg truncate">Free size</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-white/35 group-hover:text-white/50">Manual px</span>
+                    <span className="text-[10px] text-studio-muted group-hover:text-studio-fg">Manual px</span>
                     <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
-                      {customResolutionOpen && <Check className="h-3.5 w-3.5 text-white stroke-[2.5]" />}
+                      {customResolutionOpen && <Check className="h-3.5 w-3.5 text-studio-fg stroke-[2.5]" />}
                     </span>
                   </div>
                 </button>
@@ -675,20 +675,20 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 4: Resolution */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             <div
               onClick={toggleResolutionExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
-              <span className="text-white/50 group-hover:text-white font-medium transition-colors">Resolution</span>
-              <div className="flex items-center gap-1.5 font-medium text-white/90 group-hover:text-white transition-colors">
+              <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">Resolution</span>
+              <div className="flex items-center gap-1.5 font-medium text-studio-fg group-hover:text-studio-fg transition-colors">
                 <span className="font-mono text-xs">
                   {resolutionLabel}
                 </span>
                 {resolutionExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+                  <ChevronDown className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5 text-white/40 group-hover:text-white" />
+                  <ChevronRight className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg" />
                 )}
               </div>
             </div>
@@ -731,8 +731,8 @@ export function CanvasSettingsPanel() {
                         className={cn(
                           "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                           !customResolutionOpen && isActive
-                            ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                            : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                            ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border-strong shadow-xs"
+                            : "bg-studio-panel-raised text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                         )}
                       >
                         {q.label.split(" ")[0]}
@@ -748,8 +748,8 @@ export function CanvasSettingsPanel() {
                     className={cn(
                       "py-1.5 rounded-md text-center text-[10px] font-medium transition-all cursor-pointer",
                       customResolutionOpen
-                        ? "bg-white/15 text-white font-semibold border border-white/25 shadow-xs"
-                        : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]"
+                        ? "bg-studio-hover text-studio-fg font-semibold border border-studio-border-strong shadow-xs"
+                        : "bg-studio-panel-raised text-studio-muted hover:bg-studio-hover hover:text-studio-fg border border-studio-border"
                     )}
                   >
                     Custom
@@ -760,8 +760,8 @@ export function CanvasSettingsPanel() {
                 {customResolutionOpen && (
                   <div className="flex items-center gap-1.5 pt-1.5">
                     {/* W Input */}
-                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-1.5">
-                      <span className="text-[10px] font-mono font-medium text-white/40 select-none shrink-0">
+                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised border border-studio-border hover:border-studio-border-strong focus-within:border-studio-border-strong transition-all px-2.5 gap-1.5">
+                      <span className="text-[10px] font-mono font-medium text-studio-muted select-none shrink-0">
                         W
                       </span>
                       <input
@@ -778,9 +778,9 @@ export function CanvasSettingsPanel() {
                             e.currentTarget.blur();
                           }
                         }}
-                        className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                        className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                       />
-                      <span className="text-[10px] font-mono text-white/30 select-none shrink-0">
+                      <span className="text-[10px] font-mono text-studio-muted select-none shrink-0">
                         px
                       </span>
                     </div>
@@ -793,16 +793,16 @@ export function CanvasSettingsPanel() {
                       className={cn(
                         "h-[30px] w-[30px] rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0",
                         linked
-                          ? "border-white/25 bg-white/15 text-white shadow-xs"
-                          : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white hover:bg-white/[0.06]"
+                          ? "border-studio-border-strong bg-studio-hover text-studio-fg shadow-xs"
+                          : "border-studio-border bg-studio-panel-raised text-studio-muted hover:text-studio-fg hover:bg-studio-hover"
                       )}
                     >
                       {linked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
                     </button>
 
                     {/* H Input */}
-                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all px-2.5 gap-1.5">
-                      <span className="text-[10px] font-mono font-medium text-white/40 select-none shrink-0">
+                    <div className="flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised border border-studio-border hover:border-studio-border-strong focus-within:border-studio-border-strong transition-all px-2.5 gap-1.5">
+                      <span className="text-[10px] font-mono font-medium text-studio-muted select-none shrink-0">
                         H
                       </span>
                       <input
@@ -819,9 +819,9 @@ export function CanvasSettingsPanel() {
                             e.currentTarget.blur();
                           }
                         }}
-                        className="w-full bg-transparent text-xs font-mono text-white outline-none border-none p-0 focus:outline-none focus:ring-0"
+                        className="w-full bg-transparent text-xs font-mono text-studio-fg outline-none border-none p-0 focus:outline-none focus:ring-0"
                       />
-                      <span className="text-[10px] font-mono text-white/30 select-none shrink-0">
+                      <span className="text-[10px] font-mono text-studio-muted select-none shrink-0">
                         px
                       </span>
                     </div>
@@ -832,12 +832,12 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 5: Background */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             <div
               onClick={toggleBgColorsExpanded}
               className="flex items-center justify-between cursor-pointer group select-none"
             >
-              <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+              <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
                 Background
               </span>
               <div className="flex items-center gap-1.5">
@@ -854,7 +854,7 @@ export function CanvasSettingsPanel() {
                     triggerClassName="h-7 px-2.5 justify-center"
                   />
                 </div>
-                <div className="flex items-center justify-center text-white/40 group-hover:text-white transition-colors p-0.5">
+                <div className="flex items-center justify-center text-studio-muted group-hover:text-studio-fg transition-colors p-0.5">
                   {bgColorsExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5" />
                   ) : (
@@ -897,8 +897,8 @@ export function CanvasSettingsPanel() {
                         className={cn(
                           "group relative flex aspect-square w-full items-center justify-center rounded-lg border transition-all cursor-pointer",
                           isSelected
-                            ? "border-transparent ring-2 ring-white ring-offset-2 ring-offset-[#141416]"
-                            : "border-white/10 hover:border-white/40 hover:scale-105 active:scale-95"
+                            ? "border-transparent ring-2 ring-studio-fg ring-offset-2 ring-offset-studio-panel"
+                            : "border-studio-border hover:border-studio-border-strong hover:scale-105 active:scale-95"
                         )}
                       >
                         {isSelected && (
@@ -916,9 +916,9 @@ export function CanvasSettingsPanel() {
 
                 {/* Bottom Custom Color & Tools Row */}
                 <div className="flex items-center gap-1.5 pt-0.5">
-                  <div className="relative flex-1 flex items-center h-[30px] rounded-md bg-white/[0.03] border border-white/10 hover:border-white/20 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/20 transition-all">
+                  <div className="relative flex-1 flex items-center h-[30px] rounded-md bg-studio-panel-raised border border-studio-border hover:border-studio-border-strong focus-within:border-studio-border-strong transition-all">
                     <div
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-sm border border-white/20 shrink-0 pointer-events-none"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-sm border border-studio-border shrink-0 pointer-events-none"
                       style={
                         previewBgColor === "transparent"
                           ? {
@@ -942,7 +942,7 @@ export function CanvasSettingsPanel() {
                       onPaste={handleBgHexPaste}
                       placeholder="#000000"
                       spellCheck={false}
-                      className="h-full w-full rounded-md border-0 bg-transparent pl-8 pr-2 font-mono text-xs uppercase text-white/90 placeholder-white/30 outline-none transition-colors p-0 focus:outline-none focus:ring-0 shadow-none"
+                      className="h-full w-full rounded-md border-0 bg-transparent pl-8 pr-2 font-mono text-xs uppercase text-studio-fg placeholder:text-studio-muted outline-none transition-colors p-0 focus:outline-none focus:ring-0 shadow-none"
                     />
                   </div>
 
@@ -950,8 +950,8 @@ export function CanvasSettingsPanel() {
                     <Tooltip
                       content={
                         <div className="flex flex-col items-center text-center gap-0.5 py-0.5">
-                          <span className="font-semibold text-white text-[11px]">Pick color from screen</span>
-                          <span className="text-[10px] text-white/60">Click anywhere to sample color</span>
+                          <span className="font-semibold text-studio-fg text-[11px]">Pick color from screen</span>
+                          <span className="text-[10px] text-studio-muted">Click anywhere to sample color</span>
                         </div>
                       }
                       position="top"
@@ -965,7 +965,7 @@ export function CanvasSettingsPanel() {
                           handleEyeDropper(e);
                         }}
                         aria-label="Pick color from screen"
-                        className="flex h-7 w-7 items-center justify-center rounded border-0 bg-transparent text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer shrink-0 shadow-none"
+                        className="flex h-7 w-7 items-center justify-center rounded border-0 bg-transparent text-studio-muted hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer shrink-0 shadow-none"
                       >
                         <Pipette className="h-3.5 w-3.5" />
                       </button>
@@ -977,7 +977,7 @@ export function CanvasSettingsPanel() {
                       type="button"
                       onClick={() => updateSettings({ backgroundColor: "#000000" })}
                       aria-label="Reset to black"
-                      className="flex h-7 items-center gap-1 px-2 rounded border-0 bg-transparent text-[11px] font-medium text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer shrink-0 shadow-none"
+                      className="flex h-7 items-center gap-1 px-2 rounded border-0 bg-transparent text-[11px] font-medium text-studio-muted hover:text-studio-fg hover:bg-studio-hover transition-colors cursor-pointer shrink-0 shadow-none"
                     >
                       <RotateCcw className="h-3 w-3" />
                       <span>Reset</span>
@@ -989,15 +989,15 @@ export function CanvasSettingsPanel() {
           </div>
 
           {/* Row 6: Master Audio */}
-          <div className="py-2.5 border-b border-white/[0.06] space-y-2 group select-none">
+          <div className="py-2.5 border-b border-studio-border space-y-2 group select-none">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Volume2 className="h-3.5 w-3.5 text-white/40 group-hover:text-white transition-colors" />
-                <span className="text-white/50 group-hover:text-white font-medium transition-colors">
+                <Volume2 className="h-3.5 w-3.5 text-studio-muted group-hover:text-studio-fg transition-colors" />
+                <span className="text-studio-muted group-hover:text-studio-fg font-medium transition-colors">
                   Master volume
                 </span>
               </div>
-              <span className="font-mono text-xs text-white/80 group-hover:text-white transition-colors">
+              <span className="font-mono text-xs text-studio-fg group-hover:text-studio-fg transition-colors">
                 {Math.round(settings.masterVolume * 100)}%
               </span>
             </div>
@@ -1006,8 +1006,8 @@ export function CanvasSettingsPanel() {
               min={0}
               max={1}
               step={0.01}
-              fillClassName="bg-white/90 group-hover:bg-white"
-              trackClassName="bg-white/10"
+              fillClassName="bg-studio-fg group-hover:bg-studio-fg"
+              trackClassName="bg-studio-border"
               onValueChange={(val) => updateSettings({ masterVolume: val })}
             />
           </div>
@@ -1029,7 +1029,7 @@ export function CanvasSettingsPanel() {
                   masterVolume: 1,
                 });
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] py-2 text-xs font-medium text-white/50 hover:bg-white/[0.06] hover:border-white/20 hover:text-white transition-all cursor-pointer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-studio-border bg-studio-panel-raised py-2 text-xs font-medium text-studio-muted hover:bg-studio-hover hover:border-studio-border-strong hover:text-studio-fg transition-all cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Reset to default (1080p 16:9)</span>

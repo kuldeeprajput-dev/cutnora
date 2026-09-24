@@ -116,18 +116,18 @@ function InspectorTabDropdown({
         className={cn(
           "flex h-9 w-full cursor-pointer select-none items-center justify-between rounded-lg border px-3 text-xs transition-colors",
           isOpen
-            ? "border-white/30 bg-white/[0.06] text-white"
-            : "border-white/10 bg-white/[0.03] text-white/80 hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+            ? "border-studio-border-strong bg-studio-panel-raised text-studio-fg"
+            : "border-studio-border bg-studio-panel-raised/50 text-studio-fg hover:border-studio-border-strong hover:bg-studio-hover"
         )}
       >
-        <span className="flex items-center gap-2 font-medium text-white/90">
+        <span className="flex items-center gap-2 font-medium text-studio-fg">
           {activeTabObj?.icon}
           <span>{activeTabObj?.label}</span>
         </span>
         <ChevronDown
           className={cn(
-            "h-3.5 w-3.5 text-white/40 shrink-0 transition-transform",
-            isOpen && "rotate-180 text-white"
+            "h-3.5 w-3.5 text-studio-muted shrink-0 transition-transform",
+            isOpen && "rotate-180 text-studio-fg"
           )}
         />
       </button>
@@ -135,7 +135,7 @@ function InspectorTabDropdown({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-xl border border-white/10 bg-[#141416] p-1.5 shadow-2xl shadow-black/90 backdrop-blur-md animate-in fade-in-80"
+          className="absolute left-0 right-0 top-full z-50 mt-1.5 rounded-xl border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in-80"
         >
           <div className="flex flex-col gap-0.5">
             {tabs.map((t) => {
@@ -153,8 +153,8 @@ function InspectorTabDropdown({
                   className={cn(
                     "flex min-h-8 w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors",
                     isSelected
-                      ? "bg-white/10 font-semibold text-white"
-                      : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+                      ? "bg-studio-hover font-semibold text-studio-fg"
+                      : "text-studio-fg/90 hover:bg-studio-hover/60 hover:text-studio-fg"
                   )}
                 >
                   <div className="flex items-center gap-2.5 font-medium">
@@ -162,7 +162,7 @@ function InspectorTabDropdown({
                     <span>{t.label}</span>
                   </div>
                   {isSelected && (
-                    <Check className="h-3.5 w-3.5 text-white shrink-0 ml-2 stroke-[2.5]" />
+                    <Check className="h-3.5 w-3.5 text-studio-fg shrink-0 ml-2 stroke-[2.5]" />
                   )}
                 </button>
               );
@@ -280,24 +280,24 @@ export function InspectorPanel() {
           <button
             type="button"
             onClick={() => setInspectorMode("canvas")}
-            className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+            className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
           >
             Canvas Settings
           </button>
         }
         className="h-full w-full"
       >
-        <div className="flex h-full w-full flex-col text-xs text-white p-3 overflow-y-auto studio-scrollbar select-none">
-          <div className="py-2.5 border-b border-white/[0.06] flex items-center gap-2 text-white/50">
-            <Layers className="h-3.5 w-3.5 text-white/40 shrink-0" />
+        <div className="flex h-full w-full flex-col text-xs text-studio-fg p-3 overflow-y-auto studio-scrollbar select-none">
+          <div className="py-2.5 border-b border-studio-border flex items-center gap-2 text-studio-muted">
+            <Layers className="h-3.5 w-3.5 text-studio-muted shrink-0" />
             <span>Multi-selection ({selectedClips.length} clips)</span>
           </div>
 
           {/* Group Opacity Slider */}
-          <div className="py-2.5 border-b border-white/[0.06]">
+          <div className="py-2.5 border-b border-studio-border">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-white/50 font-medium">Group Opacity</span>
-              <span className="font-mono text-xs text-white/60">Mixed</span>
+              <span className="text-studio-muted font-medium">Group Opacity</span>
+              <span className="font-mono text-xs text-studio-muted">Mixed</span>
             </div>
             <Slider
               value={1}
@@ -336,7 +336,7 @@ export function InspectorPanel() {
       value: "text",
       label: "Text",
       icon: (
-        <Type className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Type className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   if (isElement)
@@ -344,7 +344,7 @@ export function InspectorPanel() {
       value: "element",
       label: "Shape",
       icon: (
-        <Sparkles className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Sparkles className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   if (clip.type !== "audio" && clip.type !== "text")
@@ -352,7 +352,7 @@ export function InspectorPanel() {
       value: "transform",
       label: "Transform",
       icon: (
-        <Move className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Move className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   if (isVisual)
@@ -360,7 +360,7 @@ export function InspectorPanel() {
       value: "adjust",
       label: "Adjust",
       icon: (
-        <Sliders className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Sliders className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   if (hasAudio)
@@ -368,7 +368,7 @@ export function InspectorPanel() {
       value: "audio",
       label: "Audio",
       icon: (
-        <Volume2 className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Volume2 className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   if (hasAudio)
@@ -376,14 +376,14 @@ export function InspectorPanel() {
       value: "speed",
       label: "Speed",
       icon: (
-        <Gauge className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+        <Gauge className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
       ),
     });
   availableTabs.push({
     value: "time",
     label: "Time",
     icon: (
-      <Clock className="h-3.5 w-3.5 text-white/40 shrink-0 group-data-[state=active]:text-white transition-colors" />
+      <Clock className="h-3.5 w-3.5 text-studio-muted shrink-0 group-data-[state=active]:text-studio-fg transition-colors" />
     ),
   });
 
@@ -399,7 +399,7 @@ export function InspectorPanel() {
             <button
               type="button"
               onClick={() => setInspectorMode("clip")}
-              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
             >
               Clip Properties
             </button>
@@ -420,7 +420,7 @@ export function InspectorPanel() {
             <button
               type="button"
               onClick={() => setInspectorMode("canvas")}
-              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white cursor-pointer transition-all shrink-0 whitespace-nowrap"
+              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
             >
               Canvas Settings
             </button>

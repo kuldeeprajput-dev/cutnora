@@ -21,10 +21,10 @@ export function InspectorSection({
   className?: string;
 }) {
   return (
-    <div className={cn("py-2.5 border-b border-white/[0.06]", className)}>
+    <div className={cn("py-2.5 border-b border-studio-border", className)}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-white/50 font-medium text-xs flex items-center gap-1.5">
-          {Icon && <Icon className="h-3.5 w-3.5 text-white/40" />}
+        <span className="text-studio-muted font-medium text-xs flex items-center gap-1.5">
+          {Icon && <Icon className="h-3.5 w-3.5 text-studio-muted" />}
           {title}
         </span>
       </div>
@@ -35,7 +35,7 @@ export function InspectorSection({
 
 export function InspectorValue({ children }: { children: React.ReactNode }) {
   return (
-    <span className="min-w-10 rounded-md border border-white/15 bg-white/10 px-1.5 py-0.5 text-right font-mono text-[10px] font-semibold text-white/90">
+    <span className="min-w-10 rounded-md border border-studio-border bg-studio-panel-raised px-1.5 py-0.5 text-right font-mono text-[10px] font-semibold text-studio-fg">
       {children}
     </span>
   );
@@ -58,8 +58,8 @@ export function InspectorControlLabel({
       onDoubleClick={onDoubleClick}
       title={title}
       className={cn(
-        "block text-[10px] font-medium uppercase tracking-wide text-white/50",
-        onDoubleClick && "cursor-pointer hover:text-white",
+        "block text-[10px] font-medium uppercase tracking-wide text-studio-muted",
+        onDoubleClick && "cursor-pointer hover:text-studio-fg",
       )}
     >
       {children}
@@ -84,8 +84,8 @@ export function InspectorSliderHeader({
         disabled={!onReset}
         title={onReset ? "Double-click to reset" : undefined}
         className={cn(
-          "text-[10px] font-medium text-white/50",
-          onReset && "cursor-pointer hover:text-white",
+          "text-[10px] font-medium text-studio-muted",
+          onReset && "cursor-pointer hover:text-studio-fg",
         )}
       >
         {label}
@@ -115,7 +115,7 @@ export function InspectorColorControl({
           value={value}
           onChange={onChange}
           onChangeEnd={onChangeEnd}
-          triggerClassName="w-full justify-start"
+          triggerClassName="w-full justify-start text-studio-fg"
         />
       </div>
     </div>
@@ -133,12 +133,12 @@ export function InspectorResetButton({
     <button
       type="button"
       onClick={onClick}
-      className="mt-3 h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] text-xs font-medium text-white/50 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+      className="mt-3 h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/50 text-xs font-medium text-studio-muted hover:bg-studio-hover hover:text-studio-fg transition-colors cursor-pointer"
     >
-      <RotateCcw className="h-3.5 w-3.5 text-white/40" /> {children}
+      <RotateCcw className="h-3.5 w-3.5 text-studio-muted" /> {children}
     </button>
   );
 }
 
 export const inspectorActionClass =
-  "h-8 justify-start gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 text-[11px] font-medium text-white/80 shadow-none hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:opacity-40 cursor-pointer";
+  "h-8 justify-start gap-2 rounded-lg border border-studio-border bg-studio-panel-raised/50 px-2.5 text-[11px] font-medium text-studio-fg shadow-none hover:border-studio-border-strong hover:bg-studio-hover disabled:opacity-40 cursor-pointer";
