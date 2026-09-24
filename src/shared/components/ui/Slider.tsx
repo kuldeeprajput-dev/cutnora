@@ -10,10 +10,11 @@ export interface SliderProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
   label?: string;
   fillClassName?: string;
   trackClassName?: string;
+  thumbClassName?: string;
 }
 
 export const Slider = forwardRef<HTMLInputElement, SliderProps>(
-  ({ className, value, onValueChange, min = 0, max = 100, step = 1, disabled, label, fillClassName, trackClassName, ...props }, ref) => {
+  ({ className, value, onValueChange, min = 0, max = 100, step = 1, disabled, label, fillClassName, trackClassName, thumbClassName, ...props }, ref) => {
     const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -47,15 +48,18 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
           </div>
         )}
         <div className="group/slider relative flex items-center w-full h-5 touch-none select-none">
-          <div className={cn("relative w-full h-1 rounded-full overflow-hidden", trackClassName || "bg-studio-border dark:bg-white/10")}>
+          <div className={cn("relative w-full h-1 rounded-full overflow-hidden bg-studio-border dark:bg-white/10", trackClassName)}>
             <div
-              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75", fillClassName || "bg-studio-fg dark:bg-white/90")}
+              className={cn("absolute left-0 top-0 h-full rounded-full transition-all duration-75 bg-studio-fg dark:bg-white", fillClassName)}
               style={{ width: `${percentage}%` }}
             />
           </div>
           {/* Draggable visual thumb handle */}
           <div
-            className="pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-studio-topbar shadow-md border border-studio-border-strong transition-transform group-hover/slider:scale-125"
+            className={cn(
+              "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-white dark:bg-white border border-studio-border-strong dark:border-white shadow-md dark:shadow-[0_0_6px_rgba(255,255,255,0.4)] transition-transform group-hover/slider:scale-125",
+              thumbClassName
+            )}
             style={{ left: `${percentage}%` }}
           />
           <input

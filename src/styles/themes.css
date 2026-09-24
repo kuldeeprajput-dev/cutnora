@@ -83,27 +83,27 @@ html.dark {
 
   --studio-bg: #0d0d0d;
   --studio-topbar: #0d0d0d;
-  --studio-panel: #141416;
-  --studio-panel-raised: #1c1c20;
-  --studio-hover: #232328;
+  --studio-panel: #1a1a1a;
+  --studio-panel-raised: #222222;
+  --studio-hover: #262626;
   --studio-border: rgba(255, 255, 255, 0.08);
   --studio-border-strong: rgba(255, 255, 255, 0.16);
   --studio-fg: #f4f4f5;
   --studio-muted: #8b8d94;
-  --timeline-bg: #111113;
-  --canvas-bg: #111113;
+  --timeline-bg: #1a1a1a;
+  --canvas-bg: #1a1a1a;
   --selection: rgba(255, 255, 255, 0.18);
   --selection-hover: rgba(255, 255, 255, 0.28);
 
   --background: #0d0d0d;
   --foreground: #f4f4f5;
-  --muted: #141416;
+  --muted: #1a1a1a;
   --muted-foreground: #8b8d94;
   --border: rgba(255, 255, 255, 0.08);
-  --input: #141416;
+  --input: #1a1a1a;
   --accent: rgba(255, 255, 255, 0.06);
   --accent-foreground: #ffffff;
-  --card: #141416;
+  --card: #1a1a1a;
   --card-foreground: #ffffff;
   --primary: #ffffff;
   --primary-foreground: #0d0d0d;
