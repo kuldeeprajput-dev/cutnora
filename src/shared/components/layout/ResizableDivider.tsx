@@ -4,6 +4,7 @@ import { cn } from "@/shared/utils/cn";
 export interface ResizableDividerProps extends React.HTMLAttributes<HTMLDivElement> {
   orientation?: "horizontal" | "vertical";
   onResize?: (delta: number) => void;
+  onResizeEnd?: () => void;
   hasCornerHandle?: boolean;
   onCornerResize?: (deltaX: number, deltaY: number) => void;
 }
@@ -12,21 +13,30 @@ export function ResizableDivider({
   className,
   orientation = "vertical",
   onResize,
+  onResizeEnd,
   hasCornerHandle = false,
   onCornerResize,
   ...props
 }: ResizableDividerProps) {
   const handlePointerDown = (event: React.PointerEvent) => {
     event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch {}
+
     let lastX = event.clientX;
     let lastY = event.clientY;
 
     const originalCursor = document.body.style.cursor;
     const originalUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = orientation === "vertical" ? "col-resize" : "row-resize";
+    const activeCursor = orientation === "vertical" ? "col-resize" : "row-resize";
+    document.body.style.cursor = activeCursor;
+    document.documentElement.style.cursor = activeCursor;
     document.body.style.userSelect = "none";
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
+      moveEvent.preventDefault();
       const delta =
         orientation === "vertical"
           ? moveEvent.clientX - lastX
@@ -36,31 +46,43 @@ export function ResizableDivider({
       onResize?.(delta);
     };
 
-    const handlePointerUp = () => {
-      document.removeEventListener("pointermove", handlePointerMove);
-      document.removeEventListener("pointerup", handlePointerUp);
-      document.removeEventListener("pointercancel", handlePointerUp);
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      try {
+        target.releasePointerCapture(upEvent.pointerId);
+      } catch {}
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
       document.body.style.cursor = originalCursor;
+      document.documentElement.style.cursor = "";
       document.body.style.userSelect = originalUserSelect;
+      onResizeEnd?.();
     };
 
-    document.addEventListener("pointermove", handlePointerMove);
-    document.addEventListener("pointerup", handlePointerUp);
-    document.addEventListener("pointercancel", handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   const handleCornerPointerDown = (event: React.PointerEvent) => {
     event.preventDefault();
     event.stopPropagation();
+    const target = event.currentTarget as HTMLElement;
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch {}
+
     let lastX = event.clientX;
     let lastY = event.clientY;
 
     const originalCursor = document.body.style.cursor;
     const originalUserSelect = document.body.style.userSelect;
     document.body.style.cursor = "all-scroll";
+    document.documentElement.style.cursor = "all-scroll";
     document.body.style.userSelect = "none";
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
+      moveEvent.preventDefault();
       const deltaX = moveEvent.clientX - lastX;
       const deltaY = moveEvent.clientY - lastY;
       lastX = moveEvent.clientX;
@@ -68,17 +90,22 @@ export function ResizableDivider({
       onCornerResize?.(deltaX, deltaY);
     };
 
-    const handlePointerUp = () => {
-      document.removeEventListener("pointermove", handlePointerMove);
-      document.removeEventListener("pointerup", handlePointerUp);
-      document.removeEventListener("pointercancel", handlePointerUp);
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      try {
+        target.releasePointerCapture(upEvent.pointerId);
+      } catch {}
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
       document.body.style.cursor = originalCursor;
+      document.documentElement.style.cursor = "";
       document.body.style.userSelect = originalUserSelect;
+      onResizeEnd?.();
     };
 
-    document.addEventListener("pointermove", handlePointerMove);
-    document.addEventListener("pointerup", handlePointerUp);
-    document.addEventListener("pointercancel", handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -88,6 +115,7 @@ export function ResizableDivider({
     if (event.key !== negativeKey && event.key !== positiveKey) return;
     event.preventDefault();
     onResize?.(event.key === negativeKey ? -step : step);
+    onResizeEnd?.();
   };
 
   const handleCornerKeyDown = (event: React.KeyboardEvent) => {
@@ -95,15 +123,19 @@ export function ResizableDivider({
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       onCornerResize?.(-step, 0);
+      onResizeEnd?.();
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
       onCornerResize?.(step, 0);
+      onResizeEnd?.();
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       onCornerResize?.(0, -step);
+      onResizeEnd?.();
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       onCornerResize?.(0, step);
+      onResizeEnd?.();
     }
   };
 
@@ -132,7 +164,13 @@ export function ResizableDivider({
           aria-label="Resize layout in all directions"
           onPointerDown={handleCornerPointerDown}
           onKeyDown={handleCornerKeyDown}
-          className="absolute -bottom-[13px] left-1/2 -translate-x-1/2 z-30 h-5 w-5 cursor-all-scroll bg-transparent select-none touch-none outline-none focus-visible:ring-1 focus-visible:ring-brand"
+          style={{
+            top: "calc(100% + 3px)",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            cursor: "all-scroll",
+          }}
+          className="absolute z-50 h-6 w-6 cursor-all-scroll bg-transparent select-none touch-none outline-none [cursor:all-scroll] [cursor:move]"
         />
       )}
     </div>

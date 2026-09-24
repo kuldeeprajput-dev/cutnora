@@ -685,7 +685,7 @@ export function TextPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-3 text-studio-fg select-none h-full overflow-y-auto overscroll-contain studio-scrollbar">
+    <div className="flex flex-col gap-3 p-3 text-studio-fg select-none h-full overflow-y-auto overscroll-contain no-scrollbar">
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-studio-muted pointer-events-none" />

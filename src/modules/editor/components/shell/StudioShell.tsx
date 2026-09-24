@@ -90,7 +90,13 @@ export function StudioShell() {
     );
     const newWidth = Math.min(responsiveMaximum, Math.max(350, currentWidth + delta));
     setLeftPanelWidth(newWidth);
-    localStorage.setItem("cutnora_panel_width", String(newWidth));
+  };
+
+  const handleWidthResizeEnd = () => {
+    const currentWidth = useEditorUIStore.getState().leftPanelWidth;
+    try {
+      localStorage.setItem("cutnora_panel_width", String(currentWidth));
+    } catch {}
   };
 
   const handleHeightResize = (delta: number) => {
@@ -98,7 +104,13 @@ export function StudioShell() {
     const responsiveMaximum = Math.min(500, Math.floor(window.innerHeight * 0.45));
     const newHeight = Math.min(responsiveMaximum, Math.max(120, currentHeight - delta));
     setTimelineHeight(newHeight);
-    localStorage.setItem("cutnora_timeline_height", String(newHeight));
+  };
+
+  const handleHeightResizeEnd = () => {
+    const currentHeight = useEditorUIStore.getState().timelineHeight;
+    try {
+      localStorage.setItem("cutnora_timeline_height", String(currentHeight));
+    } catch {}
   };
 
   const handleCornerResize = (deltaX: number, deltaY: number) => {
@@ -116,8 +128,15 @@ export function StudioShell() {
 
     setLeftPanelWidth(newWidth);
     setTimelineHeight(newHeight);
-    localStorage.setItem("cutnora_panel_width", String(newWidth));
-    localStorage.setItem("cutnora_timeline_height", String(newHeight));
+  };
+
+  const handleCornerResizeEnd = () => {
+    const currentWidth = useEditorUIStore.getState().leftPanelWidth;
+    const currentHeight = useEditorUIStore.getState().timelineHeight;
+    try {
+      localStorage.setItem("cutnora_panel_width", String(currentWidth));
+      localStorage.setItem("cutnora_timeline_height", String(currentHeight));
+    } catch {}
   };
 
   return (
@@ -128,7 +147,7 @@ export function StudioShell() {
       {/* Main Workspace Area with outer margins and matching 8px gap */}
       <div className="flex flex-1 flex-col overflow-hidden relative px-2.5 pb-2.5 pt-1.5 bg-studio-bg">
         {/* Upper Workspace: Left Sidebar Card + Preview Stage Card */}
-        <div className="flex flex-1 min-h-0 relative">
+        <div className="flex flex-1 min-h-0 relative z-30">
           {/* Left Sidebar Card: Tool Rail + Contextual Panel */}
           <div
             data-studio-sidebar
@@ -159,6 +178,7 @@ export function StudioShell() {
           <ResizableDivider
             orientation="vertical"
             onResize={handleWidthResize}
+            onResizeEnd={handleCornerResizeEnd}
             hasCornerHandle={true}
             onCornerResize={handleCornerResize}
           />
@@ -178,6 +198,7 @@ export function StudioShell() {
         <ResizableDivider
           orientation="horizontal"
           onResize={handleHeightResize}
+          onResizeEnd={handleHeightResizeEnd}
         />
 
         {/* Bottom Timeline Card */}

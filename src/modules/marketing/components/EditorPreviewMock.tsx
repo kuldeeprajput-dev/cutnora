@@ -29,7 +29,7 @@ export function EditorPreviewMock() {
             switching tools or waiting on uploads.
           </p>
         </div>
-        <div className="overflow-x-auto rounded-2xl pb-2 studio-scrollbar">
+        <div className="overflow-x-auto rounded-2xl pb-2 no-scrollbar">
           {/* Outer Window Container with Subtle Drop Shadow & Borders */}
           <div className="min-w-[820px] overflow-hidden rounded-2xl border border-studio-border bg-studio-bg text-studio-fg shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
             {/* Top Studio Bar */}

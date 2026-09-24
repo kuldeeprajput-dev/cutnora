@@ -315,7 +315,7 @@ export function MediaLibraryPanel() {
           </div>
 
           {/* SCROLLABLE MEDIA ASSETS SECTION (ONLY THIS SCROLLS!) */}
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-2 pb-1 studio-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-2 pb-1 no-scrollbar">
             {filteredAssets.length === 0 ? (
               <div className="flex min-h-36 flex-col items-center justify-center px-4 py-8 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-studio-border bg-studio-panel-raised text-studio-muted">

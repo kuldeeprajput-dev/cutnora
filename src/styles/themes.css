@@ -4,7 +4,9 @@ html.light {
   color-scheme: light;
 
   --scrollbar-thumb: rgba(0, 0, 0, 0.18);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.42);
+  --scrollbar-thumb-active: rgba(0, 0, 0, 0.70);
+  --scrollbar-track-hover: rgba(0, 0, 0, 0.04);
 
   --brand: #09090b;
   --brand-hover: #27272a;
@@ -61,7 +63,9 @@ html.dark {
   color-scheme: dark;
 
   --scrollbar-thumb: rgba(255, 255, 255, 0.22);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.50);
+  --scrollbar-thumb-active: rgba(255, 255, 255, 0.80);
+  --scrollbar-track-hover: rgba(255, 255, 255, 0.04);
 
   --brand: #ffffff;
   --brand-hover: #f4f4f5;

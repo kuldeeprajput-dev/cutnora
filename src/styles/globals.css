@@ -62,47 +62,24 @@
 
 @layer base {
 
-  /* Firefox Custom Thin Scrollbar */
-  @supports (-moz-appearance: none) {
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--scrollbar-thumb) transparent;
-    }
-  }
-
-  /* WebKit Custom Thin Scrollbar (Chrome, Safari, Edge, Electron) */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb);
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--scrollbar-thumb-hover);
-  }
-
-  /* Permanently remove all scrollbar arrow buttons */
+  /* Permanently remove all scrollbar arrow buttons across the whole app */
   ::-webkit-scrollbar-button,
   ::-webkit-scrollbar-button:single-button,
   ::-webkit-scrollbar-button:vertical,
   ::-webkit-scrollbar-button:horizontal,
   ::-webkit-scrollbar-button:start,
-  ::-webkit-scrollbar-button:end {
+  ::-webkit-scrollbar-button:end,
+  ::-webkit-scrollbar-button:decrement,
+  ::-webkit-scrollbar-button:increment {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
     background: transparent !important;
+    -webkit-appearance: none !important;
   }
 
   ::-webkit-scrollbar-corner {
+    display: none !important;
     background: transparent !important;
   }
 
@@ -161,41 +138,119 @@
     background-size: 48px 48px;
   }
 
-  .studio-scrollbar {
-    /* Uses global custom webkit / firefox thin scrollbar */
+  /* Left-side sections (Canvas Settings, Clip Settings, Media Library, etc.) scrollbar suppression */
+  [data-studio-sidebar],
+  [data-studio-sidebar] *,
+  .studio-sidebar,
+  .studio-sidebar *,
+  .no-scrollbar,
+  .no-scrollbar *,
+  .scrollbar-none,
+  .scrollbar-none *,
+  .studio-scrollbar,
+  .studio-scrollbar * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
 
-  .timeline-bottom-scrollbar {
-    /* Standard scrollbar properties conflict with webkit custom scrollbars in Chrome 121+ */
+  [data-studio-sidebar]::-webkit-scrollbar,
+  [data-studio-sidebar] *::-webkit-scrollbar,
+  .studio-sidebar::-webkit-scrollbar,
+  .studio-sidebar *::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar,
+  .no-scrollbar *::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar,
+  .scrollbar-none *::-webkit-scrollbar,
+  .studio-scrollbar::-webkit-scrollbar,
+  .studio-scrollbar *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
   }
 
+  /* Timeline Bottom Track Scrollbar:
+     - ONLY visible in the timeline track area
+     - Absolutely no arrow buttons (< or >)
+     - Starting/Idle state: sleek 4px thin pill in theme color
+     - On hover: expands to 8px thickness for easy grabbing
+     - Dragging/Active: full 10px thickness in theme active color
+  */
   .timeline-bottom-scrollbar::-webkit-scrollbar {
-    height: 11px;
-    width: 6px;
+    height: 10px;
+    width: 10px;
+    background: transparent;
   }
 
   .timeline-bottom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 4px;
+    background: transparent;
+    border-radius: 9999px;
   }
 
+  .timeline-bottom-scrollbar:hover::-webkit-scrollbar-track,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-track:hover {
+    background: var(--scrollbar-track-hover, rgba(255, 255, 255, 0.04));
+  }
+
+  /* Starting state: thin 4px line (3px transparent borders on 10px track) */
   .timeline-bottom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.35);
-    border-radius: 6px;
+    background-color: var(--scrollbar-thumb);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    min-width: 48px;
+    min-height: 48px;
+    transition: background-color 0.15s ease, border 0.15s ease;
   }
 
+  /* Hover state: expands visibly to 8px thickness */
+  .timeline-bottom-scrollbar:hover::-webkit-scrollbar-thumb,
   .timeline-bottom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.65);
+    border: 1px solid transparent;
+    background-color: var(--scrollbar-thumb-hover);
   }
 
+  /* Dragging / Active state: full 10px thickness in theme active color */
   .timeline-bottom-scrollbar::-webkit-scrollbar-thumb:active {
-    background-color: #f97316;
+    border: 0 solid transparent;
+    background-color: var(--scrollbar-thumb-active);
   }
 
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
+  /* Completely suppress all scrollbar arrow buttons in timeline */
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:single-button,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:vertical,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:horizontal,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:start,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:end,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:decrement,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:increment {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+  }
+
+  .timeline-bottom-scrollbar::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+  }
+
+  /* Modal Dialog Scrollbar */
+  .dialog-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
   }
 
   .text-balance {

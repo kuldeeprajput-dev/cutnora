@@ -288,7 +288,7 @@ export function RecordPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-studio-fg select-none h-full overflow-y-auto overscroll-contain studio-scrollbar">
+    <div className="flex flex-col gap-4 p-4 text-studio-fg select-none h-full overflow-y-auto overscroll-contain no-scrollbar">
       <Tabs
         defaultValue="mic"
         value={activeTab}

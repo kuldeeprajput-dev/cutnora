@@ -100,7 +100,7 @@ export function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         className={cn(
-          "relative max-h-[calc(100dvh-16px)] w-full max-w-lg overflow-y-auto rounded-xl border border-studio-border bg-studio-panel p-4 text-studio-fg shadow-xl transition-all studio-scrollbar sm:max-h-[calc(100dvh-32px)] sm:p-6",
+          "relative max-h-[calc(100dvh-16px)] w-full max-w-lg overflow-y-auto rounded-xl border border-studio-border bg-studio-panel p-4 text-studio-fg shadow-xl transition-all dialog-scrollbar sm:max-h-[calc(100dvh-32px)] sm:p-6",
           mobileBottomSheet &&
             "max-h-[calc(100dvh-8px)] rounded-b-none rounded-t-2xl border-b-0 sm:max-h-[calc(100dvh-32px)] sm:rounded-xl sm:border-b",
           "focus-visible:outline-none",

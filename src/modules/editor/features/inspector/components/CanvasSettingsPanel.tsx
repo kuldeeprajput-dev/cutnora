@@ -526,7 +526,7 @@ export function CanvasSettingsPanel() {
                   <DropdownMenu
                     matchTriggerWidth
                     triggerClassName="w-full"
-                    className="max-h-72 w-full overflow-y-auto studio-scrollbar rounded-xl border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md"
+                    className="max-h-72 w-full overflow-y-auto no-scrollbar rounded-xl border border-studio-border bg-studio-panel p-1.5 shadow-2xl backdrop-blur-md"
                     trigger={(isOpen) => (
                       <div
                         className={cn(

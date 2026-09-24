@@ -261,7 +261,7 @@ export function ElementLibraryBrowser({
 
       <div
         ref={scrollRef}
-        className="studio-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-7"
+        className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-7"
       >
         {section === "shapes" ? (
           <div className="grid grid-cols-3 gap-2">

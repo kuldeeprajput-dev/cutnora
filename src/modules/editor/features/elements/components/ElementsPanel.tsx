@@ -343,7 +343,7 @@ export function ElementsPanel() {
     <div className="flex h-full min-h-0 flex-col bg-studio-panel text-studio-fg select-none">
 
 
-      <div className="studio-scrollbar min-h-0 flex-1 overflow-y-auto px-3.5 pb-5 pt-2">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3.5 pb-5 pt-2">
         <LibrarySection section="shapes" onOpen={setActiveSection}>
           {filteredShapes.map((preset) => (
             <button

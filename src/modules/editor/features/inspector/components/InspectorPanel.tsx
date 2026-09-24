@@ -248,7 +248,7 @@ export function InspectorPanel() {
         title="Canvas Settings"
         className="h-full w-full"
       >
-        <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
+        <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
           <CanvasSettingsPanel />
         </div>
       </StudioPanel>
@@ -287,7 +287,7 @@ export function InspectorPanel() {
         }
         className="h-full w-full"
       >
-        <div className="flex h-full w-full flex-col text-xs text-studio-fg p-3 overflow-y-auto studio-scrollbar select-none">
+        <div className="flex h-full w-full flex-col text-xs text-studio-fg p-3 overflow-y-auto no-scrollbar select-none">
           <div className="py-2.5 border-b border-studio-border flex items-center gap-2 text-studio-muted">
             <Layers className="h-3.5 w-3.5 text-studio-muted shrink-0" />
             <span>Multi-selection ({selectedClips.length} clips)</span>
@@ -406,7 +406,7 @@ export function InspectorPanel() {
           }
           className="h-full w-full"
         >
-          <div className="h-full w-full overflow-y-auto p-3 studio-scrollbar">
+          <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
             <CanvasSettingsPanel />
           </div>
         </StudioPanel>
@@ -429,7 +429,7 @@ export function InspectorPanel() {
         >
           <div
             ref={containerRef}
-            className="h-full w-full overflow-y-auto p-3 studio-scrollbar"
+            className="h-full w-full overflow-y-auto p-3 no-scrollbar"
           >
             <Tabs
               defaultValue={isText ? "text" : isElement ? "element" : "transform"}
@@ -446,7 +446,7 @@ export function InspectorPanel() {
                 />
               ) : (
                 /* Horizontal Tabs Bar when panel width is wide (>= 360px) */
-                <TabList className="mb-3 flex w-full shrink-0 items-center gap-0 overflow-x-auto studio-scrollbar">
+                <TabList className="mb-3 flex w-full shrink-0 items-center gap-0 overflow-x-auto no-scrollbar">
                   {availableTabs.map((t) => (
                     <TabTrigger
                       key={t.value}
