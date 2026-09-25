@@ -36,9 +36,8 @@ export function LandingHeader() {
           </a>
         </nav>
 
-        {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <ThemeToggle className="h-9 w-9 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs hover:border-zinc-400 hover:bg-zinc-100 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:hover:border-[#DEDEDE]/30" />
+          <ThemeToggle className="h-9 w-9 sm:h-9 sm:w-9" />
           <Link
             href="/studio"
             className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-300/80 bg-zinc-100/80 px-4 text-xs font-semibold text-zinc-800 transition-all hover:bg-zinc-200 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"

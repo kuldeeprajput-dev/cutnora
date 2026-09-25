@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Check } from "lucide-react";
+import { Check, ArrowDown } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import {
   SortOption,
@@ -158,33 +158,12 @@ export function StudioSortControls({
           onToggleSortOrder();
         }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          color="currentColor"
+        <ArrowDown
           className={cn(
             "transition-transform duration-200 origin-center size-4",
             sortOrder === "asc" ? "rotate-180" : "",
           )}
-        >
-          <path
-            d="M12 18.502V5.00195"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-          ></path>
-          <path
-            d="M18 13.002C18 13.002 13.5811 19.0019 12 19.002C10.4188 19.002 6 13.002 6 13.002"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-          ></path>
-        </svg>
+        />
       </button>
     </div>
   );

@@ -26,7 +26,7 @@ export function MarketingHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle className="h-9 w-9 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs hover:border-zinc-400 hover:bg-zinc-100 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:hover:border-[#DEDEDE]/30" />
+          <ThemeToggle className="h-9 w-9 sm:h-9 sm:w-9" />
           <Link
             href="/studio"
             className="inline-flex h-9 items-center justify-center rounded-full bg-zinc-950 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"

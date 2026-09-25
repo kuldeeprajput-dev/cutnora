@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Cutnora Team" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/brand/cutnora-logo.svg",
+    apple: "/brand/cutnora-logo.svg",
   },
   openGraph: {
     title: "Cutnora — Private browser video editor",

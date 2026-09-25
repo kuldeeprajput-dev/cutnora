@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Check, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import type { SortOption, SortOrder } from "../hooks/useProjectSort";
 export type { SortOption, SortOrder };
@@ -70,21 +71,7 @@ export function StudioSubheader({
                 className="flex items-center justify-center text-current"
                 style={{ pointerEvents: "none" }}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-check size-4"
-                  aria-hidden="true"
-                >
-                  <path d="M20 6 9 17l-5-5"></path>
-                </svg>
+                <Check className="size-4" aria-hidden="true" />
               </span>
             )}
           </button>
@@ -133,30 +120,7 @@ export function StudioSubheader({
             title="Duplicate selected"
             onClick={onBatchDuplicate}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              color="currentColor"
-              className="size-4"
-            >
-              <path
-                d="M9 15V19C9 20.1046 9.89543 21 11 21H19C20.1046 21 21 20.1046 21 19V11C21 9.89543 20.1046 9 19 9H15"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M5 15H13C14.1046 15 15 14.1046 15 13V5C15 3.89543 14.1046 3 13 3H5C3.89543 3 3 3.89543 3 5V13C3 14.1046 3.89543 15 5 15Z"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-            </svg>
+            <Copy className="size-4" />
           </button>
 
           {/* Delete Button */}
@@ -167,37 +131,7 @@ export function StudioSubheader({
             title="Delete selected"
             onClick={onBatchDelete}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              color="currentColor"
-              className="size-4"
-            >
-              <path
-                d="M19 9L18.2547 18.6888C18.1561 19.9705 17.089 20.9632 15.8037 20.9632H8.19627C6.91104 20.9632 5.84386 19.9705 5.74531 18.6888L5 9"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M3 6H21"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-            </svg>
+            <Trash2 className="size-4" />
           </button>
         </div>
 
@@ -210,37 +144,7 @@ export function StudioSubheader({
             title="Delete selected"
             onClick={onBatchDelete}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              color="currentColor"
-              className="size-4"
-            >
-              <path
-                d="M19 9L18.2547 18.6888C18.1561 19.9705 17.089 20.9632 15.8037 20.9632H8.19627C6.91104 20.9632 5.84386 19.9705 5.74531 18.6888L5 9"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M3 6H21"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-            </svg>
+            <Trash2 className="size-4" />
           </button>
         )}
       </div>

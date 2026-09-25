@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Film } from "lucide-react";
+import { Film, Check, MoreHorizontal } from "lucide-react";
 import { useProjectThumbnail } from "../hooks/useProjectThumbnail";
 import type { Project } from "../types";
 import { getProjectDuration, formatDuration, formatDate } from "../utils/project-utils";
@@ -107,21 +107,7 @@ export function ProjectListRow({
             className="flex items-center justify-center text-current"
             style={{ pointerEvents: "none" }}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-check size-4"
-              aria-hidden="true"
-            >
-              <path d="M20 6 9 17l-5-5"></path>
-            </svg>
+            <Check className="size-4" aria-hidden="true" />
           </span>
         )}
       </button>
@@ -175,37 +161,7 @@ export function ProjectListRow({
           aria-label="More options"
           className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            color="currentColor"
-            className="size-4"
-          >
-            <path
-              d="M12.0045 11.5C12.5568 11.5 13.0045 11.9477 13.0045 12.5C13.0045 13.0523 12.5568 13.5 12.0045 13.5C11.4522 13.5 11.0045 13.0523 11.0045 12.5C11.0045 11.9477 11.4522 11.5 12.0045 11.5Z"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M18.0045 11.5C18.5568 11.5 19.0045 11.9477 19.0045 12.5C19.0045 13.0523 18.5568 13.5 18.0045 13.5C17.4522 13.5 17.0045 13.0523 17.0045 12.5C17.0045 11.9477 17.4522 11.5 18.0045 11.5Z"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M6.00449 11.5C6.55677 11.5 7.00449 11.9477 7.00449 12.5C7.00449 13.0523 6.55677 13.5 6.00449 13.5C5.4522 13.5 5.00449 13.0523 5.00449 12.5C5.00449 11.9477 5.4522 11.5 6.00449 11.5Z"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-          </svg>
+          <MoreHorizontal className="size-4" />
         </button>
 
         <ProjectActionMenu

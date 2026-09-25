@@ -60,9 +60,8 @@ export function LandingHeaderNav() {
             FAQ
           </a>
         </nav>
-
         <div className="flex items-center gap-2 sm:gap-2.5">
-          <ThemeToggle className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs transition-all duration-200 hover:border-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 hover:scale-105 active:scale-95 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/30 dark:hover:bg-mkt-surface-secondary" />
+          <ThemeToggle />
           <Link
             href="/studio"
             className="inline-flex h-9 sm:h-10 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 px-3.5 sm:px-4 text-xs font-semibold text-zinc-800 shadow-xs transition-all duration-200 hover:bg-zinc-100 hover:border-zinc-400 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/30 dark:hover:bg-mkt-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"

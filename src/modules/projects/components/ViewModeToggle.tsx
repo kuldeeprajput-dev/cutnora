@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { LayoutGrid, List } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
 export interface ViewModeToggleProps {
@@ -40,21 +41,7 @@ export function ViewModeToggle({
         aria-pressed={viewMode === "grid"}
         onClick={() => onViewModeChange("grid")}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="size-4"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
+        <LayoutGrid className="size-4" />
       </button>
 
       {/* List view button */}
@@ -71,19 +58,7 @@ export function ViewModeToggle({
         aria-pressed={viewMode === "list"}
         onClick={() => onViewModeChange("list")}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          className="size-4"
-        >
-          <path d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <List className="size-4" />
       </button>
     </div>
   );

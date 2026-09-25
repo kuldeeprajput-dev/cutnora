@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { ChevronRight, Search, X } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { ViewModeToggle } from "./ViewModeToggle";
@@ -47,21 +48,7 @@ export function StudioHeader({
                 aria-hidden="true"
                 className="[&>svg]:size-3.5"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-chevron-right"
-                  aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6"></path>
-                </svg>
+                <ChevronRight className="size-3.5" aria-hidden="true" />
               </li>
               <li
                 data-slot="breadcrumb-item"
@@ -91,31 +78,10 @@ export function StudioHeader({
         <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
           <ThemeToggle className="shrink-0" />
           <div className="relative hidden md:block">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              color="currentColor"
+            <Search
               className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
               aria-hidden="true"
-            >
-              <path
-                d="M17 17L21 21"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-              <path
-                d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-              ></path>
-            </svg>
+            />
             <div className="relative">
               <input
                 className="text-foreground file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
@@ -131,21 +97,7 @@ export function StudioHeader({
                   aria-label="Clear search query"
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-sm transition-colors cursor-pointer"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-x size-3.5"
-                  >
-                    <path d="M18 6 6 18"></path>
-                    <path d="m6 6 12 12"></path>
-                  </svg>
+                  <X className="size-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -167,31 +119,10 @@ export function StudioHeader({
 
       {/* Mobile Search Input */}
       <div className="relative block md:hidden mb-4">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          color="currentColor"
+        <Search
           className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
           aria-hidden="true"
-        >
-          <path
-            d="M17 17L21 21"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-          ></path>
-          <path
-            d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-          ></path>
-        </svg>
+        />
         <div className="relative">
           <input
             className="text-foreground file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 h-10 px-4 text-base file:h-8 file:text-sm md:text-sm pl-9 pr-9"
@@ -207,21 +138,7 @@ export function StudioHeader({
               aria-label="Clear mobile search query"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-sm transition-colors cursor-pointer"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-x size-3.5"
-              >
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-              </svg>
+              <X className="size-3.5" aria-hidden="true" />
             </button>
           )}
         </div>

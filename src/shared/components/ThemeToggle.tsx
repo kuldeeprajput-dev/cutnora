@@ -76,18 +76,17 @@ export function ThemeToggle({
       type="button"
       onClick={toggleTheme}
       aria-label={title}
-      title={title}
       className={cn(
-        "theme-toggle inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center gap-2 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs transition-all duration-200 hover:border-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 hover:scale-105 active:scale-95 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/30 dark:hover:bg-mkt-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg",
+        "theme-toggle inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center gap-2 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs transition-colors duration-200 cursor-pointer hover:border-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/35 dark:hover:bg-mkt-surface-secondary dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg",
         className,
       )}
     >
       <Moon
-        className="theme-icon--light h-4 w-4 transition-transform duration-300"
+        className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
         aria-hidden="true"
       />
       <Sun
-        className="theme-icon--dark h-4 w-4 transition-transform duration-300"
+        className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
         aria-hidden="true"
       />
       {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
