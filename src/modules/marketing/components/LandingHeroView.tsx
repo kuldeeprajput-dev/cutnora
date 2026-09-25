@@ -9,7 +9,7 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/shared/utils/cn";
 import { HeroCameraArtwork } from "./HeroCameraArtwork";
 
-function GithubIcon({ className }: { className?: string }) {
+export function GithubIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
