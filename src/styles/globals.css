@@ -63,6 +63,7 @@
 @layer base {
 
   /* Permanently remove all scrollbar arrow buttons across the whole app */
+  *::-webkit-scrollbar-button,
   ::-webkit-scrollbar-button,
   ::-webkit-scrollbar-button:single-button,
   ::-webkit-scrollbar-button:vertical,
@@ -78,9 +79,79 @@
     -webkit-appearance: none !important;
   }
 
+  *::-webkit-scrollbar-corner,
   ::-webkit-scrollbar-corner {
     display: none !important;
     background: transparent !important;
+  }
+
+  /* Universal Custom Scrollbar:
+     - Absolutely no arrow buttons (top/bottom)
+     - Idle state: ultra-thin 4px pill
+     - Hover state: expands to 8px thickness (matching timeline track)
+     - Active/Dragging: 10px thickness in theme active color
+  */
+  html,
+  body,
+  .app-custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  .app-custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track,
+  .app-custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+  }
+
+  html:hover::-webkit-scrollbar-track,
+  body:hover::-webkit-scrollbar-track,
+  html::-webkit-scrollbar-track:hover,
+  body::-webkit-scrollbar-track:hover,
+  .app-custom-scrollbar:hover::-webkit-scrollbar-track,
+  .app-custom-scrollbar::-webkit-scrollbar-track:hover {
+    background: var(--scrollbar-track-hover, rgba(255, 255, 255, 0.04));
+  }
+
+  /* Idle state: thin 4px line (3px transparent border on 10px track) */
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb,
+  .app-custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    min-height: 48px;
+    min-width: 48px;
+    transition: background-color 0.15s ease, border 0.15s ease;
+  }
+
+  /* Hover state: expands visibly to 8px thickness */
+  html:hover::-webkit-scrollbar-thumb,
+  body:hover::-webkit-scrollbar-thumb,
+  html::-webkit-scrollbar-thumb:hover,
+  body::-webkit-scrollbar-thumb:hover,
+  .app-custom-scrollbar:hover::-webkit-scrollbar-thumb,
+  .app-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    border: 1px solid transparent;
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  /* Active state: full 10px thickness */
+  html::-webkit-scrollbar-thumb:active,
+  body::-webkit-scrollbar-thumb:active,
+  .app-custom-scrollbar::-webkit-scrollbar-thumb:active {
+    border: 0 solid transparent;
+    background-color: var(--scrollbar-thumb-active);
   }
 
   html {

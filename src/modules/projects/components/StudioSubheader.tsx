@@ -40,7 +40,7 @@ export function StudioSubheader({
   onBatchDelete,
 }: StudioSubheaderProps) {
   return (
-    <div className="sticky top-16 z-10 flex items-center justify-between px-2 sm:px-6 h-14 pt-2 bg-background max-w-full">
+    <div className="sticky top-16 z-10 flex items-center justify-between px-2 sm:px-6 h-14 pt-2 bg-background max-w-full shrink-0">
       <div className="flex items-center gap-2">
         {/* Select all label & checkbox */}
         <label

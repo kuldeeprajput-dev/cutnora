@@ -21,7 +21,7 @@ export function StudioHeader({
   onSearchChange,
 }: StudioHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 px-4 sm:px-6 md:px-8 bg-background flex flex-col gap-2">
+    <header className="sticky top-0 z-20 px-4 sm:px-6 md:px-8 bg-background flex flex-col gap-2 shrink-0">
       <div className="flex items-center justify-between h-16 pt-2">
         {/* Left: Breadcrumbs & View Switcher */}
         <div className="flex items-center gap-5">

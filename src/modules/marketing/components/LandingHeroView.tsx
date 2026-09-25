@@ -44,13 +44,36 @@ export function LandingHeaderNav() {
   const [starCount, setStarCount] = useState<number | null>(6);
 
   useEffect(() => {
+    const container = document.getElementById("landing-scroll-container");
     const handleScroll = () => {
-      setScrolled(window.scrollY > 12);
+      const scrollTop = container ? container.scrollTop : window.scrollY;
+      setScrolled(scrollTop > 10);
     };
     handleScroll();
+    if (container) {
+      container.addEventListener("scroll", handleScroll, { passive: true });
+    }
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
+
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const container = document.getElementById("landing-scroll-container");
+    const target = document.getElementById(id);
+    if (target && container) {
+      const targetTop = target.offsetTop;
+      container.scrollTo({ top: targetTop, behavior: "smooth" });
+    } else if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     fetch("/api/stars")
@@ -121,18 +144,21 @@ export function LandingHeaderNav() {
           <a
             className="transition-colors duration-200 hover:text-zinc-950 dark:hover:text-[#DEDEDE]"
             href="#showcase"
+            onClick={(e) => handleScrollTo(e, "showcase")}
           >
             Showcase
           </a>
           <a
             className="transition-colors duration-200 hover:text-zinc-950 dark:hover:text-[#DEDEDE]"
             href="#features"
+            onClick={(e) => handleScrollTo(e, "features")}
           >
             Features
           </a>
           <a
             className="transition-colors duration-200 hover:text-zinc-950 dark:hover:text-[#DEDEDE]"
             href="#faq"
+            onClick={(e) => handleScrollTo(e, "faq")}
           >
             FAQ
           </a>
@@ -195,21 +221,21 @@ export function LandingHeaderNav() {
           <div className="flex flex-col gap-1 text-sm font-medium">
             <a
               href="#showcase"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleScrollTo(e, "showcase")}
               className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
             >
               Showcase
             </a>
             <a
               href="#features"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleScrollTo(e, "features")}
               className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
             >
               Features
             </a>
             <a
               href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleScrollTo(e, "faq")}
               className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
             >
               FAQ
@@ -349,6 +375,16 @@ export function HeroIntroSection() {
           <PrimaryLink>Start a local edit</PrimaryLink>
           <a
             href="#showcase"
+            onClick={(e) => {
+              e.preventDefault();
+              const container = document.getElementById("landing-scroll-container");
+              const target = document.getElementById("showcase");
+              if (target && container) {
+                container.scrollTo({ top: target.offsetTop, behavior: "smooth" });
+              } else if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
             className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-300/90 bg-white/90 px-5 text-sm font-semibold text-zinc-800 shadow-xs transition-all duration-300 hover:border-zinc-400 hover:bg-zinc-50 hover:scale-[1.02] active:scale-[0.98] dark:border-[#DEDEDE]/15 dark:bg-mkt-surface/90 dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/30 dark:hover:bg-mkt-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
             See the workspace

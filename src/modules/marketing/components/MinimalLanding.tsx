@@ -31,10 +31,15 @@ const questions = [
 
 export function MinimalLanding() {
   return (
-    <div className="min-h-screen overflow-x-clip bg-mkt-bg text-mkt-fg transition-colors duration-300">
+    <div className="h-dvh w-full flex flex-col overflow-hidden bg-mkt-bg text-mkt-fg transition-colors duration-300">
       <LandingHeaderNav />
 
-      <main>
+      {/* Main Page Scroll Container: starts strictly below the navbar with custom scrollbar */}
+      <div
+        id="landing-scroll-container"
+        className="flex-1 overflow-y-auto overflow-x-clip app-custom-scrollbar scroll-smooth"
+      >
+        <main>
         <HeroIntroSection />
         <MinimalFeaturesSection />
 
@@ -124,7 +129,8 @@ export function MinimalLanding() {
             © {new Date().getFullYear()} Cutnora. Browser-native video editing.
           </p>
         </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }

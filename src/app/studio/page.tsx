@@ -98,7 +98,7 @@ export default function StudioDashboardPage() {
   }, [handleKeyDown]);
 
   return (
-    <div className="bg-background min-h-screen text-foreground select-none max-w-full overflow-x-hidden">
+    <div className="bg-background h-dvh text-foreground select-none max-w-full overflow-hidden flex flex-col">
       {/* Top Header */}
       <StudioHeader
         viewMode={viewMode}
@@ -126,7 +126,7 @@ export default function StudioDashboardPage() {
 
       {/* Main Grid / List Content */}
       <main
-        className="mx-auto w-full max-w-full px-2 sm:px-4 pt-2 pb-6 flex flex-col gap-4"
+        className="flex-1 overflow-y-auto app-custom-scrollbar mx-auto w-full max-w-full px-2 sm:px-4 pt-2 pb-6 flex flex-col gap-4"
         aria-busy={isLoading}
       >
         {isLoading ? (
