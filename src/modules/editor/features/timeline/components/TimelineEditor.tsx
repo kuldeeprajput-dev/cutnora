@@ -119,9 +119,6 @@ export function TimelineEditor() {
     moveClipToNewTrack,
     trimClip,
     reorderTracks,
-    splitClip,
-    duplicateClips,
-    deleteClips,
   } = useProjectStore();
   const {
     zoom,
@@ -137,8 +134,7 @@ export function TimelineEditor() {
     toggleTrackHeaders,
   } = useEditorUIStore();
   const trackHeaderWidth = Math.max(170, rawTrackHeaderWidth);
-  const { playhead, isPlaying, togglePlay, stepForward, stepBackward } =
-    usePlaybackStore();
+  const { playhead, isPlaying } = usePlaybackStore();
 
   const handleStartResizeTrackHeader = (e: React.PointerEvent) => {
     e.preventDefault();
@@ -326,36 +322,10 @@ export function TimelineEditor() {
     resetTrackDrag();
   };
 
-  // Keyboard shortcuts
+  // Alt key tracking for disabling snapping during drag
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isInput = ["INPUT", "TEXTAREA"].includes(
-        document.activeElement?.tagName || "",
-      );
-      if (isInput) return;
-
       if (e.key === "Alt") setIsAltPressed(true);
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        togglePlay();
-      } else if (e.code === "KeyS") {
-        if (selectedClipIds.length > 0) {
-          selectedClipIds.forEach((id) => splitClip(id, playhead));
-        }
-      } else if (e.code === "KeyD" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        if (selectedClipIds.length > 0) duplicateClips(selectedClipIds);
-      } else if (e.code === "Delete" || e.code === "Backspace") {
-        if (selectedClipIds.length > 0) {
-          deleteClips(selectedClipIds);
-          clearSelection();
-        }
-      } else if (e.code === "ArrowLeft") {
-        stepBackward();
-      } else if (e.code === "ArrowRight") {
-        stepForward();
-      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -368,17 +338,7 @@ export function TimelineEditor() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [
-    selectedClipIds,
-    playhead,
-    togglePlay,
-    splitClip,
-    duplicateClips,
-    deleteClips,
-    clearSelection,
-    stepBackward,
-    stepForward,
-  ]);
+  }, []);
 
   const rulerContainerRef = useRef<HTMLDivElement>(null);
   const trackHeadersContainerRef = useRef<HTMLDivElement>(null);

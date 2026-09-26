@@ -26,7 +26,6 @@ import { Button } from "@/shared/components/ui/Button";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
-import { confirm } from "@/shared/components/ui/Popup";
 
 export interface ProjectTopBarProps {
   onOpenHelp?: () => void;
@@ -47,25 +46,33 @@ export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
     (state) => state.repairProjectReferences,
   );
 
-  const handleRepair = async () => {
-    const ok = await confirm({
-      title: "Scan & Repair References",
-      message:
-        "Scan and repair project references? Invalid or missing asset links will be safely cleaned up.",
-      confirmText: "Repair References",
-      variant: "primary",
-    });
+  const [repairState, setRepairState] = useState<"idle" | "loading" | "success">("idle");
 
-    if (ok) {
-      const fixed = await repairProjectReferences();
+  const handleRepair = async () => {
+    if (repairState !== "idle") return;
+    setRepairState("loading");
+    try {
+      const [fixed] = await Promise.all([
+        repairProjectReferences(),
+        new Promise<number>((resolve) => setTimeout(() => resolve(0), 800)),
+      ]);
+      setRepairState("success");
       useToastStore
         .getState()
         .showToast(
           fixed > 0
-            ? `Repaired ${fixed} reference(s)`
-            : "Project references healthy",
-          fixed > 0 ? "success" : "info",
+            ? `Repaired ${fixed} project reference(s)`
+            : "All project references are healthy",
+          "success",
         );
+      setTimeout(() => {
+        setRepairState("idle");
+      }, 1500);
+    } catch {
+      setRepairState("idle");
+      useToastStore
+        .getState()
+        .showToast("Failed to scan project references", "error");
     }
   };
   const { setExportModalOpen } = useExportStore();
@@ -244,12 +251,25 @@ export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
         </IconButton>
 
         <IconButton
-          label="Repair project references"
+          label={
+            repairState === "loading"
+              ? "Scanning project..."
+              : repairState === "success"
+                ? "References healthy"
+                : "Scan & repair references"
+          }
           size="sm"
           variant="ghost"
+          disabled={repairState !== "idle"}
           onClick={handleRepair}
         >
-          <Wrench className="h-4 w-4" />
+          {repairState === "loading" ? (
+            <Loader2 className="h-4 w-4 animate-spin text-studio-fg" />
+          ) : repairState === "success" ? (
+            <Check className="h-4 w-4 text-emerald-500" />
+          ) : (
+            <Wrench className="h-4 w-4" />
+          )}
         </IconButton>
 
         <IconButton

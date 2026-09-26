@@ -579,7 +579,7 @@ export function TimelineToolbar({
           </Tooltip>
 
           <div className="flex items-center gap-1 w-40">
-            <Tooltip content="Zoom out" shortcut="-" position="top">
+            <Tooltip content="Zoom out" shortcut="Shift + -" position="top">
               <button
                 type="button"
                 aria-label="Zoom out"
@@ -602,7 +602,7 @@ export function TimelineToolbar({
                 setZoom(sliderValueToTimelineZoom(value, minimumTimelineZoom))
               }
             />
-            <Tooltip content="Zoom in" shortcut="+" position="top">
+            <Tooltip content="Zoom in" shortcut="Shift + +" position="top">
               <button
                 type="button"
                 aria-label="Zoom in"

@@ -4,6 +4,10 @@ import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
 import { historyManager } from '@/modules/editor/store/useHistoryStore';
+import {
+  getNextTimelineZoom,
+  MIN_TIMELINE_ZOOM,
+} from '@/modules/editor/features/timeline/utils/timeline-zoom-utils';
 
 export type CommandCategory = 'playback' | 'editing' | 'navigation' | 'help';
 
@@ -271,22 +275,22 @@ export const COMMAND_REGISTRY: Command[] = [
     id: 'navigation.zoom-in',
     label: 'Zoom In',
     description: 'Increase timeline zoom scale',
-    shortcut: 'Plus',
+    shortcut: 'Shift+Plus',
     category: 'navigation',
     execute: () => {
       const zoom = useEditorUIStore.getState().zoom;
-      useEditorUIStore.getState().setZoom(zoom + 15);
+      useEditorUIStore.getState().setZoom(getNextTimelineZoom(zoom, 'in', MIN_TIMELINE_ZOOM));
     },
   },
   {
     id: 'navigation.zoom-out',
     label: 'Zoom Out',
     description: 'Decrease timeline zoom scale',
-    shortcut: 'Minus',
+    shortcut: 'Shift+Minus',
     category: 'navigation',
     execute: () => {
       const zoom = useEditorUIStore.getState().zoom;
-      useEditorUIStore.getState().setZoom(zoom - 15);
+      useEditorUIStore.getState().setZoom(getNextTimelineZoom(zoom, 'out', MIN_TIMELINE_ZOOM));
     },
   },
   {
