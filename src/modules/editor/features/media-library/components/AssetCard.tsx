@@ -13,7 +13,6 @@ import {
   DropdownMenu,
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
-import { confirm } from "@/shared/components/ui/Popup";
 import {
   FileVideo,
   Film,
@@ -123,17 +122,6 @@ export function AssetCard({
       currentProject?.tracks
         .flatMap((track) => track.clips)
         .filter((clip) => clip.assetId === asset.id) ?? [];
-
-    const ok = await confirm({
-      title: "Delete Media Asset",
-      message:
-        clipsUsingAsset.length > 0
-          ? `Are you sure you want to delete "${asset.name}"? This asset is currently used in ${clipsUsingAsset.length} clip(s) on the timeline and will be removed.`
-          : `Are you sure you want to delete "${asset.name}" from your project media library?`,
-      confirmText: "Delete Asset",
-      variant: "destructive",
-    });
-    if (!ok) return;
 
     const removedClipIds = new Set(clipsUsingAsset.map((clip) => clip.id));
     await deleteStoredMediaAsset(asset);
