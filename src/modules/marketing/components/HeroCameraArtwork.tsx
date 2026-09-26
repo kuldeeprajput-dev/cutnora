@@ -13,7 +13,7 @@ export function HeroCameraArtwork() {
       <div className="absolute inset-0 opacity-20 dark:opacity-25 z-0 bg-[url('/illustrations/hero/grid-pattern.svg')] bg-repeat" />
 
       {/* Top Left: Cinema Camera Rig with Matte Box & Top Handle */}
-      <div className="hero-artwork-float-slow absolute left-4 sm:left-6 lg:left-8 top-1 sm:top-3 w-[260px] sm:w-[380px] lg:w-[460px] opacity-100 dark:opacity-30 transition-opacity duration-700">
+      <div className="hero-artwork-float-slow absolute left-2 sm:left-6 lg:left-8 top-1 sm:top-3 w-[170px] sm:w-[380px] lg:w-[460px] opacity-35 sm:opacity-100 dark:opacity-15 sm:dark:opacity-30 transition-opacity duration-700">
         <img
           src="/illustrations/hero/cinema-camera-rig.svg"
           alt="Cinema Camera Rig Wireframe"
@@ -24,7 +24,7 @@ export function HeroCameraArtwork() {
       </div>
 
       {/* Top Right: Studio Shotgun Microphone & Audio Waveform Ring */}
-      <div className="hero-artwork-float-reverse absolute right-4 sm:right-6 lg:right-8 top-1 sm:top-4 w-[240px] sm:w-[350px] lg:w-[420px] opacity-100 dark:opacity-30 transition-opacity duration-700">
+      <div className="hero-artwork-float-reverse absolute right-2 sm:right-6 lg:right-8 top-1 sm:top-4 w-[160px] sm:w-[350px] lg:w-[420px] opacity-35 sm:opacity-100 dark:opacity-15 sm:dark:opacity-30 transition-opacity duration-700">
         <img
           src="/illustrations/hero/studio-mic-and-lens.svg"
           alt="Studio Mic and Lens Wireframe"
@@ -35,7 +35,7 @@ export function HeroCameraArtwork() {
       </div>
 
       {/* Bottom Left: Anamorphic Prime Lens & Aperture Blades */}
-      <div className="hero-artwork-float-delayed absolute left-4 sm:left-6 lg:left-8 bottom-0 sm:bottom-4 w-[240px] sm:w-[340px] lg:w-[400px] opacity-100 dark:opacity-25 transition-opacity duration-700">
+      <div className="hero-artwork-float-delayed absolute left-2 sm:left-6 lg:left-8 bottom-0 sm:bottom-4 w-[150px] sm:w-[340px] lg:w-[400px] opacity-30 sm:opacity-100 dark:opacity-15 sm:dark:opacity-25 transition-opacity duration-700">
         <img
           src="/illustrations/hero/anamorphic-lens.svg"
           alt="Anamorphic Lens Wireframe"
@@ -46,7 +46,7 @@ export function HeroCameraArtwork() {
       </div>
 
       {/* Bottom Right: Digital Cinema Body & Viewfinder Top Plate */}
-      <div className="hero-artwork-float-slow absolute right-4 sm:right-6 lg:right-8 bottom-0 sm:bottom-2 w-[260px] sm:w-[360px] lg:w-[420px] opacity-100 dark:opacity-30 transition-opacity duration-700">
+      <div className="hero-artwork-float-slow absolute right-2 sm:right-6 lg:right-8 bottom-0 sm:bottom-2 w-[160px] sm:w-[360px] lg:w-[420px] opacity-30 sm:opacity-100 dark:opacity-15 sm:dark:opacity-30 transition-opacity duration-700">
         <img
           src="/illustrations/hero/camera-body-top-plate.svg"
           alt="Camera Body Top Plate Wireframe"

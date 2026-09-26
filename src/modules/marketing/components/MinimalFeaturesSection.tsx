@@ -26,7 +26,7 @@ export function MinimalFeaturesSection() {
     <>
       <section
         id="showcase"
-        className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-12 overflow-hidden"
+        className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-14 pb-8 sm:pb-12 overflow-hidden"
       >
         {/* Ambient Background Grid Pattern matching Hero */}
         <ShowcaseBackgroundGrid />
@@ -35,7 +35,7 @@ export function MinimalFeaturesSection() {
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[420px] w-full max-w-[1000px] rounded-full bg-gradient-to-tr from-zinc-200/50 via-transparent to-transparent dark:from-[#DEDEDE]/[0.06] dark:via-transparent dark:to-transparent blur-[120px] -z-10" />
 
         {/* Center Showcase Browser Frame */}
-        <div className="landing-showcase-reveal relative mx-auto w-full max-w-7xl overflow-hidden rounded-[22px] sm:rounded-[26px] border border-zinc-200/90 dark:border-white/[0.12] bg-white/95 dark:bg-mkt-surface/85 p-2 sm:p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] dark:shadow-[0_25px_80px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-2xl transition-all duration-300">
+        <div className="landing-showcase-reveal relative mx-auto w-full max-w-7xl overflow-hidden rounded-[20px] sm:rounded-[26px] border border-zinc-200/90 dark:border-white/[0.12] bg-white/95 dark:bg-mkt-surface/85 p-2 sm:p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] dark:shadow-[0_25px_80px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-2xl transition-all duration-300">
           {/* Top specular highlight line */}
           <span
             aria-hidden="true"
@@ -82,9 +82,9 @@ export function MinimalFeaturesSection() {
 
       <section
         id="features"
-        className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-16 sm:pb-20"
+        className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-12 sm:pt-28 pb-12 sm:pb-20"
       >
-        <div className="landing-reveal mb-14 sm:mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="landing-reveal mb-8 sm:mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-4 sm:gap-6">
           <div>
             <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-medium tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
               <span className="h-1 w-1 rounded-full bg-zinc-400 dark:bg-[#808080]" />
@@ -103,7 +103,7 @@ export function MinimalFeaturesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8 lg:gap-14">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-8 lg:gap-14">
           {principles.map(({ icon: Icon, title, body }, index) => (
             <article
               key={title}

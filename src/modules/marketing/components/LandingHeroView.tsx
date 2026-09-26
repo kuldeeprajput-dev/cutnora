@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Menu, Sparkles, Star, X } from "lucide-react";
+import { ArrowUpRight, Sparkles, Star } from "lucide-react";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { siteConfig } from "@/config/site";
@@ -39,7 +39,6 @@ export function PrimaryLink({ children }: { children: ReactNode }) {
 }
 
 export function LandingHeaderNav() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [starCount, setStarCount] = useState<number | null>(6);
 
@@ -64,7 +63,6 @@ export function LandingHeaderNav() {
 
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    setMobileMenuOpen(false);
     const container = document.getElementById("landing-scroll-container");
     const target = document.getElementById(id);
     if (target && container) {
@@ -166,99 +164,43 @@ export function LandingHeaderNav() {
 
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* GitHub Star Button - Clean, aligned badge */}
+          {/* GitHub Star Button: Desktop only (hidden on mobile) */}
           <a
             href={siteConfig.githubRepoUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Cutnora on GitHub"
-            className="group relative inline-flex h-9 sm:h-10 items-center gap-2 rounded-full border border-zinc-200/80 bg-zinc-100/60 px-3.5 text-xs font-medium text-zinc-700 backdrop-blur-md transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-200/70 hover:scale-[1.02] active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#DEDEDE] dark:hover:border-white/20 dark:hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+            className="hidden sm:inline-flex group relative h-10 items-center gap-2 rounded-full border border-zinc-200/80 bg-zinc-100/60 px-3.5 text-xs font-medium text-zinc-700 backdrop-blur-md transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-200/70 hover:scale-[1.02] active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#DEDEDE] dark:hover:border-white/20 dark:hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current shrink-0"
           >
             <GithubIcon className="h-4 w-4 fill-current transition-transform duration-200 group-hover:scale-110" />
-            <span className="hidden sm:inline font-semibold text-zinc-900 dark:text-[#DEDEDE]">Stars</span>
+            <span className="font-semibold text-zinc-900 dark:text-[#DEDEDE]">Stars</span>
             <span className="inline-flex items-center gap-1 font-semibold text-zinc-700 dark:text-[#DEDEDE] leading-none">
               <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
               <span>{starCount !== null ? (starCount >= 1000 ? `${(starCount / 1000).toFixed(1)}k` : starCount) : "6"}</span>
             </span>
           </a>
 
-          {/* Studio Link */}
+          {/* Studio Link: Mobile has crisp white background; Desktop retains original frosted styling */}
           <Link
             href="/studio"
-            className="inline-flex h-9 sm:h-10 items-center justify-center rounded-full border border-zinc-200/80 bg-zinc-100/60 px-3.5 sm:px-4 text-xs font-semibold text-zinc-800 shadow-xs backdrop-blur-md transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-200/70 hover:scale-[1.02] active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-white/20 dark:hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+            className="inline-flex h-8.5 sm:h-10 items-center justify-center rounded-full px-3.5 sm:px-4 text-xs font-semibold shadow-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] bg-white text-zinc-950 border border-zinc-200/90 dark:bg-white dark:text-zinc-950 dark:border-transparent sm:border sm:border-zinc-200/80 sm:bg-zinc-100/60 sm:text-zinc-800 sm:backdrop-blur-md sm:hover:border-zinc-300 sm:hover:bg-zinc-200/70 sm:dark:border-white/10 sm:dark:bg-white/[0.04] sm:dark:text-[#DEDEDE] sm:dark:shadow-none sm:dark:hover:border-white/20 sm:dark:hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current shrink-0"
           >
             Studio
           </Link>
 
-          {/* Start Editor CTA */}
+          {/* Start Editor CTA: Desktop only (hidden on mobile) */}
           <Link
             href="/studio/new"
-            className="group relative inline-flex h-9 sm:h-10 items-center gap-1.5 overflow-hidden rounded-full bg-zinc-950 px-3.5 sm:px-4 text-xs font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] transition-all duration-200 hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] dark:bg-[#DEDEDE] dark:text-[#0d0d0d] dark:shadow-[0_0_24px_rgba(222,222,222,0.18)] dark:hover:bg-[#ECECEC] dark:hover:shadow-[0_0_32px_rgba(222,222,222,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+            className="hidden sm:inline-flex group relative h-9 sm:h-10 items-center gap-1.5 overflow-hidden rounded-full bg-zinc-950 px-3.5 sm:px-4 text-xs font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] transition-all duration-200 hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] dark:bg-[#DEDEDE] dark:text-[#0d0d0d] dark:shadow-[0_0_24px_rgba(222,222,222,0.18)] dark:hover:bg-[#ECECEC] dark:hover:shadow-[0_0_32px_rgba(222,222,222,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current shrink-0"
           >
-            Start editor{" "}
-            <ArrowUpRight className="hidden h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:block" />
+            <span>Start editor</span>
+            <ArrowUpRight className="hidden sm:block h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>
 
           {/* Dark and Light Mode Toggle - Placed at the far right corner */}
           <ThemeToggle />
-
-          {/* Mobile Menu Toggle Button */}
-          <button
-            type="button"
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="inline-flex md:hidden h-9 w-9 items-center justify-center rounded-full border border-zinc-200/80 bg-zinc-100/60 text-zinc-700 hover:bg-zinc-200/80 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
-          >
-            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile Drawer Menu (No harsh line, clean frosted glass) */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white/95 dark:bg-[#0d0d0d]/95 backdrop-blur-2xl px-5 py-4 space-y-2 shadow-2xl transition-all">
-          <div className="flex flex-col gap-1 text-sm font-medium">
-            <a
-              href="#showcase"
-              onClick={(e) => handleScrollTo(e, "showcase")}
-              className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
-            >
-              Showcase
-            </a>
-            <a
-              href="#features"
-              onClick={(e) => handleScrollTo(e, "features")}
-              className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#faq"
-              onClick={(e) => handleScrollTo(e, "faq")}
-              className="px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
-            >
-              FAQ
-            </a>
-            <a
-              href={siteConfig.githubRepoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <GithubIcon className="h-4 w-4 fill-current" />
-                <span>Stars on GitHub</span>
-              </span>
-              <span className="inline-flex items-center gap-1 font-semibold text-zinc-700 dark:text-[#DEDEDE] leading-none">
-                <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                <span>{starCount ?? 6}</span>
-              </span>
-            </a>
-          </div>
-        </div>
-      )}
     </header>
   );
 }
@@ -333,12 +275,12 @@ function ViewfinderCameraFrame({ children }: { children: ReactNode }) {
 
 export function HeroIntroSection() {
   return (
-    <section className="relative mx-auto w-full max-w-[1720px] px-4 sm:px-6 lg:px-8 pt-12 pb-14 text-center sm:pt-20 lg:pt-24 overflow-hidden">
+    <section className="relative mx-auto w-full max-w-[1720px] px-4 sm:px-6 lg:px-8 pt-8 pb-12 sm:pt-20 sm:pb-14 lg:pt-24 text-center overflow-hidden">
       {/* Bespoke Cinema & Camera Gear Wireframe Background Artwork */}
       <HeroCameraArtwork />
 
       <div className="relative z-10">
-        <div className="landing-reveal group relative mx-auto inline-flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/80 px-4 py-1.5 text-[10.5px] font-semibold tracking-[0.18em] uppercase text-zinc-700 shadow-[0_2px_12px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-zinc-400 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#DEDEDE] dark:shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] dark:hover:border-white/20 dark:hover:bg-white/[0.07]">
+        <div className="landing-reveal group relative mx-auto inline-flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/80 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-[10.5px] font-semibold tracking-[0.18em] uppercase text-zinc-700 shadow-[0_2px_12px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-zinc-400 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#DEDEDE] dark:shadow-[0_2px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] dark:hover:border-white/20 dark:hover:bg-white/[0.07]">
           {/* Specular glass highlight line at the top */}
           <span
             aria-hidden="true"
@@ -348,30 +290,30 @@ export function HeroIntroSection() {
           <span>Browser-native video editing</span>
         </div>
 
-        <h1 className="landing-reveal landing-reveal-delay-1 relative mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.4rem,6.5vw,5.5rem)] font-medium leading-[1.12] tracking-[-0.04em]">
+        <h1 className="landing-reveal landing-reveal-delay-1 relative mx-auto mt-6 sm:mt-7 max-w-4xl text-balance text-[clamp(2.1rem,6.5vw,5.5rem)] font-medium leading-[1.12] tracking-[-0.04em]">
           <span className="block text-zinc-950 dark:text-[#DEDEDE]">The local-first</span>
-          <span className="mt-3 block">
+          <span className="mt-2.5 sm:mt-3 block">
             <ViewfinderCameraFrame>Video editor</ViewfinderCameraFrame>
           </span>
         </h1>
 
-        <p className="landing-reveal landing-reveal-delay-2 mx-auto mt-6 max-w-3xl text-center text-base sm:text-lg leading-relaxed sm:leading-8 tracking-[-0.01em] text-zinc-600 dark:text-[#808080]">
-          <span className="sm:block">
+        <p className="landing-reveal landing-reveal-delay-2 mx-auto mt-5 sm:mt-6 max-w-3xl text-center text-sm sm:text-lg leading-relaxed sm:leading-8 tracking-[-0.01em] text-zinc-600 dark:text-[#808080] px-2 sm:px-0">
+          <span className="block">
             A simple but powerful{" "}
             <span className="font-semibold text-zinc-900 dark:text-[#DEDEDE]">
               multitrack video editor
             </span>{" "}
             that runs entirely in your browser.
           </span>
-          <span className="sm:block mt-1 sm:mt-1.5 font-medium text-zinc-800 dark:text-[#DEDEDE]">
-            No cloud uploads, no account required,
-          </span>
-          <span className="sm:block mt-0.5 sm:mt-1 font-semibold text-zinc-950 dark:text-[#DEDEDE]">
-            100% private to your device.
+          <span className="block mt-1 sm:mt-1.5 font-medium text-zinc-800 dark:text-[#DEDEDE]">
+            No cloud uploads, no account required,{" "}
+            <span className="font-semibold text-zinc-950 dark:text-[#DEDEDE]">
+              100% private to your device.
+            </span>
           </span>
         </p>
 
-        <div className="landing-reveal landing-reveal-delay-3 mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        <div className="landing-reveal landing-reveal-delay-3 mt-7 sm:mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <PrimaryLink>Start a local edit</PrimaryLink>
           <a
             href="#showcase"
@@ -392,7 +334,7 @@ export function HeroIntroSection() {
         </div>
 
         {/* Technical Specs Bar */}
-        <div className="landing-reveal landing-reveal-delay-4 mt-10 flex flex-wrap items-center justify-center gap-6 text-[11px] font-mono text-zinc-500 dark:text-[#808080]">
+        <div className="landing-reveal landing-reveal-delay-4 mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-4 sm:gap-6 gap-y-2 text-[10.5px] sm:text-[11px] font-mono text-zinc-500 dark:text-[#808080]">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-[#DEDEDE] dark:shadow-[0_0_6px_rgba(222,222,222,0.5)]" />{" "}
             WebCodecs 60 FPS

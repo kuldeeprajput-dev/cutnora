@@ -81,10 +81,10 @@ export function MinimalLanding() {
           {/* FAQ Section - Styled to match Features section above */}
           <section
             id="faq"
-            className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 sm:pb-14"
+            className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-8 sm:pb-14"
           >
             {/* Header: Left-aligned title + Right-aligned description matching Features */}
-            <div className="landing-reveal mb-12 sm:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div className="landing-reveal mb-8 sm:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-4 sm:gap-6">
               <div>
                 <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-medium tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
                   <span className="h-1 w-1 rounded-full bg-zinc-400 dark:bg-[#808080]" />
@@ -109,8 +109,8 @@ export function MinimalLanding() {
                   key={question}
                   className="group border-b border-zinc-200 dark:border-white/[0.10] transition-colors duration-200"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 sm:py-7 text-left text-base sm:text-lg font-medium tracking-[-0.02em] text-zinc-950 dark:text-[#DEDEDE] transition-colors duration-200 hover:text-zinc-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current select-none">
-                    <span className="flex items-center gap-4 sm:gap-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 sm:gap-6 py-5 sm:py-7 text-left text-base sm:text-lg font-medium tracking-[-0.02em] text-zinc-950 dark:text-[#DEDEDE] transition-colors duration-200 hover:text-zinc-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current select-none">
+                    <span className="flex items-center gap-3 sm:gap-6">
                       <span className="font-mono text-xs font-semibold text-zinc-500 dark:text-[#808080]">
                         0{index + 1}
                       </span>
@@ -120,7 +120,7 @@ export function MinimalLanding() {
                       <Plus className="h-3.5 w-3.5" />
                     </span>
                   </summary>
-                  <div className="pb-7 pl-8 sm:pl-11 pr-6 sm:pr-16 max-w-3xl text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-[#808080]">
+                  <div className="pb-6 sm:pb-7 pl-6 sm:pl-11 pr-2 sm:pr-16 max-w-3xl text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-[#808080]">
                     {answer}
                   </div>
                 </details>
