@@ -8,17 +8,17 @@ import { useProjectStore } from "@/modules/projects";
 const mobileEditorQuery = "(max-width: 1023px)";
 let mobileEditorMediaQuery: MediaQueryList | null = null;
 
-const StudioShell = dynamic(
-  () => import("./StudioShell").then((module) => module.StudioShell),
-  { ssr: false, loading: StudioShellLoading },
+const ProjectShell = dynamic(
+  () => import("./ProjectShell").then((module) => module.ProjectShell),
+  { ssr: false, loading: ProjectShellLoading },
 );
 
-const MobileStudioShell = dynamic(
+const MobileProjectShell = dynamic(
   () =>
-    import("../mobile/MobileStudioShell").then(
-      (module) => module.MobileStudioShell,
+    import("../mobile/MobileProjectShell").then(
+      (module) => module.MobileProjectShell,
     ),
-  { ssr: false, loading: StudioShellLoading },
+  { ssr: false, loading: ProjectShellLoading },
 );
 
 function getMobileEditorMediaQuery() {
@@ -42,7 +42,7 @@ function getMobileEditorServerSnapshot() {
   return false;
 }
 
-function StudioShellLoading() {
+function ProjectShellLoading() {
   return (
     <div className="flex h-dvh w-screen items-center justify-center bg-studio-bg text-xs font-medium text-studio-muted">
       Opening workspace…
@@ -50,7 +50,7 @@ function StudioShellLoading() {
   );
 }
 
-export function ResponsiveStudioShell() {
+export function ResponsiveProjectShell() {
   const isMobileEditor = useSyncExternalStore(
     subscribeToMobileEditor,
     getMobileEditorSnapshot,
@@ -65,5 +65,7 @@ export function ResponsiveStudioShell() {
     setPlaybackFps(projectFps);
   }, [projectFps, setPlaybackFps]);
 
-  return isMobileEditor ? <MobileStudioShell /> : <StudioShell />;
+  return isMobileEditor ? <MobileProjectShell /> : <ProjectShell />;
 }
+
+export const ResponsiveStudioShell = ResponsiveProjectShell;

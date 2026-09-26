@@ -26,11 +26,11 @@ import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 import { confirm } from "@/shared/components/ui/Popup";
 
-export interface StudioTopBarProps {
+export interface ProjectTopBarProps {
   onOpenHelp?: () => void;
 }
 
-export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
+export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
   const projectName = useProjectStore(
     (state) => state.currentProject?.name ?? "Untitled video",
   );
@@ -244,3 +244,6 @@ export function StudioTopBar({ onOpenHelp }: StudioTopBarProps) {
     </header>
   );
 }
+
+export const StudioTopBar = ProjectTopBar;
+export type StudioTopBarProps = ProjectTopBarProps;

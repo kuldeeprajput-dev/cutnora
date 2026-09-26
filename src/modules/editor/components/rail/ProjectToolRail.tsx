@@ -33,11 +33,11 @@ const railItems: RailItem[] = [
   { id: 'record', label: 'Record', icon: Mic },
 ];
 
-export interface StudioToolRailProps {
+export interface ProjectToolRailProps {
   onToolSelect?: () => void;
 }
 
-export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
+export function ProjectToolRail({ onToolSelect }: ProjectToolRailProps = {}) {
   const { activeTool, setActiveTool, clearSelection } = useEditorUIStore();
 
   return (
@@ -74,3 +74,6 @@ export function StudioToolRail({ onToolSelect }: StudioToolRailProps = {}) {
     </aside>
   );
 }
+
+export const StudioToolRail = ProjectToolRail;
+export type StudioToolRailProps = ProjectToolRailProps;

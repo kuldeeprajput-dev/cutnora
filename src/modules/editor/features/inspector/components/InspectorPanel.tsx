@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { useProjectStore } from "@/modules/projects";
-import { StudioPanel } from "@/shared/components/layout/StudioPanel";
+import { ProjectPanel } from "@/shared/components/layout/ProjectPanel";
 import {
   Tabs,
   TabList,
@@ -244,14 +244,14 @@ export function InspectorPanel() {
   // Render Canvas settings if no clips selected
   if (selectedClips.length === 0) {
     return (
-      <StudioPanel
+      <ProjectPanel
         title="Canvas Settings"
         className="h-full w-full"
       >
         <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
           <CanvasSettingsPanel />
         </div>
-      </StudioPanel>
+      </ProjectPanel>
     );
   }
 
@@ -274,7 +274,7 @@ export function InspectorPanel() {
     };
 
     return (
-      <StudioPanel
+      <ProjectPanel
         title={`${selectedClips.length} Clips Selected`}
         actions={
           <button
@@ -317,7 +317,7 @@ export function InspectorPanel() {
             <Trash2 className="h-3.5 w-3.5" /> Delete {selectedClips.length} Clips
           </button>
         </div>
-      </StudioPanel>
+      </ProjectPanel>
     );
   }
 
@@ -393,7 +393,7 @@ export function InspectorPanel() {
     <div className="relative h-full w-full overflow-hidden">
       {/* Canvas Settings View (when user toggled to Canvas Settings while a clip is selected) */}
       <div className={cn("h-full w-full", isCanvasMode ? "block" : "hidden")}>
-        <StudioPanel
+        <ProjectPanel
           title="Canvas Settings"
           actions={
             <button
@@ -409,12 +409,12 @@ export function InspectorPanel() {
           <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
             <CanvasSettingsPanel />
           </div>
-        </StudioPanel>
+        </ProjectPanel>
       </div>
 
       {/* Clip Properties View */}
       <div className={cn("h-full w-full", !isCanvasMode ? "block" : "hidden")}>
-        <StudioPanel
+        <ProjectPanel
           title={clip.name}
           actions={
             <button
@@ -500,7 +500,7 @@ export function InspectorPanel() {
               </TabContent>
             </Tabs>
           </div>
-        </StudioPanel>
+        </ProjectPanel>
       </div>
     </div>
   );

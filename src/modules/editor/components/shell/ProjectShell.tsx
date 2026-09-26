@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { StudioTopBar } from "../header/StudioTopBar";
-import { StudioToolRail } from "../rail/StudioToolRail";
+import { ProjectTopBar } from "../header/ProjectTopBar";
+import { ProjectToolRail } from "../rail/ProjectToolRail";
 import { ContextualPanel } from "../panels/ContextualPanel";
 import { PreviewStage } from "../stage/PreviewStage";
 import { TimelineShell } from "../timeline/TimelineShell";
@@ -23,7 +23,7 @@ const ExportModal = dynamic(
   { ssr: false },
 );
 
-export function StudioShell() {
+export function ProjectShell() {
   const leftPanelWidth = useEditorUIStore((state) => state.leftPanelWidth);
   const setLeftPanelWidth = useEditorUIStore(
     (state) => state.setLeftPanelWidth,
@@ -59,7 +59,9 @@ export function StudioShell() {
         Math.min(560, Math.floor(window.innerWidth * 0.40)),
       );
       const currentWidth = useEditorUIStore.getState().leftPanelWidth;
-      if (currentWidth > maximumWidth) setLeftPanelWidth(maximumWidth);
+      if (currentWidth > maximumWidth) {
+        setLeftPanelWidth(maximumWidth);
+      }
     };
 
     clampPanelToViewport();
@@ -88,7 +90,10 @@ export function StudioShell() {
       350,
       Math.min(560, Math.floor(window.innerWidth * 0.40)),
     );
-    const newWidth = Math.min(responsiveMaximum, Math.max(350, currentWidth + delta));
+    const newWidth = Math.min(
+      responsiveMaximum,
+      Math.max(350, currentWidth + delta),
+    );
     setLeftPanelWidth(newWidth);
   };
 
@@ -101,8 +106,14 @@ export function StudioShell() {
 
   const handleHeightResize = (delta: number) => {
     const currentHeight = useEditorUIStore.getState().timelineHeight;
-    const responsiveMaximum = Math.min(500, Math.floor(window.innerHeight * 0.45));
-    const newHeight = Math.min(responsiveMaximum, Math.max(120, currentHeight - delta));
+    const responsiveMaximum = Math.min(
+      500,
+      Math.floor(window.innerHeight * 0.45),
+    );
+    const newHeight = Math.min(
+      responsiveMaximum,
+      Math.max(120, currentHeight - delta),
+    );
     setTimelineHeight(newHeight);
   };
 
@@ -117,14 +128,23 @@ export function StudioShell() {
     const currentWidth = useEditorUIStore.getState().leftPanelWidth;
     const currentHeight = useEditorUIStore.getState().timelineHeight;
 
-    const responsiveMaxWidth = Math.max(
+    const responsiveMaximumWidth = Math.max(
       350,
       Math.min(560, Math.floor(window.innerWidth * 0.40)),
     );
-    const newWidth = Math.min(responsiveMaxWidth, Math.max(350, currentWidth + deltaX));
+    const newWidth = Math.min(
+      responsiveMaximumWidth,
+      Math.max(350, currentWidth + deltaX),
+    );
 
-    const responsiveMaxHeight = Math.min(500, Math.floor(window.innerHeight * 0.45));
-    const newHeight = Math.min(responsiveMaxHeight, Math.max(120, currentHeight - deltaY));
+    const responsiveMaximumHeight = Math.min(
+      500,
+      Math.floor(window.innerHeight * 0.45),
+    );
+    const newHeight = Math.min(
+      responsiveMaximumHeight,
+      Math.max(120, currentHeight - deltaY),
+    );
 
     setLeftPanelWidth(newWidth);
     setTimelineHeight(newHeight);
@@ -142,7 +162,7 @@ export function StudioShell() {
   return (
     <div className="relative flex h-dvh w-screen flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
       {/* Top 56px Bar */}
-      <StudioTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
+      <ProjectTopBar onOpenHelp={() => setIsShortcutsOpen(true)} />
 
       {/* Main Workspace Area with outer margins and matching 8px gap */}
       <div className="flex flex-1 flex-col overflow-hidden relative px-2.5 pb-2.5 pt-1.5 bg-studio-bg">
@@ -154,14 +174,13 @@ export function StudioShell() {
             className="flex h-full shrink-0 overflow-hidden rounded-md border border-studio-border bg-studio-panel shadow-xs"
           >
             {/* Left 64px Tool Rail */}
-            <StudioToolRail />
+            <ProjectToolRail />
 
             {/* Contextual Panel */}
             <div
               style={{
                 width: `${leftPanelWidth}px`,
                 minWidth: "350px",
-                maxWidth: "40vw",
               }}
               className="h-full shrink-0 overflow-hidden"
             >
@@ -178,7 +197,7 @@ export function StudioShell() {
           <ResizableDivider
             orientation="vertical"
             onResize={handleWidthResize}
-            onResizeEnd={handleCornerResizeEnd}
+            onResizeEnd={handleWidthResizeEnd}
             hasCornerHandle={true}
             onCornerResize={handleCornerResize}
           />
@@ -205,7 +224,6 @@ export function StudioShell() {
         <div
           style={{
             height: `${timelineHeight}px`,
-            maxHeight: "45dvh",
           }}
           className="shrink-0 w-full overflow-hidden rounded-md border border-studio-border bg-studio-panel shadow-xs"
         >
@@ -231,3 +249,5 @@ export function StudioShell() {
     </div>
   );
 }
+
+export const StudioShell = ProjectShell;

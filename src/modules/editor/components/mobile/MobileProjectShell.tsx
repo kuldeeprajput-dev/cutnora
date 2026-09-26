@@ -79,7 +79,7 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(remaining).padStart(2, "0")}`;
 }
 
-export function MobileStudioShell() {
+export function MobileProjectShell() {
   const currentProject = useProjectStore((state) => state.currentProject);
   const undo = useProjectStore((state) => state.undo);
   const redo = useProjectStore((state) => state.redo);
@@ -254,7 +254,7 @@ export function MobileStudioShell() {
     <div className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
       <header className="flex h-[calc(54px+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3 pt-[env(safe-area-inset-top)]">
         <Link
-          href="/"
+          href="/projects"
           aria-label="Back to projects"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg"
         >
@@ -550,3 +550,6 @@ function MobileNavButton({
     </button>
   );
 }
+
+export const MobileStudioShell = MobileProjectShell;
+
