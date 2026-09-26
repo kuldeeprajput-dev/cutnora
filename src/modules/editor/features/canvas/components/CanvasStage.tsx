@@ -82,12 +82,14 @@ export function CanvasStage() {
     backgroundColor: '#000000',
   };
 
-  // Sync native browser fullscreen events
+  // Sync native browser fullscreen events specifically for the video stage
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFull = !!document.fullscreenElement;
-      setIsNativeFullscreen(isFull);
-      setIsFullscreen(isFull);
+      const isStage = document.fullscreenElement?.id === 'stage-fullscreen-container';
+      setIsNativeFullscreen(isStage);
+      if (!isStage && !document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -167,7 +169,13 @@ export function CanvasStage() {
     };
   }, []);
 
-  const isFullscreenActive = isFullscreen || isNativeFullscreen;
+  // Video player screen only shows when stage is fullscreen, never during layout fullscreen
+  const isLayoutFullscreen = Boolean(
+    document.fullscreenElement &&
+      document.fullscreenElement.id !== 'stage-fullscreen-container',
+  );
+  const isFullscreenActive =
+    isNativeFullscreen || (isFullscreen && !isLayoutFullscreen);
 
   // Keep only a small safety gutter so the canvas uses nearly all stage height.
   const fitScale = calculateFitScale(
@@ -397,10 +405,11 @@ export function CanvasStage() {
   };
 
   const handleExitFullscreen = () => {
-    if (document.fullscreenElement) {
+    if (document.fullscreenElement?.id === 'stage-fullscreen-container') {
       document.exitFullscreen().catch(() => {});
     }
     setIsFullscreen(false);
+    setIsNativeFullscreen(false);
   };
 
   return (

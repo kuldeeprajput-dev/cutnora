@@ -11,6 +11,8 @@ import {
   Loader2,
   HelpCircle,
   Wrench,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import {
   useProjectStore,
@@ -70,6 +72,24 @@ export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    handleFullscreenChange();
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     return autosaveService.subscribe((status) => {
@@ -206,9 +226,22 @@ export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
         </IconButton>
       </div>
 
-      {/* Right: Help & Export Action Button */}
+      {/* Right: Theme, Fullscreen, Repair, Help & Export Action Button */}
       <div className="flex shrink-0 items-center gap-1.5">
-        <ThemeToggle className="border-studio-border bg-studio-topbar text-studio-fg hover:bg-studio-hover" />
+        <ThemeToggle variant="ghost" />
+
+        <IconButton
+          label={isFullscreen ? "Exit Fullscreen (F11)" : "Full Screen (F11)"}
+          size="sm"
+          variant="ghost"
+          onClick={handleToggleFullscreen}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </IconButton>
 
         <IconButton
           label="Repair project references"

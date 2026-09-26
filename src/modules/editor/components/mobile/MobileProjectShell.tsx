@@ -303,7 +303,10 @@ export function MobileProjectShell() {
           >
             <Redo2 className="h-4.5 w-4.5" />
           </button>
-          <ThemeToggle className="flex h-9 w-9 min-w-0 items-center justify-center rounded-xl border-0 bg-transparent p-0 text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:ring-0 focus-visible:ring-offset-0" />
+          <ThemeToggle
+            variant="ghost"
+            className="flex h-9 w-9 min-w-0 items-center justify-center rounded-xl border-0 bg-transparent p-0 text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
           <button
             type="button"
             onClick={() => setExportModalOpen(true)}

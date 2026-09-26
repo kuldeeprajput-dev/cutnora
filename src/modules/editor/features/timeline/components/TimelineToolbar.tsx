@@ -18,6 +18,7 @@ import {
   Repeat,
   Repeat1,
   Maximize2,
+  Minimize2,
   Video,
   Music,
   Image as ImageIcon,
@@ -93,6 +94,7 @@ export function TimelineToolbar({
     triggerResetView,
     showTrackHeaders = true,
     toggleTrackHeaders,
+    isFullscreen: isVideoFullscreen,
   } = useEditorUIStore();
 
   const {
@@ -514,24 +516,27 @@ export function TimelineToolbar({
           </span>
 
           <IconButton
-            label="Toggle fullscreen"
+            label={isVideoFullscreen ? "Exit video fullscreen" : "Full screen video"}
             size="sm"
             variant="ghost"
-            showTooltip={false}
+            showTooltip={true}
             onClick={() => {
-              const stageContainer =
-                document.getElementById("stage-fullscreen-container") ||
-                document.documentElement;
-              if (!document.fullscreenElement) {
-                stageContainer.requestFullscreen().catch(() => {});
-              } else {
+              const stage = document.getElementById("stage-fullscreen-container");
+              if (document.fullscreenElement === stage) {
                 document.exitFullscreen().catch(() => {});
+                useEditorUIStore.getState().setIsFullscreen(false);
+              } else {
+                stage?.requestFullscreen().catch(() => {});
+                useEditorUIStore.getState().setIsFullscreen(true);
               }
-              useEditorUIStore.getState().toggleFullscreen();
             }}
             className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised ml-0.5"
           >
-            <Maximize2 className="h-3.5 w-3.5" />
+            {isVideoFullscreen ? (
+              <Minimize2 className="h-3.5 w-3.5" />
+            ) : (
+              <Maximize2 className="h-3.5 w-3.5" />
+            )}
           </IconButton>
         </div>
       </div>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { IconButton } from "@/shared/components/ui/IconButton";
+import type { ButtonSize } from "@/shared/components/ui/Button";
 
 const THEME_STORAGE_KEY = "cutnora_theme";
 
@@ -24,14 +26,18 @@ function applyTheme(theme: "light" | "dark") {
   );
 }
 
-interface ThemeToggleProps {
+export interface ThemeToggleProps {
   className?: string;
   showLabel?: boolean;
+  variant?: "default" | "ghost";
+  size?: ButtonSize;
 }
 
 export function ThemeToggle({
   className,
   showLabel = false,
+  variant = "default",
+  size = "sm",
 }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -70,6 +76,31 @@ export function ThemeToggle({
       ? "Switch to light mode"
       : "Switch to dark mode"
     : "Switch color theme";
+
+  if (variant === "ghost") {
+    return (
+      <IconButton
+        label={title}
+        variant="ghost"
+        size={size}
+        className={cn(
+          "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised",
+          className,
+        )}
+        onClick={toggleTheme}
+      >
+        <Moon
+          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        <Sun
+          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
+      </IconButton>
+    );
+  }
 
   return (
     <button
