@@ -5,10 +5,10 @@ import { Check, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import type { SortOption, SortOrder } from "../hooks/useProjectSort";
 export type { SortOption, SortOrder };
-import { StudioSortControls } from "./StudioSortControls";
+import { ProjectsSortControls } from "./ProjectsSortControls";
 import { ViewModeToggle } from "./ViewModeToggle";
 
-export interface StudioSubheaderProps {
+export interface ProjectsSubheaderProps {
   isAllSelected: boolean;
   selectedCount: number;
   onToggleSelectAll: () => void;
@@ -24,7 +24,7 @@ export interface StudioSubheaderProps {
   onBatchDelete: () => void;
 }
 
-export function StudioSubheader({
+export function ProjectsSubheader({
   isAllSelected,
   selectedCount,
   onToggleSelectAll,
@@ -38,7 +38,7 @@ export function StudioSubheader({
   onViewModeChange,
   onBatchDuplicate,
   onBatchDelete,
-}: StudioSubheaderProps) {
+}: ProjectsSubheaderProps) {
   return (
     <div className="sticky top-16 z-10 flex items-center justify-between px-2 sm:px-6 h-14 pt-2 bg-background max-w-full shrink-0">
       <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export function StudioSubheader({
         <div className="h-4 w-px bg-border/50"></div>
 
         {/* Sort Controls (Dropdown + Direction Arrow) */}
-        <StudioSortControls
+        <ProjectsSortControls
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSelectSort={onSelectSort}
@@ -151,3 +151,6 @@ export function StudioSubheader({
     </div>
   );
 }
+
+export const StudioSubheader = ProjectsSubheader;
+export type StudioSubheaderProps = ProjectsSubheaderProps;

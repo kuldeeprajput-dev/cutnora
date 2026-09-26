@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Download, LockKeyhole, Scissors } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
-import { ShowcaseBackgroundGrid } from "./ShowcaseStudioArtwork";
+import { ShowcaseBackgroundGrid } from "./ShowcaseProjectArtwork";
 
 const principles = [
   {
@@ -49,7 +49,7 @@ export function MinimalFeaturesSection() {
             <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
             <div className="ml-2 flex min-w-0 items-center gap-2 rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-3 py-0.5 font-mono text-[11px] font-medium text-zinc-600 dark:text-[#808080]">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400 dark:bg-[#DEDEDE] dark:shadow-[0_0_6px_rgba(222,222,222,0.5)]" />
-              <span className="truncate">cutnora.app/studio/coastal-notes</span>
+              <span className="truncate">cutnora.app/editor?project=coastal-notes</span>
             </div>
             <span className="ml-auto hidden rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-2.5 py-0.5 font-mono text-[9px] font-semibold tracking-wide text-zinc-600 dark:text-[#808080] uppercase sm:inline-flex">
               Local project

@@ -9,7 +9,7 @@ import {
   sortLabels,
 } from "../hooks/useProjectSort";
 
-export interface StudioSortControlsProps {
+export interface ProjectsSortControlsProps {
   sortBy: SortOption;
   sortOrder: SortOrder;
   onSelectSort: (option: SortOption) => void;
@@ -20,14 +20,14 @@ export interface StudioSortControlsProps {
 
 const sortOptions: SortOption[] = ["created", "modified", "name", "duration"];
 
-export function StudioSortControls({
+export function ProjectsSortControls({
   sortBy,
   sortOrder,
   onSelectSort,
   onToggleSortOrder,
   sortMenuOpen,
   onSortMenuOpenChange,
-}: StudioSortControlsProps) {
+}: ProjectsSortControlsProps) {
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -168,3 +168,6 @@ export function StudioSortControls({
     </div>
   );
 }
+
+export const StudioSortControls = ProjectsSortControls;
+export type StudioSortControlsProps = ProjectsSortControlsProps;

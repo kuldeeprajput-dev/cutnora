@@ -17,8 +17,8 @@ export function MarketingFooter() {
         </p>
 
         <div className="flex items-center gap-6 text-xs font-medium text-zinc-300">
-          <Link href="/studio" className="transition-colors hover:text-white">
-            Studio
+          <Link href="/projects" className="transition-colors hover:text-white">
+            Projects
           </Link>
           <Link href="#privacy" className="transition-colors hover:text-white">
             Privacy Policy

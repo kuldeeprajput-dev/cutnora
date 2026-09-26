@@ -39,13 +39,13 @@ export function LandingHeader() {
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle className="h-9 w-9 sm:h-9 sm:w-9" />
           <Link
-            href="/studio"
+            href="/projects"
             className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-300/80 bg-zinc-100/80 px-4 text-xs font-semibold text-zinc-800 transition-all hover:bg-zinc-200 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
-            Open Studio
+            Projects
           </Link>
           <Link
-            href="/studio/new"
+            href="/projects/new"
             className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-zinc-950 px-5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-zinc-950 dark:shadow-[0_0_20px_rgba(255,255,255,0.12)] dark:hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
             Start editing{" "}
@@ -108,13 +108,13 @@ export function LandingHeader() {
               <ThemeToggle showLabel className="h-9 px-3 rounded-full border border-zinc-300/80 bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04]" />
             </div>
             <Link
-              href="/studio"
+              href="/projects"
               className="inline-flex h-10 items-center justify-center rounded-lg border border-zinc-300 bg-zinc-100 text-sm font-medium text-zinc-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200"
             >
-              Open Studio
+              Projects
             </Link>
             <Link
-              href="/studio/new"
+              href="/projects/new"
               className="inline-flex h-10 items-center justify-center rounded-lg bg-zinc-950 text-sm font-semibold text-white dark:bg-white dark:text-zinc-950"
             >
               Start editing

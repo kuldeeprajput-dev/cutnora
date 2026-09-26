@@ -2,16 +2,18 @@
 
 import React, { useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Film, Plus, SearchX } from "lucide-react";
 import {
-  StudioHeader,
-  StudioSubheader,
+  ProjectsHeader,
+  ProjectsSubheader,
   ProjectCard,
   ProjectListRow,
   RenameModal,
   ProjectInfoModal,
   DeleteProjectModal,
-  useStudioProjects,
+  useProjects,
+  useProjectStore,
 } from "@/modules/projects";
 
 function ProjectGridSkeleton() {
@@ -48,7 +50,7 @@ function ProjectListSkeleton() {
   );
 }
 
-export default function StudioDashboardPage() {
+export default function ProjectsDashboardPage() {
   const {
     isLoading,
     viewMode,
@@ -80,7 +82,20 @@ export default function StudioDashboardPage() {
     deleteTarget,
     setDeleteTarget,
     handleConfirmDelete,
-  } = useStudioProjects();
+  } = useProjects();
+
+  const router = useRouter();
+  const createProject = useProjectStore((s) => s.createProject);
+
+  const handleCreateProject = useCallback(async () => {
+    try {
+      const project = await createProject("Untitled video");
+      router.push(`/editor?project=${project.id}`);
+    } catch (err) {
+      console.error("Failed to create project:", err);
+      router.push("/projects/new");
+    }
+  }, [createProject, router]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -100,15 +115,16 @@ export default function StudioDashboardPage() {
   return (
     <div className="bg-background h-dvh text-foreground select-none max-w-full overflow-hidden flex flex-col">
       {/* Top Header */}
-      <StudioHeader
+      <ProjectsHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onCreateProject={handleCreateProject}
       />
 
       {/* Sticky Subheader */}
-      <StudioSubheader
+      <ProjectsSubheader
         isAllSelected={isAllSelected}
         selectedCount={selectedIds.length}
         onToggleSelectAll={toggleSelectAll}
@@ -126,48 +142,47 @@ export default function StudioDashboardPage() {
 
       {/* Main Grid / List Content */}
       <main
-        className="flex-1 overflow-y-auto app-custom-scrollbar mx-auto w-full max-w-full px-2 sm:px-4 pt-2 pb-6 flex flex-col gap-4"
+        className="flex-1 overflow-y-auto app-custom-scrollbar mx-auto w-full max-w-full px-4 sm:px-6 md:px-8 pt-2 pb-4 sm:pb-6 flex flex-col"
         aria-busy={isLoading}
       >
         {isLoading ? (
           viewMode === "grid" ? <ProjectGridSkeleton /> : <ProjectListSkeleton />
         ) : filteredAndSortedProjects.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-8 text-center sm:p-14 mx-4">
+          <div className="flex-1 w-full p-8 text-center sm:p-14 flex flex-col items-center justify-center min-h-0">
             {searchQuery ? (
-              <SearchX className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+              <SearchX className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             ) : (
-              <Film className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+              <Film className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             )}
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-base font-semibold text-foreground">
               {searchQuery ? "No matching projects found" : "No projects yet"}
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-md">
               {searchQuery
                 ? `No projects matching "${searchQuery}". Try a different search.`
                 : "Create your first video project to get started."}
             </p>
-            <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="mt-6 flex items-center justify-center gap-3">
               {searchQuery ? (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                  className="rounded-xl border border-border px-4 py-2 text-xs sm:text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   Clear search
                 </button>
               ) : null}
-              <Link href="/studio/new">
-                <button
-                  type="button"
-                  className="rounded-xl bg-foreground px-4 py-2 text-xs font-semibold text-background hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4 stroke-[2.5]" /> New project
-                </button>
-              </Link>
+              <button
+                type="button"
+                onClick={handleCreateProject}
+                className="rounded-xl bg-foreground px-5 py-2.5 text-xs sm:text-sm font-semibold text-background hover:bg-foreground/90 transition-colors inline-flex items-center gap-2 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Plus className="h-4 w-4 stroke-[2.5]" /> New project
+              </button>
             </div>
           </div>
         ) : viewMode === "grid" ? (
-          <div className="xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4 px-4">
+          <div className="xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
             {filteredAndSortedProjects.map((project) => (
               <ProjectCard
                 key={project.id}

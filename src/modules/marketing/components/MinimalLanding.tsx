@@ -11,7 +11,7 @@ import {
   GithubIcon,
 } from "./LandingHeroView";
 import { MinimalFeaturesSection } from "./MinimalFeaturesSection";
-import { StudioCtaSection } from "./StudioCtaSection";
+import { ProjectCtaSection } from "./ProjectCtaSection";
 
 function XTwitterIcon({ className }: { className?: string }) {
   return (
@@ -129,7 +129,7 @@ export function MinimalLanding() {
           </section>
 
           {/* Final CTA Section - max-w-7xl */}
-          <StudioCtaSection starCount={starCount} />
+          <ProjectCtaSection starCount={starCount} />
         </main>
 
         {/* Modern Elevated Footer */}
@@ -177,12 +177,12 @@ export function MinimalLanding() {
                   <span className="font-mono text-[11px]">GitHub</span>
                 </a>
 
-                {/* Open Studio Link */}
+                {/* Open Projects Link */}
                 <Link
-                  href="/studio"
+                  href="/projects"
                   className="group inline-flex items-center gap-1.5 rounded-full border border-zinc-200/90 dark:border-white/10 bg-zinc-100/70 dark:bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:text-[#DEDEDE] transition-all hover:border-zinc-300 hover:bg-zinc-200/80 dark:hover:border-white/20 dark:hover:bg-white/[0.08] hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span>Studio</span>
+                  <span>Projects</span>
                   <ArrowUpRight className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </div>

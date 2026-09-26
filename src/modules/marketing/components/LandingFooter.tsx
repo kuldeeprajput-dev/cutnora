@@ -24,8 +24,8 @@ export function LandingFooter() {
 
         {/* Product Links */}
         <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-zinc-400">
-          <Link href="/studio" className="transition-colors hover:text-white">
-            Open Studio
+          <Link href="/projects" className="transition-colors hover:text-white">
+            Projects
           </Link>
           <a href="#features" className="transition-colors hover:text-white">
             Features

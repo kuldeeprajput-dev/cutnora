@@ -28,10 +28,10 @@ export function MarketingHeader() {
         <div className="flex items-center gap-3">
           <ThemeToggle className="h-9 w-9 sm:h-9 sm:w-9" />
           <Link
-            href="/studio"
+            href="/projects"
             className="inline-flex h-9 items-center justify-center rounded-full bg-zinc-950 px-4 text-xs font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
-            Open Studio
+            Projects
           </Link>
         </div>
       </Container>

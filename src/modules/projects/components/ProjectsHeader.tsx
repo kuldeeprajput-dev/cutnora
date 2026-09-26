@@ -1,25 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Search, X } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { ViewModeToggle } from "./ViewModeToggle";
+import { useProjectStore } from "../store/useProjectStore";
 
-export interface StudioHeaderProps {
+export interface ProjectsHeaderProps {
   viewMode: "grid" | "list";
   onViewModeChange: (mode: "grid" | "list") => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onCreateProject?: () => void;
 }
 
-export function StudioHeader({
+export function ProjectsHeader({
   viewMode,
   onViewModeChange,
   searchQuery,
   onSearchChange,
-}: StudioHeaderProps) {
+  onCreateProject,
+}: ProjectsHeaderProps) {
+  const router = useRouter();
+  const createProject = useProjectStore((s) => s.createProject);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleNewProject = async () => {
+    if (isCreating) return;
+    if (onCreateProject) {
+      onCreateProject();
+      return;
+    }
+    setIsCreating(true);
+    try {
+      const project = await createProject("Untitled video");
+      router.push(`/editor?project=${project.id}`);
+    } catch (err) {
+      console.error("Failed to create project:", err);
+      setIsCreating(false);
+    }
+  };
   return (
     <header className="sticky top-0 z-20 px-4 sm:px-6 md:px-8 bg-background flex flex-col gap-2 shrink-0">
       <div className="flex items-center justify-between h-16 pt-2">
@@ -103,17 +125,19 @@ export function StudioHeader({
             </div>
           </div>
 
-          <Link href="/studio/new" className="shrink-0">
-            <button
-              className="items-center cursor-pointer justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-foreground text-background hover:bg-foreground/90 h-10 p-5 flex px-5 md:px-6"
-              type="button"
-            >
-              <span className="text-sm font-medium hidden md:block">
-                New project
-              </span>
-              <span className="text-sm font-medium block md:hidden">New</span>
-            </button>
-          </Link>
+          <button
+            onClick={handleNewProject}
+            disabled={isCreating}
+            className="items-center cursor-pointer justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-foreground text-background hover:bg-foreground/90 h-10 p-5 flex px-5 md:px-6 shrink-0"
+            type="button"
+          >
+            <span className="text-sm font-medium hidden md:block">
+              {isCreating ? "Creating..." : "New project"}
+            </span>
+            <span className="text-sm font-medium block md:hidden">
+              {isCreating ? "..." : "New"}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -146,3 +170,6 @@ export function StudioHeader({
     </header>
   );
 }
+
+export const StudioHeader = ProjectsHeader;
+export type StudioHeaderProps = ProjectsHeaderProps;

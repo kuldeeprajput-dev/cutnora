@@ -89,7 +89,7 @@ export function ProjectCard({
       data-state={menuOpen ? "open" : "closed"}
     >
       <div className="text-card-foreground rounded-2xl border bg-background border-none p-0">
-        <Link className="block" href={`/studio/${project.id}`}>
+        <Link className="block" href={`/editor?project=${project.id}`}>
           <div
             className={cn(
               "bg-muted relative aspect-video overflow-hidden rounded-2xl transition-all duration-200",
@@ -132,7 +132,7 @@ export function ProjectCard({
 
         <div className="p-6 flex flex-col gap-2 px-0 pt-4">
           <div className="flex items-start justify-between gap-2">
-            <Link className="block min-w-0 flex-1" href={`/studio/${project.id}`}>
+            <Link className="block min-w-0 flex-1" href={`/editor?project=${project.id}`}>
               <h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
                 {project.name}
               </h3>
@@ -170,7 +170,7 @@ export function ProjectCard({
             </div>
           </div>
 
-          <Link className="block" href={`/studio/${project.id}`}>
+          <Link className="block" href={`/editor?project=${project.id}`}>
             <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
               <Calendar className="size-4" />
               <span>Created {dateStr}</span>

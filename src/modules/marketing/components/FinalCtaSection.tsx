@@ -15,11 +15,11 @@ export function FinalCtaSection() {
           </h2>
           <div className="flex flex-col gap-4 lg:items-end">
             <p className="max-w-sm text-sm leading-6 text-zinc-400 lg:text-right">
-              Open the studio and start with your own footage. No registration,
+              Open your project and start with your own footage. No registration,
               cloud sync, or watermark.
             </p>
             <Link
-              href="/studio/new"
+              href="/projects/new"
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-zinc-950 shadow-[0_0_24px_rgba(255,255,255,0.15)] transition-all duration-300 hover:bg-zinc-100 hover:shadow-[0_0_36px_rgba(255,255,255,0.28)] hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               Start a local project{" "}

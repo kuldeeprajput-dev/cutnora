@@ -114,7 +114,7 @@ export function ProjectListRow({
 
       {/* Mini square thumbnail */}
       <Link
-        href={`/studio/${project.id}`}
+        href={`/editor?project=${project.id}`}
         className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted flex items-center justify-center"
       >
         {thumbUrl ? (
@@ -130,7 +130,7 @@ export function ProjectListRow({
 
       {/* Project Title */}
       <Link
-        href={`/studio/${project.id}`}
+        href={`/editor?project=${project.id}`}
         className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground hover:text-foreground/70 transition-colors"
       >
         {project.name}

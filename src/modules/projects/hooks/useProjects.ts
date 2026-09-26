@@ -14,7 +14,7 @@ export interface DeleteTarget {
   batchCount?: number;
 }
 
-export function useStudioProjects() {
+export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -280,3 +280,5 @@ export function useStudioProjects() {
     handleConfirmDelete,
   };
 }
+
+export const useStudioProjects = useProjects;

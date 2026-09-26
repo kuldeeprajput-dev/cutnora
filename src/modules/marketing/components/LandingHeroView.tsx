@@ -29,7 +29,7 @@ export function GithubIcon({ className }: { className?: string }) {
 export function PrimaryLink({ children }: { children: ReactNode }) {
   return (
     <Link
-      href="/studio/new"
+      href="/projects/new"
       className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] transition-all duration-300 hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] dark:bg-[#DEDEDE] dark:text-[#0d0d0d] dark:shadow-[0_0_24px_rgba(222,222,222,0.15)] dark:hover:bg-[#ECECEC] dark:hover:shadow-[0_0_36px_rgba(222,222,222,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
     >
       {children}
@@ -180,17 +180,17 @@ export function LandingHeaderNav() {
             </span>
           </a>
 
-          {/* Studio Link: Mobile has crisp white background; Desktop retains original frosted styling */}
+          {/* Projects Link: Mobile has crisp white background; Desktop retains original frosted styling */}
           <Link
-            href="/studio"
+            href="/projects"
             className="inline-flex h-8.5 sm:h-10 items-center justify-center rounded-full px-3.5 sm:px-4 text-xs font-semibold shadow-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] bg-white text-zinc-950 border border-zinc-200/90 dark:bg-white dark:text-zinc-950 dark:border-transparent sm:border sm:border-zinc-200/80 sm:bg-zinc-100/60 sm:text-zinc-800 sm:backdrop-blur-md sm:hover:border-zinc-300 sm:hover:bg-zinc-200/70 sm:dark:border-white/10 sm:dark:bg-white/[0.04] sm:dark:text-[#DEDEDE] sm:dark:shadow-none sm:dark:hover:border-white/20 sm:dark:hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current shrink-0"
           >
-            Studio
+            Projects
           </Link>
 
           {/* Start Editor CTA: Desktop only (hidden on mobile) */}
           <Link
-            href="/studio/new"
+            href="/projects/new"
             className="hidden sm:inline-flex group relative h-9 sm:h-10 items-center gap-1.5 overflow-hidden rounded-full bg-zinc-950 px-3.5 sm:px-4 text-xs font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] transition-all duration-200 hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] dark:bg-[#DEDEDE] dark:text-[#0d0d0d] dark:shadow-[0_0_24px_rgba(222,222,222,0.18)] dark:hover:bg-[#ECECEC] dark:hover:shadow-[0_0_32px_rgba(222,222,222,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current shrink-0"
           >
             <span>Start editor</span>

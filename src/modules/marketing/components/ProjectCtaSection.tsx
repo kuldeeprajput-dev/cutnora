@@ -5,11 +5,11 @@ import { ArrowUpRight, Star } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { GithubIcon } from "./LandingHeroView";
 
-interface StudioCtaSectionProps {
+export interface ProjectCtaSectionProps {
   starCount: number | null;
 }
 
-export function StudioCtaSection({ starCount }: StudioCtaSectionProps) {
+export function ProjectCtaSection({ starCount }: ProjectCtaSectionProps) {
   return (
     <section className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-16 sm:pb-20 overflow-hidden">
       <div className="landing-reveal flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-12">
@@ -35,10 +35,10 @@ export function StudioCtaSection({ starCount }: StudioCtaSectionProps) {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-between gap-3 sm:gap-4 w-full">
             <Link
-              href="/studio/new"
+              href="/projects/new"
               className="group inline-flex h-11 sm:h-12 w-full sm:w-auto shrink-0 items-center justify-center gap-2.5 rounded-full bg-zinc-950 px-6 sm:px-7 text-sm sm:text-[15px] font-semibold text-white whitespace-nowrap shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all duration-300 hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] dark:bg-[#DEDEDE] dark:text-[#0d0d0d] dark:shadow-[0_0_28px_rgba(222,222,222,0.18)] dark:hover:bg-[#ECECEC] dark:hover:shadow-[0_0_36px_rgba(222,222,222,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
             >
-              <span className="whitespace-nowrap">Launch Cutnora Studio</span>
+              <span className="whitespace-nowrap">Launch Cutnora Project</span>
               <ArrowUpRight className="h-4.5 w-4.5 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
 
@@ -61,3 +61,6 @@ export function StudioCtaSection({ starCount }: StudioCtaSectionProps) {
     </section>
   );
 }
+
+export const StudioCtaSection = ProjectCtaSection;
+export type StudioCtaSectionProps = ProjectCtaSectionProps;

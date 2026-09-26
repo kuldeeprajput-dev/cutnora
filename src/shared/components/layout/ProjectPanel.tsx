@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/shared/utils/cn";
 
-export interface StudioPanelProps extends Omit<
+export interface ProjectPanelProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "title"
 > {
@@ -11,14 +11,14 @@ export interface StudioPanelProps extends Omit<
   raised?: boolean;
 }
 
-export function StudioPanel({
+export function ProjectPanel({
   className,
   title,
   actions,
   children,
   raised = false,
   ...props
-}: StudioPanelProps) {
+}: ProjectPanelProps) {
   return (
     <div
       className={cn(
@@ -48,3 +48,6 @@ export function StudioPanel({
     </div>
   );
 }
+
+export const StudioPanel = ProjectPanel;
+export type StudioPanelProps = ProjectPanelProps;
