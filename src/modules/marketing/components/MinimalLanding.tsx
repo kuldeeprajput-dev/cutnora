@@ -28,40 +28,23 @@ function XTwitterIcon({ className }: { className?: string }) {
 
 const questions = [
   {
-    tag: "01 · Architecture",
-    question: "Does Cutnora upload my media to any server?",
+    question: "Does Cutnora upload my media?",
     answer:
-      "No. All media decoding, timeline manipulation, and video rendering happen 100% locally in your browser using hardware-accelerated WebCodecs and IndexedDB. Your footage and audio never leave your device.",
+      "No. Imported media and project data stay in your browser on this device.",
   },
   {
-    tag: "02 · Zero friction",
-    question: "Do I need an account or subscription?",
-    answer:
-      "No account, sign-in, or payment is required. You can launch the studio directly and start editing right away with zero friction, no paywalls, and no watermarks on your exports.",
+    question: "Do I need an account?",
+    answer: "No account or sign-in is required to start a local project.",
   },
   {
-    tag: "03 · Capabilities",
-    question: "What media formats and resolutions can I edit?",
+    question: "What can I edit?",
     answer:
-      "Cutnora supports multi-track video (MP4, WebM, MOV), multiple audio tracks (MP3, WAV, AAC), image formats, text overlays, and graphic layers up to 4K 60 FPS, depending on your device hardware.",
+      "Cutnora supports multitrack video, audio, text, graphic layers, canvas transforms, and local export.",
   },
   {
-    tag: "04 · Persistence",
-    question: "Will my projects be saved if I close or refresh the tab?",
+    question: "Will the editor work on a phone?",
     answer:
-      "Yes. Cutnora automatically persists your project state, timeline track layout, and local media references in your browser's IndexedDB storage so you can safely resume your work anytime.",
-  },
-  {
-    tag: "05 · Platform",
-    question: "Can I use Cutnora on a mobile phone or tablet?",
-    answer:
-      "The marketing website is responsive, but the studio workspace and multitrack timeline are deliberately crafted for desktop and laptop displays with keyboard shortcuts and multi-track precision.",
-  },
-  {
-    tag: "06 · Licensing",
-    question: "Is Cutnora free and open-source?",
-    answer:
-      "Yes, Cutnora is fully open-source. You can inspect the source code, run it locally, contribute, or star the repository on GitHub. Everything is transparent and community-driven.",
+      "The marketing page adapts to small screens, but the editing workspace is intentionally designed for desktop displays.",
   },
 ] as const;
 
@@ -95,19 +78,19 @@ export function MinimalLanding() {
           <HeroIntroSection />
           <MinimalFeaturesSection />
 
-          {/* FAQ Section - Full Width max-w-[1720px] Matching Hero & Features */}
+          {/* FAQ Section - Styled to match Features section above */}
           <section
             id="faq"
-            className="relative mx-auto w-full max-w-[1720px] scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-14 sm:pb-20"
+            className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 sm:pb-14"
           >
-            {/* Header: Left-aligned title + Right-aligned description */}
+            {/* Header: Left-aligned title + Right-aligned description matching Features */}
             <div className="landing-reveal mb-12 sm:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
               <div>
-                <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-semibold tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
-                  <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-[#808080]" />
-                  Frequently asked
+                <span className="inline-flex items-center gap-2 font-mono text-[10.5px] font-medium tracking-[0.2em] text-zinc-600 dark:text-[#808080] uppercase">
+                  <span className="h-1 w-1 rounded-full bg-zinc-400 dark:bg-[#808080]" />
+                  Questions
                 </span>
-                <h2 className="mt-3.5 max-w-xl text-balance text-3xl sm:text-4xl lg:text-5xl font-medium tracking-[-0.04em] text-zinc-950 dark:text-[#DEDEDE] leading-[1.08]">
+                <h2 className="mt-3.5 max-w-xl text-balance text-3xl font-medium tracking-[-0.04em] text-zinc-950 dark:text-[#DEDEDE] sm:text-4xl lg:text-5xl leading-[1.08]">
                   The useful answers.
                   <span className="block text-zinc-500 dark:text-[#808080]">
                     Clear and upfront.
@@ -119,27 +102,25 @@ export function MinimalLanding() {
               </p>
             </div>
 
-            {/* 2-Column Full-Width Accordion Grid (No harsh full-width divider lines) */}
-            <div className="landing-reveal landing-reveal-delay-1 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-              {questions.map(({ tag, question, answer }) => (
+            {/* Vertical Accordion matching section width and style */}
+            <div className="landing-reveal landing-reveal-delay-1 border-t border-zinc-200 dark:border-white/[0.10]">
+              {questions.map(({ question, answer }, index) => (
                 <details
                   key={question}
-                  className="group rounded-2xl sm:rounded-[22px] border border-zinc-200/90 bg-white/70 dark:border-white/[0.08] dark:bg-white/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all duration-300 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-white/95 dark:hover:bg-white/[0.04] open:border-zinc-300 dark:open:border-white/[0.18] open:bg-white/90 dark:open:bg-white/[0.04] open:shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:open:shadow-[0_12px_44px_rgba(0,0,0,0.5)] overflow-hidden"
+                  className="group border-b border-zinc-200 dark:border-white/[0.10] transition-colors duration-200"
                 >
-                  <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 sm:p-6 text-left select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current [&::-webkit-details-marker]:hidden">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[11px] font-semibold tracking-wider text-zinc-500 dark:text-[#808080] uppercase">
-                        {tag}
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 sm:py-7 text-left text-base sm:text-lg font-medium tracking-[-0.02em] text-zinc-950 dark:text-[#DEDEDE] transition-colors duration-200 hover:text-zinc-700 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current select-none">
+                    <span className="flex items-center gap-4 sm:gap-6">
+                      <span className="font-mono text-xs font-semibold text-zinc-500 dark:text-[#808080]">
+                        0{index + 1}
                       </span>
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200/90 bg-zinc-100/80 dark:border-white/10 dark:bg-white/[0.05] text-zinc-500 dark:text-[#808080] transition-all duration-300 group-hover:border-zinc-300 group-hover:bg-zinc-200/80 group-hover:text-zinc-950 dark:group-hover:border-white/20 dark:group-hover:bg-white/[0.12] dark:group-hover:text-white group-open:rotate-45 group-open:bg-zinc-950 group-open:text-white group-open:border-zinc-950 dark:group-open:bg-[#DEDEDE] dark:group-open:text-zinc-950 dark:group-open:border-[#DEDEDE]">
-                        <Plus className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                    <span className="text-base sm:text-lg font-medium tracking-tight text-zinc-950 dark:text-[#DEDEDE] group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                      {question}
+                      <span>{question}</span>
+                    </span>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200/80 bg-zinc-100/60 dark:border-white/10 dark:bg-white/[0.04] text-zinc-400 dark:text-[#808080] transition-all duration-300 group-hover:border-zinc-300 group-hover:text-zinc-950 dark:group-hover:border-white/20 dark:group-hover:text-[#DEDEDE] group-open:rotate-45">
+                      <Plus className="h-3.5 w-3.5" />
                     </span>
                   </summary>
-                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-[#808080] border-t border-zinc-100 dark:border-white/[0.05] pt-3.5">
+                  <div className="pb-7 pl-8 sm:pl-11 pr-6 sm:pr-16 max-w-3xl text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-[#808080]">
                     {answer}
                   </div>
                 </details>
@@ -147,13 +128,13 @@ export function MinimalLanding() {
             </div>
           </section>
 
-          {/* Final CTA Section - Cinematic Studio Timeline Stage & Launchpad */}
+          {/* Final CTA Section - max-w-7xl */}
           <StudioCtaSection starCount={starCount} />
         </main>
 
         {/* Modern Elevated Footer */}
         <footer className="w-full border-t border-zinc-200 dark:border-white/[0.08] bg-mkt-bg pt-10 pb-8 text-xs text-zinc-500 dark:text-[#808080] transition-colors duration-300">
-          <div className="mx-auto w-full max-w-[1720px] px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Top Primary Row */}
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between pb-5">
               {/* Brand Logo & Tagline */}

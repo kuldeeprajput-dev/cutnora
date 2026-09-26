@@ -1,11 +1,7 @@
 import Image from "next/image";
 import { Download, LockKeyhole, Scissors } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
-import {
-  ShowcaseBackgroundGrid,
-  ShowcaseLeftWing,
-  ShowcaseRightWing,
-} from "./ShowcaseStudioArtwork";
+import { ShowcaseBackgroundGrid } from "./ShowcaseStudioArtwork";
 
 const principles = [
   {
@@ -30,74 +26,65 @@ export function MinimalFeaturesSection() {
     <>
       <section
         id="showcase"
-        className="relative mx-auto w-full max-w-[1720px] px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-12 overflow-hidden"
+        className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-12 overflow-hidden"
       >
         {/* Ambient Background Grid Pattern matching Hero */}
         <ShowcaseBackgroundGrid />
 
         {/* Ambient Subtle Glow behind showcase */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[420px] w-full max-w-[1200px] rounded-full bg-gradient-to-tr from-zinc-200/50 via-transparent to-transparent dark:from-[#DEDEDE]/[0.06] dark:via-transparent dark:to-transparent blur-[120px] -z-10" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[420px] w-full max-w-[1000px] rounded-full bg-gradient-to-tr from-zinc-200/50 via-transparent to-transparent dark:from-[#DEDEDE]/[0.06] dark:via-transparent dark:to-transparent blur-[120px] -z-10" />
 
-        {/* Flex layout: Left Wing + Center Showcase + Right Wing */}
-        <div className="relative z-10 flex items-center justify-center gap-6 2xl:gap-8">
-          {/* Left Technical HUD Wing (Never overlaps, 100% visible) */}
-          <ShowcaseLeftWing />
+        {/* Center Showcase Browser Frame */}
+        <div className="landing-showcase-reveal relative mx-auto w-full max-w-7xl overflow-hidden rounded-[22px] sm:rounded-[26px] border border-zinc-200/90 dark:border-white/[0.12] bg-white/95 dark:bg-mkt-surface/85 p-2 sm:p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] dark:shadow-[0_25px_80px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-2xl transition-all duration-300">
+          {/* Top specular highlight line */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 dark:via-[#DEDEDE]/25 to-transparent"
+          />
 
-          {/* Center Showcase Browser Frame */}
-          <div className="landing-showcase-reveal relative w-full flex-1 max-w-[1100px] overflow-hidden rounded-[22px] sm:rounded-[26px] border border-zinc-200/90 dark:border-white/[0.12] bg-white/95 dark:bg-mkt-surface/85 p-2 sm:p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] dark:shadow-[0_25px_80px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-2xl transition-all duration-300">
-            {/* Top specular highlight line */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 dark:via-[#DEDEDE]/25 to-transparent"
-            />
-
-            {/* Browser Header Bar */}
-            <div className="flex h-9 items-center gap-2 border-b border-zinc-200/80 dark:border-mkt-border px-2 pb-2 sm:px-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
-              <div className="ml-2 flex min-w-0 items-center gap-2 rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-3 py-0.5 font-mono text-[11px] font-medium text-zinc-600 dark:text-[#808080]">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400 dark:bg-[#DEDEDE] dark:shadow-[0_0_6px_rgba(222,222,222,0.5)]" />
-                <span className="truncate">
-                  cutnora.app/studio/golden-hour-stories
-                </span>
-              </div>
-              <span className="ml-auto hidden rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-2.5 py-0.5 font-mono text-[9px] font-semibold tracking-wide text-zinc-600 dark:text-[#808080] uppercase sm:inline-flex">
-                Local project
+          {/* Browser Header Bar */}
+          <div className="flex h-9 items-center gap-2 border-b border-zinc-200/80 dark:border-mkt-border px-2 pb-2 sm:px-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-[#DEDEDE]/30 transition-colors" />
+            <div className="ml-2 flex min-w-0 items-center gap-2 rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-3 py-0.5 font-mono text-[11px] font-medium text-zinc-600 dark:text-[#808080]">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400 dark:bg-[#DEDEDE] dark:shadow-[0_0_6px_rgba(222,222,222,0.5)]" />
+              <span className="truncate">
+                cutnora.app/studio/golden-hour-stories
               </span>
             </div>
-
-            {/* Showcase Image with refined inner border */}
-            <div className="relative mt-2 sm:mt-2.5 aspect-[1672/941] w-full overflow-hidden rounded-xl sm:rounded-[18px] border border-zinc-200/80 dark:border-white/[0.08] bg-zinc-100 dark:bg-mkt-surface-secondary">
-              <Image
-                src="/images/landing-page-showcase-light.webp"
-                alt="Cutnora editor with real travel footage, media assets, and a five-track timeline"
-                fill
-                priority
-                draggable={false}
-                className="landing-showcase-image--light object-cover object-top"
-                sizes="(max-width: 1240px) 100vw, 1100px"
-              />
-              <Image
-                src="/images/landing-page-showcase-dark.webp"
-                alt="Cutnora dark editor with real travel footage, media assets, and a five-track timeline"
-                fill
-                priority
-                draggable={false}
-                className="landing-showcase-image--dark object-cover object-top"
-                sizes="(max-width: 1240px) 100vw, 1100px"
-              />
-            </div>
+            <span className="ml-auto hidden rounded-full border border-zinc-200 dark:border-mkt-border bg-zinc-100/90 dark:bg-mkt-surface-secondary/80 px-2.5 py-0.5 font-mono text-[9px] font-semibold tracking-wide text-zinc-600 dark:text-[#808080] uppercase sm:inline-flex">
+              Local project
+            </span>
           </div>
 
-          {/* Right Technical HUD Wing (Never overlaps, 100% visible) */}
-          <ShowcaseRightWing />
+          {/* Showcase Image with refined inner border */}
+          <div className="relative mt-2 sm:mt-2.5 aspect-[1672/941] w-full overflow-hidden rounded-xl sm:rounded-[18px] border border-zinc-200/80 dark:border-white/[0.08] bg-zinc-100 dark:bg-mkt-surface-secondary">
+            <Image
+              src="/images/landing-page-showcase-light.webp"
+              alt="Cutnora editor with real travel footage, media assets, and a five-track timeline"
+              fill
+              priority
+              draggable={false}
+              className="landing-showcase-image--light object-cover object-top"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+            <Image
+              src="/images/landing-page-showcase-dark.webp"
+              alt="Cutnora dark editor with real travel footage, media assets, and a five-track timeline"
+              fill
+              priority
+              draggable={false}
+              className="landing-showcase-image--dark object-cover object-top"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+          </div>
         </div>
       </section>
 
       <section
         id="features"
-        className="relative mx-auto w-full max-w-[1720px] scroll-mt-20 px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32"
+        className="relative mx-auto w-full max-w-7xl scroll-mt-20 px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-16 sm:pb-20"
       >
         <div className="landing-reveal mb-14 sm:mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
