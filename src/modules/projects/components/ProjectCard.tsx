@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Film, MoreVertical, Check, Calendar } from "lucide-react";
+import { Clapperboard, MoreVertical, Check, Calendar } from "lucide-react";
 import type { Project } from "../types";
 import {
   getProjectDuration,
@@ -114,7 +114,7 @@ export function ProjectCard({
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-muted/60">
-                  <Film className="h-9 w-9 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <Clapperboard className="h-12 w-12 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </div>
               )}
             </div>

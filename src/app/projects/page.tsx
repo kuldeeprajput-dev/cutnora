@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Film, Plus, SearchX } from "lucide-react";
+import { Clapperboard, Plus, SearchX } from "lucide-react";
 import {
   ProjectsHeader,
   ProjectsSubheader,
@@ -152,7 +152,7 @@ export default function ProjectsDashboardPage() {
             {searchQuery ? (
               <SearchX className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             ) : (
-              <Film className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <Clapperboard className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             )}
             <h3 className="text-base font-semibold text-foreground">
               {searchQuery ? "No matching projects found" : "No projects yet"}

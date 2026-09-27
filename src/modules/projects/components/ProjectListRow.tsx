@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Film, Check, MoreHorizontal } from "lucide-react";
+import { Clapperboard, Check, MoreHorizontal } from "lucide-react";
 import { useProjectThumbnail } from "../hooks/useProjectThumbnail";
 import type { Project } from "../types";
 import { getProjectDuration, formatDuration, formatDate } from "../utils/project-utils";
@@ -124,7 +124,7 @@ export function ProjectListRow({
             className="h-full w-full object-cover"
           />
         ) : (
-          <Film className="h-4 w-4 text-muted-foreground" />
+          <Clapperboard className="h-4 w-4 text-muted-foreground" />
         )}
       </Link>
 

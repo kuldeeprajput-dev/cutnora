@@ -98,7 +98,7 @@ export function ProjectsHeader({
 
         {/* Right: Search, Theme Toggle & New Project Button */}
         <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
-          <ThemeToggle className="shrink-0" />
+          <ThemeToggle shape="square" className="shrink-0" />
           <div className="relative hidden md:block">
             <Search
               className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"

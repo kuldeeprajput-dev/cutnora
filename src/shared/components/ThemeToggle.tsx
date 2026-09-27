@@ -29,15 +29,21 @@ function applyTheme(theme: "light" | "dark") {
 export interface ThemeToggleProps {
   className?: string;
   showLabel?: boolean;
-  variant?: "default" | "ghost";
+  variant?: "default" | "ghost" | "square" | "outline";
+  shape?: "circle" | "square";
   size?: ButtonSize;
+  title?: string;
+  showTitle?: boolean;
 }
 
 export function ThemeToggle({
   className,
   showLabel = false,
   variant = "default",
+  shape = "circle",
   size = "sm",
+  title: customTitle,
+  showTitle = false,
 }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -71,16 +77,18 @@ export function ThemeToggle({
     setTheme(nextTheme);
   };
 
-  const title = mounted
+  const label = mounted
     ? theme === "dark"
       ? "Switch to light mode"
       : "Switch to dark mode"
     : "Switch color theme";
 
+  const resolvedTitle = showTitle ? (customTitle ?? label) : customTitle;
+
   if (variant === "ghost") {
     return (
       <IconButton
-        label={title}
+        label={customTitle ?? label}
         variant="ghost"
         size={size}
         className={cn(
@@ -102,11 +110,37 @@ export function ThemeToggle({
     );
   }
 
+  if (shape === "square" || variant === "square" || variant === "outline") {
+    return (
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={customTitle ?? label}
+        title={resolvedTitle}
+        className={cn(
+          "theme-toggle inline-flex h-10 w-10 items-center justify-center gap-2 rounded-md border border-border bg-input text-foreground shadow-xs transition-colors duration-200 cursor-pointer hover:bg-accent hover:text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring shrink-0",
+          className,
+        )}
+      >
+        <Moon
+          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        <Sun
+          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label={title}
+      aria-label={customTitle ?? label}
+      title={resolvedTitle}
       className={cn(
         "theme-toggle inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center gap-2 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs transition-colors duration-200 cursor-pointer hover:border-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/35 dark:hover:bg-mkt-surface-secondary dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg",
         className,
