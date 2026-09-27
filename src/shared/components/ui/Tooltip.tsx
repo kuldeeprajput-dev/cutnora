@@ -207,7 +207,8 @@ export function Tooltip({
               zIndex: 9999,
             }}
             className={cn(
-              'pointer-events-none flex items-center rounded-md border border-white/[0.12] bg-[#141416] px-2.5 py-1 text-[11px] font-medium text-zinc-200 shadow-[0_4px_16px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)] backdrop-blur-md whitespace-nowrap select-none',
+              'pointer-events-none flex items-center rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-900 shadow-[0_4px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md whitespace-nowrap select-none',
+              'dark:border-white/[0.12] dark:bg-[#141416] dark:text-zinc-200 dark:shadow-[0_4px_16px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)]',
               className
             )}
           >
@@ -219,23 +220,23 @@ export function Tooltip({
                 top: coords.arrowTop !== undefined ? `${coords.arrowTop}px` : undefined,
               }}
               className={cn(
-                'absolute h-1.5 w-1.5 rotate-45 bg-[#141416]',
+                'absolute h-1.5 w-1.5 rotate-45 bg-white border-zinc-200/90 dark:bg-[#141416] dark:border-white/[0.12]',
                 coords.actualPosition === 'top' &&
-                  '-bottom-[3.5px] -translate-x-1/2 border-b border-r border-white/[0.12]',
+                  '-bottom-[3.5px] -translate-x-1/2 border-b border-r',
                 coords.actualPosition === 'bottom' &&
-                  '-top-[3.5px] -translate-x-1/2 border-t border-l border-white/[0.12]',
+                  '-top-[3.5px] -translate-x-1/2 border-t border-l',
                 coords.actualPosition === 'left' &&
-                  '-right-[3.5px] -translate-y-1/2 border-t border-r border-white/[0.12]',
+                  '-right-[3.5px] -translate-y-1/2 border-t border-r',
                 coords.actualPosition === 'right' &&
-                  '-left-[3.5px] -translate-y-1/2 border-b border-l border-white/[0.12]'
+                  '-left-[3.5px] -translate-y-1/2 border-b border-l'
               )}
             />
 
-            <span className="relative z-10 text-[11px] font-medium text-zinc-200 tracking-normal select-none">
+            <span className="relative z-10 text-[11px] font-medium text-zinc-900 dark:text-zinc-200 tracking-normal select-none">
               {displayContent}
             </span>
             {displayShortcut && (
-              <span className="relative z-10 font-mono text-[10px] text-zinc-400 font-normal tracking-wider ml-1.5 select-none">
+              <span className="relative z-10 font-mono text-[10px] text-zinc-500 dark:text-zinc-400 font-normal tracking-wider ml-1.5 select-none">
                 {displayShortcut.toUpperCase()}
               </span>
             )}
