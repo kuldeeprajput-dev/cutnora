@@ -37,8 +37,11 @@ export function renderExportFrame({
 
   // Clear & Draw Background
   ctx.save();
-  ctx.fillStyle = project.settings.backgroundColor || "#000000";
-  ctx.fillRect(0, 0, exportWidth, exportHeight);
+  ctx.clearRect(0, 0, exportWidth, exportHeight);
+  if (project.settings.backgroundColor && project.settings.backgroundColor !== "transparent") {
+    ctx.fillStyle = project.settings.backgroundColor;
+    ctx.fillRect(0, 0, exportWidth, exportHeight);
+  }
 
   // Sort visible tracks by order
   const visibleTracks = [...project.tracks]

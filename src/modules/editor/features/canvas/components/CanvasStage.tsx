@@ -7,7 +7,6 @@ import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { historyManager } from '@/modules/editor/store/useHistoryStore';
 import { CanvasRenderer } from './CanvasRenderer';
 import { calculateFitScale, type Point } from '../utils/stage-math';
-import type { GuideLine } from '../utils/snapping-utils';
 import type { TimelineClip } from '@/modules/editor/types';
 import { Play, Pause, Minimize2 } from 'lucide-react';
 
@@ -51,7 +50,6 @@ export function CanvasStage() {
 
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ width: 800, height: 450 });
-  const [guides, setGuides] = useState<GuideLine[]>([]);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
@@ -84,12 +82,14 @@ export function CanvasStage() {
     backgroundColor: '#000000',
   };
 
-  // Sync native browser fullscreen events
+  // Sync native browser fullscreen events specifically for the video stage
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFull = !!document.fullscreenElement;
-      setIsNativeFullscreen(isFull);
-      setIsFullscreen(isFull);
+      const isStage = document.fullscreenElement?.id === 'stage-fullscreen-container';
+      setIsNativeFullscreen(isStage);
+      if (!isStage && !document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -169,7 +169,13 @@ export function CanvasStage() {
     };
   }, []);
 
-  const isFullscreenActive = isFullscreen || isNativeFullscreen;
+  // Video player screen only shows when stage is fullscreen, never during layout fullscreen
+  const isLayoutFullscreen = Boolean(
+    document.fullscreenElement &&
+      document.fullscreenElement.id !== 'stage-fullscreen-container',
+  );
+  const isFullscreenActive =
+    isNativeFullscreen || (isFullscreen && !isLayoutFullscreen);
 
   // Keep only a small safety gutter so the canvas uses nearly all stage height.
   const fitScale = calculateFitScale(
@@ -383,9 +389,6 @@ export function CanvasStage() {
     setIsPanning(false);
   };
 
-  const handleGuidesChange = useCallback((newGuides: GuideLine[]) => {
-    setGuides(newGuides);
-  }, []);
 
   const handleFullscreenPlayback = () => {
     const stageVideos = document.querySelectorAll<HTMLVideoElement>(
@@ -402,10 +405,11 @@ export function CanvasStage() {
   };
 
   const handleExitFullscreen = () => {
-    if (document.fullscreenElement) {
+    if (document.fullscreenElement?.id === 'stage-fullscreen-container') {
       document.exitFullscreen().catch(() => {});
     }
     setIsFullscreen(false);
+    setIsNativeFullscreen(false);
   };
 
   return (
@@ -456,29 +460,22 @@ export function CanvasStage() {
           style={{
             width: `${stageDisplayWidth}px`,
             height: `${stageDisplayHeight}px`,
-            backgroundColor: projectSettings.backgroundColor || '#000000',
+            backgroundColor:
+              projectSettings.backgroundColor === 'transparent'
+                ? 'transparent'
+                : projectSettings.backgroundColor || '#000000',
+            backgroundImage:
+              projectSettings.backgroundColor === 'transparent'
+                ? 'repeating-conic-gradient(#23242a 0% 25%, #141519 0% 50%)'
+                : undefined,
+            backgroundSize:
+              projectSettings.backgroundColor === 'transparent' ? '16px 16px' : undefined,
             transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
           className="relative overflow-hidden rounded-sm border border-white/10 shadow-[0_18px_55px_rgba(0,0,0,0.55)] ring-1 ring-black/40 transition-none lg:transition-transform lg:duration-75"
         >
           {/* Active Visual Layers */}
-          <CanvasRenderer stageScale={stageScale} isFullscreenActive={isFullscreenActive} onGuidesChange={handleGuidesChange} />
-
-          {/* Snapping Guide Lines (hidden in Fullscreen mode) */}
-          {!isFullscreenActive &&
-            guides.map((g) => (
-              <div
-                key={g.id}
-                style={{
-                  position: 'absolute',
-                  left: g.type === 'vertical' ? `${g.position * stageScale}px` : 0,
-                  top: g.type === 'horizontal' ? `${g.position * stageScale}px` : 0,
-                  width: g.type === 'vertical' ? '1px' : '100%',
-                  height: g.type === 'horizontal' ? '1px' : '100%',
-                }}
-                className="bg-brand z-50 pointer-events-none"
-              />
-            ))}
+          <CanvasRenderer stageScale={stageScale} isFullscreenActive={isFullscreenActive} />
         </div>
       </div>
 
@@ -516,12 +513,12 @@ export function CanvasStage() {
             <button
               type="button"
               onClick={handleFullscreenPlayback}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black hover:bg-zinc-200 transition-all cursor-pointer shadow-md active:scale-95"
             >
               {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
+                <Pause className="h-5 w-5 fill-black text-black" />
               ) : (
-                <Play className="h-5 w-5 fill-current ml-0.5" />
+                <Play className="h-5 w-5 fill-black text-black ml-0.5" />
               )}
             </button>
 

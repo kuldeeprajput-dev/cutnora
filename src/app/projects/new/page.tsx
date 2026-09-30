@@ -7,12 +7,12 @@ import { Spinner } from '@/shared/components/ui/Spinner';
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const { createProject } = useProjectStore();
-  const hasCreatedRef = useRef(false);
+  const createProject = useProjectStore((s) => s.createProject);
+  const isCreatingRef = useRef(false);
 
   useEffect(() => {
-    if (hasCreatedRef.current) return;
-    hasCreatedRef.current = true;
+    if (isCreatingRef.current) return;
+    isCreatingRef.current = true;
 
     async function initializeNewProject() {
       try {
@@ -23,9 +23,10 @@ export default function NewProjectPage() {
           fps: 30,
           backgroundColor: '#000000',
         });
-        router.replace(`/studio/${project.id}`);
+        router.replace(`/editor?project=${project.id}`);
       } catch (err) {
         console.error('Failed to create project:', err);
+        isCreatingRef.current = false;
       }
     }
 

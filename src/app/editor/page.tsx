@@ -1,0 +1,123 @@
+'use client';
+
+import React, { Suspense, useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useProjectStore } from '@/modules/projects';
+import { ResponsiveProjectShell } from '@/modules/editor/components/shell/ResponsiveProjectShell';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { Button } from '@/shared/components/ui/Button';
+import { AlertCircle, Plus } from 'lucide-react';
+
+function EditorContent() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+  const router = useRouter();
+  const { loadProject, createProject, currentProject, isLoading, error } = useProjectStore();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isCreatingRef = useRef(false);
+
+  useEffect(() => {
+    // If no project ID or special 'new' keyword is passed, automatically create a new project
+    if (!projectId || projectId === 'new' || projectId === 'create') {
+      if (isCreatingRef.current) return;
+      isCreatingRef.current = true;
+
+      async function initializeNew() {
+        try {
+          const newProject = await createProject('Untitled video', {
+            width: 1920,
+            height: 1080,
+            aspectRatio: '16:9',
+            fps: 30,
+            backgroundColor: '#000000',
+          });
+          router.replace(`/editor?project=${newProject.id}`);
+          setIsLoaded(true);
+        } catch (err) {
+          console.error('Failed to create new project:', err);
+          isCreatingRef.current = false;
+        }
+      }
+
+      initializeNew();
+      return;
+    }
+
+    let isMounted = true;
+
+    async function init() {
+      await loadProject(projectId!);
+      if (isMounted) {
+        setIsLoaded(true);
+      }
+    }
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId, loadProject, createProject, router]);
+
+  if (!projectId || projectId === 'new' || projectId === 'create' || isLoading || !isLoaded) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
+        <Spinner size="lg" label="Loading project..." />
+        <p className="mt-4 text-sm text-studio-muted">Opening project...</p>
+      </div>
+    );
+  }
+
+  if (error || !currentProject) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg px-4 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/15 text-destructive mb-4">
+          <AlertCircle className="h-6 w-6" />
+        </div>
+        <h1 className="text-2xl font-bold text-studio-fg">Project Not Found</h1>
+        <p className="mt-2 text-sm text-studio-muted max-w-md">
+          The requested project with ID <span className="font-mono text-selection">{projectId}</span> does not exist or was removed from your local browser database.
+        </p>
+        <div className="mt-6 flex items-center gap-3">
+          <Button
+            size="md"
+            variant="primary"
+            onClick={async () => {
+              try {
+                const project = await createProject('Untitled video');
+                router.replace(`/editor?project=${project.id}`);
+              } catch (err) {
+                console.error('Failed to create project:', err);
+              }
+            }}
+          >
+            <Plus className="h-4 w-4" /> Create New Project
+          </Button>
+          <Link href="/projects">
+            <Button size="md" variant="secondary">
+              Go to Projects
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return <ResponsiveProjectShell />;
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen flex-col items-center justify-center bg-studio-bg text-studio-fg">
+          <Spinner size="lg" label="Loading project..." />
+          <p className="mt-4 text-sm text-studio-muted">Opening project...</p>
+        </div>
+      }
+    >
+      <EditorContent />
+    </Suspense>
+  );
+}

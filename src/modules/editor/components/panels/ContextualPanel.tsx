@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
-import { StudioPanel } from "@/shared/components/layout/StudioPanel";
+import { ProjectPanel } from "@/shared/components/layout/ProjectPanel";
 import { MediaLibraryPanel } from "@/modules/editor/features/media-library";
 import {
   InspectorPanel,
@@ -66,11 +66,11 @@ export function ContextualPanel() {
   };
 
   return (
-    <StudioPanel
+    <ProjectPanel
       title={getPanelTitle()}
-      className="h-full w-full border-r-0 border-t-0 border-b-0"
+      className="h-full w-full border-none shadow-none"
     >
       {renderContent()}
-    </StudioPanel>
+    </ProjectPanel>
   );
 }

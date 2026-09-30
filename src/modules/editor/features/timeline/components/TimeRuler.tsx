@@ -52,7 +52,7 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
       ref={rulerRef}
       onPointerDown={handlePointerDown}
       style={{ minWidth: `${totalWidthPx}px` }}
-      className={`relative h-6 w-full border-b border-studio-border bg-studio-topbar text-studio-muted select-none ${
+      className={`relative h-6 w-full border-b border-studio-border bg-transparent text-studio-muted select-none ${
         isSeeking ? 'cursor-grabbing' : 'cursor-pointer'
       }`}
     >
@@ -71,12 +71,12 @@ export function TimeRuler({ duration, zoom, scrollLeft }: TimeRulerProps) {
         );
       })}
 
-      {/* Red Playhead Handle Indicator */}
+      {/* Studio Playhead Handle Indicator */}
       <div
         style={{ left: `${playheadLeftPx}px` }}
         className="absolute top-0 bottom-0 z-30 pointer-events-none -translate-x-1/2"
       >
-        <div className="h-2.5 w-2.5 rotate-45 bg-brand shadow-sm -mt-1" />
+        <div className="h-2.5 w-2.5 rotate-45 bg-studio-fg shadow-[0_1px_4px_rgba(0,0,0,0.5)] -mt-1" />
       </div>
     </div>
   );

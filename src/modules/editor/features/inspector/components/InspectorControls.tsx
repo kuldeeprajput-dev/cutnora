@@ -14,40 +14,28 @@ export function InspectorSection({
   children,
   className,
 }: {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   title: string;
   description?: string;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section
-      className={cn(
-        "rounded-xl border border-studio-border/80 bg-studio-bg/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]",
-        className,
-      )}
-    >
-      <div className="mb-3 flex items-start gap-2.5">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-studio-border bg-studio-panel-raised text-brand">
-          <Icon className="h-3.5 w-3.5" />
+    <div className={cn("py-2.5 border-b border-studio-border", className)}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-studio-muted font-medium text-xs flex items-center gap-1.5">
+          {Icon && <Icon className="h-3.5 w-3.5 text-studio-muted" />}
+          {title}
         </span>
-        <div className="min-w-0">
-          <h3 className="text-xs font-semibold text-studio-fg">{title}</h3>
-          {description ? (
-            <p className="mt-0.5 text-[10px] leading-4 text-studio-muted">
-              {description}
-            </p>
-          ) : null}
-        </div>
       </div>
       {children}
-    </section>
+    </div>
   );
 }
 
 export function InspectorValue({ children }: { children: React.ReactNode }) {
   return (
-    <span className="min-w-12 rounded-md border border-studio-border bg-studio-bg/70 px-1.5 py-0.5 text-right font-mono text-[10px] text-studio-fg">
+    <span className="min-w-10 rounded-md border border-studio-border bg-studio-panel-raised px-1.5 py-0.5 text-right font-mono text-[10px] font-semibold text-studio-fg">
       {children}
     </span>
   );
@@ -127,7 +115,7 @@ export function InspectorColorControl({
           value={value}
           onChange={onChange}
           onChangeEnd={onChangeEnd}
-          triggerClassName="w-full justify-start"
+          triggerClassName="w-full justify-start text-studio-fg"
         />
       </div>
     </div>
@@ -142,16 +130,15 @@ export function InspectorResetButton({
   onClick: () => void;
 }) {
   return (
-    <Button
-      size="sm"
-      variant="ghost"
+    <button
+      type="button"
       onClick={onClick}
-      className="h-9 w-full justify-center gap-1.5 border border-transparent text-xs text-studio-muted hover:border-studio-border hover:text-studio-fg"
+      className="mt-3 h-7 w-full flex items-center justify-center gap-1.5 rounded-lg border border-studio-border bg-studio-panel-raised/50 text-xs font-medium text-studio-muted hover:bg-studio-hover hover:text-studio-fg transition-colors cursor-pointer"
     >
-      <RotateCcw className="h-3.5 w-3.5" /> {children}
-    </Button>
+      <RotateCcw className="h-3.5 w-3.5 text-studio-muted" /> {children}
+    </button>
   );
 }
 
 export const inspectorActionClass =
-  "h-9 justify-start gap-2 rounded-lg border border-studio-border bg-studio-bg/45 px-2.5 text-[11px] font-medium text-studio-fg shadow-none hover:border-brand/40 hover:bg-studio-panel-raised disabled:border-studio-border/60 disabled:bg-studio-bg/20 disabled:text-studio-muted/55 disabled:opacity-100";
+  "h-8 justify-start gap-2 rounded-lg border border-studio-border bg-studio-panel-raised/50 px-2.5 text-[11px] font-medium text-studio-fg shadow-none hover:border-studio-border-strong hover:bg-studio-hover disabled:opacity-40 cursor-pointer";

@@ -5,3 +5,4 @@ export * from './components/AudioTab';
 export * from './components/SpeedTab';
 export * from './components/TimeTab';
 export * from './components/CanvasSettingsPanel';
+export * from './hooks/useInspectorAccordion';

@@ -50,13 +50,13 @@ export function PrivacySection() {
             return (
               <div
                 key={point.title}
-                className="rounded-2xl border border-studio-border bg-studio-panel p-6 shadow-md hover:border-brand/50 transition-colors"
+                className="group rounded-2xl border border-white/[0.08] bg-[#141416] p-6 shadow-md hover:border-white/20 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15 text-brand mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white mb-4 transition-colors group-hover:border-white/20 group-hover:bg-white/[0.08]">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-base font-bold text-studio-fg mb-2">{point.title}</h3>
-                <p className="text-xs text-studio-muted leading-relaxed">{point.description}</p>
+                <h3 className="text-base font-bold text-white mb-2">{point.title}</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">{point.description}</p>
               </div>
             );
           })}

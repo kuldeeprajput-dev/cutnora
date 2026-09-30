@@ -4,10 +4,11 @@ import React from "react";
 import { AlertCircle } from "lucide-react";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { CanvasStage } from "@/modules/editor/features/canvas";
-import { usePlaybackEngine } from "@/modules/editor/features/playback";
+import { usePlaybackEngine, AudioPlaybackManager } from "@/modules/editor/features/playback";
 
 export function PreviewStage() {
   usePlaybackEngine();
+
 
   const wasTabHiddenPaused = usePlaybackStore(
     (state) => state.wasTabHiddenPaused,
@@ -18,6 +19,7 @@ export function PreviewStage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-canvas-bg text-studio-fg select-none">
+      <AudioPlaybackManager />
       {/* Tab Hidden Paused Banner */}
       {wasTabHiddenPaused && (
         <div className="flex items-center justify-between bg-studio-panel-raised border-b border-studio-border px-4 py-1.5 text-xs text-selection">

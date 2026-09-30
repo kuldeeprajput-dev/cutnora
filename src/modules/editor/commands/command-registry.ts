@@ -4,6 +4,10 @@ import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
 import { historyManager } from '@/modules/editor/store/useHistoryStore';
+import {
+  getNextTimelineZoom,
+  MIN_TIMELINE_ZOOM,
+} from '@/modules/editor/features/timeline/utils/timeline-zoom-utils';
 
 export type CommandCategory = 'playback' | 'editing' | 'navigation' | 'help';
 
@@ -182,6 +186,66 @@ export const COMMAND_REGISTRY: Command[] = [
     },
   },
   {
+    id: 'editing.trim-start',
+    label: 'Trim Start to Playhead',
+    description: 'Trim left edge of selected clip up to playhead',
+    shortcut: 'Q',
+    category: 'editing',
+    execute: () => {
+      const selectedIds = useEditorUIStore.getState().selectedClipIds;
+      const playhead = usePlaybackStore.getState().playhead;
+      const currentProject = useProjectStore.getState().currentProject;
+      if (!currentProject || selectedIds.length === 0) return;
+      const clips = currentProject.tracks
+        .flatMap((t) => t.clips)
+        .filter((c) => selectedIds.includes(c.id));
+      let trimCount = 0;
+      clips.forEach((clip) => {
+        const clipStart = clip.timelineStart;
+        const clipEnd = clip.timelineStart + clip.timelineDuration;
+        if (playhead > clipStart && playhead < clipEnd) {
+          const newDuration = Math.max(0.1, clipEnd - playhead);
+          const delta = playhead - clipStart;
+          const newSourceStart = clip.sourceStart + delta * (clip.speed ?? 1);
+          useProjectStore.getState().trimClip(clip.id, playhead, newDuration, newSourceStart);
+          trimCount++;
+        }
+      });
+      if (trimCount > 0) {
+        useToastStore.getState().showToast('Trimmed start to playhead', 'info');
+      }
+    },
+  },
+  {
+    id: 'editing.trim-end',
+    label: 'Trim End to Playhead',
+    description: 'Trim right edge of selected clip back to playhead',
+    shortcut: 'W',
+    category: 'editing',
+    execute: () => {
+      const selectedIds = useEditorUIStore.getState().selectedClipIds;
+      const playhead = usePlaybackStore.getState().playhead;
+      const currentProject = useProjectStore.getState().currentProject;
+      if (!currentProject || selectedIds.length === 0) return;
+      const clips = currentProject.tracks
+        .flatMap((t) => t.clips)
+        .filter((c) => selectedIds.includes(c.id));
+      let trimCount = 0;
+      clips.forEach((clip) => {
+        const clipStart = clip.timelineStart;
+        const clipEnd = clip.timelineStart + clip.timelineDuration;
+        if (playhead > clipStart && playhead < clipEnd) {
+          const newDuration = Math.max(0.1, playhead - clipStart);
+          useProjectStore.getState().trimClip(clip.id, clipStart, newDuration, clip.sourceStart);
+          trimCount++;
+        }
+      });
+      if (trimCount > 0) {
+        useToastStore.getState().showToast('Trimmed end to playhead', 'info');
+      }
+    },
+  },
+  {
     id: 'editing.select-all',
     label: 'Select All Clips',
     description: 'Select all clips across all tracks',
@@ -211,22 +275,22 @@ export const COMMAND_REGISTRY: Command[] = [
     id: 'navigation.zoom-in',
     label: 'Zoom In',
     description: 'Increase timeline zoom scale',
-    shortcut: 'Plus',
+    shortcut: 'Shift+Plus',
     category: 'navigation',
     execute: () => {
       const zoom = useEditorUIStore.getState().zoom;
-      useEditorUIStore.getState().setZoom(zoom + 15);
+      useEditorUIStore.getState().setZoom(getNextTimelineZoom(zoom, 'in', MIN_TIMELINE_ZOOM));
     },
   },
   {
     id: 'navigation.zoom-out',
     label: 'Zoom Out',
     description: 'Decrease timeline zoom scale',
-    shortcut: 'Minus',
+    shortcut: 'Shift+Minus',
     category: 'navigation',
     execute: () => {
       const zoom = useEditorUIStore.getState().zoom;
-      useEditorUIStore.getState().setZoom(zoom - 15);
+      useEditorUIStore.getState().setZoom(getNextTimelineZoom(zoom, 'out', MIN_TIMELINE_ZOOM));
     },
   },
   {

@@ -3,7 +3,7 @@ import type { TimelineClip } from "@/modules/editor/types";
 import { autosaveService, useProjectStore } from "@/modules/projects";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { historyManager } from "@/modules/editor/store/useHistoryStore";
-import { calculateSnapping, type GuideLine } from "../utils/snapping-utils";
+import { calculateSnapping } from "../utils/snapping-utils";
 
 export type TransformMode =
   | "translate"
@@ -18,7 +18,6 @@ export type TransformMode =
   | "rotate";
 
 export interface UseTransformHandlerReturn {
-  activeGuides: GuideLine[];
   isDragging: boolean;
   startTransform: (
     clip: TimelineClip,
@@ -27,28 +26,14 @@ export interface UseTransformHandlerReturn {
   ) => void;
 }
 
-function guidesMatch(current: GuideLine[], next: GuideLine[]) {
-  return (
-    current.length === next.length &&
-    current.every(
-      (guide, index) =>
-        guide.id === next[index]?.id &&
-        guide.type === next[index]?.type &&
-        Object.is(guide.position, next[index]?.position),
-    )
-  );
-}
-
 export function useTransformHandler(
   stageScale: number,
 ): UseTransformHandlerReturn {
-  const [activeGuides, setActiveGuides] = useState<GuideLine[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const { updateClip, currentProject } = useProjectStore();
   const { snappingEnabled } = useEditorUIStore();
 
   const activeClipRef = useRef<TimelineClip | null>(null);
-  const activeGuidesRef = useRef<GuideLine[]>([]);
   const startPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const startTextStyleRef = useRef<TimelineClip["textStyle"]>(undefined);
   const startTransformRef = useRef<TimelineClip["transform"]>({
@@ -76,12 +61,6 @@ export function useTransformHandler(
     startAngle: 0,
     startRotation: 0,
   });
-
-  const updateActiveGuides = (nextGuides: GuideLine[]) => {
-    if (guidesMatch(activeGuidesRef.current, nextGuides)) return;
-    activeGuidesRef.current = nextGuides;
-    setActiveGuides(nextGuides);
-  };
 
   const flushMobileUpdate = () => {
     mobileFrameRef.current = null;
@@ -228,7 +207,6 @@ export function useTransformHandler(
 
         newX = snapResult.x;
         newY = snapResult.y;
-        if (!isMobileGestureRef.current) updateActiveGuides(snapResult.guides);
       } else if (mode === "rotate") {
         // Both mobile and desktop: use angular delta from start angle to current angle
         const { centerX, centerY, startAngle, startRotation } =
@@ -417,7 +395,6 @@ export function useTransformHandler(
         handleMobilePinchStart,
       );
       setIsDragging(false);
-      updateActiveGuides([]);
       activeClipRef.current = null;
       isMobileGestureRef.current = false;
       mobileHistoryCapturedRef.current = false;
@@ -435,7 +412,6 @@ export function useTransformHandler(
   };
 
   return {
-    activeGuides,
     isDragging,
     startTransform,
   };

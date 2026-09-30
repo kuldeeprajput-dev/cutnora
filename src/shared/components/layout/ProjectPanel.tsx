@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/shared/utils/cn";
 
-export interface StudioPanelProps extends Omit<
+export interface ProjectPanelProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "title"
 > {
@@ -11,14 +11,14 @@ export interface StudioPanelProps extends Omit<
   raised?: boolean;
 }
 
-export function StudioPanel({
+export function ProjectPanel({
   className,
   title,
   actions,
   children,
   raised = false,
   ...props
-}: StudioPanelProps) {
+}: ProjectPanelProps) {
   return (
     <div
       className={cn(
@@ -31,10 +31,10 @@ export function StudioPanel({
       {(title || actions) && (
         <div
           data-studio-panel-header
-          className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-studio-border bg-studio-topbar px-3"
+          className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-studio-border bg-studio-panel px-3"
         >
           <div
-            className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-studio-muted before:h-3 before:w-0.5 before:shrink-0 before:rounded-full before:bg-brand"
+            className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-studio-muted before:h-3 before:w-0.5 before:shrink-0 before:rounded-full before:bg-studio-fg/60"
             title={typeof title === "string" ? title : undefined}
           >
             <span className="min-w-0 flex-1 truncate">{title}</span>
@@ -48,3 +48,6 @@ export function StudioPanel({
     </div>
   );
 }
+
+export const StudioPanel = ProjectPanel;
+export type StudioPanelProps = ProjectPanelProps;

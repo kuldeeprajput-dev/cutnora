@@ -2,3 +2,8 @@ export * from './types';
 export * from './schemas/project.schema';
 export * from './store/useProjectStore';
 export * from './services/autosave-service';
+export * from './components';
+export * from './hooks/useProjects';
+export * from './hooks/useProjectSort';
+export * from './hooks/useProjectThumbnail';
+export * from './utils/project-utils';

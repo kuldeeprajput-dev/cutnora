@@ -1,0 +1,39 @@
+<svg viewBox="0 0 240 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Aluminum Jog Wheel (Left) -->
+    <circle cx="65" cy="46" r="34" stroke-width="1.4"/>
+    <circle cx="65" cy="46" r="26" stroke-dasharray="2 3"/>
+    <circle cx="65" cy="46" r="10" stroke-width="1.2"/>
+    <circle cx="53" cy="34" r="5" stroke-width="1.2"/>
+
+    <!-- Jog wheel peripheral angle ticks -->
+    <line x1="95" y1="46" x2="99" y2="46" stroke-width="1.4"/>
+    <line x1="86.2" y1="67.2" x2="89" y2="70" stroke-width="1.4"/>
+    <line x1="65" y1="76" x2="65" y2="80" stroke-width="1.4"/>
+    <line x1="43.8" y1="67.2" x2="41" y2="70" stroke-width="1.4"/>
+    <line x1="35" y1="46" x2="31" y2="46" stroke-width="1.4"/>
+    <line x1="43.8" y1="24.8" x2="41" y2="22" stroke-width="1.4"/>
+    <line x1="65" y1="16" x2="65" y2="12" stroke-width="1.4"/>
+    <line x1="86.2" y1="24.8" x2="89" y2="22" stroke-width="1.4"/>
+
+    <!-- WebCodecs Pipeline Blocks (Right) -->
+    <rect x="115" y="16" width="108" height="60" rx="3" stroke-width="1.2"/>
+    <text x="122" y="31" fill="currentColor" font-family="monospace" font-size="7.5" font-weight="bold">
+      WEBCODECS GPU
+    </text>
+    <text x="122" y="44" fill="currentColor" font-family="monospace" font-size="7">
+      NVDEC / VTB ACCEL
+    </text>
+    <text x="122" y="56" fill="currentColor" font-family="monospace" font-size="7">
+      60.00 FPS · 0.0ms JITTER
+    </text>
+    <text x="122" y="68" fill="currentColor" font-family="monospace" font-size="7">
+      H.264 &amp; AAC MUXER
+    </text>
+
+    <!-- Bottom Caption -->
+    <text x="20" y="102" fill="currentColor" font-family="monospace" font-size="7.5" letter-spacing="0.08em">
+      DIRECT MP4 EXPORT · IN-BROWSER
+    </text>
+  </g>
+</svg>

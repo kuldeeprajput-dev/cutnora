@@ -36,11 +36,10 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 pb-2 text-studio-fg">
+    <div className="flex flex-col text-xs text-studio-fg pb-3 select-none">
       <InspectorSection
         icon={Palette}
         title="Shape colors"
-        description="Set the fill and outline colors."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <InspectorColorControl
@@ -59,7 +58,6 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
       <InspectorSection
         icon={PenTool}
         title="Border"
-        description="Control the outline weight and line style."
       >
         <div>
           <InspectorSliderHeader
@@ -95,7 +93,6 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
       <InspectorSection
         icon={Square}
         title="Shape details"
-        description="Fine-tune corners and shape-specific settings."
       >
         <div className="space-y-3.5">
           {elementStyle.shapeType === "arrow" && (
@@ -155,7 +152,6 @@ export function ElementInspectorTab({ clip }: ElementInspectorTabProps) {
       <InspectorSection
         icon={Sparkles}
         title="Drop shadow"
-        description="Add depth and separation from the canvas."
       >
         <InspectorColorControl
           label="Shadow color"

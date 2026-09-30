@@ -29,7 +29,7 @@ export function EditorPreviewMock() {
             switching tools or waiting on uploads.
           </p>
         </div>
-        <div className="overflow-x-auto rounded-2xl pb-2 studio-scrollbar">
+        <div className="overflow-x-auto rounded-2xl pb-2 no-scrollbar">
           {/* Outer Window Container with Subtle Drop Shadow & Borders */}
           <div className="min-w-[820px] overflow-hidden rounded-2xl border border-studio-border bg-studio-bg text-studio-fg shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
             {/* Top Studio Bar */}
@@ -73,7 +73,7 @@ export function EditorPreviewMock() {
                 <div className="h-4 w-px bg-studio-border mx-1" />
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-white shadow-xs hover:bg-brand-hover"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1 text-xs font-semibold text-zinc-950 shadow-xs hover:bg-zinc-200"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>Export</span>
@@ -90,7 +90,7 @@ export function EditorPreviewMock() {
                   <button
                     type="button"
                     aria-label="Media"
-                    className="p-2 text-brand bg-brand/10 rounded-lg"
+                    className="p-2 text-white bg-white/10 rounded-lg"
                   >
                     <FolderPlus className="h-4 w-4" />
                   </button>
@@ -125,7 +125,7 @@ export function EditorPreviewMock() {
                     </span>
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 text-[11px] text-brand hover:underline font-medium"
+                      className="inline-flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white font-medium"
                     >
                       <Plus className="h-3 w-3" /> Import
                     </button>
@@ -134,9 +134,9 @@ export function EditorPreviewMock() {
                   {/* Media Thumbnails Grid */}
                   <div className="grid grid-cols-2 gap-2">
                     {/* Asset Card 1 */}
-                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-brand">
+                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-white/30">
                       <div className="h-20 w-full rounded bg-studio-bg relative flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-linear-to-tr from-brand/20 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
                         <span className="text-[10px] font-mono text-studio-fg bg-black/60 px-1 rounded absolute bottom-1 right-1">
                           00:08.4
                         </span>
@@ -147,7 +147,7 @@ export function EditorPreviewMock() {
                     </div>
 
                     {/* Asset Card 2 */}
-                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-brand">
+                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-white/30">
                       <div className="h-20 w-full rounded bg-studio-bg relative flex items-center justify-center overflow-hidden">
                         <div className="absolute inset-0 bg-linear-to-tr from-mkt-info/20 to-transparent" />
                         <span className="text-[10px] font-mono text-studio-fg bg-black/60 px-1 rounded absolute bottom-1 right-1">
@@ -160,7 +160,7 @@ export function EditorPreviewMock() {
                     </div>
 
                     {/* Asset Card 3 */}
-                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-brand">
+                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-white/30">
                       <div className="h-20 w-full rounded bg-studio-bg relative flex items-center justify-center overflow-hidden">
                         <div className="absolute inset-0 bg-linear-to-tr from-selection/20 to-transparent" />
                         <span className="text-[10px] font-mono text-studio-fg bg-black/60 px-1 rounded absolute bottom-1 right-1">
@@ -173,7 +173,7 @@ export function EditorPreviewMock() {
                     </div>
 
                     {/* Asset Card 4 */}
-                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-brand">
+                    <div className="relative group overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised p-1.5 cursor-pointer hover:border-white/30">
                       <div className="h-20 w-full rounded bg-studio-bg relative flex items-center justify-center overflow-hidden">
                         <div className="absolute inset-0 bg-linear-to-tr from-mkt-success/20 to-transparent" />
                         <span className="text-[10px] font-mono text-studio-fg bg-black/60 px-1 rounded absolute bottom-1 right-1">
@@ -215,7 +215,7 @@ export function EditorPreviewMock() {
                     <button
                       type="button"
                       aria-label="Play"
-                      className="h-7 w-7 rounded-full bg-brand text-white flex items-center justify-center hover:bg-brand-hover"
+                      className="h-7 w-7 rounded-full bg-white text-zinc-950 flex items-center justify-center hover:bg-zinc-200"
                     >
                       <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
                     </button>
@@ -236,7 +236,7 @@ export function EditorPreviewMock() {
               {/* Right Inspector Panel (3 Cols) */}
               <div className="lg:col-span-3 flex flex-col bg-studio-panel">
                 <div className="flex h-9 border-b border-studio-border bg-studio-topbar px-2 items-center gap-1 text-xs">
-                  <span className="px-2.5 py-1 font-semibold text-studio-fg border-b-2 border-brand">
+                  <span className="px-2.5 py-1 font-semibold text-white border-b-2 border-white">
                     Transform
                   </span>
                   <span className="px-2.5 py-1 text-studio-muted hover:text-studio-fg cursor-pointer">
@@ -258,7 +258,7 @@ export function EditorPreviewMock() {
                         type="range"
                         readOnly
                         value="100"
-                        className="w-full accent-brand"
+                        className="w-full accent-white"
                       />
                       <span className="font-mono text-studio-fg w-8">100</span>
                     </div>
@@ -273,7 +273,7 @@ export function EditorPreviewMock() {
                         type="range"
                         readOnly
                         value="90"
-                        className="w-full accent-brand"
+                        className="w-full accent-white"
                       />
                       <span className="font-mono text-studio-fg w-8">90%</span>
                     </div>
@@ -289,7 +289,7 @@ export function EditorPreviewMock() {
                         type="range"
                         readOnly
                         value="80"
-                        className="w-full accent-brand"
+                        className="w-full accent-white"
                       />
                       <span className="font-mono text-studio-fg w-8">80%</span>
                     </div>
@@ -304,7 +304,7 @@ export function EditorPreviewMock() {
               <div className="flex items-center justify-between text-[10px] font-mono text-studio-muted border-b border-studio-border pb-1 mb-2 px-16">
                 <span>00:00</span>
                 <span>00:02</span>
-                <span className="text-brand font-bold">00:04</span>
+                <span className="text-white font-bold">00:04</span>
                 <span>00:06</span>
                 <span>00:08</span>
                 <span>00:10</span>
@@ -313,9 +313,9 @@ export function EditorPreviewMock() {
 
               {/* Multitrack Lanes */}
               <div className="space-y-1.5 relative">
-                {/* Playhead Red Line Overlay */}
-                <div className="absolute left-[38%] top-0 bottom-0 w-0.5 bg-brand z-20 pointer-events-none">
-                  <div className="h-2 w-2 bg-brand rotate-45 -translate-x-0.75 -translate-y-1" />
+                {/* Playhead White Line Overlay */}
+                <div className="absolute left-[38%] top-0 bottom-0 w-0.5 bg-white z-20 pointer-events-none">
+                  <div className="h-2 w-2 bg-white rotate-45 -translate-x-0.75 -translate-y-1" />
                 </div>
 
                 {/* Track 1: Text Track */}
@@ -338,7 +338,7 @@ export function EditorPreviewMock() {
                     <Lock className="h-3 w-3 hover:text-studio-fg" />
                   </div>
                   <div className="flex-1 h-8 rounded bg-studio-topbar relative flex items-center overflow-hidden border border-studio-border">
-                    <div className="absolute left-0 w-[45%] h-full rounded bg-brand/80 border border-brand px-2 flex items-center text-[10px] font-medium text-white truncate">
+                    <div className="absolute left-0 w-[45%] h-full rounded bg-white/20 border border-white/30 px-2 flex items-center text-[10px] font-medium text-white truncate">
                       beach_drone.mp4
                     </div>
                     <div className="absolute left-[47%] w-[40%] h-full rounded bg-mkt-info/80 border border-mkt-info px-2 flex items-center text-[10px] font-medium text-white truncate">

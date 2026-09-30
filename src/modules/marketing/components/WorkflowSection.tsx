@@ -30,19 +30,19 @@ export function WorkflowSection() {
   ];
 
   return (
-    <section id="workflow" className="py-20 sm:py-24 lg:py-28 bg-mkt-surface-secondary text-mkt-fg border-t border-mkt-border">
+    <section id="workflow" className="py-20 sm:py-24 lg:py-28 bg-[#0d0d0d] text-white border-t border-white/[0.08]">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-10">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-mkt-border bg-mkt-surface px-3.5 py-1 text-xs font-medium text-mkt-fg mb-4">
-            <span className="h-2 w-2 rounded-full bg-brand" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1 text-xs font-medium text-zinc-400 mb-4">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
             <span>Editing Workflow</span>
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-mkt-fg">
+          <h2 className="text-3xl font-medium tracking-tight sm:text-4xl text-white">
             Four steps from raw clips to final video.
           </h2>
-          <p className="mt-4 text-base text-mkt-muted">
+          <p className="mt-4 text-base text-zinc-400">
             A streamlined editorial sequence designed to get your video rendered in minutes.
           </p>
         </div>
@@ -54,20 +54,20 @@ export function WorkflowSection() {
             return (
               <div
                 key={step.number}
-                className="relative rounded-2xl border border-mkt-border bg-mkt-surface p-6 shadow-xs flex flex-col justify-between"
+                className="group relative rounded-2xl border border-white/[0.08] bg-[#141416] p-6 shadow-xs flex flex-col justify-between transition-all duration-300 hover:border-white/20 hover:-translate-y-1"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-extrabold font-mono text-brand">{step.number}</span>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                    <span className="text-2xl font-bold font-mono text-zinc-500 group-hover:text-white transition-colors">{step.number}</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white transition-colors group-hover:border-white/20 group-hover:bg-white/[0.08]">
                       <Icon className="h-4 w-4" />
                     </div>
                   </div>
-                  <h3 className="text-base font-bold text-mkt-fg mb-2">{step.title}</h3>
-                  <p className="text-xs text-mkt-muted leading-relaxed">{step.description}</p>
+                  <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed">{step.description}</p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-mkt-border">
+                  <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-white/20">
                     →
                   </div>
                 )}

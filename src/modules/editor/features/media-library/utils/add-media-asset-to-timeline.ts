@@ -23,6 +23,11 @@ export function addMediaAssetToTimeline(asset: MediaAsset): TimelineClip | null 
   const duration = Math.max(0.1, asset.type === 'image' ? 5 : asset.duration || 5);
   const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches;
 
+  const clipWidth = isMobile ? project.settings.width : asset.width || project.settings.width;
+  const clipHeight = isMobile ? project.settings.height : asset.height || project.settings.height;
+  const initialX = Math.round((project.settings.width - clipWidth) / 2);
+  const initialY = Math.round((project.settings.height - clipHeight) / 2);
+
   const clip: TimelineClip = {
     id: nanoid(),
     trackId: targetTrack.id,
@@ -34,10 +39,10 @@ export function addMediaAssetToTimeline(asset: MediaAsset): TimelineClip | null 
     sourceDuration: duration,
     name: asset.name,
     transform: {
-      x: 0,
-      y: 0,
-      width: isMobile ? project.settings.width : asset.width || 1920,
-      height: isMobile ? project.settings.height : asset.height || 1080,
+      x: initialX,
+      y: initialY,
+      width: clipWidth,
+      height: clipHeight,
       scaleX: 1,
       scaleY: 1,
       rotation: 0,

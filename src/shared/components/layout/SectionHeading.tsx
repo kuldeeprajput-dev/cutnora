@@ -31,8 +31,8 @@ export function SectionHeading({
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium tracking-tight mb-1',
             theme === 'marketing'
-              ? 'bg-brand-soft text-brand border border-brand/20'
-              : 'bg-studio-panel-raised text-selection border border-studio-border'
+              ? 'bg-white/[0.06] text-white border border-white/10'
+              : 'bg-studio-panel-raised text-white border border-studio-border'
           )}
         >
           {badge}

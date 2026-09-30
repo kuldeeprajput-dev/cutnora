@@ -1,46 +1,159 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { IconButton } from "@/shared/components/ui/IconButton";
+import type { ButtonSize } from "@/shared/components/ui/Button";
 
 const THEME_STORAGE_KEY = "cutnora_theme";
 
 function applyTheme(theme: "light" | "dark") {
   document.documentElement.dataset.theme = theme;
-  localStorage.setItem(THEME_STORAGE_KEY, theme);
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {}
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", theme === "dark" ? "#070707" : "#f8f9fb");
+    ?.setAttribute("content", theme === "dark" ? "#0d0d0d" : "#fafafa");
+  window.dispatchEvent(
+    new CustomEvent("cutnora-theme-change", { detail: theme }),
+  );
 }
 
-interface ThemeToggleProps {
+export interface ThemeToggleProps {
   className?: string;
   showLabel?: boolean;
+  variant?: "default" | "ghost" | "square" | "outline";
+  shape?: "circle" | "square";
+  size?: ButtonSize;
+  title?: string;
+  showTitle?: boolean;
 }
 
 export function ThemeToggle({
   className,
   showLabel = false,
+  variant = "default",
+  shape = "circle",
+  size = "sm",
+  title: customTitle,
+  showTitle = false,
 }: ThemeToggleProps) {
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    setMounted(true);
+    const isDark =
+      document.documentElement.dataset.theme === "dark" ||
+      document.documentElement.classList.contains("dark");
+    setTheme(isDark ? "dark" : "light");
+
+    const onThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<"light" | "dark">;
+      setTheme(
+        customEvent.detail ||
+          (document.documentElement.classList.contains("dark") ? "dark" : "light"),
+      );
+    };
+
+    window.addEventListener("cutnora-theme-change", onThemeChange);
+    return () =>
+      window.removeEventListener("cutnora-theme-change", onThemeChange);
+  }, []);
+
   const toggleTheme = () => {
-    const current =
-      document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-    applyTheme(current === "dark" ? "light" : "dark");
+    const isCurrentlyDark =
+      document.documentElement.dataset.theme === "dark" ||
+      document.documentElement.classList.contains("dark");
+    const nextTheme = isCurrentlyDark ? "light" : "dark";
+    applyTheme(nextTheme);
+    setTheme(nextTheme);
   };
+
+  const label = mounted
+    ? theme === "dark"
+      ? "Switch to light mode"
+      : "Switch to dark mode"
+    : "Switch color theme";
+
+  const resolvedTitle = showTitle ? (customTitle ?? label) : customTitle;
+
+  if (variant === "ghost") {
+    return (
+      <IconButton
+        label={customTitle ?? label}
+        variant="ghost"
+        size={size}
+        className={cn(
+          "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised",
+          className,
+        )}
+        onClick={toggleTheme}
+      >
+        <Moon
+          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        <Sun
+          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
+      </IconButton>
+    );
+  }
+
+  if (shape === "square" || variant === "square" || variant === "outline") {
+    return (
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={customTitle ?? label}
+        title={resolvedTitle}
+        className={cn(
+          "theme-toggle inline-flex h-10 w-10 items-center justify-center gap-2 rounded-md border border-border bg-input text-foreground shadow-xs transition-colors duration-200 cursor-pointer hover:bg-accent hover:text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring shrink-0",
+          className,
+        )}
+      >
+        <Moon
+          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        <Sun
+          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          aria-hidden="true"
+        />
+        {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label="Switch color theme"
-      title="Switch color theme"
+      aria-label={customTitle ?? label}
+      title={resolvedTitle}
       className={cn(
-        "theme-toggle inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-mkt-border bg-mkt-surface px-3 text-mkt-fg transition-colors hover:bg-mkt-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg",
+        "theme-toggle inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center gap-2 rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-xs transition-colors duration-200 cursor-pointer hover:border-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#DEDEDE]/15 dark:bg-mkt-surface dark:text-[#DEDEDE] dark:shadow-none dark:hover:border-[#DEDEDE]/35 dark:hover:bg-mkt-surface-secondary dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-bg",
         className,
       )}
     >
-      <Moon className="theme-icon--light h-4 w-4" aria-hidden="true" />
-      <Sun className="theme-icon--dark h-4 w-4" aria-hidden="true" />
+      <Moon
+        className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+        aria-hidden="true"
+      />
+      <Sun
+        className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+        aria-hidden="true"
+      />
       {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
     </button>
   );

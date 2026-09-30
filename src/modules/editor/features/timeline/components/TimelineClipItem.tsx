@@ -14,6 +14,8 @@ import { useClipboardStore } from "@/modules/editor/store/useClipboardStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { WaveformCanvas } from "@/modules/editor/features/audio/components/WaveformCanvas";
 import { detachAudioFromVideo } from "@/modules/editor/features/audio/utils/detachAudio";
+import { resolveMediaAssetBlob } from "@/modules/core/storage/media-source-service";
+import { extractAudioPeaks } from "@/modules/editor/features/audio/utils/audio-peaks";
 import {
   FileVideo,
   Image as ImageIcon,
@@ -62,17 +64,21 @@ export function TimelineClipItem({
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [waveformPeaks, setWaveformPeaks] = useState<number[] | null>(null);
   const [assetDuration, setAssetDuration] = useState<number>(10);
+  const [assetAspectRatio, setAssetAspectRatio] = useState<number>(16 / 9);
   const [isMissingAsset, setIsMissingAsset] = useState(false);
 
   const isSelected = selectedClipIds.includes(clip.id);
   const widthPx = Math.max(12, clip.timelineDuration * zoom);
   const leftPx = 16 + clip.timelineStart * zoom;
   const durationLabel = `${clip.timelineDuration.toFixed(1)}s`;
-  const showDuration = widthPx >= 36;
-  const showIcon = widthPx >= 58;
+  // Only display seconds duration when clip has enough width to prevent overlapping labels
+  const showDuration = widthPx >= 75;
   const showName = widthPx >= 96;
   const showStatusDetails = widthPx >= 150;
-  const durationOnly = showDuration && !showIcon;
+
+  const frameHeight = 40;
+  const frameWidth = Math.max(30, Math.round(frameHeight * assetAspectRatio));
+  const frameCount = Math.max(1, Math.ceil(widthPx / frameWidth));
 
   useEffect(() => {
     let isMounted = true;
@@ -87,10 +93,41 @@ export function TimelineClipItem({
 
         if (isMounted) {
           setAssetDuration(asset.duration || 10);
+          if (asset.width && asset.height && asset.height > 0) {
+            setAssetAspectRatio(asset.width / asset.height);
+          }
           if (asset.waveformPeaks && asset.waveformPeaks.length > 0) {
             setWaveformPeaks(asset.waveformPeaks);
           } else if (asset.waveformStatus === "deferred") {
             setWaveformPeaks(Array.from({ length: 80 }, () => 0.18));
+          }
+        }
+
+        // Dynamically upgrade low-resolution or flat/uniform waveform peaks to high-detail RMS dynamics
+        if (clip.type === "audio") {
+          const existingPeaks = asset.waveformPeaks;
+          const isOldResolution = !existingPeaks || existingPeaks.length < 800;
+          const isQuietOrFlat =
+            existingPeaks &&
+            (existingPeaks.every((p) => p < 0.22) ||
+              existingPeaks.slice(0, 30).every((p) => Math.abs(p - existingPeaks[0]) < 0.03));
+          const needsUpgrade = isOldResolution || isQuietOrFlat;
+
+          if (needsUpgrade) {
+            resolveMediaAssetBlob(asset)
+              .then(async (blob) => {
+                const freshPeaks = await extractAudioPeaks(blob);
+                if (freshPeaks && freshPeaks.length > 0 && isMounted) {
+                  setWaveformPeaks(freshPeaks);
+                  void db.assets
+                    .update(asset.id, {
+                      waveformPeaks: freshPeaks,
+                      waveformStatus: "ready",
+                    })
+                    .catch(() => {});
+                }
+              })
+              .catch(() => {});
           }
         }
 
@@ -128,19 +165,21 @@ export function TimelineClipItem({
     onStartDrag(clip, "move", e);
   };
 
-  const getBgColor = () => {
-    switch (clip.type) {
-      case "video":
-        return "bg-brand/20 border-brand/50 text-brand";
-      case "image":
-        return "bg-selection/20 border-selection/50 text-selection";
-      case "audio":
-        return "bg-mkt-success/20 border-mkt-success/50 text-mkt-success";
-      case "text":
-        return "bg-mkt-info/20 border-mkt-info/50 text-mkt-info";
-      case "overlay":
-        return "bg-overlay/20 border-overlay/50 text-overlay";
+  const getClipStyling = () => {
+    if (clip.type === "audio") {
+      return {
+        bg: "bg-zinc-200/70 dark:bg-studio-panel text-studio-fg",
+        border: isSelected
+          ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
+          : "border-2 border-studio-border hover:border-studio-border-strong",
+      };
     }
+    return {
+      bg: "bg-studio-panel text-studio-fg",
+      border: isSelected
+        ? "border-2 border-studio-fg ring-1 ring-studio-fg/30 shadow-md"
+        : "border-2 border-studio-border hover:border-studio-border-strong",
+    };
   };
 
   const renderIcon = () => {
@@ -329,7 +368,7 @@ export function TimelineClipItem({
           {
             id: "detach-audio",
             label: "Detach audio",
-            icon: <Unlink className="h-3.5 w-3.5 text-brand" />,
+            icon: <Unlink className="h-3.5 w-3.5 text-white/90" />,
             onClick: () => detachAudioFromVideo(clip.id),
           },
         ]
@@ -338,11 +377,14 @@ export function TimelineClipItem({
     {
       id: "delete",
       label: "Delete",
+      destructive: true,
       icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
       shortcut: "Del",
       onClick: () => deleteClips([clip.id]),
     },
   ];
+
+  const clipStyling = getClipStyling();
 
   return (
     <>
@@ -359,11 +401,10 @@ export function TimelineClipItem({
         onPointerDown={handlePointerDown}
         onContextMenu={handleContextMenu}
         className={cn(
-          "group relative flex touch-none items-center justify-between rounded-lg border px-2 select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
-          widthPx < 64 && "px-1",
-          getBgColor(),
-          isSelected && "ring-2 ring-selection border-selection",
-          isDragging && "opacity-20 ring-1 ring-brand/40",
+          "group relative flex touch-none items-center justify-between rounded-lg select-none overflow-hidden cursor-grab active:cursor-grabbing transition-[opacity,box-shadow,border-color,background-color]",
+          clipStyling.bg,
+          clipStyling.border,
+          isDragging && "opacity-40 ring-2 ring-studio-fg/60",
           track.locked && "opacity-60 cursor-not-allowed",
         )}
       >
@@ -374,71 +415,123 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-start", e);
             }}
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-studio-fg/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip start"
           />
         )}
 
-        {/* Clip Background Video Thumbnail */}
+        {/* Clip Background Video Thumbnail Filmstrip */}
         {thumbUrl && clip.type === "video" && (
-          <div
-            className="absolute inset-0 opacity-20 bg-repeat-x pointer-events-none"
-            style={{
-              backgroundImage: `url(${thumbUrl})`,
-              backgroundSize: "contain",
-            }}
-          />
+          <div className="absolute inset-0 z-0 flex overflow-hidden pointer-events-none select-none">
+            {Array.from({ length: frameCount }).map((_, i) => (
+              <div
+                key={i}
+                className="relative shrink-0 border-r border-black/50 overflow-hidden"
+                style={{ width: `${frameWidth}px`, height: "100%" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbUrl}
+                  alt=""
+                  className="h-full w-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
         )}
 
-        {/* Waveform Canvas Layer for Audio & Video clips */}
-        {(clip.type === "audio" || clip.type === "video") && waveformPeaks && (
-          <div className="absolute inset-0 z-0 opacity-40 px-1 pt-3 pointer-events-none">
+        {/* Clip Background Image Thumbnail Filmstrip */}
+        {thumbUrl && clip.type === "image" && (
+          <div className="absolute inset-0 z-0 flex overflow-hidden pointer-events-none select-none">
+            {Array.from({ length: frameCount }).map((_, i) => (
+              <div
+                key={i}
+                className="relative shrink-0 border-r border-black/50 overflow-hidden"
+                style={{ width: `${frameWidth}px`, height: "100%" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbUrl}
+                  alt=""
+                  className="h-full w-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Waveform Canvas Layer for Audio clips only */}
+        {clip.type === "audio" && waveformPeaks && (
+          <div className="absolute inset-0 z-0 px-2 py-1 pointer-events-none">
             <WaveformCanvas
               peaks={waveformPeaks}
               sourceStart={clip.sourceStart}
-              sourceDuration={clip.sourceDuration}
+              sourceDuration={clip.timelineDuration * (clip.speed || 1)}
               totalAssetDuration={assetDuration}
               isMuted={isAudioMuted}
+              width={Math.max(10, widthPx - 16)}
             />
           </div>
         )}
 
-        {/* Clip Content Label */}
-        {(showIcon || showName) && (
-          <div className="z-10 flex min-w-0 items-center gap-1.5">
-            {showIcon && renderIcon()}
-            {showName && (
-              <span className="truncate text-[11px] font-semibold text-studio-fg">
-                {clip.name}
-              </span>
-            )}
-            {showStatusDetails &&
-              isAudioMuted &&
-              (clip.type === "audio" || clip.type === "video") && (
-                <span title="Audio muted">
-                  <VolumeX className="h-3 w-3 shrink-0 text-studio-muted" />
-                </span>
-              )}
-            {showStatusDetails && isMissingAsset && (
-              <span
-                className="flex items-center gap-0.5 rounded bg-destructive/20 px-1 text-[9px] font-bold text-destructive"
-                title="Missing asset file"
-              >
-                <AlertCircle className="h-2.5 w-2.5" /> Missing
+        {/* Text Clip Content Label */}
+        {clip.type === "text" && widthPx >= 28 && (
+          <div className="z-10 absolute inset-y-0 left-2 right-10 flex items-center gap-1.5 pointer-events-none select-none">
+            <Type className="h-3 w-3 shrink-0 text-studio-muted" />
+            <span className="truncate text-xs font-medium text-studio-fg tracking-tight">
+              “{clip.textStyle?.text || clip.name}”
+            </span>
+          </div>
+        )}
+
+        {/* Audio Clip Content Label */}
+        {clip.type === "audio" && widthPx >= 28 && (
+          <div className="z-10 absolute top-1 left-2 flex min-w-0 max-w-[calc(100%-48px)] items-center gap-1.5 pointer-events-none select-none leading-none">
+            <Music className="h-3 w-3 shrink-0 text-studio-muted" />
+            <span className="truncate text-[10px] font-medium text-studio-fg tracking-tight">
+              {clip.name}
+            </span>
+            {showStatusDetails && isAudioMuted && (
+              <span className="flex items-center gap-0.5 rounded bg-destructive/90 px-1 py-0.5 text-[8px] font-bold text-white shadow-xs leading-none">
+                <VolumeX className="h-2.5 w-2.5" /> Muted
               </span>
             )}
           </div>
         )}
 
-        {/* Duration Badge */}
-        {showDuration && (
-          <span
-            className={cn(
-              "z-10 ml-1 shrink-0 font-mono text-[9px] text-studio-muted",
-              durationOnly &&
-                "pointer-events-none absolute inset-0 ml-0 flex items-center justify-center text-studio-fg",
+        {/* Video, Image, Overlay Clip Content Label */}
+        {clip.type !== "text" && clip.type !== "audio" && widthPx >= 28 && (
+          <div className="z-10 absolute top-1 left-1.5 flex min-w-0 max-w-[calc(100%-12px)] items-center gap-1 pointer-events-none select-none leading-none">
+            {clip.type !== "video" && clip.type !== "image" && renderIcon()}
+            <span className="truncate text-[10px] font-medium text-white/95 leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] tracking-tight">
+              {clip.name}
+            </span>
+            {showStatusDetails && isAudioMuted && clip.type === "video" && (
+              <span title="Audio muted" className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                <VolumeX className="h-2.5 w-2.5 shrink-0 text-white/80" />
+              </span>
             )}
-          >
+            {showStatusDetails && isMissingAsset && (
+              <span
+                className="flex items-center gap-0.5 rounded bg-destructive/90 px-1 py-0.5 text-[8px] font-bold text-white shadow-xs leading-none"
+                title="Missing asset file"
+              >
+                <AlertCircle className="h-2 w-2" /> Missing
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Duration Label in Bottom Right (No box effect, only when width is sufficient) */}
+        {(clip.type === "text" || clip.type === "audio") && showDuration && (
+          <span className="z-10 absolute bottom-1 right-2 font-mono text-[8.5px] font-medium text-studio-muted/80 pointer-events-none select-none leading-none">
+            {durationLabel}
+          </span>
+        )}
+        {clip.type !== "video" && clip.type !== "image" && clip.type !== "text" && clip.type !== "audio" && showDuration && (
+          <span className="z-10 absolute bottom-1 right-2 font-mono text-[8.5px] font-medium text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pointer-events-none select-none leading-none">
             {durationLabel}
           </span>
         )}
@@ -450,7 +543,7 @@ export function TimelineClipItem({
               e.stopPropagation();
               onStartDrag(clip, "trim-end", e);
             }}
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-selection z-30 transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-studio-fg/80 z-30 transition-colors opacity-0 group-hover:opacity-100"
             title="Trim clip end"
           />
         )}

@@ -128,13 +128,13 @@ export function TrackHeader({
   const renderTypeIcon = () => {
     switch (track.type) {
       case "video":
-        return <Video className="h-3.5 w-3.5 text-brand shrink-0" />;
+        return <Video className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
       case "overlay":
-        return <Shapes className="h-3.5 w-3.5 text-mkt-info shrink-0" />;
+        return <Shapes className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
       case "text":
-        return <Type className="h-3.5 w-3.5 text-selection shrink-0" />;
+        return <Type className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
       case "audio":
-        return <Music className="h-3.5 w-3.5 text-mkt-success shrink-0" />;
+        return <Music className="h-3.5 w-3.5 text-studio-muted shrink-0" />;
     }
   };
 
@@ -157,23 +157,23 @@ export function TrackHeader({
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-studio-topbar px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
+          "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-transparent px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
           !isCompact ? "justify-between" : "justify-between gap-1",
           isSelected &&
-            "bg-studio-panel-raised shadow-[inset_3px_0_0_var(--color-brand),inset_0_1px_0_rgba(255,255,255,0.025)]",
+            "bg-studio-panel-raised shadow-[inset_2.5px_0_0_var(--studio-fg)]",
           reorderState === "active" &&
-            "border-y border-dashed border-brand/50 bg-brand/5",
-          reorderState === "over" && "bg-brand/10",
+            "border-y border-dashed border-studio-border bg-studio-panel-raised/50",
+          reorderState === "over" && "bg-studio-hover",
         )}
       >
         {reorderState === "over" && (
           <div
             className={cn(
-              "pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-brand shadow-[0_0_8px_rgba(234,88,12,0.8)]",
+              "pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-studio-fg shadow-sm",
               reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
             )}
           >
-            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-brand" />
+            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-studio-fg" />
           </div>
         )}
 
@@ -190,10 +190,7 @@ export function TrackHeader({
             {...attributes}
             {...listeners}
             title="Drag to reorder track"
-            className={cn(
-              "flex h-6 w-4 shrink-0 touch-none cursor-grab items-center justify-center rounded text-studio-muted outline-none transition-[color,background-color,transform] hover:bg-studio-panel-raised hover:text-studio-fg focus-visible:ring-1 focus-visible:ring-brand active:cursor-grabbing active:scale-95",
-              isDragging && "bg-brand/15 text-brand",
-            )}
+            className="flex h-6 w-4 shrink-0 touch-none cursor-grab items-center justify-center rounded bg-transparent text-studio-muted outline-none transition-[color,transform] hover:text-studio-fg active:cursor-grabbing active:scale-95"
           >
             <GripVertical className="h-3 w-3" />
           </button>
@@ -219,7 +216,7 @@ export function TrackHeader({
                 if (e.key === "Escape") setIsRenaming(false);
               }}
               autoFocus
-              className="h-6 flex-1 min-w-[60px] rounded bg-studio-panel-raised border border-brand px-1.5 text-xs font-medium text-studio-fg focus:outline-none focus:ring-1 focus:ring-brand z-10"
+              className="h-6 flex-1 min-w-[60px] rounded bg-studio-panel-raised border border-studio-border px-1.5 text-xs font-medium text-studio-fg focus:outline-none focus:ring-1 focus:ring-studio-fg/30 z-10"
             />
           ) : !isCompact ? (
             <span
@@ -239,27 +236,39 @@ export function TrackHeader({
               size="sm"
               variant="ghost"
               onClick={handleToggleLock}
-              className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
+              tooltipPosition="top"
+              className={cn(
+                "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
+                track.locked
+                  ? "text-studio-fg hover:text-studio-fg"
+                  : "text-studio-muted hover:text-studio-fg",
+              )}
             >
               {track.locked ? (
-                <Lock className="h-3 w-3 text-selection" />
+                <Lock className="h-3 w-3" />
               ) : (
-                <Unlock className="h-3 w-3 text-studio-muted" />
+                <Unlock className="h-3 w-3" />
               )}
             </IconButton>
 
             {track.type !== "audio" && (
               <IconButton
-                label={track.hidden ? "Show track" : "Hide track"}
+                label={track.hidden ? "Enable track" : "Hide track"}
                 size="sm"
                 variant="ghost"
                 onClick={handleToggleHide}
-                className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
+                tooltipPosition="top"
+                className={cn(
+                  "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
+                  track.hidden
+                    ? "text-studio-fg hover:text-studio-fg"
+                    : "text-studio-muted hover:text-studio-fg",
+                )}
               >
                 {track.hidden ? (
-                  <EyeOff className="h-3 w-3 text-destructive" />
+                  <EyeOff className="h-3 w-3" />
                 ) : (
-                  <Eye className="h-3 w-3 text-studio-muted" />
+                  <Eye className="h-3 w-3" />
                 )}
               </IconButton>
             )}
@@ -270,12 +279,18 @@ export function TrackHeader({
                 size="sm"
                 variant="ghost"
                 onClick={handleToggleMute}
-                className="h-6 w-6 p-0 rounded text-studio-muted hover:text-studio-fg"
+                tooltipPosition="top"
+                className={cn(
+                  "h-6 w-6 p-0 rounded cursor-pointer transition-colors",
+                  track.muted
+                    ? "text-studio-fg hover:text-studio-fg"
+                    : "text-studio-muted hover:text-studio-fg",
+                )}
               >
                 {track.muted ? (
-                  <VolumeX className="h-3 w-3 text-destructive" />
+                  <VolumeX className="h-3 w-3" />
                 ) : (
-                  <Volume2 className="h-3 w-3 text-studio-muted" />
+                  <Volume2 className="h-3 w-3" />
                 )}
               </IconButton>
             )}
@@ -292,49 +307,23 @@ export function TrackHeader({
                 </IconButton>
               }
               align="right"
+              className="min-w-0 w-[112px] p-0.5 border border-studio-border bg-studio-panel-raised/95 backdrop-blur-md shadow-2xl rounded-lg"
             >
-              <DropdownMenuItem onClick={() => setIsRenaming(true)}>
-                <Edit2 className="h-3.5 w-3.5" /> Rename Track
+              <DropdownMenuItem
+                onClick={() => setIsRenaming(true)}
+                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-studio-fg/90 hover:text-studio-fg hover:bg-studio-hover rounded-md transition-colors cursor-pointer"
+              >
+                <Edit2 className="h-3 w-3 text-studio-muted shrink-0" />
+                <span className="truncate">Rename Track</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleToggleLock}>
-                {track.locked ? (
-                  <>
-                    <Unlock className="h-3.5 w-3.5" /> Unlock Track
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-3.5 w-3.5 text-selection" /> Lock Track
-                  </>
-                )}
-              </DropdownMenuItem>
-              {track.type !== "audio" && (
-                <DropdownMenuItem onClick={handleToggleHide}>
-                  {track.hidden ? (
-                    <>
-                      <Eye className="h-3.5 w-3.5" /> Show Track
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-3.5 w-3.5 text-destructive" /> Hide Track
-                    </>
-                  )}
-                </DropdownMenuItem>
-              )}
-              {(track.type === "audio" || track.type === "video") && (
-                <DropdownMenuItem onClick={handleToggleMute}>
-                  {track.muted ? (
-                    <>
-                      <Volume2 className="h-3.5 w-3.5" /> Unmute Track
-                    </>
-                  ) : (
-                    <>
-                      <VolumeX className="h-3.5 w-3.5 text-destructive" /> Mute Track
-                    </>
-                  )}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem destructive onClick={handleDeleteTrack}>
-                <Trash2 className="h-3.5 w-3.5" /> Delete Track
+              <div className="my-0.5 h-px bg-studio-border" />
+              <DropdownMenuItem
+                destructive
+                onClick={handleDeleteTrack}
+                className="gap-1.5 px-1.5 py-1 text-[11px] leading-tight text-destructive hover:bg-destructive/15 rounded-md transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3 w-3 text-destructive shrink-0" />
+                <span className="truncate">Delete Track</span>
               </DropdownMenuItem>
             </DropdownMenu>
           </div>

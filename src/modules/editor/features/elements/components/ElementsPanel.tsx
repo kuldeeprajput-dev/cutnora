@@ -343,7 +343,7 @@ export function ElementsPanel() {
     <div className="flex h-full min-h-0 flex-col bg-studio-panel text-studio-fg select-none">
 
 
-      <div className="studio-scrollbar min-h-0 flex-1 overflow-y-auto px-3.5 pb-5 pt-2">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3.5 pb-5 pt-2">
         <LibrarySection section="shapes" onOpen={setActiveSection}>
           {filteredShapes.map((preset) => (
             <button
@@ -484,11 +484,11 @@ function MediaTile({
       onClick={() => onAdd(item)}
       disabled={isAdding}
       title={`Add ${item.name}`}
-      className="group relative flex h-[83px] items-center justify-center overflow-hidden rounded-lg border border-white/[0.04] bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-white/15 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
+      className="group relative flex h-[83px] items-center justify-center overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-studio-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
     >
       {/* Provider media is loaded from its original URL to preserve animation. */}
       {!isLoaded && (
-        <span className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent" />
+        <span className="absolute inset-0 animate-pulse bg-studio-hover/50" />
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

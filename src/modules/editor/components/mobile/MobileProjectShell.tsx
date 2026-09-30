@@ -79,7 +79,7 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(remaining).padStart(2, "0")}`;
 }
 
-export function MobileStudioShell() {
+export function MobileProjectShell() {
   const currentProject = useProjectStore((state) => state.currentProject);
   const undo = useProjectStore((state) => state.undo);
   const redo = useProjectStore((state) => state.redo);
@@ -254,7 +254,7 @@ export function MobileStudioShell() {
     <div className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
       <header className="flex h-[calc(54px+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3 pt-[env(safe-area-inset-top)]">
         <Link
-          href="/"
+          href="/projects"
           aria-label="Back to projects"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg"
         >
@@ -303,7 +303,10 @@ export function MobileStudioShell() {
           >
             <Redo2 className="h-4.5 w-4.5" />
           </button>
-          <ThemeToggle className="flex h-9 w-9 min-w-0 items-center justify-center rounded-xl border-0 bg-transparent p-0 text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:ring-0 focus-visible:ring-offset-0" />
+          <ThemeToggle
+            variant="ghost"
+            className="flex h-9 w-9 min-w-0 items-center justify-center rounded-xl border-0 bg-transparent p-0 text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
           <button
             type="button"
             onClick={() => setExportModalOpen(true)}
@@ -363,7 +366,7 @@ export function MobileStudioShell() {
               type="button"
               onClick={handleMobilePlayback}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-2xl bg-brand text-white shadow-lg shadow-brand/20 active:scale-95"
+              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-2xl bg-brand text-brand-contrast shadow-lg shadow-brand/20 active:scale-95"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5 fill-current" />
@@ -541,7 +544,7 @@ function MobileNavButton({
           "flex h-9 w-9 items-center justify-center rounded-xl",
           active && "bg-brand/12",
           prominent &&
-            "rounded-full bg-brand text-white shadow-lg shadow-brand/25",
+            "rounded-full bg-brand text-brand-contrast shadow-lg shadow-brand/25",
         )}
       >
         <Icon className="h-4.5 w-4.5" />
@@ -550,3 +553,6 @@ function MobileNavButton({
     </button>
   );
 }
+
+export const MobileStudioShell = MobileProjectShell;
+

@@ -5,7 +5,7 @@ import { TimelineEditor } from '@/modules/editor/features/timeline';
 
 export function TimelineShell() {
   return (
-    <div className="h-full w-full overflow-hidden bg-timeline-bg">
+    <div className="h-full w-full overflow-hidden bg-transparent">
       <TimelineEditor />
     </div>
   );
