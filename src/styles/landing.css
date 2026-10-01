@@ -164,20 +164,6 @@ html.dark .cutnora-landing {
   font-size: 11px;
   border-radius: 6px;
 }
-.lp-menu-button {
-  display: none;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--studio-fg);
-  border: 0;
-  border-radius: 6px;
-}
-.lp-mobile-nav {
-  display: none;
-}
 .lp-hero {
   padding-top: clamp(40px, 4vw, 56px);
   padding-bottom: 36px;
@@ -969,9 +955,8 @@ html.dark .cutnora-landing {
   backdrop-filter: blur(8px);
 }
 .lp-privacy-band {
-  background: var(--studio-panel-raised);
+  background: var(--mkt-bg);
   padding-block: 90px;
-  border-block: 1px solid var(--studio-border);
 }
 .lp-privacy-grid {
   display: grid;
@@ -1312,8 +1297,7 @@ html.dark .cutnora-landing {
 }
 .lp-shortcuts-band {
   padding-block: 76px;
-  border-block: 1px solid var(--studio-border);
-  background: var(--studio-panel);
+  background: var(--mkt-bg);
 }
 .lp-shortcuts-heading {
   display: flex;
@@ -1520,12 +1504,14 @@ html.dark .cutnora-landing {
   }
 }
 @media (max-width: 800px) {
-  .lp-desktop-nav,
-  .lp-github {
+  .lp-desktop-nav {
     display: none;
   }
-  .lp-menu-button {
-    display: flex;
+  .lp-github {
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+    border-radius: 6px;
   }
   .lp-header {
     width: calc(100% - 40px);
@@ -1540,40 +1526,6 @@ html.dark .cutnora-landing {
   }
   .lp-brand {
     font-size: 19px;
-  }
-  .lp-mobile-nav:not([hidden]) {
-    display: block;
-    padding: 8px 18px 18px;
-    border-top: 1px solid var(--studio-border);
-  }
-  .lp-mobile-nav > a {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    min-height: 49px;
-    color: var(--studio-fg);
-    font-size: 14px;
-    border-bottom: 1px solid var(--studio-border);
-  }
-  .lp-mobile-nav > a > span {
-    color: var(--studio-muted);
-    font-size: 10px;
-  }
-  .lp-mobile-nav > a > svg {
-    margin-left: auto;
-  }
-  .lp-mobile-nav-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 20px;
-    font-size: 11px;
-    color: var(--studio-muted);
-  }
-  .lp-mobile-nav-footer > a {
-    display: flex;
-    gap: 6px;
-    align-items: center;
   }
   .lp-hero {
     padding-top: 44px;
@@ -1800,8 +1752,8 @@ html.dark .cutnora-landing {
   .lp-nav-actions .lp-button svg {
     display: none;
   }
-  .cutnora-landing .lp-theme-toggle,
-  .lp-menu-button {
+  .lp-github,
+  .cutnora-landing .lp-theme-toggle {
     width: 32px;
     height: 34px;
   }
