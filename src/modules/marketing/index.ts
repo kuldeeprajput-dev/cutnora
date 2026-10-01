@@ -1,12 +1,3 @@
-export * from './constants';
-export * from './components/LandingHeader';
-export * from './components/HeroSection';
-export * from './components/EditorPreviewMock';
-export * from './components/FeaturesSection';
-export * from './components/WorkflowSection';
-export * from './components/PrivacySection';
-export * from './components/CapabilitiesSection';
-export * from './components/FaqSection';
-export * from './components/FinalCtaSection';
-export * from './components/LandingFooter';
-export * from './sections/LandingHeroSection';
+export { MinimalLanding } from "./components/MinimalLanding";
+export { LandingHeader } from "./components/LandingHeader";
+export { LandingFooter } from "./components/LandingFooter";
