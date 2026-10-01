@@ -98,11 +98,11 @@ export function ThemeToggle({
         onClick={toggleTheme}
       >
         <Moon
-          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          className="h-4 w-4 pointer-events-none transition-transform duration-300 dark:hidden"
           aria-hidden="true"
         />
         <Sun
-          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          className="hidden h-4 w-4 pointer-events-none transition-transform duration-300 dark:block"
           aria-hidden="true"
         />
         {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
@@ -123,11 +123,11 @@ export function ThemeToggle({
         )}
       >
         <Moon
-          className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+          className="h-4 w-4 pointer-events-none transition-transform duration-300 dark:hidden"
           aria-hidden="true"
         />
         <Sun
-          className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+          className="hidden h-4 w-4 pointer-events-none transition-transform duration-300 dark:block"
           aria-hidden="true"
         />
         {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}
@@ -147,11 +147,11 @@ export function ThemeToggle({
       )}
     >
       <Moon
-        className="theme-icon--light h-4 w-4 pointer-events-none transition-transform duration-300"
+        className="h-4 w-4 pointer-events-none transition-transform duration-300 dark:hidden"
         aria-hidden="true"
       />
       <Sun
-        className="theme-icon--dark h-4 w-4 pointer-events-none transition-transform duration-300"
+        className="hidden h-4 w-4 pointer-events-none transition-transform duration-300 dark:block"
         aria-hidden="true"
       />
       {showLabel ? <span className="text-xs font-semibold">Theme</span> : null}

@@ -1,16 +1,33 @@
 @import "tailwindcss";
-@import "./landing.css";
 @import "./themes.css";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
+@custom-variant laptop (@media (width <= 1050px));
+@custom-variant compact (@media (width <= 800px));
+@custom-variant phone (@media (width <= 560px));
+@custom-variant narrow (@media (width <= 380px));
 
 @theme {
   --font-sans: "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
+  --animate-landing-hero: lp-rise 0.65s both;
+  --animate-landing-workspace: lp-rise 0.85s 0.12s both;
+
+  @keyframes lp-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
-  --color-brand-soft: var(--brand-soft);
   --color-brand-contrast: var(--brand-contrast);
 
   --color-background: var(--background);
@@ -20,13 +37,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
   --color-ring: var(--ring);
 
   --color-mkt-bg: var(--mkt-bg);
@@ -34,10 +49,6 @@
   --color-mkt-surface-secondary: var(--mkt-surface-secondary);
   --color-mkt-fg: var(--mkt-fg);
   --color-mkt-muted: var(--mkt-muted);
-  --color-mkt-border: var(--mkt-border);
-  --color-mkt-accent: var(--mkt-accent);
-  --color-mkt-accent-hover: var(--mkt-accent-hover);
-  --color-mkt-accent-soft: var(--mkt-accent-soft);
   --color-mkt-success: var(--mkt-success);
   --color-mkt-info: var(--mkt-info);
 
@@ -54,15 +65,22 @@
   --color-canvas-bg: var(--canvas-bg);
   --color-selection: var(--selection);
   --color-selection-hover: var(--selection-hover);
-  --color-destructive: var(--destructive);
   --color-destructive-hover: var(--destructive-hover);
-  --color-overlay: var(--overlay);
   --color-brand-active: var(--brand-active);
+}
+
+@utility landing-reveal {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: lp-rise both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 20%;
+    }
+  }
 }
 
 @layer base {
 
-  /* Permanently remove all scrollbar arrow buttons across the whole app */
   *::-webkit-scrollbar-button,
   ::-webkit-scrollbar-button,
   ::-webkit-scrollbar-button:single-button,
@@ -85,12 +103,6 @@
     background: transparent !important;
   }
 
-  /* Universal Custom Scrollbar:
-     - Absolutely no arrow buttons (top/bottom)
-     - Idle state: ultra-thin 4px pill
-     - Hover state: expands to 8px thickness (matching timeline track)
-     - Active/Dragging: 10px thickness in theme active color
-  */
   html,
   body,
   .app-custom-scrollbar {
@@ -187,10 +199,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
-
   ::selection {
     background: var(--selection);
     color: inherit;
@@ -205,28 +213,16 @@
   /* Left-side sections (Canvas Settings, Clip Settings, Media Library, etc.) scrollbar suppression */
   [data-studio-sidebar],
   [data-studio-sidebar] *,
-  .studio-sidebar,
-  .studio-sidebar *,
   .no-scrollbar,
-  .no-scrollbar *,
-  .scrollbar-none,
-  .scrollbar-none *,
-  .studio-scrollbar,
-  .studio-scrollbar * {
+  .no-scrollbar * {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
 
   [data-studio-sidebar]::-webkit-scrollbar,
   [data-studio-sidebar] *::-webkit-scrollbar,
-  .studio-sidebar::-webkit-scrollbar,
-  .studio-sidebar *::-webkit-scrollbar,
   .no-scrollbar::-webkit-scrollbar,
-  .no-scrollbar *::-webkit-scrollbar,
-  .scrollbar-none::-webkit-scrollbar,
-  .scrollbar-none *::-webkit-scrollbar,
-  .studio-scrollbar::-webkit-scrollbar,
-  .studio-scrollbar *::-webkit-scrollbar {
+  .no-scrollbar *::-webkit-scrollbar {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
@@ -281,27 +277,6 @@
     background-color: var(--scrollbar-thumb-active);
   }
 
-  /* Completely suppress all scrollbar arrow buttons in timeline */
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:single-button,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:vertical,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:horizontal,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:start,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:end,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:decrement,
-  .timeline-bottom-scrollbar::-webkit-scrollbar-button:increment {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
-    -webkit-appearance: none !important;
-  }
-
-  .timeline-bottom-scrollbar::-webkit-scrollbar-corner {
-    display: none !important;
-    background: transparent !important;
-  }
-
   /* Modal Dialog Scrollbar */
   .dialog-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -317,10 +292,6 @@
     background-color: var(--scrollbar-thumb-hover);
   }
 
-  .text-balance {
-    text-wrap: balance;
-  }
-
   @keyframes dropzone-float {
     0%, 100% {
       transform: translateY(0px);
@@ -330,36 +301,8 @@
     }
   }
 
-  @keyframes dropzone-glow {
-    0%, 100% {
-      opacity: 0.2;
-      transform: scale(0.95);
-    }
-    50% {
-      opacity: 0.55;
-      transform: scale(1.12);
-    }
-  }
-
-  @keyframes dropzone-pulse-subtle {
-    0%, 100% {
-      opacity: 0.35;
-    }
-    50% {
-      opacity: 0.75;
-    }
-  }
-
   .animate-dropzone-float {
     animation: dropzone-float 3.5s ease-in-out infinite;
-  }
-
-  .animate-dropzone-glow {
-    animation: dropzone-glow 3s ease-in-out infinite;
-  }
-
-  .animate-dropzone-pulse {
-    animation: dropzone-pulse-subtle 2.5s ease-in-out infinite;
   }
 }
 
