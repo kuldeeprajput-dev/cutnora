@@ -202,13 +202,6 @@
 }
 
 @layer utilities {
-  .marketing-grid {
-    background-image:
-      linear-gradient(to right, rgb(23 24 21 / 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(23 24 21 / 0.055) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
   /* Left-side sections (Canvas Settings, Clip Settings, Media Library, etc.) scrollbar suppression */
   [data-studio-sidebar],
   [data-studio-sidebar] *,
