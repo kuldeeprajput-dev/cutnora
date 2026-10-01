@@ -1,31 +1,3 @@
-'use client';
-
-import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-const faqs: FaqItem[] = [
-  {
-    question: 'Does Cutnora upload my files?',
-    answer:
-      'No. Your video clips, audio tracks, and images are processed entirely on your local machine inside your browser. Nothing is uploaded to external servers or cloud storage.',
-  },
-  {
-    question: 'Which media formats are supported?',
-    answer:
-      'Cutnora supports widely used web video formats (MP4, WebM), audio formats (MP3, WAV, AAC), and image formats (PNG, JPEG, WebP). Exact codec playback depends on your browser’s HTML5 media engine.',
-  },
-  {
-    question: 'Can I save a project?',
-    answer:
-      'Yes. Your projects, multitrack timeline setups, and media asset Blobs are automatically saved locally in your browser using Dexie IndexedDB, allowing you to return and continue editing.',
-  },
-  {
-    question: 'Which browsers are recommended?',
     answer:
       'We recommend modern desktop browsers with strong Web Codecs and Canvas 2D support, including Chrome, Edge, Brave, Firefox, or Safari.',
   },
