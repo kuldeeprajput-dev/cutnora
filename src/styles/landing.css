@@ -1823,3 +1823,227 @@ html.dark .cutnora-landing {
     margin-top: 6px;
     font-size: 12px;
   }
+  .lp-hero-actions {
+    flex-direction: column;
+    max-width: 320px;
+    gap: 10px;
+    margin: 24px auto 0;
+  }
+  .lp-hero-actions > :is(.lp-button, .lp-text-link) {
+    width: 100%;
+    padding-inline: 20px;
+    font-size: 13px;
+  }
+  .lp-button {
+    min-height: 44px;
+    padding-inline: 18px;
+    gap: 12px;
+    font-size: 12px;
+  }
+  .lp-text-link {
+    gap: 9px;
+  }
+  .lp-text-link svg {
+    width: 14px;
+    height: 14px;
+  }
+  .lp-editor {
+    border-radius: 9px;
+  }
+  .lp-editor-topbar {
+    height: 38px;
+    padding-inline: 10px;
+  }
+  .lp-editor-topbar > div {
+    gap: 7px;
+  }
+  .lp-editor-topbar strong {
+    font-size: 9px;
+  }
+  .lp-editor-history,
+  .lp-editor-saved {
+    display: none;
+  }
+  .lp-editor-export {
+    font-size: 8px;
+    padding: 5px 8px;
+  }
+  .lp-editor-workspace {
+    grid-template-columns: 37px minmax(0, 1fr);
+  }
+  .lp-editor-panel {
+    display: none;
+  }
+  .lp-editor-rail {
+    padding: 6px 3px;
+    gap: 3px;
+  }
+  .lp-editor-rail > span {
+    display: none;
+  }
+  .lp-editor-rail > button {
+    min-height: 41px;
+  }
+  .lp-editor-stage {
+    padding: 7px 7px 0;
+  }
+  .lp-mobile-text-toggle:not([hidden]) {
+    display: inline-flex;
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    padding: 6px 9px;
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: 5px;
+    background: rgb(0 0 0 / 60%);
+    color: #fff;
+    font-size: 9px;
+  }
+  .lp-editor-canvas {
+    aspect-ratio: 1.65;
+  }
+  .lp-editor-canvas > span {
+    font-size: clamp(15px, 4.2vw, 22px);
+  }
+  .lp-preview-transport {
+    height: 34px;
+    font-size: 7px;
+  }
+  .lp-preview-transport > :is(div, span:last-child) {
+    gap: 6px;
+  }
+  .lp-preview-transport > div > svg {
+    width: 11px;
+  }
+  .lp-preview-play {
+    width: 22px;
+    height: 21px;
+  }
+  .lp-preview-transport > span:last-child > svg {
+    display: none;
+  }
+  .lp-timeline-toolbar {
+    height: 30px;
+    padding-inline: 10px;
+    gap: 10px;
+    font-size: 7px;
+  }
+  .lp-timeline-toolbar > .lp-zoom-line {
+    width: 40px;
+  }
+  .lp-timeline-ruler,
+  .lp-track {
+    grid-template-columns: 53px 1fr;
+  }
+  .lp-track-label {
+    padding-inline: 9px;
+    gap: 7px;
+  }
+  .lp-track-label > span,
+  .lp-track-label svg:first-child {
+    display: none;
+  }
+  .lp-timeline-ruler {
+    height: 24px;
+    font-size: 6px;
+  }
+  .lp-timeline-ruler > span {
+    font-size: 6px;
+    padding-left: 8px;
+  }
+  .lp-timeline-ruler > div {
+    padding: 8px 6px 0;
+  }
+  .lp-timeline-ruler > div > span:nth-child(even) {
+    display: none;
+  }
+  .lp-timeline-compact .lp-track {
+    min-height: 30px;
+  }
+  .lp-timeline-compact .lp-clip {
+    height: 21px;
+    font-size: 6px;
+  }
+  .lp-clip-film > span {
+    font-size: 6px;
+  }
+  .lp-clip > svg {
+    width: 9px;
+  }
+  .lp-text-clip {
+    padding-inline: 4px;
+    gap: 3px;
+  }
+  .lp-preview-caption {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 10px;
+    text-align: center;
+    padding-top: 14px;
+  }
+  .lp-preview-caption > span {
+    font-size: 8px;
+  }
+  .lp-section {
+    padding-block: 65px;
+  }
+  .lp-section-label {
+    font-size: 8px;
+    margin-bottom: 13px;
+  }
+  .lp-section-heading h2,
+  .lp-final-cta h2 {
+    font-size: 33px;
+  }
+  .lp-section-heading > p {
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .lp-feature-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 26px;
+  }
+  .lp-feature-copy {
+    padding: 23px;
+  }
+  .lp-feature-copy h3 {
+    font-size: 23px;
+  }
+  .lp-feature-copy > svg {
+    margin-bottom: 14px;
+    width: 20px;
+  }
+  .lp-feature-timeline .lp-track {
+    min-height: 46px;
+  }
+  .lp-feature-timeline .lp-clip {
+    height: 32px;
+  }
+  .lp-feature-timeline .lp-track-label > span {
+    display: inline;
+    font-size: 7px;
+  }
+  .lp-feature-flow {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    align-items: center;
+  }
+  .lp-feature-flow .lp-feature-copy {
+    padding: 23px 0 15px 23px;
+  }
+  .lp-key-sculpture {
+    padding: 0 15px 0 0;
+    gap: 5px;
+  }
+  .lp-key-sculpture kbd {
+    width: 43px;
+    height: 51px;
+    font-size: 22px;
+    border-radius: 8px;
+  }
+  .lp-flow-list {
+    grid-column: 1 / -1;
+    margin: 12px 23px 23px;
+    gap: 12px;
+  }
