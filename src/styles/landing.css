@@ -1159,3 +1159,222 @@ html.dark .cutnora-landing {
   font-weight: 600;
   letter-spacing: -0.7px;
 }
+.lp-workflow-step > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--studio-muted);
+  margin-top: 10px;
+}
+.lp-workflow-art {
+  margin-top: 22px;
+  height: 169px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--studio-panel);
+}
+.lp-art-window-bar {
+  height: 22px;
+  background: var(--studio-panel-raised);
+}
+.lp-import-art {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  height: 146px;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+}
+.lp-import-art > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.lp-import-art > div:first-child span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+}
+.lp-import-art > div:first-child svg {
+  width: 14px;
+  height: 14px;
+}
+.lp-import-art > div:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px dashed var(--studio-border-strong);
+  border-radius: 5px;
+  height: 100%;
+  background: var(--studio-bg);
+  font-size: 10px;
+}
+.lp-import-art small {
+  font-size: 8px;
+  color: var(--studio-muted);
+}
+.lp-workflow-art .lp-timeline-ruler {
+  display: none;
+}
+.lp-workflow-art .lp-track {
+  grid-template-columns: 33px 1fr;
+  height: 48px;
+}
+.lp-workflow-art .lp-track-label {
+  padding: 0;
+  justify-content: center;
+}
+.lp-workflow-art .lp-track-label > :is(span, svg:first-child) {
+  display: none;
+}
+.lp-workflow-art .lp-track-lane {
+  padding-block: 6px;
+}
+.lp-workflow-art .lp-clip {
+  height: 35px;
+}
+.lp-workflow-art .lp-playhead {
+  top: 0;
+  left: 45%;
+}
+.lp-export-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+}
+.lp-export-thumbnail {
+  width: 130px;
+  height: 75px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.lp-export-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lp-export-progress {
+  background: var(--studio-fg);
+  width: 88%;
+  height: 4px;
+  border-radius: 2px;
+}
+.lp-export-art > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  color: var(--studio-muted);
+}
+.lp-step-arrow {
+  position: absolute;
+  right: -34px;
+  top: 162px;
+  color: var(--studio-muted);
+}
+.lp-browser-strip {
+  margin-top: 38px;
+  padding: 23px 30px;
+  border-radius: 9px;
+  background: var(--studio-panel-raised);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.lp-browser-strip > div {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.lp-browser-strip h3 {
+  font-size: 14px;
+  letter-spacing: -0.3px;
+  font-weight: 600;
+}
+.lp-browser-strip p {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--studio-muted);
+}
+.lp-browser-strip p > span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--studio-muted);
+}
+.lp-shortcuts-band {
+  padding-block: 76px;
+  border-block: 1px solid var(--studio-border);
+  background: var(--studio-panel);
+}
+.lp-shortcuts-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+.lp-shortcuts-heading > p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--studio-muted);
+}
+.lp-shortcuts-heading > p > span {
+  font-size: 11px;
+}
+.lp-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 44px;
+  margin-top: 30px;
+}
+.lp-shortcut {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-block: 18px;
+  border-bottom: 1px solid var(--studio-border);
+  font-size: 11px;
+}
+.lp-shortcut > div {
+  display: flex;
+  gap: 5px;
+}
+.lp-shortcut kbd {
+  min-width: 28px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 29px;
+  padding-inline: 8px;
+  border: 1px solid var(--studio-border-strong);
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  background: var(--studio-panel-raised);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--studio-fg);
+}
+.lp-final-cta {
+  padding-block: 90px 80px;
+  text-align: center;
+}
+.lp-cta-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 24px;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-panel);
+}
