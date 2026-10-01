@@ -938,3 +938,224 @@ html.dark .cutnora-landing {
   background: #fff;
   border-radius: 50%;
 }
+.lp-selected-text i:nth-child(1) {
+  top: -3px;
+  left: -3px;
+}
+.lp-selected-text i:nth-child(2) {
+  top: -3px;
+  right: -3px;
+}
+.lp-selected-text i:nth-child(3) {
+  bottom: -3px;
+  left: -3px;
+}
+.lp-selected-text i:nth-child(4) {
+  bottom: -3px;
+  right: -3px;
+}
+.lp-layer-chip {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  background: rgb(0 0 0 / 50%);
+  color: #fff;
+  font-size: 9px;
+  border-radius: 5px;
+  backdrop-filter: blur(8px);
+}
+.lp-privacy-band {
+  background: var(--studio-panel-raised);
+  padding-block: 90px;
+  border-block: 1px solid var(--studio-border);
+}
+.lp-privacy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 70px;
+  align-items: center;
+}
+.lp-privacy-grid .lp-section-heading p {
+  font-size: 13px;
+  max-width: 325px;
+}
+.lp-privacy-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 0;
+  margin: 22px 0 0;
+  list-style: none;
+  font-size: 11px;
+}
+.lp-privacy-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.lp-device-diagram {
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--studio-panel);
+}
+.lp-device-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.lp-device-flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1.5fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-block: 30px;
+}
+.lp-device-node {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.lp-device-node strong {
+  font-size: 10px;
+  font-weight: 500;
+}
+.lp-device-node > span {
+  font-size: 8px;
+  color: var(--studio-muted);
+  white-space: nowrap;
+}
+.lp-file-stack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 105px;
+  width: 85px;
+}
+.lp-file-stack > svg:first-child {
+  transform: rotate(-8deg);
+  width: 54px;
+  height: 65px;
+}
+.lp-file-stack > svg:last-child {
+  position: absolute;
+  right: -1px;
+  top: 17px;
+  width: 37px;
+  height: 45px;
+  padding: 7px;
+  border: 1px solid var(--studio-fg);
+  border-radius: 4px;
+  background: var(--studio-panel);
+  transform: rotate(8deg);
+}
+.lp-export-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 105px;
+}
+.lp-export-file svg {
+  width: 56px;
+  height: 70px;
+  stroke-width: 1;
+}
+.lp-device-arrow {
+  color: var(--studio-muted);
+}
+.lp-mini-browser {
+  width: 148px;
+  height: 105px;
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--studio-bg);
+}
+.lp-mini-browser-bar,
+.lp-art-window-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-bottom: 1px solid var(--studio-border);
+}
+.lp-mini-browser-bar i,
+.lp-art-window-bar i {
+  width: 4px;
+  height: 4px;
+  background: var(--studio-muted);
+  opacity: 0.5;
+  border-radius: 50%;
+}
+.lp-mini-browser-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  margin: 6px 14px;
+  border-radius: 3px;
+  background: var(--canvas-bg);
+}
+.lp-mini-browser-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-inline: 10px;
+}
+.lp-mini-browser-tracks span {
+  height: 4px;
+  background: var(--studio-muted);
+  opacity: 0.3;
+  width: 85%;
+}
+.lp-mini-browser-tracks span:nth-child(2) {
+  width: 45%;
+  margin-left: 20%;
+}
+.lp-mini-browser-tracks span:nth-child(3) {
+  width: 70%;
+}
+.lp-storage-note {
+  padding-top: 15px;
+  border-top: 1px solid var(--studio-border);
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--studio-muted);
+  text-align: center;
+}
+.lp-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 46px;
+  margin-top: 38px;
+}
+.lp-workflow-step {
+  position: relative;
+  min-width: 0;
+}
+.lp-step-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lp-step-heading > span {
+  font-size: 20px;
+  color: var(--studio-muted);
+  opacity: 0.65;
+  letter-spacing: -1px;
+}
+.lp-step-heading h3 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+}
