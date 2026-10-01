@@ -1378,3 +1378,225 @@ html.dark .cutnora-landing {
   border-radius: 12px;
   background: var(--studio-panel);
 }
+.lp-final-cta > p {
+  margin-top: 16px;
+  color: var(--studio-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.lp-final-cta > .lp-button {
+  margin-top: 24px;
+}
+.lp-return-link {
+  display: flex;
+  width: fit-content;
+  gap: 7px;
+  align-items: center;
+  margin: 18px auto 0;
+  color: var(--studio-muted);
+  font-size: 10px;
+}
+.lp-footer {
+  border-top: 1px solid var(--studio-border);
+  padding-block: 29px 22px;
+}
+.lp-footer-main {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.lp-footer-main .lp-brand {
+  font-size: 17px;
+}
+.lp-footer-main > p {
+  font-size: 10px;
+  color: var(--studio-muted);
+}
+.lp-footer-main > nav {
+  display: flex;
+  gap: 23px;
+  margin-left: auto;
+  font-size: 10px;
+}
+.lp-footer a:hover {
+  color: var(--studio-fg);
+}
+.lp-footer-main > nav > a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--studio-muted);
+}
+.lp-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  color: var(--studio-muted);
+  margin-top: 25px;
+}
+.lp-footer-bottom > a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: inherit;
+}
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .cutnora-landing .lp-section-heading,
+    .cutnora-landing .lp-feature-card,
+    .cutnora-landing .lp-device-diagram,
+    .cutnora-landing .lp-workflow-step {
+      animation: lp-rise both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 20%;
+    }
+  }
+}
+@media (max-width: 1050px) {
+  .lp-desktop-nav {
+    gap: 17px;
+    margin-left: 0;
+  }
+  .lp-nav {
+    gap: 12px;
+  }
+  .lp-github span {
+    display: none;
+  }
+  .lp-nav-actions {
+    gap: 8px;
+  }
+  .lp-editor-workspace {
+    grid-template-columns: 45px 200px minmax(0, 1fr);
+  }
+  .lp-editor-rail > :is(button, span) {
+    min-height: 34px;
+  }
+  .lp-editor-canvas > span {
+    font-size: 25px;
+  }
+  .lp-media-note {
+    margin-top: 12px;
+  }
+  .lp-privacy-grid {
+    gap: 35px;
+    grid-template-columns: 1fr 1.6fr;
+  }
+  .lp-device-diagram {
+    padding: 20px 15px;
+  }
+  .lp-device-flow {
+    gap: 7px;
+  }
+  .lp-mini-browser {
+    width: 125px;
+  }
+  .lp-device-node > span {
+    font-size: 7px;
+  }
+  .lp-feature-copy {
+    padding: 24px;
+  }
+  .lp-flow-list {
+    margin-inline: 24px;
+  }
+  .lp-flow-list > span {
+    flex-direction: column;
+    gap: 3px;
+  }
+  .lp-shortcuts-grid {
+    column-gap: 25px;
+  }
+}
+@media (max-width: 800px) {
+  .lp-desktop-nav,
+  .lp-github {
+    display: none;
+  }
+  .lp-menu-button {
+    display: flex;
+  }
+  .lp-header {
+    width: calc(100% - 40px);
+    top: 12px;
+  }
+  .lp-container {
+    width: calc(100% - 48px);
+  }
+  .lp-nav {
+    height: 60px;
+    padding-inline: 14px;
+  }
+  .lp-brand {
+    font-size: 19px;
+  }
+  .lp-mobile-nav:not([hidden]) {
+    display: block;
+    padding: 8px 18px 18px;
+    border-top: 1px solid var(--studio-border);
+  }
+  .lp-mobile-nav > a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 49px;
+    color: var(--studio-fg);
+    font-size: 14px;
+    border-bottom: 1px solid var(--studio-border);
+  }
+  .lp-mobile-nav > a > span {
+    color: var(--studio-muted);
+    font-size: 10px;
+  }
+  .lp-mobile-nav > a > svg {
+    margin-left: auto;
+  }
+  .lp-mobile-nav-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    font-size: 11px;
+    color: var(--studio-muted);
+  }
+  .lp-mobile-nav-footer > a {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .lp-hero {
+    padding-top: 44px;
+  }
+  .lp-hero h1 {
+    font-size: 54px;
+  }
+  .lp-editor-workspace {
+    grid-template-columns: 42px 170px minmax(0, 1fr);
+  }
+  .lp-editor-rail > :is(button, span) {
+    min-height: 29px;
+    font-size: 7px;
+    gap: 3px;
+  }
+  .lp-editor-rail svg {
+    width: 13px;
+    height: 13px;
+  }
+  .lp-media-grid {
+    gap: 9px 7px;
+  }
+  .lp-media-tabs {
+    gap: 12px;
+    font-size: 8px;
+  }
