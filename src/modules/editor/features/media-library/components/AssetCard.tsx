@@ -15,7 +15,6 @@ import {
 } from "@/shared/components/ui/DropdownMenu";
 import {
   FileVideo,
-  Film,
   Image as ImageIcon,
   Music,
   MoreVertical,
@@ -159,16 +158,10 @@ export function AssetCard({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const renderIcon = () => {
-    switch (asset.type) {
-      case "video":
-        return <FileVideo className="h-6 w-6 text-studio-muted" />;
-      case "image":
-        return <ImageIcon className="h-6 w-6 text-studio-muted" />;
-      case "audio":
-        return <Music className="h-6 w-6 text-studio-muted" />;
-    }
-  };
+  const MediaTypeIcon =
+    asset.type === "image" ? ImageIcon : asset.type === "video" ? FileVideo : Music;
+  const mediaTypeLabel =
+    asset.type === "image" ? "Image" : asset.type === "video" ? "Video" : "Audio";
 
   if (viewMode === "list") {
     return (
@@ -192,7 +185,7 @@ export function AssetCard({
                 className={`h-full w-full transition-opacity duration-200 ${asset.type === "image" ? "object-contain p-1" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
               />
             ) : (
-              renderIcon()
+              <MediaTypeIcon className="h-6 w-6 text-studio-muted" aria-hidden="true" />
             )}
           </div>
           <div className="min-w-0">
@@ -287,23 +280,8 @@ export function AssetCard({
             className={`h-full w-full transition-[opacity,transform] duration-500 ease-out group-hover:scale-105 ${asset.type === "image" ? "object-contain p-2" : "object-cover"} ${isThumbLoaded ? "opacity-100" : "opacity-0"}`}
           />
         ) : (
-          renderIcon()
+          <MediaTypeIcon className="h-6 w-6 text-studio-muted" aria-hidden="true" />
         )}
-
-        {/* Media Type / Duration Badge */}
-        <span className="absolute bottom-1.5 right-1.5 z-10 inline-flex items-center justify-center gap-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 px-2 py-0.5 text-[9px] font-medium leading-none text-white/90 shadow-sm transition-all duration-200 select-none">
-          {asset.type === "image" ? (
-            <>
-              <ImageIcon className="h-2.5 w-2.5 text-white/70 shrink-0 -translate-y-px" />
-              <span className="tracking-wide leading-none">Image</span>
-            </>
-          ) : (
-            <>
-              <Film className="h-2.5 w-2.5 text-white/70 shrink-0 -translate-y-px" />
-              <span className="font-mono tracking-tight leading-none">{formatDuration(asset.duration)}</span>
-            </>
-          )}
-        </span>
 
         {/* Hover Quick Action Overlay */}
         <div
@@ -327,30 +305,46 @@ export function AssetCard({
       {/* Asset Info Footer */}
       <div className="mt-1.5 flex items-start justify-between gap-1 px-0.5">
         <div className="min-w-0 flex-1 pr-1">
-          {isRenaming ? (
-            <input
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={handleRenameSubmit}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleRenameSubmit();
-                if (e.key === "Escape") setIsRenaming(false);
-              }}
-              autoFocus
-              className="h-5 w-full rounded bg-studio-panel-raised border border-studio-border-strong px-1 text-[11px] text-studio-fg focus:outline-none"
-            />
-          ) : (
-            <p className="text-[11px] sm:text-xs font-semibold text-studio-fg group-hover:text-studio-fg transition-colors truncate">
-              {asset.name}
-            </p>
-          )}
-          <p className="text-[9px] font-mono text-studio-muted mt-0.5">
-            {asset.width && asset.height
-              ? `${asset.width}×${asset.height} • `
-              : ""}
-            {formatSize(asset.size)}
-          </p>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="shrink-0 text-studio-muted" title={mediaTypeLabel}>
+              <MediaTypeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="sr-only">{mediaTypeLabel}</span>
+            </span>
+            {isRenaming ? (
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRenameSubmit();
+                  if (e.key === "Escape") setIsRenaming(false);
+                }}
+                autoFocus
+                aria-label="Rename media file"
+                className="h-5 min-w-0 w-full rounded bg-studio-panel-raised border border-studio-border-strong px-1 text-[11px] text-studio-fg focus:outline-none"
+              />
+            ) : (
+              <p title={asset.name} className="min-w-0 text-[11px] sm:text-xs font-semibold text-studio-fg group-hover:text-studio-fg transition-colors truncate">
+                {asset.name}
+              </p>
+            )}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] leading-relaxed font-mono text-studio-muted">
+            {asset.width && asset.height ? (
+              <>
+                <span>{asset.width}×{asset.height}</span>
+                <span aria-hidden="true">•</span>
+              </>
+            ) : null}
+            {asset.type !== "image" && (
+              <>
+                <span aria-label={`Duration ${formatDuration(asset.duration)}`}>{formatDuration(asset.duration)}</span>
+                <span aria-hidden="true">•</span>
+              </>
+            )}
+            <span>{formatSize(asset.size)}</span>
+          </div>
         </div>
 
         <div
