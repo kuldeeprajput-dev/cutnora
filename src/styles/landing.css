@@ -1600,3 +1600,226 @@ html.dark .cutnora-landing {
     gap: 12px;
     font-size: 8px;
   }
+  .lp-panel-heading {
+    font-size: 7px;
+    padding: 12px 10px;
+  }
+  .lp-media-note {
+    display: none;
+  }
+  .lp-audio-asset {
+    margin-top: 10px;
+  }
+  .lp-preview-transport > span:first-child .lp-muted {
+    display: none;
+  }
+  .lp-preview-transport > :is(div, span:last-child) {
+    gap: 8px;
+  }
+  .lp-editor-canvas > span {
+    font-size: 20px;
+  }
+  .lp-preview-text-panel {
+    padding: 15px 12px;
+  }
+  .lp-preview-text-panel h3 {
+    font-size: 15px;
+  }
+  .lp-text-properties {
+    display: none;
+  }
+  .lp-section {
+    padding-block: 80px;
+  }
+  .lp-feature-grid {
+    grid-template-columns: 1.7fr 1fr;
+    gap: 12px;
+  }
+  .lp-feature-copy {
+    padding: 22px;
+  }
+  .lp-feature-copy h3 {
+    font-size: 21px;
+  }
+  .lp-feature-copy p {
+    font-size: 11px;
+  }
+  .lp-feature-timeline-frame {
+    margin: 0 14px 14px;
+  }
+  .lp-feature-timeline .lp-track {
+    grid-template-columns: 70px 1fr;
+  }
+  .lp-feature-timeline .lp-timeline-ruler {
+    grid-template-columns: 70px 1fr;
+  }
+  .lp-feature-timeline .lp-track-label {
+    padding-inline: 8px;
+    gap: 5px;
+  }
+  .lp-feature-timeline .lp-track-label svg:first-child {
+    display: none;
+  }
+  .lp-key-sculpture kbd {
+    height: 65px;
+    width: 65px;
+    font-size: 27px;
+  }
+  .lp-feature-layers {
+    grid-template-columns: 1fr 1.5fr;
+  }
+  .lp-feature-layers .lp-feature-copy {
+    padding: 25px;
+  }
+  .lp-feature-layers h3 {
+    font-size: 24px;
+  }
+  .lp-layer-preview {
+    aspect-ratio: auto;
+  }
+  .lp-layer-list {
+    font-size: 10px;
+  }
+  .lp-privacy-grid {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .lp-privacy-grid .lp-section-heading p {
+    max-width: 430px;
+  }
+  .lp-privacy-benefits {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .lp-device-diagram {
+    padding: 25px;
+  }
+  .lp-device-flow {
+    gap: 20px;
+  }
+  .lp-mini-browser {
+    width: 150px;
+  }
+  .lp-device-node > span {
+    font-size: 9px;
+  }
+  .lp-device-node strong {
+    font-size: 12px;
+  }
+  .lp-workflow-grid {
+    gap: 25px;
+  }
+  .lp-workflow-art {
+    height: 145px;
+  }
+  .lp-import-art {
+    padding: 9px;
+    gap: 5px;
+    height: 123px;
+  }
+  .lp-import-art > div:first-child span {
+    font-size: 8px;
+    gap: 5px;
+  }
+  .lp-import-art > div:last-child {
+    font-size: 9px;
+    gap: 7px;
+  }
+  .lp-import-art small {
+    font-size: 6px;
+  }
+  .lp-workflow-art .lp-track {
+    height: 41px;
+  }
+  .lp-step-arrow {
+    right: -22px;
+    width: 17px;
+    top: 157px;
+  }
+  .lp-export-thumbnail {
+    width: 100px;
+    height: 60px;
+  }
+  .lp-browser-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 22px;
+  }
+  .lp-shortcuts-heading > p {
+    max-width: 230px;
+    font-size: 11px;
+  }
+  .lp-shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 35px;
+  }
+  .lp-footer-main {
+    flex-wrap: wrap;
+  }
+  .lp-footer-main > nav {
+    width: 100%;
+    margin-left: 0;
+    padding-top: 8px;
+  }
+}
+@media (max-width: 560px) {
+  .cutnora-landing {
+    padding-top: 10px;
+  }
+  .lp-header {
+    width: calc(100% - 24px);
+    top: 10px;
+    border-radius: 10px;
+  }
+  .lp-container {
+    width: calc(100% - 36px);
+  }
+  .lp-nav {
+    height: 56px;
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .lp-brand {
+    gap: 7px;
+    font-size: 18px;
+  }
+  .lp-brand > span:first-child {
+    width: 25px !important;
+    height: 25px !important;
+  }
+  .lp-nav-actions {
+    gap: 3px;
+  }
+  .lp-nav-actions .lp-button-small {
+    font-size: 10px;
+    padding-inline: 11px;
+    min-height: 34px;
+  }
+  .lp-nav-actions .lp-button svg {
+    display: none;
+  }
+  .cutnora-landing .lp-theme-toggle,
+  .lp-menu-button {
+    width: 32px;
+    height: 34px;
+  }
+  .lp-hero {
+    padding-top: 40px;
+    padding-bottom: 28px;
+  }
+  .lp-hero h1 {
+    font-size: clamp(35px, 9.3vw, 51px);
+    line-height: 1.08;
+    letter-spacing: -0.055em;
+  }
+  .lp-hero-description {
+    max-width: 320px;
+    font-size: 15px;
+    margin-top: 18px !important;
+  }
+  .lp-hero-description > span {
+    margin-top: 6px;
+    font-size: 12px;
+  }
