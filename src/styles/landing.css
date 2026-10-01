@@ -718,3 +718,223 @@ html.dark .cutnora-landing {
   color: var(--studio-muted);
   margin-top: 4px;
 }
+.lp-text-properties strong {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 4px;
+  padding: 7px;
+  font-weight: 400;
+}
+.lp-text-properties i {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #aaa;
+  background: #fff;
+}
+.lp-section {
+  padding-top: 112px;
+  padding-bottom: 112px;
+}
+.lp-section-heading h2,
+.lp-final-cta h2 {
+  font-size: clamp(32px, 3.4vw, 46px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.lp-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  color: var(--studio-muted);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.lp-section-heading > p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--studio-muted);
+  margin-top: 14px;
+}
+.lp-centered {
+  text-align: center;
+}
+.lp-feature-grid {
+  display: grid;
+  grid-template-columns: 1.9fr 1fr;
+  gap: 16px;
+  margin-top: 40px;
+}
+.lp-feature-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-panel);
+  transition: border-color 0.2s;
+}
+.lp-feature-card:hover {
+  border-color: var(--studio-border-strong);
+}
+.lp-feature-copy {
+  padding: 28px;
+}
+.lp-feature-copy > svg {
+  color: var(--studio-muted);
+  margin-bottom: 17px;
+}
+.lp-feature-copy h3 {
+  font-size: 24px;
+  line-height: 1.14;
+  font-weight: 600;
+  letter-spacing: -0.8px;
+}
+.lp-feature-copy p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--studio-muted);
+  margin-top: 10px;
+}
+.lp-feature-timeline-frame {
+  margin: 0 22px 22px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lp-feature-transport {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-size: 9px;
+  border-bottom: 1px solid var(--studio-border);
+}
+.lp-feature-timeline .lp-track {
+  min-height: 54px;
+}
+.lp-feature-timeline .lp-clip {
+  height: 39px;
+}
+.lp-feature-flow {
+  display: flex;
+  flex-direction: column;
+}
+.lp-key-sculpture {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px 30px;
+}
+.lp-key-sculpture kbd {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 33px;
+  border: 1px solid var(--studio-border-strong);
+  border-bottom-width: 5px;
+  border-radius: 13px;
+  background: linear-gradient(
+    145deg,
+    var(--studio-topbar),
+    var(--studio-panel-raised)
+  );
+  box-shadow:
+    inset 0 0 0 5px var(--studio-panel),
+    0 12px 15px -12px rgb(0 0 0 / 20%);
+  transform: rotate(-7deg);
+}
+.lp-key-sculpture kbd + kbd {
+  transform: translateY(12px) rotate(7deg);
+}
+.lp-flow-list {
+  margin: auto 28px 25px;
+  display: grid;
+  gap: 15px;
+  font-size: 11px;
+}
+.lp-flow-list > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lp-flow-list > span > span {
+  color: var(--studio-muted);
+  font-size: 9px;
+}
+.lp-flow-list > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 1px solid var(--studio-border);
+  color: var(--studio-fg);
+}
+.lp-feature-layers {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1.9fr;
+}
+.lp-feature-layers .lp-feature-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 36px;
+}
+.lp-feature-layers h3 {
+  font-size: 30px;
+}
+.lp-layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 23px;
+  font-size: 11px;
+  color: var(--studio-muted);
+}
+.lp-layer-list > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lp-layer-preview {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  margin: 16px 16px 16px 0;
+  border-radius: 7px;
+  aspect-ratio: 1.85;
+}
+.lp-layer-preview img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.lp-selected-text {
+  position: absolute;
+  left: 12%;
+  top: 29%;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 3.5vw, 47px);
+  font-weight: 600;
+  letter-spacing: -1.3px;
+  line-height: 1;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 80%);
+}
+.lp-selected-text i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+}
