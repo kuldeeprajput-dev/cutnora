@@ -179,25 +179,35 @@ export function ProjectCard({
         </div>
       </div>
 
-      {/* Selected Indicator - Sleek Circular Badge (Google/Apple Photos style) */}
-      {isSelected && (
-        <button
-          type="button"
-          role="checkbox"
-          aria-checked="true"
-          aria-label="Deselect project"
-          data-state="checked"
-          value="on"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleSelect(project.id, e);
-          }}
-          className="cursor-pointer bg-primary text-primary-foreground rounded-full shadow-md shadow-black/50 absolute z-10 size-6 top-2.5 left-2.5 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={isSelected}
+        aria-label={`${isSelected ? "Deselect" : "Select"} ${project.name}`}
+        data-state={isSelected ? "checked" : "unchecked"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect(project.id, e);
+        }}
+        className={cn(
+          "absolute left-1 top-1 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+          isSelected
+            ? "opacity-100"
+            : "opacity-100 sm:pointer-events-none sm:opacity-0 sm:group-hover:pointer-events-auto sm:group-hover:opacity-100 sm:group-focus-within:pointer-events-auto sm:group-focus-within:opacity-100",
+        )}
+      >
+        <span
+          className={cn(
+            "flex size-5 items-center justify-center rounded-sm border shadow-xs transition-colors",
+            isSelected
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-background text-foreground",
+          )}
         >
-          <Check className="size-3.5 stroke-[2.5]" aria-hidden="true" />
-        </button>
-      )}
+          {isSelected && <Check className="size-4" aria-hidden="true" />}
+        </span>
+      </button>
     </div>
   );
 }
