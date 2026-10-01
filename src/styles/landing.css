@@ -55,3 +55,224 @@ html.dark .cutnora-landing {
 .lp-muted {
   color: var(--studio-muted);
 }
+.lp-skip-link {
+  position: fixed;
+  top: -100px;
+  left: 24px;
+  z-index: 100;
+  padding: 12px 20px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  border-radius: 8px;
+}
+.lp-skip-link:focus {
+  top: 24px;
+}
+.lp-header {
+  position: sticky;
+  top: 16px;
+  z-index: 50;
+  width: min(1120px, calc(100% - 64px));
+  margin-inline: auto;
+  background: color-mix(in srgb, var(--studio-topbar) 90%, transparent);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px -12px rgb(0 0 0 / 15%);
+}
+.lp-nav {
+  display: flex;
+  height: 60px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 16px 0 20px;
+}
+.lp-brand {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--studio-fg);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+.lp-desktop-nav {
+  display: flex;
+  gap: 26px;
+  margin-left: 25px;
+}
+.lp-desktop-nav a {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--studio-muted);
+  transition: color 0.2s;
+}
+.lp-desktop-nav a:hover {
+  color: var(--studio-fg);
+}
+.lp-nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.lp-github {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--studio-fg);
+  font-size: 12px;
+}
+.cutnora-landing .lp-theme-toggle {
+  height: 34px;
+  width: 34px;
+  padding: 0;
+  border-radius: 6px;
+}
+.lp-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 22px;
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 2px 3px rgb(0 0 0 / 6%);
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.lp-button:hover {
+  background: var(--brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgb(0 0 0 / 10%);
+}
+.lp-button:active {
+  transform: translateY(0);
+}
+.lp-button-small {
+  min-height: 36px;
+  padding-inline: 14px;
+  gap: 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+.lp-menu-button {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--studio-fg);
+  border: 0;
+  border-radius: 6px;
+}
+.lp-mobile-nav {
+  display: none;
+}
+.lp-hero {
+  padding-top: clamp(40px, 4vw, 56px);
+  padding-bottom: 36px;
+  text-align: center;
+  animation: lp-rise 0.65s both;
+}
+.lp-hero h1 {
+  max-width: 900px;
+  margin-inline: auto;
+  font-size: clamp(42px, 5.4vw, 76px);
+  font-weight: 650;
+  line-height: 1.04;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+.lp-hero h1 > span {
+  color: color-mix(in srgb, var(--studio-fg) 76%, var(--studio-muted));
+}
+.lp-hero-description {
+  max-width: 480px;
+  margin: 22px auto 0 !important;
+  font-size: 17px;
+  color: var(--studio-fg);
+  line-height: 1.6;
+  letter-spacing: -0.25px;
+  text-wrap: balance;
+}
+.lp-hero-description > span {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--studio-muted);
+  letter-spacing: 0;
+}
+.lp-hero-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+.lp-hero-actions .lp-button {
+  min-height: 48px;
+  padding-inline: 24px;
+  font-size: 13px;
+}
+.lp-text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--studio-fg);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+.lp-text-link:hover {
+  background: var(--studio-panel);
+  border-color: var(--studio-muted);
+  transform: translateY(-2px);
+}
+.lp-product {
+  animation: lp-rise 0.85s 0.12s both;
+}
+.lp-editor {
+  overflow: hidden;
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 12px;
+  background: var(--studio-panel);
+  color: var(--studio-fg);
+  box-shadow: var(--lp-shadow);
+  font-size: 11px;
+}
+.lp-editor-topbar {
+  height: 44px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--studio-topbar);
+  border-bottom: 1px solid var(--studio-border);
+  padding-inline: 14px;
+}
+.lp-editor-topbar > div {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.lp-editor-topbar strong {
+  font-size: 11px;
+  font-weight: 600;
+}
