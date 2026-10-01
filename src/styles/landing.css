@@ -2047,3 +2047,233 @@ html.dark .cutnora-landing {
     margin: 12px 23px 23px;
     gap: 12px;
   }
+  .lp-flow-list > span {
+    flex-direction: row;
+    font-size: 10px;
+  }
+  .lp-feature-layers {
+    display: flex;
+    flex-direction: column;
+  }
+  .lp-feature-layers .lp-feature-copy {
+    padding: 25px;
+  }
+  .lp-feature-layers h3 > br {
+    display: none;
+  }
+  .lp-layer-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+    font-size: 9px;
+  }
+  .lp-layer-list svg {
+    width: 12px;
+  }
+  .lp-layer-preview {
+    aspect-ratio: 1.6;
+    margin: 0 12px 12px;
+  }
+  .lp-selected-text {
+    font-size: 32px;
+  }
+  .lp-privacy-band {
+    padding-block: 60px;
+  }
+  .lp-privacy-grid {
+    gap: 28px;
+  }
+  .lp-privacy-grid .lp-section-heading h2 {
+    font-size: 40px;
+  }
+  .lp-privacy-grid .lp-section-heading p {
+    font-size: 12px;
+  }
+  .lp-privacy-benefits {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 11px;
+  }
+  .lp-device-diagram {
+    padding: 20px 12px;
+  }
+  .lp-device-flow {
+    grid-template-columns: 1fr 18px 1.2fr 18px 1fr;
+    gap: 3px;
+    padding-block: 23px;
+  }
+  .lp-device-node strong {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .lp-device-node > span {
+    display: none;
+  }
+  .lp-device-arrow {
+    width: 15px;
+  }
+  .lp-mini-browser {
+    width: 85px;
+    height: 84px;
+  }
+  .lp-mini-browser-canvas {
+    height: 33px;
+    margin: 5px 8px;
+  }
+  .lp-file-stack {
+    height: 84px;
+    width: 58px;
+  }
+  .lp-file-stack > svg:first-child {
+    width: 38px;
+    height: 48px;
+  }
+  .lp-file-stack > svg:last-child {
+    width: 29px;
+    height: 34px;
+    top: 16px;
+    right: -2px;
+    padding: 5px;
+  }
+  .lp-export-file {
+    height: 84px;
+  }
+  .lp-export-file svg {
+    width: 38px;
+    height: 49px;
+  }
+  .lp-storage-note {
+    font-size: 8px;
+    padding-inline: 7px;
+  }
+  .lp-workflow-grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-top: 30px;
+  }
+  .lp-workflow-step {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    align-items: center;
+    column-gap: 18px;
+  }
+  .lp-step-heading {
+    align-self: end;
+    gap: 10px;
+  }
+  .lp-step-heading > span {
+    font-size: 17px;
+  }
+  .lp-step-heading h3 {
+    font-size: 21px;
+  }
+  .lp-workflow-step > p {
+    grid-column: 1;
+    align-self: start;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .lp-workflow-art {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    margin-top: 0;
+    height: 133px;
+  }
+  .lp-import-art {
+    height: 111px;
+    padding: 8px;
+    grid-template-columns: 1fr;
+  }
+  .lp-import-art > div:first-child {
+    display: none;
+  }
+  .lp-workflow-art .lp-track {
+    height: 37px;
+  }
+  .lp-workflow-art .lp-clip {
+    height: 25px;
+  }
+  .lp-step-arrow {
+    display: none;
+  }
+  .lp-export-thumbnail {
+    width: 90px;
+    height: 54px;
+  }
+  .lp-browser-strip {
+    margin-top: 30px;
+    padding: 20px;
+  }
+  .lp-browser-strip p {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 9px;
+  }
+  .lp-shortcuts-band {
+    padding-block: 60px;
+  }
+  .lp-shortcuts-heading {
+    display: block;
+  }
+  .lp-shortcuts-heading > p {
+    max-width: none;
+    margin-top: 20px;
+    font-size: 12px;
+  }
+  .lp-shortcuts-heading > p > span {
+    font-size: 10px;
+  }
+  .lp-shortcuts-grid {
+    grid-template-columns: 1fr;
+    margin-top: 22px;
+  }
+  .lp-shortcut {
+    font-size: 12px;
+    padding-block: 15px;
+  }
+  .lp-shortcut kbd {
+    height: 31px;
+    min-width: 32px;
+    font-size: 10px;
+  }
+  .lp-final-cta {
+    padding-block: 65px 60px;
+  }
+  .lp-final-cta h2 {
+    max-width: 300px;
+    margin-inline: auto;
+  }
+  .lp-final-cta > p {
+    max-width: 250px;
+    margin-inline: auto;
+    font-size: 12px;
+  }
+  .lp-footer-main {
+    gap: 12px;
+  }
+  .lp-footer-main > p {
+    font-size: 9px;
+    max-width: 180px;
+  }
+  .lp-footer-main > nav {
+    gap: 20px;
+    font-size: 10px;
+  }
+  .lp-footer-bottom {
+    align-items: flex-start;
+    font-size: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.cutnora-landing) {
+    scroll-behavior: auto;
+  }
+  .cutnora-landing *,
+  .cutnora-landing *::before,
+  .cutnora-landing *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
