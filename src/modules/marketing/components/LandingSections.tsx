@@ -223,3 +223,214 @@ export function LocalPrivacy() {
                 <div className="lp-mini-browser-canvas">
                   <Play size={22} />
                 </div>
+                <div className="lp-mini-browser-tracks">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+              <strong>Cutnora in your browser</strong>
+              <span>Edit locally on this device</span>
+            </div>
+            <ArrowRight className="lp-device-arrow" size={22} />
+            <div className="lp-device-node">
+              <div className="lp-export-file">
+                <FileVideo size={39} />
+              </div>
+              <strong>Exported file</strong>
+              <span>Saved to your device</span>
+            </div>
+          </div>
+          <p className="lp-storage-note">
+            Browser storage can be cleared. Keep a copy of important projects
+            and exports.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const steps = [
+  {
+    number: "01",
+    title: "Import",
+    description: "Bring in video, audio, or images.",
+    icon: FolderPlus,
+  },
+  {
+    number: "02",
+    title: "Edit",
+    description: "Arrange your timeline. Make it yours.",
+    icon: Scissors,
+  },
+  {
+    number: "03",
+    title: "Export",
+    description: "Render locally and save your video.",
+    icon: Download,
+  },
+];
+
+export function EditingWorkflow() {
+  return (
+    <section
+      className="lp-section lp-container"
+      id="workflow"
+      aria-labelledby="workflow-heading"
+    >
+      <div className="lp-section-heading">
+        <span className="lp-section-label">A SIMPLE WORKFLOW</span>
+        <h2 id="workflow-heading">From first clip to final cut.</h2>
+        <p>Three steps. One browser tab.</p>
+      </div>
+      <div className="lp-workflow-grid">
+        {steps.map(({ number, title, description, icon: Icon }, index) => (
+          <article className="lp-workflow-step" key={title}>
+            <div className="lp-step-heading">
+              <span className="lp-mono">{number}</span>
+              <h3>{title}</h3>
+            </div>
+            <p>{description}</p>
+            <div
+              className={`lp-workflow-art lp-workflow-art-${index}`}
+              aria-hidden="true"
+            >
+              <div className="lp-art-window-bar">
+                <i />
+                <i />
+                <i />
+              </div>
+              {index === 0 ? (
+                <div className="lp-import-art">
+                  <div>
+                    <span>
+                      <FileVideo />
+                      Video
+                    </span>
+                    <span>
+                      <Music />
+                      Audio
+                    </span>
+                    <span>
+                      <ImageIcon />
+                      Images
+                    </span>
+                  </div>
+                  <div>
+                    <Icon size={30} />
+                    <span>Add media</span>
+                    <small>or drag and drop</small>
+                  </div>
+                </div>
+              ) : index === 1 ? (
+                <TimelineArtwork compact />
+              ) : (
+                <div className="lp-export-art">
+                  <div className="lp-export-thumbnail">
+                    <Image
+                      src="/images/coastal-still.webp"
+                      width={1672}
+                      height={941}
+                      alt=""
+                      sizes="130px"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="lp-export-progress" />
+                  <span>
+                    <Check size={12} />
+                    Ready to save
+                  </span>
+                </div>
+              )}
+            </div>
+            {index < 2 && <ArrowRight className="lp-step-arrow" size={22} />}
+          </article>
+        ))}
+      </div>
+      <div className="lp-browser-strip">
+        <div>
+          <Monitor size={23} />
+          <h3>Built for the browser.</h3>
+        </div>
+        <p>
+          Local storage
+          <span />
+          Canvas playback
+          <span />
+          Browser-based export
+        </p>
+      </div>
+    </section>
+  );
+}
+
+const shortcuts = [
+  { label: "Play / pause", keys: ["Space"] },
+  { label: "Split clip", keys: ["S"] },
+  { label: "Undo", keys: ["Ctrl / ⌘", "Z"] },
+  { label: "Delete selected", keys: ["Delete"] },
+  { label: "Previous / next frame", keys: ["←", "→"] },
+  { label: "Timeline zoom", keys: ["+", "−"] },
+];
+
+export function ShortcutShowcase() {
+  return (
+    <section
+      className="lp-shortcuts-band"
+      id="shortcuts"
+      aria-labelledby="shortcuts-heading"
+    >
+      <div className="lp-container">
+        <div className="lp-shortcuts-heading">
+          <div className="lp-section-heading">
+            <span className="lp-section-label">KEYBOARD SHORTCUTS</span>
+            <h2 id="shortcuts-heading">
+              Less clicking.
+              <br />
+              More creating.
+            </h2>
+          </div>
+          <p>
+            The small things that keep you in the creative flow.
+            <br />
+            <span>Ctrl on Windows and Linux. ⌘ on Mac.</span>
+          </p>
+        </div>
+        <div className="lp-shortcuts-grid">
+          {shortcuts.map(({ label, keys }) => (
+            <div className="lp-shortcut" key={label}>
+              <span>{label}</span>
+              <div>
+                {keys.map((key) => (
+                  <kbd key={key}>{key}</kbd>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function FinalEditorCta() {
+  return (
+    <section
+      className="lp-final-cta lp-container"
+      aria-labelledby="cta-heading"
+    >
+      <span className="lp-cta-symbol" aria-hidden="true">
+        <Play size={25} fill="currentColor" />
+      </span>
+      <h2 id="cta-heading">Your next edit starts here.</h2>
+      <p>Open a tab. Bring your footage. Make something yours.</p>
+      <OpenEditorButton />
+      <Link href="/projects" className="lp-return-link">
+        Or pick up an existing project
+        <ArrowRight size={14} />
+      </Link>
+    </section>
+  );
+}
