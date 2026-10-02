@@ -237,10 +237,33 @@
      - On hover: expands to 8px thickness for easy grabbing
      - Dragging/Active: full 10px thickness in theme active color
   */
+  .timeline-bottom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  @supports selector(::-webkit-scrollbar) {
+    .timeline-bottom-scrollbar {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+  }
+
   .timeline-bottom-scrollbar::-webkit-scrollbar {
     height: 10px;
     width: 10px;
     background: transparent;
+  }
+
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:single-button,
+  .timeline-bottom-scrollbar::-webkit-scrollbar-button:double-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
   }
 
   .timeline-bottom-scrollbar::-webkit-scrollbar-track {
@@ -248,7 +271,6 @@
     border-radius: 9999px;
   }
 
-  .timeline-bottom-scrollbar:hover::-webkit-scrollbar-track,
   .timeline-bottom-scrollbar::-webkit-scrollbar-track:hover {
     background: var(--scrollbar-track-hover, rgba(255, 255, 255, 0.04));
   }
@@ -265,7 +287,6 @@
   }
 
   /* Hover state: expands visibly to 8px thickness */
-  .timeline-bottom-scrollbar:hover::-webkit-scrollbar-thumb,
   .timeline-bottom-scrollbar::-webkit-scrollbar-thumb:hover {
     border: 1px solid transparent;
     background-color: var(--scrollbar-thumb-hover);
