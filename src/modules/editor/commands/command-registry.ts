@@ -1,5 +1,5 @@
 import { useProjectStore } from '@/modules/projects';
-import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
+import { useEditorUIStore, MIN_TRACK_HEIGHT, MAX_TRACK_HEIGHT } from '@/modules/editor/store/useEditorUIStore';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { useToastStore } from '@/shared/components/ui/Toast/useToastStore';
@@ -291,6 +291,34 @@ export const COMMAND_REGISTRY: Command[] = [
     execute: () => {
       const zoom = useEditorUIStore.getState().zoom;
       useEditorUIStore.getState().setZoom(getNextTimelineZoom(zoom, 'out', MIN_TIMELINE_ZOOM));
+    },
+  },
+  {
+    id: 'navigation.increase-track-height',
+    label: 'Increase Track Height',
+    description: 'Make timeline tracks and thumbnails taller',
+    shortcut: 'Shift+Alt+Plus',
+    category: 'navigation',
+    isEnabled: () =>
+      Boolean(useProjectStore.getState().currentProject?.tracks.some((track) => track.clips.length > 0)) &&
+      useEditorUIStore.getState().trackHeight < MAX_TRACK_HEIGHT,
+    execute: () => {
+      const { trackHeight, setTrackHeight } = useEditorUIStore.getState();
+      setTrackHeight(trackHeight + 8);
+    },
+  },
+  {
+    id: 'navigation.decrease-track-height',
+    label: 'Decrease Track Height',
+    description: 'Make timeline tracks and thumbnails shorter',
+    shortcut: 'Shift+Alt+Minus',
+    category: 'navigation',
+    isEnabled: () =>
+      Boolean(useProjectStore.getState().currentProject?.tracks.some((track) => track.clips.length > 0)) &&
+      useEditorUIStore.getState().trackHeight > MIN_TRACK_HEIGHT,
+    execute: () => {
+      const { trackHeight, setTrackHeight } = useEditorUIStore.getState();
+      setTrackHeight(trackHeight - 8);
     },
   },
   {

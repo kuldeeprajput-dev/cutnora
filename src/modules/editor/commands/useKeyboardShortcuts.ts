@@ -104,9 +104,9 @@ function matchesShortcut(e: KeyboardEvent, shortcutStr: string, modKey: boolean)
     case 'Escape':
       return key === 'Escape';
     case 'Plus':
-      return key === '+' || key === '=';
+      return key === '+' || key === '=' || e.code === 'Equal' || e.code === 'NumpadAdd';
     case 'Minus':
-      return key === '-' || key === '_';
+      return key === '-' || key === '_' || e.code === 'Minus' || e.code === 'NumpadSubtract';
     case '?':
       return key === '?';
     default:

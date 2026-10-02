@@ -34,6 +34,10 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
           return '←';
         case 'ArrowRight':
           return '→';
+        case 'ArrowUp':
+          return '↑';
+        case 'ArrowDown':
+          return '↓';
         case 'Plus':
           return '+';
         case 'Minus':

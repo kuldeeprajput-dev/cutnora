@@ -574,24 +574,29 @@ export function TimelineToolbar({
           aria-label="Track height"
           className="flex w-36 shrink-0 items-center gap-1 rounded has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-studio-fg/60"
         >
-          <button
-            type="button"
-            aria-label="Reset track height"
-            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => setTrackHeight(MIN_TRACK_HEIGHT)}
-            disabled={!hasTimelineMedia}
-          >
-            <MoveVertical className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Decrease track height"
-            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => setTrackHeight(trackHeight - 8)}
-            disabled={!hasTimelineMedia || trackHeight <= MIN_TRACK_HEIGHT}
-          >
-            <Minus className="h-3.5 w-3.5" />
-          </button>
+          <Tooltip content="Reset height" position="top">
+            <button
+              type="button"
+              aria-label="Reset track height"
+              className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => setTrackHeight(MIN_TRACK_HEIGHT)}
+              disabled={!hasTimelineMedia}
+            >
+              <MoveVertical className="h-3.5 w-3.5" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Height" shortcut="Shift Alt -" position="top">
+            <button
+              type="button"
+              aria-label="Decrease track height"
+              aria-keyshortcuts="Shift+Alt+-"
+              className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => setTrackHeight(trackHeight - 8)}
+              disabled={!hasTimelineMedia || trackHeight <= MIN_TRACK_HEIGHT}
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+          </Tooltip>
           <Slider
             aria-label="Track height"
             thumbClassName="group-hover/slider:scale-100"
@@ -603,15 +608,18 @@ export function TimelineToolbar({
             disabled={!hasTimelineMedia}
             onValueChange={setTrackHeight}
           />
-          <button
-            type="button"
-            aria-label="Increase track height"
-            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => setTrackHeight(trackHeight + 8)}
-            disabled={!hasTimelineMedia || trackHeight >= MAX_TRACK_HEIGHT}
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
+          <Tooltip content="Height" shortcut="Shift Alt +" position="top">
+            <button
+              type="button"
+              aria-label="Increase track height"
+              aria-keyshortcuts="Shift+Alt+Plus"
+              className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => setTrackHeight(trackHeight + 8)}
+              disabled={!hasTimelineMedia || trackHeight >= MAX_TRACK_HEIGHT}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Timeline Zoom Slider Controls */}
@@ -629,7 +637,7 @@ export function TimelineToolbar({
           </Tooltip>
 
           <div className="flex min-w-0 flex-1 items-center gap-1">
-            <Tooltip content="Zoom out" shortcut="Shift + -" position="top">
+            <Tooltip content="Zoom out" shortcut="Shift -" position="top">
               <button
                 type="button"
                 aria-label="Zoom out"
@@ -652,7 +660,7 @@ export function TimelineToolbar({
                 setZoom(sliderValueToTimelineZoom(value, minimumTimelineZoom))
               }
             />
-            <Tooltip content="Zoom in" shortcut="Shift + +" position="top">
+            <Tooltip content="Zoom in" shortcut="Shift +" position="top">
               <button
                 type="button"
                 aria-label="Zoom in"
