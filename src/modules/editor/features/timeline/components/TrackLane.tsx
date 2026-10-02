@@ -8,6 +8,7 @@ import { TimelineClipItem } from "./TimelineClipItem";
 export interface TrackLaneProps {
   track: Track;
   zoom: number; // Px per second
+  trackHeight: number;
   totalWidthPx: number;
   dropState?: "valid" | "invalid" | null;
   draggingClipId?: string | null;
@@ -23,6 +24,7 @@ export interface TrackLaneProps {
 export function TrackLane({
   track,
   zoom,
+  trackHeight,
   totalWidthPx,
   dropState,
   draggingClipId,
@@ -32,9 +34,12 @@ export function TrackLane({
 }: TrackLaneProps) {
   return (
     <div
-      style={totalWidthPx > 0 ? { minWidth: `${totalWidthPx}px` } : undefined}
+      style={{
+        height: trackHeight,
+        minWidth: totalWidthPx > 0 ? totalWidthPx : undefined,
+      }}
       className={cn(
-        "relative h-12 w-full bg-transparent select-none transition-[background-color,opacity,box-shadow]",
+        "relative w-full bg-transparent select-none transition-[background-color,opacity,box-shadow]",
         dropState === "valid" && "bg-studio-hover/60 ring-1 ring-inset ring-studio-border-strong",
         dropState === "invalid" &&
           "bg-destructive/10 ring-1 ring-inset ring-destructive/50",
@@ -58,6 +63,7 @@ export function TrackLane({
           clip={clip}
           track={track}
           zoom={zoom}
+          trackHeight={trackHeight}
           isDragging={draggingClipId === clip.id}
           onStartDrag={onStartDragClip}
         />

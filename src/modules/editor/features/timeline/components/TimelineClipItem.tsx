@@ -43,6 +43,7 @@ export interface TimelineClipItemProps {
   clip: TimelineClip;
   track: Track;
   zoom: number; // Px per second
+  trackHeight: number;
   isDragging?: boolean;
   onStartDrag: (
     clip: TimelineClip,
@@ -55,6 +56,7 @@ export function TimelineClipItem({
   clip,
   track,
   zoom,
+  trackHeight,
   isDragging = false,
   onStartDrag,
 }: TimelineClipItemProps) {
@@ -76,7 +78,7 @@ export function TimelineClipItem({
   const showName = widthPx >= 96;
   const showStatusDetails = widthPx >= 150;
 
-  const frameHeight = 40;
+  const frameHeight = trackHeight - 8;
   const frameWidth = Math.max(30, Math.round(frameHeight * assetAspectRatio));
   const frameCount = Math.max(1, Math.ceil(widthPx / frameWidth));
 
@@ -395,7 +397,7 @@ export function TimelineClipItem({
           left: `${leftPx}px`,
           width: `${widthPx}px`,
           top: "4px",
-          height: "40px",
+          height: frameHeight,
         }}
         title={`${clip.name} • ${durationLabel}`}
         onPointerDown={handlePointerDown}

@@ -46,7 +46,6 @@ import {
   getMinimumTimelineZoom,
 } from "../utils/timeline-zoom-utils";
 
-const TRACK_HEIGHT = 48;
 const NEW_TRACK_DROP_THRESHOLD = 10;
 
 interface ClipDragPreview {
@@ -122,6 +121,7 @@ export function TimelineEditor() {
   } = useProjectStore();
   const {
     zoom,
+    trackHeight,
     setZoom,
     scrollLeft,
     setScrollLeft,
@@ -455,10 +455,10 @@ export function TimelineEditor() {
         const pointerY =
           rect && scroller
             ? moveEv.clientY - rect.top + scroller.scrollTop
-            : (currentTrackIndex + 0.5) * TRACK_HEIGHT + deltaY;
+            : (currentTrackIndex + 0.5) * trackHeight + deltaY;
         const isClearlyBelowLastTrack =
-          pointerY >= tracks.length * TRACK_HEIGHT + NEW_TRACK_DROP_THRESHOLD;
-        const pointerTrackIndex = Math.floor(pointerY / TRACK_HEIGHT);
+          pointerY >= tracks.length * trackHeight + NEW_TRACK_DROP_THRESHOLD;
+        const pointerTrackIndex = Math.floor(pointerY / trackHeight);
         const createTrack = isClearlyBelowLastTrack;
         const requestedTrackIndex = createTrack
           ? tracks.length
@@ -608,7 +608,9 @@ export function TimelineEditor() {
   });
 
   const playheadLineHeight =
-    maxIntersectingTrackIndex >= 0 ? (maxIntersectingTrackIndex + 1) * 48 : 0;
+    maxIntersectingTrackIndex >= 0
+      ? (maxIntersectingTrackIndex + 1) * trackHeight
+      : 0;
 
   return (
     <div className="flex h-full w-full flex-col bg-transparent text-studio-fg select-none overflow-hidden">
@@ -699,6 +701,7 @@ export function TimelineEditor() {
                   <TrackHeader
                     key={track.id}
                     track={track}
+                    trackHeight={trackHeight}
                     reorderState={reorderState}
                     reorderDropPosition={trackDropPosition}
                   />
@@ -718,8 +721,9 @@ export function TimelineEditor() {
                     <div
                       style={{
                         width: `${Math.max(176, trackHeaderWidth - 8)}px`,
+                        height: trackHeight,
                       }}
-                      className="pointer-events-none flex h-12 items-center gap-2 rounded-lg border border-studio-border-strong bg-studio-panel-raised/95 px-2 text-studio-fg shadow-2xl ring-1 ring-studio-border backdrop-blur-md"
+                      className="pointer-events-none flex items-center gap-2 rounded-lg border border-studio-border-strong bg-studio-panel-raised/95 px-2 text-studio-fg shadow-2xl ring-1 ring-studio-border backdrop-blur-md"
                     >
                       <span className="flex h-6 w-4 shrink-0 items-center justify-center text-studio-muted">
                         <GripVertical className="h-4 w-4" />
@@ -748,7 +752,10 @@ export function TimelineEditor() {
               )}
           </DndContext>
           {clipDragPreview?.createTrack && (
-            <div className="flex h-12 shrink-0 items-center gap-2 border-y border-dashed border-studio-border-strong bg-studio-hover/50 px-3 text-studio-fg">
+            <div
+              style={{ height: trackHeight }}
+              className="flex shrink-0 items-center gap-2 border-y border-dashed border-studio-border-strong bg-studio-hover/50 px-3 text-studio-fg"
+            >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-studio-hover text-studio-fg">
                 <Plus className="h-3.5 w-3.5" />
               </span>
@@ -843,6 +850,7 @@ export function TimelineEditor() {
                   <TrackLane
                     key={track.id}
                     track={track}
+                    trackHeight={trackHeight}
                     zoom={zoom}
                     totalWidthPx={totalWidthPx}
                     draggingClipId={clipDragPreview?.clipId}
@@ -869,13 +877,12 @@ export function TimelineEditor() {
 
               {clipDragPreview?.createTrack && (
                 <div
-                  style={
-                    totalWidthPx > 0
-                      ? { minWidth: `${totalWidthPx}px` }
-                      : undefined
-                  }
+                  style={{
+                    height: trackHeight,
+                    minWidth: totalWidthPx > 0 ? totalWidthPx : undefined,
+                  }}
                   aria-hidden="true"
-                  className="relative h-12 w-full border-y border-dashed border-studio-border-strong bg-studio-hover/50 shadow-[inset_0_0_18px_rgba(255,255,255,0.02)]"
+                  className="relative w-full border-y border-dashed border-studio-border-strong bg-studio-hover/50 shadow-[inset_0_0_18px_rgba(255,255,255,0.02)]"
                 />
               )}
 
@@ -883,9 +890,9 @@ export function TimelineEditor() {
                 <div
                   style={{
                     left: `${16 + clipDragPreview.targetStart * zoom}px`,
-                    top: `${clipDragPreview.targetTrackIndex * TRACK_HEIGHT + 4}px`,
+                    top: `${clipDragPreview.targetTrackIndex * trackHeight + 4}px`,
                     width: `${Math.max(12, clipDragPreview.duration * zoom)}px`,
-                    height: "40px",
+                    height: trackHeight - 8,
                   }}
                   className={cn(
                     "pointer-events-none absolute z-50 flex items-center justify-between overflow-hidden rounded-lg border-2 border-dashed px-2 shadow-xl backdrop-blur-sm",

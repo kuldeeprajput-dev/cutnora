@@ -5,6 +5,15 @@ import type { EditorTool } from "../types";
 import { useProjectStore } from "@/modules/projects";
 import { usePlaybackStore } from "./usePlaybackStore";
 
+export const MIN_TRACK_HEIGHT = 48;
+export const MAX_TRACK_HEIGHT = 144;
+
+function clampTrackHeight(height: unknown): number {
+  return typeof height === "number" && Number.isFinite(height)
+    ? Math.min(MAX_TRACK_HEIGHT, Math.max(MIN_TRACK_HEIGHT, Math.round(height)))
+    : MIN_TRACK_HEIGHT;
+}
+
 function autoSeekToClipIfOutOfBounds(clipIds: string[]) {
   if (clipIds.length === 0) return;
   const project = useProjectStore.getState().currentProject;
@@ -37,6 +46,7 @@ interface EditorUIState {
   leftPanelWidth: number;
   rightPanelWidth: number;
   timelineHeight: number;
+  trackHeight: number;
   trackHeaderWidth: number;
   showTrackHeaders: boolean;
   stageScale: number;
@@ -60,6 +70,7 @@ interface EditorUIState {
   setLeftPanelWidth: (width: number) => void;
   setRightPanelWidth: (width: number) => void;
   setTimelineHeight: (height: number) => void;
+  setTrackHeight: (height: number) => void;
   setTrackHeaderWidth: (width: number) => void;
   setShowTrackHeaders: (show: boolean) => void;
   toggleTrackHeaders: () => void;
@@ -87,6 +98,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       leftPanelWidth: 350,
       rightPanelWidth: 350,
       timelineHeight: 220,
+      trackHeight: MIN_TRACK_HEIGHT,
       trackHeaderWidth: 180,
       showTrackHeaders: true,
       stageScale: 0.5,
@@ -201,6 +213,11 @@ export const useEditorUIStore = create<EditorUIState>()(
           state.trackHeaderWidth = Math.min(400, Math.max(170, width));
         }),
 
+      setTrackHeight: (height) =>
+        set((state) => {
+          state.trackHeight = clampTrackHeight(height);
+        }),
+
       setShowTrackHeaders: (show) =>
         set((state) => {
           state.showTrackHeaders = show;
@@ -238,6 +255,14 @@ export const useEditorUIStore = create<EditorUIState>()(
     })),
     {
       name: "cutnora-editor-ui-store",
+      merge: (persistedState, currentState) => {
+        const saved = persistedState as Partial<EditorUIState> | undefined;
+        return {
+          ...currentState,
+          ...saved,
+          trackHeight: clampTrackHeight(saved?.trackHeight),
+        };
+      },
       partialize: (state) => ({
         activeTool: state.activeTool,
         zoom: state.zoom,
@@ -247,6 +272,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         leftPanelWidth: state.leftPanelWidth,
         rightPanelWidth: state.rightPanelWidth,
         timelineHeight: state.timelineHeight,
+        trackHeight: state.trackHeight,
         trackHeaderWidth: state.trackHeaderWidth,
         showTrackHeaders: state.showTrackHeaders,
         previewScale: state.previewScale,

@@ -7,9 +7,7 @@ import {
   ArrowRightToLine,
   Copy,
   Trash2,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
+  MoveVertical,
   Plus,
   Play,
   Pause,
@@ -26,11 +24,16 @@ import {
   ChevronDown,
   Layers,
   Check,
+  Minus,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/modules/core/db/database";
-import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
+import {
+  useEditorUIStore,
+  MIN_TRACK_HEIGHT,
+  MAX_TRACK_HEIGHT,
+} from "@/modules/editor/store/useEditorUIStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 import { useProjectStore } from "@/modules/projects";
 import { IconButton } from "@/shared/components/ui/IconButton";
@@ -86,6 +89,8 @@ export function TimelineToolbar({
     selectedClipIds,
     zoom,
     setZoom,
+    trackHeight,
+    setTrackHeight,
     activeTool,
     setActiveTool,
     zoomMode,
@@ -546,9 +551,9 @@ export function TimelineToolbar({
         {/* Selected Media Indicator (Only displayed when media is selected) */}
         {(selectedMediaName || selectedMediaDetails) ? (
           <>
-            <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0 max-w-[200px] truncate">
+            <div className="flex items-center gap-1.5 font-mono text-studio-muted text-[11px] whitespace-nowrap shrink-0">
               <span
-                className="font-medium text-studio-fg/90 truncate"
+                className="max-w-[80px] truncate font-medium text-studio-fg/90"
                 title={selectedClip?.name || selectedMediaName || undefined}
               >
                 {selectedMediaName}
@@ -556,7 +561,7 @@ export function TimelineToolbar({
               {selectedMediaDetails && (
                 <>
                   <span>•</span>
-                  <span className="truncate">{selectedMediaDetails}</span>
+                  <span className="shrink-0">{selectedMediaDetails}</span>
                 </>
               )}
             </div>
@@ -564,8 +569,53 @@ export function TimelineToolbar({
           </>
         ) : null}
 
+        <div
+          role="group"
+          aria-label="Track height"
+          className="flex w-36 shrink-0 items-center gap-1 rounded has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-studio-fg/60"
+        >
+          <button
+            type="button"
+            aria-label="Reset track height"
+            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => setTrackHeight(MIN_TRACK_HEIGHT)}
+            disabled={!hasTimelineMedia}
+          >
+            <MoveVertical className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Decrease track height"
+            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => setTrackHeight(trackHeight - 8)}
+            disabled={!hasTimelineMedia || trackHeight <= MIN_TRACK_HEIGHT}
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <Slider
+            aria-label="Track height"
+            thumbClassName="group-hover/slider:scale-100"
+            aria-valuetext={`${trackHeight} pixels`}
+            value={trackHeight}
+            min={MIN_TRACK_HEIGHT}
+            max={MAX_TRACK_HEIGHT}
+            step={1}
+            disabled={!hasTimelineMedia}
+            onValueChange={setTrackHeight}
+          />
+          <button
+            type="button"
+            aria-label="Increase track height"
+            className="cursor-pointer rounded p-1 text-studio-fg/85 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => setTrackHeight(trackHeight + 8)}
+            disabled={!hasTimelineMedia || trackHeight >= MAX_TRACK_HEIGHT}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
         {/* Timeline Zoom Slider Controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex w-36 shrink-0 items-center gap-1">
           <Tooltip content="Reset zoom" position="top">
             <button
               type="button"
@@ -574,11 +624,11 @@ export function TimelineToolbar({
               onClick={handleResetZoom}
               disabled={!hasTimelineMedia}
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <MoveVertical className="h-3.5 w-3.5" />
             </button>
           </Tooltip>
 
-          <div className="flex items-center gap-1 w-40">
+          <div className="flex min-w-0 flex-1 items-center gap-1">
             <Tooltip content="Zoom out" shortcut="Shift + -" position="top">
               <button
                 type="button"
@@ -589,7 +639,7 @@ export function TimelineToolbar({
                 }
                 disabled={!hasTimelineMedia || zoom <= minimumTimelineZoom}
               >
-                <ZoomOut className="h-3.5 w-3.5" />
+                <Minus className="h-3.5 w-3.5" />
               </button>
             </Tooltip>
             <Slider
@@ -612,7 +662,7 @@ export function TimelineToolbar({
                 }
                 disabled={!hasTimelineMedia || zoom >= MAX_TIMELINE_ZOOM}
               >
-                <ZoomIn className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" />
               </button>
             </Tooltip>
           </div>

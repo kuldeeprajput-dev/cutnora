@@ -33,12 +33,14 @@ import { CSS } from "@dnd-kit/utilities";
 
 export interface TrackHeaderProps {
   track: Track;
+  trackHeight: number;
   reorderState?: "active" | "over" | null;
   reorderDropPosition?: "before" | "after";
 }
 
 export function TrackHeader({
   track,
+  trackHeight,
   reorderState,
   reorderDropPosition = "before",
 }: TrackHeaderProps) {
@@ -62,6 +64,7 @@ export function TrackHeader({
   } = useSortable({ id: track.id });
 
   const style = {
+    height: trackHeight,
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.25 : 1,
@@ -157,7 +160,7 @@ export function TrackHeader({
         onClick={() => setActiveTrackId(track.id)}
         onContextMenu={handleContextMenu}
         className={cn(
-          "relative flex h-12 w-full shrink-0 items-center border-b border-studio-border bg-transparent px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
+          "relative flex w-full shrink-0 items-center border-b border-studio-border bg-transparent px-1.5 text-studio-fg select-none transition-[background-color,border-color,opacity,box-shadow] hover:bg-studio-panel overflow-hidden",
           !isCompact ? "justify-between" : "justify-between gap-1",
           isSelected &&
             "bg-studio-panel-raised shadow-[inset_2.5px_0_0_var(--studio-fg)]",
