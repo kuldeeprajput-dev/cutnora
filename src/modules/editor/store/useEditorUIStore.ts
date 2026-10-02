@@ -239,8 +239,10 @@ export const useEditorUIStore = create<EditorUIState>()(
     {
       name: "cutnora-editor-ui-store",
       partialize: (state) => ({
+        activeTool: state.activeTool,
         zoom: state.zoom,
         zoomMode: state.zoomMode,
+        scrollLeft: state.scrollLeft,
         snappingEnabled: state.snappingEnabled,
         leftPanelWidth: state.leftPanelWidth,
         rightPanelWidth: state.rightPanelWidth,
@@ -249,6 +251,8 @@ export const useEditorUIStore = create<EditorUIState>()(
         showTrackHeaders: state.showTrackHeaders,
         previewScale: state.previewScale,
         activeInspectorTab: state.activeInspectorTab,
+        inspectorMode: state.inspectorMode,
+        selectedClipIds: state.selectedClipIds,
         clipInspectorSide: state.clipInspectorSide,
         isLeftSidebarCollapsed: state.isLeftSidebarCollapsed,
       }),

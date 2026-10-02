@@ -243,7 +243,24 @@ export function InspectorPanel({
     .flatMap((t) => t.clips)
     .filter((c) => selectedClipIds.includes(c.id));
 
-  if (view === "clip" && selectedClips.length === 0) return null;
+  if (view === "clip" && selectedClips.length === 0) {
+    return (
+      <ProjectPanel
+        title="Clip Properties"
+        className="h-full w-full"
+        actions={dockAction}
+      >
+        <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+          <div className="mb-2 text-sm font-medium text-studio-fg">
+            No clip selected
+          </div>
+          <p className="max-w-52 text-xs leading-relaxed text-studio-muted">
+            Select a clip on the canvas or timeline to see its properties here.
+          </p>
+        </div>
+      </ProjectPanel>
+    );
+  }
 
   if (
     view === "canvas" ||

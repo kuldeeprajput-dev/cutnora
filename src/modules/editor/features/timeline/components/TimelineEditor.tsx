@@ -172,11 +172,6 @@ export function TimelineEditor() {
 
   const [isAltPressed, setIsAltPressed] = useState(false);
   const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
-  const previousTimelineRef = useRef({
-    projectId: "",
-    duration: 0,
-    clipCount: 0,
-  });
   const [activeSnapLine, setActiveSnapLine] = useState<number | null>(null);
   const [clipDragPreview, setClipDragPreview] =
     useState<ClipDragPreview | null>(null);
@@ -202,6 +197,11 @@ export function TimelineEditor() {
     (count, track) => count + track.clips.length,
     0,
   );
+  const previousTimelineRef = useRef({
+    projectId: currentProject?.id ?? "",
+    duration: projectDuration,
+    clipCount: timelineClipCount,
+  });
   const fitTimelineZoom = getFitTimelineZoom(
     projectDuration,
     timelineViewportWidth,
@@ -342,6 +342,16 @@ export function TimelineEditor() {
 
   const rulerContainerRef = useRef<HTMLDivElement>(null);
   const trackHeadersContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const restoredScrollLeft = useEditorUIStore.getState().scrollLeft;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = restoredScrollLeft;
+    }
+    if (rulerContainerRef.current) {
+      rulerContainerRef.current.scrollLeft = restoredScrollLeft;
+    }
+  }, [currentProject?.id]);
 
   // Sync scroll positions across TimeRuler (horizontal) and Track Headers (vertical)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {

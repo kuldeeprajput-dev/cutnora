@@ -52,13 +52,13 @@ export function ProjectShell() {
     (state) => state.clipInspectorSide,
   );
   const selectedClipIds = useEditorUIStore((state) => state.selectedClipIds);
-  const hasSelectedClip = useProjectStore(
-    (state) =>
-      state.currentProject?.tracks.some((track) =>
-        track.clips.some((clip) => selectedClipIds.includes(clip.id)),
-      ) ?? false,
+  const setSelectedClipIds = useEditorUIStore(
+    (state) => state.setSelectedClipIds,
   );
-  const showRightInspector = clipInspectorSide === "right" && hasSelectedClip;
+  const currentProjectId = useProjectStore(
+    (state) => state.currentProject?.id,
+  );
+  const showRightInspector = clipInspectorSide === "right";
   const isLeftSidebarCollapsed = useEditorUIStore(
     (state) => state.isLeftSidebarCollapsed,
   );
@@ -78,6 +78,20 @@ export function ProjectShell() {
   const isExportModalOpen = useExportStore((state) => state.isExportModalOpen);
 
   useKeyboardShortcuts(() => setIsShortcutsOpen(true));
+
+  useEffect(() => {
+    const project = useProjectStore.getState().currentProject;
+    if (!project) return;
+
+    const clipIds = new Set(
+      project.tracks.flatMap((track) => track.clips.map((clip) => clip.id)),
+    );
+    const currentSelection = useEditorUIStore.getState().selectedClipIds;
+    const validSelection = currentSelection.filter((id) => clipIds.has(id));
+    if (validSelection.length !== currentSelection.length) {
+      setSelectedClipIds(validSelection);
+    }
+  }, [currentProjectId, setSelectedClipIds]);
 
   useEffect(() => {
     const savedWidth = localStorage.getItem("cutnora_panel_width");
