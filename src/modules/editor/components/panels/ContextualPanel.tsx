@@ -4,15 +4,20 @@ import React from "react";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { ProjectPanel } from "@/shared/components/layout/ProjectPanel";
 import { MediaLibraryPanel } from "@/modules/editor/features/media-library";
-import {
-  InspectorPanel,
-  CanvasSettingsPanel,
-} from "@/modules/editor/features/inspector";
+import { InspectorPanel } from "@/modules/editor/features/inspector";
 import { TextPanel } from "@/modules/editor/features/text";
 import { ElementsPanel } from "@/modules/editor/features/elements";
 import { RecordPanel } from "@/modules/editor/features/record/components/RecordPanel";
 
-export function ContextualPanel() {
+export function ContextualPanel({
+  canvasOnly = false,
+  inspectorDockAction,
+  sidebarAction,
+}: {
+  canvasOnly?: boolean;
+  inspectorDockAction?: React.ReactNode;
+  sidebarAction?: React.ReactNode;
+} = {}) {
   const activeTool = useEditorUIStore((state) => state.activeTool);
 
   if (
@@ -20,7 +25,13 @@ export function ContextualPanel() {
     activeTool === "crop" ||
     activeTool === "select"
   ) {
-    return <InspectorPanel />;
+    return (
+      <InspectorPanel
+        view={canvasOnly ? "canvas" : undefined}
+        dockAction={inspectorDockAction}
+        sidebarAction={sidebarAction}
+      />
+    );
   }
 
   const renderContent = () => {
@@ -68,6 +79,7 @@ export function ContextualPanel() {
   return (
     <ProjectPanel
       title={getPanelTitle()}
+      actions={sidebarAction}
       className="h-full w-full border-none shadow-none"
     >
       {renderContent()}

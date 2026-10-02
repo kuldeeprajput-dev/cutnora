@@ -38,7 +38,7 @@ export interface ProjectToolRailProps {
 }
 
 export function ProjectToolRail({ onToolSelect }: ProjectToolRailProps = {}) {
-  const { activeTool, setActiveTool, clearSelection } = useEditorUIStore();
+  const { activeTool, setActiveTool, clearSelection, clipInspectorSide } = useEditorUIStore();
 
   return (
     <aside className="flex h-full w-[64px] shrink-0 flex-col items-center gap-1.5 border-r border-studio-border bg-studio-panel py-2.5 text-studio-muted select-none overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -55,7 +55,7 @@ export function ProjectToolRail({ onToolSelect }: ProjectToolRailProps = {}) {
               onClick={() => {
                 onToolSelect?.();
                 setActiveTool(item.id as EditorTool);
-                clearSelection();
+                if (clipInspectorSide !== 'right') clearSelection();
               }}
               className={cn(
                 'relative flex h-12 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors cursor-pointer',

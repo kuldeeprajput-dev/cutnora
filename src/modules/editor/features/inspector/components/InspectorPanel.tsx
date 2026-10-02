@@ -10,7 +10,6 @@ import {
   TabTrigger,
   TabContent,
 } from "@/shared/components/ui/Tabs";
-import { Button } from "@/shared/components/ui/Button";
 import { Slider } from "@/shared/components/ui/Slider";
 import { TransformTab } from "./TransformTab";
 import { AdjustTab } from "./AdjustTab";
@@ -174,7 +173,15 @@ function InspectorTabDropdown({
   );
 }
 
-export function InspectorPanel() {
+export function InspectorPanel({
+  view,
+  dockAction,
+  sidebarAction,
+}: {
+  view?: "clip" | "canvas";
+  dockAction?: React.ReactNode;
+  sidebarAction?: React.ReactNode;
+} = {}) {
   const selectedClipIds = useEditorUIStore((state) => state.selectedClipIds);
   const clearSelection = useEditorUIStore((state) => state.clearSelection);
   const activeInspectorTab = useEditorUIStore(
@@ -190,23 +197,18 @@ export function InspectorPanel() {
   const deleteClips = useProjectStore((state) => state.deleteClips);
   const updateClip = useProjectStore((state) => state.updateClip);
 
-  const [isNarrow, setIsNarrow] = useState(leftPanelWidth < 420);
+  const [isNarrow, setIsNarrow] = useState(view === "clip" || leftPanelWidth < 420);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsNarrow(leftPanelWidth < 420);
-  }, [leftPanelWidth]);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setIsNarrow(entry.contentRect.width < 420);
-      }
-    });
-    observer.observe(containerRef.current);
+    const container = containerRef.current;
+    if (!container) return;
+    const updateWidth = () => setIsNarrow(container.clientWidth < 420);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(container);
     return () => observer.disconnect();
-  }, []);
+  }, [view, inspectorMode, selectedClipIds.length]);
 
   // When selected clip changes, automatically switch to clip inspector mode and seek playhead
   useEffect(() => {
@@ -241,12 +243,31 @@ export function InspectorPanel() {
     .flatMap((t) => t.clips)
     .filter((c) => selectedClipIds.includes(c.id));
 
-  // Render Canvas settings if no clips selected
-  if (selectedClips.length === 0) {
+  if (view === "clip" && selectedClips.length === 0) return null;
+
+  if (
+    view === "canvas" ||
+    selectedClips.length === 0 ||
+    (!view && inspectorMode === "canvas")
+  ) {
     return (
       <ProjectPanel
         title="Canvas Settings"
         className="h-full w-full"
+        actions={
+          <>
+            {!view && selectedClips.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setInspectorMode("clip")}
+                className="h-7 cursor-pointer rounded-lg border border-studio-border bg-studio-panel-raised/60 px-2.5 text-[11px] font-medium text-studio-fg transition-colors hover:bg-studio-hover"
+              >
+                Clip Properties
+              </button>
+            )}
+            {sidebarAction}
+          </>
+        }
       >
         <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
           <CanvasSettingsPanel />
@@ -254,6 +275,23 @@ export function InspectorPanel() {
       </ProjectPanel>
     );
   }
+
+  const clipActions = (
+    <>
+      {view !== "clip" && (
+        <button
+          type="button"
+          onClick={() => setInspectorMode("canvas")}
+          className="h-7 cursor-pointer whitespace-nowrap rounded-lg border border-studio-border bg-studio-panel-raised/60 px-2.5 text-[11px] font-medium text-studio-fg transition-colors hover:border-studio-border-strong hover:bg-studio-hover"
+        >
+          Canvas Settings
+        </button>
+      )}
+      {dockAction}
+      {sidebarAction}
+    </>
+  );
+  const clipPanelClass = cn("h-full w-full", view === "clip" && "lg:min-w-0");
 
   // Multi-selection inspector
   if (selectedClips.length > 1) {
@@ -276,16 +314,8 @@ export function InspectorPanel() {
     return (
       <ProjectPanel
         title={`${selectedClips.length} Clips Selected`}
-        actions={
-          <button
-            type="button"
-            onClick={() => setInspectorMode("canvas")}
-            className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
-          >
-            Canvas Settings
-          </button>
-        }
-        className="h-full w-full"
+        actions={clipActions}
+        className={clipPanelClass}
       >
         <div className="flex h-full w-full flex-col text-xs text-studio-fg p-3 overflow-y-auto no-scrollbar select-none">
           <div className="py-2.5 border-b border-studio-border flex items-center gap-2 text-studio-muted">
@@ -387,50 +417,24 @@ export function InspectorPanel() {
     ),
   });
 
-  const isCanvasMode = inspectorMode === "canvas";
-
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Canvas Settings View (when user toggled to Canvas Settings while a clip is selected) */}
-      <div className={cn("h-full w-full", isCanvasMode ? "block" : "hidden")}>
-        <ProjectPanel
-          title="Canvas Settings"
-          actions={
-            <button
-              type="button"
-              onClick={() => setInspectorMode("clip")}
-              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
-            >
-              Clip Properties
-            </button>
-          }
-          className="h-full w-full"
-        >
-          <div className="h-full w-full overflow-y-auto p-3 no-scrollbar">
-            <CanvasSettingsPanel />
-          </div>
-        </ProjectPanel>
-      </div>
-
       {/* Clip Properties View */}
-      <div className={cn("h-full w-full", !isCanvasMode ? "block" : "hidden")}>
+      <div className="h-full w-full">
         <ProjectPanel
-          title={clip.name}
-          actions={
-            <button
-              type="button"
-              onClick={() => setInspectorMode("canvas")}
-              className="h-7 px-2.5 text-[11px] font-medium rounded-lg border border-studio-border bg-studio-panel-raised/60 text-studio-fg hover:bg-studio-hover hover:border-studio-border-strong cursor-pointer transition-all shrink-0 whitespace-nowrap"
-            >
-              Canvas Settings
-            </button>
-          }
-          className="h-full w-full"
+          title={view === "clip" ? "Clip Properties" : clip.name}
+          actions={clipActions}
+          className={clipPanelClass}
         >
           <div
             ref={containerRef}
             className="h-full w-full overflow-y-auto p-3 no-scrollbar"
           >
+            {view === "clip" && (
+              <p title={clip.name} className="mb-3 truncate text-xs font-medium text-studio-muted">
+                {clip.name}
+              </p>
+            )}
             <Tabs
               defaultValue={isText ? "text" : isElement ? "element" : "transform"}
               value={activeInspectorTab}
@@ -438,14 +442,14 @@ export function InspectorPanel() {
               variant="line"
             >
               {isNarrow ? (
-                /* Custom Responsive Dropdown when panel is narrow (< 340px) */
+                /* Categories for panels narrower than 420px. */
                 <InspectorTabDropdown
                   tabs={availableTabs}
                   activeTab={activeInspectorTab}
                   onTabChange={setActiveInspectorTab}
                 />
               ) : (
-                /* Horizontal Tabs Bar when panel width is wide (>= 360px) */
+                /* Category tabs for panels at least 420px wide. */
                 <TabList className="mb-3 flex w-full shrink-0 items-center gap-0 overflow-x-auto no-scrollbar">
                   {availableTabs.map((t) => (
                     <TabTrigger

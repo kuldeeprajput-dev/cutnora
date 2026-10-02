@@ -26,6 +26,8 @@ interface EditorUIState {
   activeTool: EditorTool;
   activeInspectorTab: string;
   inspectorMode: "clip" | "canvas";
+  clipInspectorSide: "left" | "right";
+  isLeftSidebarCollapsed: boolean;
   selectedClipIds: string[];
   activeTrackId: string | null;
   zoom: number; // Pixels per second
@@ -33,6 +35,7 @@ interface EditorUIState {
   previewScale: number;
   snappingEnabled: boolean;
   leftPanelWidth: number;
+  rightPanelWidth: number;
   timelineHeight: number;
   trackHeaderWidth: number;
   showTrackHeaders: boolean;
@@ -44,6 +47,8 @@ interface EditorUIState {
   setActiveTool: (tool: EditorTool) => void;
   setActiveInspectorTab: (tab: string) => void;
   setInspectorMode: (mode: "clip" | "canvas") => void;
+  setClipInspectorSide: (side: "left" | "right") => void;
+  setLeftSidebarCollapsed: (collapsed: boolean) => void;
   setSelectedClipIds: (ids: string[]) => void;
   toggleClipSelection: (id: string, multiSelect?: boolean) => void;
   clearSelection: () => void;
@@ -53,6 +58,7 @@ interface EditorUIState {
   setPreviewScale: (scale: number) => void;
   setSnappingEnabled: (enabled: boolean) => void;
   setLeftPanelWidth: (width: number) => void;
+  setRightPanelWidth: (width: number) => void;
   setTimelineHeight: (height: number) => void;
   setTrackHeaderWidth: (width: number) => void;
   setShowTrackHeaders: (show: boolean) => void;
@@ -70,6 +76,8 @@ export const useEditorUIStore = create<EditorUIState>()(
       activeTool: "media",
       activeInspectorTab: "transform",
       inspectorMode: "clip",
+      clipInspectorSide: "left",
+      isLeftSidebarCollapsed: false,
       selectedClipIds: [],
       activeTrackId: null,
       zoom: 50, // 50px per second default timeline zoom
@@ -77,6 +85,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       previewScale: 1,
       snappingEnabled: true,
       leftPanelWidth: 350,
+      rightPanelWidth: 350,
       timelineHeight: 220,
       trackHeaderWidth: 180,
       showTrackHeaders: true,
@@ -98,6 +107,18 @@ export const useEditorUIStore = create<EditorUIState>()(
       setInspectorMode: (mode) =>
         set((state) => {
           state.inspectorMode = mode;
+        }),
+
+      setClipInspectorSide: (side) =>
+        set((state) => {
+          state.clipInspectorSide = side;
+          state.activeTool = "canvas";
+          state.inspectorMode = "clip";
+        }),
+
+      setLeftSidebarCollapsed: (collapsed) =>
+        set((state) => {
+          state.isLeftSidebarCollapsed = collapsed;
         }),
 
       setSelectedClipIds: (ids) =>
@@ -165,6 +186,11 @@ export const useEditorUIStore = create<EditorUIState>()(
           state.leftPanelWidth = Math.min(600, Math.max(350, width));
         }),
 
+      setRightPanelWidth: (width) =>
+        set((state) => {
+          state.rightPanelWidth = Math.min(480, Math.max(320, width));
+        }),
+
       setTimelineHeight: (height) =>
         set((state) => {
           state.timelineHeight = Math.min(500, Math.max(120, height));
@@ -217,11 +243,14 @@ export const useEditorUIStore = create<EditorUIState>()(
         zoomMode: state.zoomMode,
         snappingEnabled: state.snappingEnabled,
         leftPanelWidth: state.leftPanelWidth,
+        rightPanelWidth: state.rightPanelWidth,
         timelineHeight: state.timelineHeight,
         trackHeaderWidth: state.trackHeaderWidth,
         showTrackHeaders: state.showTrackHeaders,
         previewScale: state.previewScale,
         activeInspectorTab: state.activeInspectorTab,
+        clipInspectorSide: state.clipInspectorSide,
+        isLeftSidebarCollapsed: state.isLeftSidebarCollapsed,
       }),
     },
   ),

@@ -18,6 +18,8 @@ export function useKeyboardShortcuts(onOpenHelpModal?: () => void) {
           target.closest('.editing-inline') !== null;
 
         if (isTextEntry) return;
+        // Preserve native button activation, including the inspector docking toggle.
+        if (target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
       }
 
       // 2. Normalize pressed key combination
