@@ -1,4 +1,5 @@
 import React from "react";
+import { flushSync } from "react-dom";
 import { cn } from "@/shared/utils/cn";
 
 export interface ResizableDividerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -25,10 +26,12 @@ export function ResizableDivider({
       target.setPointerCapture(event.pointerId);
     } catch {}
 
-    let lastX = event.clientX;
-    let lastY = event.clientY;
+    const bounds = target.getBoundingClientRect();
+    const grabOffsetX = event.clientX - (bounds.left + bounds.width / 2);
+    const grabOffsetY = event.clientY - (bounds.top + bounds.height / 2);
 
     const originalCursor = document.body.style.cursor;
+    const originalRootCursor = document.documentElement.style.cursor;
     const originalUserSelect = document.body.style.userSelect;
     const activeCursor = orientation === "vertical" ? "col-resize" : "row-resize";
     document.body.style.cursor = activeCursor;
@@ -37,13 +40,14 @@ export function ResizableDivider({
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault();
+      const currentBounds = target.getBoundingClientRect();
       const delta =
         orientation === "vertical"
-          ? moveEvent.clientX - lastX
-          : moveEvent.clientY - lastY;
-      lastX = moveEvent.clientX;
-      lastY = moveEvent.clientY;
-      onResize?.(delta);
+          ? moveEvent.clientX - grabOffsetX -
+            (currentBounds.left + currentBounds.width / 2)
+          : moveEvent.clientY - grabOffsetY -
+            (currentBounds.top + currentBounds.height / 2);
+      if (delta !== 0) flushSync(() => onResize?.(delta));
     };
 
     const handlePointerUp = (upEvent: PointerEvent) => {
@@ -54,7 +58,7 @@ export function ResizableDivider({
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
       document.body.style.cursor = originalCursor;
-      document.documentElement.style.cursor = "";
+      document.documentElement.style.cursor = originalRootCursor;
       document.body.style.userSelect = originalUserSelect;
       onResizeEnd?.();
     };
@@ -72,22 +76,27 @@ export function ResizableDivider({
       target.setPointerCapture(event.pointerId);
     } catch {}
 
-    let lastX = event.clientX;
-    let lastY = event.clientY;
+    const bounds = target.getBoundingClientRect();
+    const grabOffsetX = event.clientX - (bounds.left + bounds.width / 2);
+    const grabOffsetY = event.clientY - (bounds.top + bounds.height / 2);
 
     const originalCursor = document.body.style.cursor;
+    const originalRootCursor = document.documentElement.style.cursor;
     const originalUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = "all-scroll";
-    document.documentElement.style.cursor = "all-scroll";
+    document.body.style.cursor = "move";
+    document.documentElement.style.cursor = "move";
     document.body.style.userSelect = "none";
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault();
-      const deltaX = moveEvent.clientX - lastX;
-      const deltaY = moveEvent.clientY - lastY;
-      lastX = moveEvent.clientX;
-      lastY = moveEvent.clientY;
-      onCornerResize?.(deltaX, deltaY);
+      const currentBounds = target.getBoundingClientRect();
+      const deltaX = moveEvent.clientX - grabOffsetX -
+        (currentBounds.left + currentBounds.width / 2);
+      const deltaY = moveEvent.clientY - grabOffsetY -
+        (currentBounds.top + currentBounds.height / 2);
+      if (deltaX !== 0 || deltaY !== 0) {
+        flushSync(() => onCornerResize?.(deltaX, deltaY));
+      }
     };
 
     const handlePointerUp = (upEvent: PointerEvent) => {
@@ -98,7 +107,7 @@ export function ResizableDivider({
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
       document.body.style.cursor = originalCursor;
-      document.documentElement.style.cursor = "";
+      document.documentElement.style.cursor = originalRootCursor;
       document.body.style.userSelect = originalUserSelect;
       onResizeEnd?.();
     };
@@ -114,12 +123,16 @@ export function ResizableDivider({
     const positiveKey = orientation === "vertical" ? "ArrowRight" : "ArrowDown";
     if (event.key !== negativeKey && event.key !== positiveKey) return;
     event.preventDefault();
+    event.stopPropagation();
     onResize?.(event.key === negativeKey ? -step : step);
     onResizeEnd?.();
   };
 
   const handleCornerKeyDown = (event: React.KeyboardEvent) => {
     const step = event.shiftKey ? 24 : 8;
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+      event.stopPropagation();
+    }
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       onCornerResize?.(-step, 0);
@@ -168,9 +181,9 @@ export function ResizableDivider({
             top: "calc(100% + 3px)",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            cursor: "all-scroll",
+            cursor: "move",
           }}
-          className="absolute z-50 h-6 w-6 cursor-all-scroll bg-transparent select-none touch-none outline-none [cursor:all-scroll] [cursor:move]"
+          className="absolute z-50 h-4 w-4 cursor-move rounded-sm bg-transparent select-none touch-none outline-none focus-visible:ring-2 focus-visible:ring-brand"
         />
       )}
     </div>

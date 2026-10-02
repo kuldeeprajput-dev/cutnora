@@ -97,13 +97,6 @@ export function ProjectShell() {
     setLeftPanelWidth(newWidth);
   };
 
-  const handleWidthResizeEnd = () => {
-    const currentWidth = useEditorUIStore.getState().leftPanelWidth;
-    try {
-      localStorage.setItem("cutnora_panel_width", String(currentWidth));
-    } catch {}
-  };
-
   const handleHeightResize = (delta: number) => {
     const currentHeight = useEditorUIStore.getState().timelineHeight;
     const responsiveMaximum = Math.min(
@@ -197,7 +190,7 @@ export function ProjectShell() {
           <ResizableDivider
             orientation="vertical"
             onResize={handleWidthResize}
-            onResizeEnd={handleWidthResizeEnd}
+            onResizeEnd={handleCornerResizeEnd}
             hasCornerHandle={true}
             onCornerResize={handleCornerResize}
           />
