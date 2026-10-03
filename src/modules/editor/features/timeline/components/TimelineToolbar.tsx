@@ -49,6 +49,7 @@ import {
 import { formatTimecode } from "../utils/ruler-utils";
 import {
   MAX_TIMELINE_ZOOM,
+  getTimelineZoomFactor,
   getNextTimelineZoom,
   sliderValueToTimelineZoom,
   timelineZoomToSliderValue,
@@ -704,6 +705,8 @@ export function TimelineToolbar({
               </button>
             </Tooltip>
             <Slider
+              aria-label="Timeline zoom"
+              aria-valuetext={`${getTimelineZoomFactor(zoom)} times`}
               value={timelineZoomToSliderValue(zoom, minimumTimelineZoom)}
               min={0}
               max={100}

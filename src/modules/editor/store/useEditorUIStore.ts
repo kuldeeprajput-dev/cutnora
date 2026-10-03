@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import type { EditorTool } from "../types";
 import { useProjectStore } from "@/modules/projects";
 import { usePlaybackStore } from "./usePlaybackStore";
+import { clampTimelineZoom } from "../features/timeline/utils/timeline-zoom-utils";
 
 export const MIN_TRACK_HEIGHT = 48;
 export const MAX_TRACK_HEIGHT = 144;
@@ -175,7 +176,7 @@ export const useEditorUIStore = create<EditorUIState>()(
 
       setZoom: (zoom) =>
         set((state) => {
-          state.zoom = Math.min(200, Math.max(0.05, zoom));
+          state.zoom = clampTimelineZoom(zoom);
         }),
 
       setScrollLeft: (scrollLeft) =>
@@ -260,6 +261,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         return {
           ...currentState,
           ...saved,
+          zoom: clampTimelineZoom(saved?.zoom ?? currentState.zoom),
           trackHeight: clampTrackHeight(saved?.trackHeight),
         };
       },

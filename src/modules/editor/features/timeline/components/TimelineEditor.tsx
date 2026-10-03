@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useProjectStore } from "@/modules/projects";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
@@ -227,6 +227,25 @@ export function TimelineEditor() {
     timelineViewportWidth > 0 && contentWidthPx > timelineViewportWidth;
   const totalWidthPx = isOverflowing ? Math.ceil(contentWidthPx) : 0;
   const playheadLeftPx = 16 + playhead * zoom;
+  const previousZoomRef = useRef(zoom);
+
+  // Keep the visible playhead (or viewport center) in place while magnifying.
+  useLayoutEffect(() => {
+    const previousZoom = previousZoomRef.current;
+    previousZoomRef.current = zoom;
+    const element = scrollContainerRef.current;
+    if (!element || previousZoom === zoom) return;
+    const oldScroll = useEditorUIStore.getState().scrollLeft;
+    const currentTime = usePlaybackStore.getState().playhead;
+    const oldPlayheadX = 16 + currentTime * previousZoom - oldScroll;
+    const screenX = Math.max(0, Math.min(element.clientWidth, oldPlayheadX));
+    const playheadVisible = oldPlayheadX >= 0 && oldPlayheadX <= element.clientWidth;
+    const anchorX = playheadVisible ? screenX : element.clientWidth / 2;
+    const anchorTime = playheadVisible ? currentTime : (oldScroll + anchorX - 16) / previousZoom;
+    element.scrollLeft = zoom === fitTimelineZoom ? 0 : Math.max(0, 16 + anchorTime * zoom - anchorX);
+    rulerContainerRef.current?.scrollTo({ left: element.scrollLeft });
+    setScrollLeft(element.scrollLeft);
+  }, [zoom, fitTimelineZoom, setScrollLeft]);
   const activeTrackDrag = tracks.find(
     (track) => track.id === activeTrackDragId,
   );
@@ -357,9 +376,7 @@ export function TimelineEditor() {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft = restoredScrollLeft;
     }
-    if (rulerContainerRef.current) {
-      rulerContainerRef.current.scrollLeft = restoredScrollLeft;
-    }
+    rulerContainerRef.current?.scrollTo({ left: restoredScrollLeft });
   }, [currentProject?.id]);
 
   // Sync scroll positions across TimeRuler (horizontal) and Track Headers (vertical)
@@ -370,9 +387,7 @@ export function TimelineEditor() {
 
     setScrollLeft(newScrollLeft);
 
-    if (rulerContainerRef.current) {
-      rulerContainerRef.current.scrollLeft = newScrollLeft;
-    }
+    rulerContainerRef.current?.scrollTo({ left: newScrollLeft });
     if (trackHeadersContainerRef.current) {
       trackHeadersContainerRef.current.scrollTop = newScrollTop;
       syncedHeadersScrollTopRef.current =
@@ -705,6 +720,7 @@ export function TimelineEditor() {
             duration={visibleTimelineDuration}
             zoom={zoom}
             scrollLeft={scrollLeft}
+            viewportWidth={timelineViewportWidth}
           />
         </div>
       </div>

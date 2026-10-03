@@ -1,13 +1,24 @@
 export const DEFAULT_TIMELINE_ZOOM = 50;
 export const MIN_TIMELINE_ZOOM = 0.05;
-export const MAX_TIMELINE_ZOOM = 200;
+export const MAX_TIMELINE_ZOOM_FACTOR = 20;
+export const MAX_TIMELINE_ZOOM =
+  DEFAULT_TIMELINE_ZOOM * MAX_TIMELINE_ZOOM_FACTOR;
 
 const TIMELINE_HORIZONTAL_PADDING = 80;
-const STANDARD_MIN_TIMELINE_ZOOM = 10;
+const STANDARD_MIN_TIMELINE_ZOOM = 5;
 const ZOOM_FACTOR = 1.35;
 
-function clampZoom(zoom: number, minimum = MIN_TIMELINE_ZOOM): number {
+export function clampTimelineZoom(
+  zoom: number,
+  minimum = MIN_TIMELINE_ZOOM,
+): number {
+  if (!Number.isFinite(zoom)) return DEFAULT_TIMELINE_ZOOM;
   return Math.min(MAX_TIMELINE_ZOOM, Math.max(minimum, zoom));
+}
+
+export function getTimelineZoomFactor(zoom: number): number {
+  const factor = clampTimelineZoom(zoom) / DEFAULT_TIMELINE_ZOOM;
+  return Number(factor.toFixed(factor < 0.01 ? 3 : 2));
 }
 
 export function getFitTimelineZoom(
@@ -20,7 +31,9 @@ export function getFitTimelineZoom(
     100,
     viewportWidth - TIMELINE_HORIZONTAL_PADDING,
   );
-  return clampZoom(Math.min(DEFAULT_TIMELINE_ZOOM, usableWidth / duration));
+  return clampTimelineZoom(
+    Math.min(DEFAULT_TIMELINE_ZOOM, usableWidth / duration),
+  );
 }
 
 export function getMinimumTimelineZoom(
@@ -40,7 +53,7 @@ export function getNextTimelineZoom(
   minimum: number,
 ): number {
   const next = direction === "in" ? zoom * ZOOM_FACTOR : zoom / ZOOM_FACTOR;
-  return Number(clampZoom(next, minimum).toFixed(3));
+  return Number(clampTimelineZoom(next, minimum).toFixed(3));
 }
 
 export function timelineZoomToSliderValue(
@@ -48,7 +61,7 @@ export function timelineZoomToSliderValue(
   minimum: number,
 ): number {
   const safeMinimum = Math.max(MIN_TIMELINE_ZOOM, minimum);
-  const safeZoom = clampZoom(zoom, safeMinimum);
+  const safeZoom = clampTimelineZoom(zoom, safeMinimum);
   const range = Math.log(MAX_TIMELINE_ZOOM / safeMinimum);
   if (range <= 0) return 0;
   return (Math.log(safeZoom / safeMinimum) / range) * 100;
@@ -62,5 +75,5 @@ export function sliderValueToTimelineZoom(
   const progress = Math.min(100, Math.max(0, value)) / 100;
   const zoom =
     safeMinimum * Math.pow(MAX_TIMELINE_ZOOM / safeMinimum, progress);
-  return Number(clampZoom(zoom, safeMinimum).toFixed(3));
+  return Number(clampTimelineZoom(zoom, safeMinimum).toFixed(3));
 }

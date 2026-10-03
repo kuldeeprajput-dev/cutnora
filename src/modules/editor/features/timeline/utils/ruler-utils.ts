@@ -9,28 +9,31 @@ export function formatTimecode(
   fps = 30,
   includeFrames = false,
 ): string {
-  const s = Math.max(0, seconds);
-  const mins = Math.floor(s / 60);
+  const s = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+  const hours = Math.floor(s / 3600);
+  const mins = Math.floor(s / 60) % 60;
   const secs = Math.floor(s % 60);
   const frames = Math.floor((s % 1) * fps);
 
   const mm = String(mins).padStart(2, "0");
   const ss = String(secs).padStart(2, "0");
+  const prefix = hours > 0 ? `${String(hours).padStart(2, "0")}:` : "";
 
   if (includeFrames) {
     const ff = String(frames).padStart(2, "0");
-    return `${mm}:${ss}:${ff}`;
+    return `${prefix}${mm}:${ss}:${ff}`;
   }
 
-  return `${mm}:${ss}`;
+  return `${prefix}${mm}:${ss}`;
 }
 
 export function generateRulerTicks(
   duration: number,
   zoom: number,
   fps = 30,
+  visibleRange?: { start: number; end: number },
 ): RulerTick[] {
-  if (duration <= 0) {
+  if (!Number.isFinite(duration) || duration <= 0) {
     return [
       {
         time: 0,
@@ -41,31 +44,28 @@ export function generateRulerTicks(
   }
 
   const ticks: RulerTick[] = [];
-  const maxDuration = Math.ceil(duration);
+  const safeZoom = Math.max(0.05, Number.isFinite(zoom) ? zoom : 50);
+  // Labels need room to remain readable; fine ticks appear as the view expands.
+  const intervals = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+  const majorInterval =
+    intervals.find((interval) => interval * safeZoom >= 80) ?? 3600;
+  const divisions =
+    [10, 5, 4, 2, 1].find(
+      (count) => (majorInterval * safeZoom) / count >= 12,
+    ) ?? 1;
+  const minorInterval = majorInterval / divisions;
+  const start = Math.max(0, visibleRange?.start ?? 0);
+  const end = Math.min(duration, visibleRange?.end ?? duration);
+  const firstIndex = Math.max(0, Math.floor(start / minorInterval));
+  const lastIndex = Math.floor((end + 1e-6) / minorInterval);
 
-  // Determine tick step in seconds based on zoom (px per second)
-  let majorInterval = 5;
-  if (zoom >= 150) majorInterval = 1;
-  else if (zoom >= 80) majorInterval = 2;
-  else if (zoom >= 40) majorInterval = 5;
-  else if (zoom >= 20) majorInterval = 10;
-  else if (zoom >= 10) majorInterval = 30;
-  else if (zoom >= 5) majorInterval = 60;
-  else if (zoom >= 2) majorInterval = 120;
-  else if (zoom >= 1) majorInterval = 300;
-  else if (zoom >= 0.5) majorInterval = 600;
-  else majorInterval = 900;
-
-  const minorInterval = majorInterval / 5;
-
-  for (let t = 0; t <= maxDuration; t += minorInterval) {
-    const roundedTime = Math.round(t * 100) / 100;
-    const isMajor = Math.abs(roundedTime % majorInterval) < 0.01;
-    const isPrecise = zoom >= 100;
+  for (let index = firstIndex; index <= lastIndex; index++) {
+    const roundedTime = Math.round(index * minorInterval * 1000) / 1000;
+    const isMajor = index % divisions === 0;
 
     ticks.push({
       time: roundedTime,
-      label: isMajor ? formatTimecode(roundedTime, fps, isPrecise) : "",
+      label: isMajor ? formatTimecode(roundedTime, fps, false) : "",
       isMajor,
     });
   }

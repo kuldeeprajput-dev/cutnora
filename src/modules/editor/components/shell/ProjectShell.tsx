@@ -307,7 +307,7 @@ export function ProjectShell() {
             {/* Contextual Panel */}
             <div
               style={{
-                width: `${leftPanelWidth}px`,
+                width: `${Math.round(leftPanelWidth)}px`,
                 minWidth: "350px",
               }}
               className="h-full shrink-0 overflow-hidden"
