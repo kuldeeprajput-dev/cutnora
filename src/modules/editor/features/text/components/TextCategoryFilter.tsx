@@ -30,15 +30,6 @@ export const CATEGORY_OPTIONS: CategoryOption[] = [
   { id: "effects", label: "Effects & Memes", icon: Flame },
 ];
 
-export const CATEGORY_CHIPS: { id: CategoryFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "basic", label: "Basic" },
-  { id: "captions", label: "Captions" },
-  { id: "labels", label: "Labels" },
-  { id: "creative", label: "Creative" },
-  { id: "effects", label: "Effects" },
-];
-
 export interface TextCategoryFilterProps {
   activeCategory: CategoryFilter;
   onCategoryChange: (category: CategoryFilter) => void;
@@ -151,27 +142,6 @@ export function TextCategoryFilter({
             </div>
           </div>
         )}
-      </div>
-
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar scroll-smooth">
-        {CATEGORY_CHIPS.map((cat) => {
-          const isSelected = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              aria-pressed={isSelected}
-              onClick={() => onCategoryChange(cat.id)}
-              className={`min-h-11 lg:min-h-7.5 px-3 rounded-lg min-w-max shrink-0 cursor-pointer font-medium text-xs flex items-center justify-center transition-colors ${
-                isSelected
-                  ? "bg-studio-fg text-studio-bg font-semibold shadow-xs"
-                  : "bg-studio-panel-raised/60 border border-studio-border text-studio-muted hover:text-studio-fg hover:bg-studio-hover"
-              }`}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
       </div>
 
       <p className="text-[11px] text-studio-muted">{presetCount} text styles</p>

@@ -176,7 +176,7 @@ export function SelectionOverlay({
               : "Rotate selected media"
         }
       >
-        <span className={compactControls ? "pointer-events-none flex h-5.5 w-5.5 items-center justify-center rounded-full border border-studio-bg/15 bg-studio-fg text-studio-bg shadow-[0_2px_5px_rgba(0,0,0,0.2)] transition-colors group-hover/rotate:bg-studio-fg/90" : "contents"}>
+        <span className={compactControls ? "pointer-events-none flex h-5.5 w-5.5 items-center justify-center rounded-full border border-studio-border bg-studio-panel-raised/95 text-studio-fg shadow-[0_2px_5px_rgba(0,0,0,0.2)] transition-colors group-hover/rotate:border-studio-border-strong group-hover/rotate:bg-studio-hover" : "contents"}>
           <RotateCw
             style={{ transform: `rotate(${-clip.transform.rotation}deg)` }}
             strokeWidth={2}
