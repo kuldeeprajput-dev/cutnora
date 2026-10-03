@@ -1,4 +1,8 @@
 import type { TimelineClip } from "@/modules/editor/types";
+import {
+  getTextFont,
+  getTextLayout,
+} from "@/modules/editor/features/text/utils/text-layout";
 
 export function renderClipTo2DCanvas(
   ctx: CanvasRenderingContext2D,
@@ -22,53 +26,70 @@ export function renderClipTo2DCanvas(
   ctx.translate(-w / 2, -h / 2);
 
   if (type === "text" && textStyle) {
-    // Render Background Fill if present
+    const layout = getTextLayout(textStyle, transform.width);
+    ctx.beginPath();
+    ctx.rect(0, 0, w, h);
+    ctx.clip();
     if (textStyle.backgroundColor) {
       ctx.fillStyle = textStyle.backgroundColor;
-      const radius = (textStyle.bgRadius || 0) * stageScale;
-      const pad = (textStyle.bgPadding || 0) * stageScale;
-
       ctx.beginPath();
-      if (ctx.roundRect) {
-        ctx.roundRect(-pad, -pad, w + pad * 2, h + pad * 2, radius);
-      } else {
-        ctx.rect(-pad, -pad, w + pad * 2, h + pad * 2);
-      }
+      ctx.roundRect(0, 0, w, h, (textStyle.bgRadius || 0) * stageScale);
       ctx.fill();
     }
 
-    // Shadow
     if (textStyle.shadowColor) {
       ctx.shadowColor = textStyle.shadowColor;
       ctx.shadowBlur = (textStyle.shadowBlur || 0) * stageScale;
       ctx.shadowOffsetX = (textStyle.shadowOffsetX || 0) * stageScale;
       ctx.shadowOffsetY = (textStyle.shadowOffsetY || 0) * stageScale;
     }
-
-    // Text Properties
-    const fontSize = (textStyle.fontSize || 48) * stageScale;
-    const fontStyle = textStyle.fontStyle || "normal";
-    const fontWeight = textStyle.fontWeight || "normal";
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textStyle.fontFamily || "Inter, sans-serif"}`;
-    ctx.fillStyle = textStyle.color || "#FFFFFF";
-    ctx.textAlign = textStyle.textAlign || "center";
-    ctx.textBaseline = "middle";
-
+    const fontSize = textStyle.fontSize * stageScale;
+    ctx.font = getTextFont({ ...textStyle, fontSize });
+    ctx.letterSpacing = `${(textStyle.letterSpacing || 0) * stageScale}px`;
+    ctx.fillStyle = textStyle.color;
+    ctx.textAlign = textStyle.textAlign;
+    ctx.textBaseline = "alphabetic";
+    const padding = layout.padding * stageScale;
     const textX =
       textStyle.textAlign === "left"
-        ? 0
+        ? padding
         : textStyle.textAlign === "right"
-          ? w
+          ? w - padding
           : w / 2;
+    const lineHeight = layout.lineHeight * stageScale;
+    const metrics = ctx.measureText("Mg");
+    const ascent = metrics.fontBoundingBoxAscent ?? fontSize * 0.8;
+    const descent = metrics.fontBoundingBoxDescent ?? fontSize * 0.2;
+    const textTop = (h - layout.lines.length * lineHeight) / 2;
 
-    // Draw text outline if present
-    if (textStyle.outlineWidth) {
-      ctx.strokeStyle = textStyle.outlineColor || "#000000";
-      ctx.lineWidth = textStyle.outlineWidth * stageScale;
-      ctx.strokeText(textStyle.text || "", textX, h / 2);
+    for (const [index, line] of layout.lines.entries()) {
+      const baseline =
+        textTop + index * lineHeight + (lineHeight + ascent - descent) / 2;
+      if (textStyle.outlineWidth) {
+        ctx.strokeStyle = textStyle.outlineColor || "#000000";
+        ctx.lineWidth = textStyle.outlineWidth * stageScale;
+        ctx.lineJoin = "round";
+        ctx.strokeText(line, textX, baseline);
+      }
+      ctx.fillText(line, textX, baseline);
+      if (
+        textStyle.textDecoration === "underline" ||
+        textStyle.textDecoration === "line-through"
+      ) {
+        const lineWidth = ctx.measureText(line).width;
+        const left =
+          textStyle.textAlign === "left"
+            ? textX
+            : textStyle.textAlign === "right"
+              ? textX - lineWidth
+              : textX - lineWidth / 2;
+        const y =
+          textStyle.textDecoration === "underline"
+            ? baseline + fontSize * 0.1
+            : baseline - fontSize * 0.3;
+        ctx.fillRect(left, y, lineWidth, Math.max(stageScale, fontSize / 16));
+      }
     }
-
-    ctx.fillText(textStyle.text || "", textX, h / 2);
   } else if (type === "overlay" && elementStyle) {
     const fillColor = elementStyle.fillColor || "#FF5A36";
     const strokeColor = elementStyle.strokeColor || "transparent";

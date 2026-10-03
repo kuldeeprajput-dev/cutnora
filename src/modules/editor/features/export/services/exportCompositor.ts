@@ -92,6 +92,11 @@ function renderClipOnExportCanvas({
     HTMLVideoElement | HTMLImageElement | HTMLAudioElement
   >;
 }) {
+  // The text renderer applies the clip transform itself.
+  if (clip.type === "text") {
+    renderClipTo2DCanvas(ctx, clip, stageScale);
+    return;
+  }
   ctx.save();
 
   const { transform, adjustments, type, assetId } = clip;
@@ -155,8 +160,8 @@ function renderClipOnExportCanvas({
         ctx.drawImage(mediaEl, 0, 0, w, h);
       }
     }
-  } else if (type === "text" || type === "overlay") {
-    // Render text or SVG element using exportCanvasRenderer
+  } else if (type === "overlay") {
+    // Render SVG element using exportCanvasRenderer
     renderClipTo2DCanvas(ctx, clip, stageScale);
   }
 

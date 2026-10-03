@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { TextPreset } from "./types";
+import { getTextLayout, scaleTextStyle } from "../utils/text-layout";
 
 export function getTextPresetPreviewStyle(
   style: TextPreset["style"],
@@ -40,7 +41,12 @@ export function getTextPresetLayout(
   const { width: baseWidth, height: baseHeight, ...style } = preset.style;
   const scale = Math.min(canvasWidth / 1920, canvasHeight / 1080);
   const width = Math.max(1, Math.round(baseWidth * scale));
-  const height = Math.max(1, Math.round(baseHeight * scale));
+  const scaledStyle = scaleTextStyle(style, scale);
+  const height = Math.max(
+    1,
+    Math.round(baseHeight * scale),
+    getTextLayout(scaledStyle, width).height,
+  );
   const margin = Math.round(Math.min(canvasWidth, canvasHeight) * 0.06);
   const x =
     preset.placement === "lower-left"
@@ -57,31 +63,6 @@ export function getTextPresetLayout(
     height,
     x,
     y,
-    textStyle: {
-      ...style,
-      fontSize: style.fontSize * scale,
-      letterSpacing:
-        style.letterSpacing === undefined
-          ? undefined
-          : style.letterSpacing * scale,
-      bgPadding:
-        style.bgPadding === undefined ? undefined : style.bgPadding * scale,
-      bgRadius:
-        style.bgRadius === undefined ? undefined : style.bgRadius * scale,
-      outlineWidth:
-        style.outlineWidth === undefined
-          ? undefined
-          : style.outlineWidth * scale,
-      shadowBlur:
-        style.shadowBlur === undefined ? undefined : style.shadowBlur * scale,
-      shadowOffsetX:
-        style.shadowOffsetX === undefined
-          ? undefined
-          : style.shadowOffsetX * scale,
-      shadowOffsetY:
-        style.shadowOffsetY === undefined
-          ? undefined
-          : style.shadowOffsetY * scale,
-    },
+    textStyle: scaledStyle,
   };
 }
