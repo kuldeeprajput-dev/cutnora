@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
@@ -18,6 +18,7 @@ export interface DropdownMenuProps {
   className?: string;
   triggerClassName?: string;
   matchTriggerWidth?: boolean;
+  animated?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -28,6 +29,7 @@ export function DropdownMenu({
   className,
   triggerClassName,
   matchTriggerWidth = false,
+  animated = true,
   onOpenChange,
 }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,10 +81,13 @@ export function DropdownMenu({
     setIsOpen((prev) => !prev);
   };
 
+  // Measure before paint so the menu opens directly at its final position.
+  useLayoutEffect(() => {
+    if (isOpen) updateCoords();
+  }, [isOpen, align]);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const rafId = requestAnimationFrame(updateCoords);
 
     const handleClickOutside = (e: MouseEvent | PointerEvent) => {
       const target = e.target as Node;
@@ -109,7 +114,6 @@ export function DropdownMenu({
     window.addEventListener('resize', handleScroll);
 
     return () => {
-      cancelAnimationFrame(rafId);
       document.removeEventListener('pointerdown', handleClickOutside, true);
       document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleKeyDown);
@@ -142,7 +146,8 @@ export function DropdownMenu({
               matchTriggerWidth || className?.includes('min-w-') || className?.includes('w-')
                 ? 'min-w-0'
                 : 'min-w-[160px]',
-              'rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-md p-1.5 text-studio-fg shadow-2xl animate-in fade-in-80 zoom-in-95 duration-150',
+              'rounded-xl border border-studio-border bg-studio-panel/95 backdrop-blur-md p-1.5 text-studio-fg shadow-2xl',
+              animated && 'animate-in fade-in-80 zoom-in-95 duration-150',
               className
             )}
           >

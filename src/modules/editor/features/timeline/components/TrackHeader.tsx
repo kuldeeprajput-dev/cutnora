@@ -171,13 +171,11 @@ export function TrackHeader({
       >
         {reorderState === "over" && (
           <div
-            className={cn(
-              "pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-studio-fg shadow-sm",
-              reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
-            )}
-          >
-            <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-studio-fg" />
-          </div>
+            className="pointer-events-none absolute left-0 right-0 z-40 h-0.5 bg-studio-fg shadow-sm"
+            style={{
+              top: reorderDropPosition === "before" ? 0 : trackHeight - 2,
+            }}
+          />
         )}
 
         {/* Left: Drag Handle & Track Type Icon / Name */}
@@ -299,6 +297,7 @@ export function TrackHeader({
             )}
 
             <DropdownMenu
+              animated={false}
               trigger={
                 <IconButton
                   label="Track options"

@@ -45,13 +45,11 @@ export function TrackLane({
     >
       {reorderState === "over" && (
         <div
-          className={cn(
-            "pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-studio-fg shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_rgba(255,255,255,0.8)]",
-            reorderDropPosition === "before" ? "-top-px" : "-bottom-px",
-          )}
-        >
-          <span className="absolute -left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-studio-fg" />
-        </div>
+          className="pointer-events-none absolute left-0 right-0 z-[60] h-0.5 bg-studio-fg shadow-sm"
+          style={{
+            top: reorderDropPosition === "before" ? 0 : trackHeight - 2,
+          }}
+        />
       )}
       {track.clips.map((clip) => (
         <TimelineClipItem

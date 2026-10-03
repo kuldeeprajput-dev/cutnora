@@ -28,7 +28,7 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  type SortingStrategy,
 } from "@dnd-kit/sortable";
 import {
   FileVideo,
@@ -50,6 +50,8 @@ import {
 } from "../utils/timeline-zoom-utils";
 
 const NEW_TRACK_DROP_THRESHOLD = 10;
+// Keep headers aligned with their lanes until the reorder is committed.
+const stationaryTrackSortingStrategy: SortingStrategy = () => null;
 
 interface ClipDragPreview extends Partial<ClipDragAppearance> {
   clipId: string;
@@ -115,6 +117,9 @@ function renderDragClipIcon(clipType: TimelineClip["type"]) {
 
 export function TimelineEditor() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const clipDragCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => clipDragCleanupRef.current?.(), []);
   const {
     currentProject,
     moveClip,
@@ -345,6 +350,7 @@ export function TimelineEditor() {
 
   const rulerContainerRef = useRef<HTMLDivElement>(null);
   const trackHeadersContainerRef = useRef<HTMLDivElement>(null);
+  const syncedHeadersScrollTopRef = useRef(0);
 
   useEffect(() => {
     const restoredScrollLeft = useEditorUIStore.getState().scrollLeft;
@@ -369,13 +375,18 @@ export function TimelineEditor() {
     }
     if (trackHeadersContainerRef.current) {
       trackHeadersContainerRef.current.scrollTop = newScrollTop;
+      syncedHeadersScrollTopRef.current =
+        trackHeadersContainerRef.current.scrollTop;
     }
   };
 
-  const handleHeadersWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop += e.deltaY;
-    }
+  const handleHeadersScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const newScrollTop = e.currentTarget.scrollTop;
+    // Ignore scroll events caused by syncing from the lanes, including clamping.
+    if (newScrollTop === syncedHeadersScrollTopRef.current) return;
+    syncedHeadersScrollTopRef.current = newScrollTop;
+    if (scrollContainerRef.current)
+      scrollContainerRef.current.scrollTop = newScrollTop;
   };
 
   // Auto-scroll playhead into view during playback
@@ -399,6 +410,7 @@ export function TimelineEditor() {
     e: React.PointerEvent,
     appearance?: ClipDragAppearance,
   ) => {
+    clipDragCleanupRef.current?.();
     const startX = e.clientX;
     const startY = e.clientY;
     const initialScrollLeft = scrollContainerRef.current?.scrollLeft ?? 0;
@@ -410,6 +422,8 @@ export function TimelineEditor() {
     const previousCursor = document.body.style.cursor;
     const previousUserSelect = document.body.style.userSelect;
     let latestMovePreview: ClipDragPreview | null = null;
+    let latestPointer: PointerEvent | null = null;
+    let autoScrollFrame: number | null = null;
 
     if (mode === "move") {
       document.body.style.cursor = "grabbing";
@@ -417,20 +431,14 @@ export function TimelineEditor() {
     }
 
     const handlePointerMove = (moveEv: PointerEvent) => {
+      if (moveEv.pointerId !== e.pointerId) return;
       moveEv.preventDefault();
+      latestPointer = moveEv;
+      if (mode === "move" && autoScrollFrame === null) {
+        autoScrollFrame = requestAnimationFrame(autoScroll);
+      }
 
       const scroller = scrollContainerRef.current;
-      const scrollerRect = scroller?.getBoundingClientRect();
-      if (mode === "move" && scroller && scrollerRect) {
-        const edge = 36;
-        if (moveEv.clientY > scrollerRect.bottom - edge)
-          scroller.scrollTop += 8;
-        if (moveEv.clientY < scrollerRect.top + edge) scroller.scrollTop -= 8;
-        if (moveEv.clientX > scrollerRect.right - edge)
-          scroller.scrollLeft += 12;
-        if (moveEv.clientX < scrollerRect.left + edge)
-          scroller.scrollLeft -= 12;
-      }
 
       const scrollDeltaX =
         (scroller?.scrollLeft ?? initialScrollLeft) - initialScrollLeft;
@@ -559,12 +567,39 @@ export function TimelineEditor() {
       }
     };
 
-    const handlePointerUp = () => {
+    const autoScroll = () => {
+      const scroller = scrollContainerRef.current;
+      if (scroller && latestPointer) {
+        const rect = scroller.getBoundingClientRect();
+        const edge = 36;
+        const oldTop = scroller.scrollTop;
+        const oldLeft = scroller.scrollLeft;
+        if (latestPointer.clientY > rect.top + scroller.clientHeight - edge) {
+          scroller.scrollTop += 8;
+        } else if (latestPointer.clientY < rect.top + edge) {
+          scroller.scrollTop -= 8;
+        }
+        if (latestPointer.clientX > rect.left + scroller.clientWidth - edge) {
+          scroller.scrollLeft += 12;
+        } else if (latestPointer.clientX < rect.left + edge) {
+          scroller.scrollLeft -= 12;
+        }
+        if (oldTop !== scroller.scrollTop || oldLeft !== scroller.scrollLeft) {
+          handlePointerMove(latestPointer);
+        }
+      }
+      autoScrollFrame = requestAnimationFrame(autoScroll);
+    };
+
+    const finishDrag = (commit: boolean) => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
-      window.removeEventListener("pointercancel", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerCancel);
+      window.removeEventListener("blur", handleBlur);
+      if (autoScrollFrame !== null) cancelAnimationFrame(autoScrollFrame);
+      clipDragCleanupRef.current = null;
 
-      if (mode === "move" && latestMovePreview?.valid) {
+      if (commit && mode === "move" && latestMovePreview?.valid) {
         if (latestMovePreview.createTrack) {
           moveClipToNewTrack(
             clip.id,
@@ -592,9 +627,19 @@ export function TimelineEditor() {
       setActiveSnapLine(null);
     };
 
+    const handlePointerUp = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finishDrag(true);
+    };
+    const handlePointerCancel = (event: PointerEvent) => {
+      if (event.pointerId === e.pointerId) finishDrag(false);
+    };
+    const handleBlur = () => finishDrag(false);
+    clipDragCleanupRef.current = handleBlur;
+
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointercancel", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerCancel);
+    window.addEventListener("blur", handleBlur);
   };
 
   // Compute dynamic scrubber line height: only extend down to the lowest track that has intersecting media
@@ -669,7 +714,7 @@ export function TimelineEditor() {
         {/* Left Column: Track Headers (Vertical scroll synced with main container) */}
         <div
           ref={trackHeadersContainerRef}
-          onWheel={handleHeadersWheel}
+          onScroll={handleHeadersScroll}
           onPointerDown={(e) => {
             if (e.button === 0 && e.target === trackHeadersContainerRef.current) {
               clearSelection();
@@ -677,13 +722,17 @@ export function TimelineEditor() {
           }}
           style={{ width: `${trackHeaderWidth}px` }}
           className={cn(
-            "shrink-0 bg-transparent border-r border-studio-border z-10 flex flex-col overflow-hidden",
+            "shrink-0 bg-transparent border-r border-studio-border z-10 flex flex-col overflow-x-hidden overflow-y-auto no-scrollbar",
             !showTrackHeaders && "hidden",
           )}
         >
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            autoScroll={{
+              canScroll: (element) =>
+                element === trackHeadersContainerRef.current,
+            }}
             onDragStart={handleTrackDragStart}
             onDragOver={handleTrackDragOver}
             onDragEnd={handleDragEnd}
@@ -691,7 +740,7 @@ export function TimelineEditor() {
           >
             <SortableContext
               items={tracks.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
+              strategy={stationaryTrackSortingStrategy}
             >
               {tracks.map((track) => {
                 const reorderState =
@@ -756,7 +805,7 @@ export function TimelineEditor() {
                 document.body,
               )}
           </DndContext>
-          {clipDragPreview?.createTrack && (
+          {clipDragPreview && (
             <div
               style={{ height: trackHeight }}
               className="flex shrink-0 items-center gap-2 border-y border-dashed border-studio-border-strong bg-studio-hover/50 px-3 text-studio-fg"
@@ -880,15 +929,20 @@ export function TimelineEditor() {
                 );
               })}
 
-              {clipDragPreview?.createTrack && (
+              {clipDragPreview && (
                 <div
                   style={{
                     height: trackHeight,
                     minWidth: totalWidthPx > 0 ? totalWidthPx : undefined,
                   }}
-                  aria-hidden="true"
-                  className="relative w-full border-y border-dashed border-studio-border-strong bg-studio-hover/50 shadow-[inset_0_0_18px_rgba(255,255,255,0.02)]"
-                />
+                  className={cn(
+                    "relative flex w-full items-center justify-center gap-2 border-y border-dashed border-studio-border-strong text-[11px] text-studio-muted",
+                    clipDragPreview.createTrack && "bg-studio-hover/50 text-studio-fg",
+                  )}
+                >
+                  <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+                  Drop here to create a track
+                </div>
               )}
 
               {clipDragPreview && (
