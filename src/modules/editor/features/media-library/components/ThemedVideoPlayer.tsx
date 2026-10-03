@@ -33,6 +33,9 @@ function formatMediaTime(seconds: number) {
 export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressRef = useRef<HTMLInputElement>(null);
+  const displayedSecondRef = useRef(-1);
+  const scrubbingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -45,6 +48,22 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
   const [showRateMenu, setShowRateMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
+
+  const syncProgress = useCallback(() => {
+    const video = videoRef.current;
+    const slider = progressRef.current;
+    if (!video || !slider) return;
+    const time = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+    const length = Number.isFinite(video.duration) ? video.duration : 0;
+    const progress = length > 0 ? Math.min(100, Math.max(0, time / length * 100)) : 0;
+    slider.value = String(time);
+    slider.style.setProperty("--media-progress", `${progress}%`);
+    const second = Math.floor(time);
+    if (displayedSecondRef.current !== second) {
+      displayedSecondRef.current = second;
+      setCurrentTime(time);
+    }
+  }, []);
 
   const resetHideTimer = useCallback(() => {
     if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
@@ -83,11 +102,22 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
     setIsBuffering(true);
     setHasError(false);
     setCurrentTime(0);
+    setDuration(0);
+    displayedSecondRef.current = -1;
+    scrubbingRef.current = false;
+    if (progressRef.current) {
+      progressRef.current.value = "0";
+      progressRef.current.style.setProperty("--media-progress", "0%");
+    }
 
-    const onLoadedMetadata = () => { setDuration(video.duration || 0); setIsBuffering(false); };
-    const onTimeUpdate = () => setCurrentTime(video.currentTime);
+    const onLoadedMetadata = () => {
+      setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+      setIsBuffering(false);
+      syncProgress();
+    };
+    const onTimeUpdate = () => { if (!scrubbingRef.current) syncProgress(); };
     const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPause = () => { setIsPlaying(false); syncProgress(); };
     const onVolumeChange = () => { setVolume(video.volume); setIsMuted(video.muted); };
     const onWaiting = () => setIsBuffering(true);
     const onCanPlay = () => setIsBuffering(false);
@@ -98,6 +128,9 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
       ["timeupdate", onTimeUpdate],
       ["play", onPlay],
       ["pause", onPause],
+      ["ended", onPause],
+      ["seeked", onTimeUpdate],
+      ["durationchange", onLoadedMetadata],
       ["volumechange", onVolumeChange],
       ["waiting", onWaiting],
       ["canplay", onCanPlay],
@@ -108,15 +141,38 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
     return () => {
       events.forEach(([evt, handler]) => video.removeEventListener(evt, handler));
     };
-  }, [src]);
+  }, [src, syncProgress]);
+
+  useEffect(() => {
+    if (!isPlaying || isBuffering || hasError) return;
+    let frameId: number;
+    const tick = () => {
+      if (!scrubbingRef.current) syncProgress();
+      frameId = window.requestAnimationFrame(tick);
+    };
+    frameId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isPlaying, isBuffering, hasError, src, syncProgress]);
+
+  useEffect(() => {
+    const finishScrubbing = () => {
+      if (!scrubbingRef.current) return;
+      scrubbingRef.current = false;
+      syncProgress();
+    };
+    window.addEventListener("pointerup", finishScrubbing);
+    window.addEventListener("pointercancel", finishScrubbing);
+    return () => {
+      window.removeEventListener("pointerup", finishScrubbing);
+      window.removeEventListener("pointercancel", finishScrubbing);
+    };
+  }, [syncProgress]);
 
   useEffect(() => {
     const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
-
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <div
@@ -175,19 +231,22 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
         )}
       >
         <input
+          ref={progressRef}
+          aria-label="Seek video"
           type="range"
           min={0}
           max={duration || 0}
-          step={0.1}
-          value={currentTime}
+          step="any"
+          defaultValue={0}
+          onPointerDown={() => { scrubbingRef.current = true; }}
           onChange={(e) => {
             if (videoRef.current) {
               videoRef.current.currentTime = Number(e.target.value);
-              setCurrentTime(videoRef.current.currentTime);
+              syncProgress();
             }
           }}
           className="mb-2 h-1 w-full cursor-pointer appearance-none rounded-full accent-white"
-          style={{ background: `linear-gradient(to right, #ffffff ${progress}%, rgba(255,255,255,0.25) ${progress}%)` }}
+          style={{ background: "linear-gradient(to right, #ffffff var(--media-progress, 0%), rgba(255,255,255,0.25) var(--media-progress, 0%))" }}
         />
         <div className="flex items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">

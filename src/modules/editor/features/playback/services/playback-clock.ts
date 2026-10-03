@@ -8,6 +8,26 @@ class PlaybackClock {
   private lastPublishedAt: number = 0;
   private publishInterval: number = 0;
 
+  public getCurrentTime(): number {
+    const store = usePlaybackStore.getState();
+    const time = this.animFrameId !== null && store.isPlaying
+      ? this.startPlayhead + (performance.now() - this.startPerfTime) / 1000 * store.playbackRate
+      : store.playhead;
+    return Math.max(0, Math.min(store.duration, time));
+  }
+
+  public seek(time: number): void {
+    usePlaybackStore.getState().setPlayhead(time);
+    this.startPlayhead = usePlaybackStore.getState().playhead;
+    this.startPerfTime = performance.now();
+  }
+
+  public setPlaybackRate(rate: number): void {
+    const time = this.getCurrentTime();
+    usePlaybackStore.getState().setPlaybackRate(rate);
+    this.seek(time);
+  }
+
   public start(): void {
     if (this.animFrameId !== null) return;
 

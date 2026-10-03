@@ -56,6 +56,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
   }
 
   const handleClipPointerDown = (clip: TimelineClip, track: Track, e: React.PointerEvent) => {
+    if (isFullscreenActive) return;
     if (track.locked) return; // Locked tracks cannot be selected from stage
     e.stopPropagation();
     if (window.matchMedia('(max-width: 1023px)').matches) {
@@ -66,6 +67,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
   };
 
   const handleContextMenu = (clip: TimelineClip, track: Track, e: React.MouseEvent) => {
+    if (isFullscreenActive) return;
     e.preventDefault();
     e.stopPropagation();
     setSelectedClipIds([clip.id]);
@@ -167,7 +169,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
   ] : [];
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div inert={isFullscreenActive} className={`relative h-full w-full overflow-hidden ${isFullscreenActive ? 'pointer-events-none' : ''}`}>
       {activeClipsWithTrack.map(({ clip, track }) => {
         const isSelected = selectedClipIds.includes(clip.id);
         const { transform } = clip;
@@ -233,7 +235,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
         );
       })}
 
-      {contextMenu && (
+      {contextMenu && !isFullscreenActive && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}

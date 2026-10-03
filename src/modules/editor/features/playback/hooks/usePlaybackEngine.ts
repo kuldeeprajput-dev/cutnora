@@ -4,7 +4,9 @@ import { playbackClock } from '../services/playback-clock';
 import { audioEngine } from '../services/audio-engine';
 
 export function usePlaybackEngine() {
-  const { isPlaying, setIsPlaying, setWasTabHiddenPaused } = usePlaybackStore();
+  const isPlaying = usePlaybackStore((state) => state.isPlaying);
+  const setIsPlaying = usePlaybackStore((state) => state.setIsPlaying);
+  const setWasTabHiddenPaused = usePlaybackStore((state) => state.setWasTabHiddenPaused);
 
   // Sync playback clock loop with isPlaying
   useEffect(() => {

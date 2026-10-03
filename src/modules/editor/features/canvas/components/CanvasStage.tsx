@@ -9,7 +9,7 @@ import { CanvasRenderer } from './CanvasRenderer';
 import { calculateFitScale, type Point } from '../utils/stage-math';
 import type { TimelineClip } from '@/modules/editor/types';
 import { clampTextScale, defaultTextStyle, scaleTextStyle } from '@/modules/editor/features/text/utils/text-layout';
-import { Play, Pause, Minimize2 } from 'lucide-react';
+import { FullscreenPlaybackControls } from './FullscreenPlaybackControls';
 
 const MOBILE_CANVAS_QUERY = '(max-width: 1023px)';
 const MOBILE_PINCH_START_EVENT = 'cutnora:mobile-pinch-start';
@@ -25,12 +25,6 @@ function getPointerMidpoint(first: Point, second: Point): Point {
   };
 }
 
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-}
-
 export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProject = useProjectStore((state) => state.currentProject);
@@ -42,12 +36,6 @@ export function CanvasStage() {
   const resetViewCount = useEditorUIStore((state) => state.resetViewCount);
   const isFullscreen = useEditorUIStore((state) => state.isFullscreen);
   const setIsFullscreen = useEditorUIStore((state) => state.setIsFullscreen);
-
-  const playhead = usePlaybackStore((state) => state.playhead);
-  const setPlayhead = usePlaybackStore((state) => state.setPlayhead);
-  const duration = usePlaybackStore((state) => state.duration);
-  const isPlaying = usePlaybackStore((state) => state.isPlaying);
-  const togglePlay = usePlaybackStore((state) => state.togglePlay);
 
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ width: 800, height: 450 });
@@ -154,6 +142,7 @@ export function CanvasStage() {
   // Listen for Space key for pan tool shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.getElementById('stage-fullscreen-container')?.dataset.fullscreen === 'true') return;
       if (e.code === 'Space' && !e.repeat && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         setIsSpacePressed(true);
       }
@@ -187,7 +176,7 @@ export function CanvasStage() {
       height: Math.max(
         100,
         isFullscreenActive
-          ? (mobileViewportHeight ?? window.innerHeight) - (mobileViewportHeight ? 112 : 80)
+          ? (mobileViewportHeight ?? window.innerHeight)
           : containerSize.height - 12,
       ),
     },
@@ -211,6 +200,11 @@ export function CanvasStage() {
   const stageDisplayHeight = projectSettings.height * stageScale;
 
   const handleStageContainerClick = (e: React.MouseEvent) => {
+    if (isFullscreenActive) {
+      document.getElementById('stage-fullscreen-container')?.focus({ preventScroll: true });
+      usePlaybackStore.getState().togglePlay();
+      return;
+    }
     if (suppressStageClickRef.current) {
       suppressStageClickRef.current = false;
       e.preventDefault();
@@ -249,6 +243,7 @@ export function CanvasStage() {
   };
 
   const handlePointerDownCapture = (e: React.PointerEvent) => {
+    if (isFullscreenActive) return;
     if (e.pointerType !== 'touch' || !window.matchMedia(MOBILE_CANVAS_QUERY).matches) return;
 
     touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -288,6 +283,7 @@ export function CanvasStage() {
   };
 
   const handlePointerMoveCapture = (e: React.PointerEvent) => {
+    if (isFullscreenActive) return;
     if (e.pointerType !== 'touch' || !touchPointersRef.current.has(e.pointerId)) return;
 
     touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -356,6 +352,7 @@ export function CanvasStage() {
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (isFullscreenActive) return;
     const canMobilePan =
       window.matchMedia(MOBILE_CANVAS_QUERY).matches && zoomMode !== 'fit';
     if (isSpacePressed || activeTool === 'hand' || canMobilePan) {
@@ -367,6 +364,7 @@ export function CanvasStage() {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (isFullscreenActive) return;
     if (isPanning) {
       const nextPan = {
         x: e.clientX - panStartRef.current.x,
@@ -400,37 +398,26 @@ export function CanvasStage() {
   };
 
 
-  const handleFullscreenPlayback = () => {
-    const stageVideos = document.querySelectorAll<HTMLVideoElement>(
-      "#stage-canvas-box video",
-    );
-    stageVideos.forEach((video) => {
-      if (isPlaying) {
-        video.pause();
-      } else {
-        void video.play().catch(() => {});
-      }
-    });
-    togglePlay();
-  };
-
-  const handleExitFullscreen = () => {
+  const handleExitFullscreen = useCallback(() => {
     if (document.fullscreenElement?.id === 'stage-fullscreen-container') {
       document.exitFullscreen().catch(() => {});
     }
     setIsFullscreen(false);
     setIsNativeFullscreen(false);
-  };
+  }, [setIsFullscreen]);
 
   return (
     <div
       id="stage-fullscreen-container"
+      data-fullscreen={isFullscreenActive}
+      tabIndex={-1}
+      aria-label={isFullscreenActive ? "Project preview" : undefined}
       style={
         isFullscreenActive && mobileViewportHeight
           ? { height: mobileViewportHeight }
           : undefined
       }
-      className={`flex w-full flex-col bg-canvas-bg text-studio-fg select-none ${
+      className={`flex w-full flex-col bg-canvas-bg text-studio-fg select-none outline-none ${
         isFullscreenActive
           ? 'fixed inset-x-0 top-0 z-50 h-dvh max-h-[100dvh] min-h-0 w-screen bg-black justify-center items-center lg:inset-0 lg:h-screen lg:max-h-none'
           : 'h-full relative'
@@ -449,8 +436,8 @@ export function CanvasStage() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative flex flex-1 items-center justify-center overflow-hidden p-1 w-full h-full touch-none lg:p-1.5 lg:touch-auto ${
-          isSpacePressed || activeTool === 'hand'
+        className={`relative flex flex-1 items-center justify-center overflow-hidden w-full h-full touch-none lg:touch-auto ${isFullscreenActive ? 'p-0' : 'p-1 lg:p-1.5'} ${
+          !isFullscreenActive && (isSpacePressed || activeTool === 'hand')
             ? isPanning
               ? 'cursor-grabbing'
               : 'cursor-grab'
@@ -482,68 +469,14 @@ export function CanvasStage() {
               projectSettings.backgroundColor === 'transparent' ? '16px 16px' : undefined,
             transform: isFullscreenActive ? 'none' : `translate(${pan.x}px, ${pan.y}px)`,
           }}
-          className="relative overflow-hidden rounded-sm border border-white/10 shadow-[0_18px_55px_rgba(0,0,0,0.55)] ring-1 ring-black/40 transition-none lg:transition-transform lg:duration-75"
+          className={`relative shrink-0 overflow-hidden ${isFullscreenActive ? '' : 'rounded-sm border border-white/10 shadow-[0_18px_55px_rgba(0,0,0,0.55)] ring-1 ring-black/40 transition-none lg:transition-transform lg:duration-75'}`}
         >
           {/* Active Visual Layers */}
           <CanvasRenderer stageScale={stageScale} isFullscreenActive={isFullscreenActive} />
         </div>
       </div>
 
-      {/* Fullscreen Player Bottom Controls Overlay (Image 1 & Image 2) */}
-      {isFullscreenActive && (
-        <div className="absolute inset-x-0 bottom-0 z-50 flex shrink-0 flex-col bg-gradient-to-t from-black/95 via-black/70 to-transparent px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-6 transition-opacity duration-300 [@media(max-height:600px)]:pt-4 lg:px-6 lg:pb-4 lg:pt-8">
-          {/* Progress Scrub Line */}
-          <div className="relative mb-1 flex h-10 w-full items-center cursor-pointer lg:mb-3 lg:h-auto lg:group">
-            <input
-              type="range"
-              min={0}
-              max={duration || 10}
-              step={0.01}
-              value={playhead}
-              onInput={(e) => {
-                if (window.matchMedia(MOBILE_CANVAS_QUERY).matches) {
-                  setPlayhead(parseFloat(e.currentTarget.value));
-                }
-              }}
-              onChange={(e) => setPlayhead(parseFloat(e.target.value))}
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerMove={(e) => e.stopPropagation()}
-              className="h-10 w-full touch-none cursor-pointer accent-brand lg:h-1 lg:appearance-none lg:rounded-lg lg:bg-white/20 lg:transition-all lg:hover:h-1.5"
-            />
-          </div>
-
-          {/* Overlay Controls Row */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center text-xs text-white select-none lg:flex lg:justify-between">
-            {/* Left: Timecode */}
-            <div className="font-mono text-xs opacity-90">
-              {formatTime(playhead)} / {formatTime(duration)}
-            </div>
-
-            {/* Center: Play / Pause Button */}
-            <button
-              type="button"
-              onClick={handleFullscreenPlayback}
-              className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-black hover:bg-zinc-200 transition-all cursor-pointer shadow-md active:scale-95"
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5 fill-black text-black" />
-              ) : (
-                <Play className="h-5 w-5 fill-black text-black ml-0.5" />
-              )}
-            </button>
-
-            {/* Right: Exit Fullscreen Button with Minimize2 Icon (Image 2) */}
-            <button
-              type="button"
-              onClick={handleExitFullscreen}
-              className="justify-self-end p-2 rounded-md hover:bg-white/10 text-white/90 hover:text-white transition-colors cursor-pointer lg:justify-self-auto"
-              title="Exit Fullscreen"
-            >
-              <Minimize2 className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      )}
+      {isFullscreenActive && <FullscreenPlaybackControls onExit={handleExitFullscreen} />}
     </div>
   );
 }

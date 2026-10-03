@@ -6,6 +6,7 @@ interface PlaybackState {
   isPlaying: boolean;
   isLooping: boolean;
   playbackRate: number;
+  previewMuted: boolean;
   fps: number;
   duration: number;
   wasTabHiddenPaused: boolean;
@@ -18,6 +19,7 @@ interface PlaybackState {
   setIsLooping: (isLooping: boolean) => void;
   toggleLooping: () => void;
   setPlaybackRate: (rate: number) => void;
+  setPreviewMuted: (muted: boolean) => void;
   setFps: (fps: number) => void;
   setDuration: (duration: number) => void;
   setWasTabHiddenPaused: (paused: boolean) => void;
@@ -29,6 +31,7 @@ export const usePlaybackStore = create<PlaybackState>()(
     isPlaying: false,
     isLooping: false,
     playbackRate: 1,
+    previewMuted: false,
     fps: 30,
     duration: 0,
     wasTabHiddenPaused: false,
@@ -125,6 +128,11 @@ export const usePlaybackStore = create<PlaybackState>()(
     setPlaybackRate: (rate) =>
       set((state) => {
         state.playbackRate = Math.min(4, Math.max(0.25, rate));
+      }),
+
+    setPreviewMuted: (muted) =>
+      set((state) => {
+        state.previewMuted = muted;
       }),
 
     setFps: (fps) =>

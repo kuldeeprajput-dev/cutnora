@@ -4,6 +4,8 @@ import { COMMAND_REGISTRY } from './command-registry';
 export function useKeyboardShortcuts(onOpenHelpModal?: () => void) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Fullscreen preview owns playback keys and must not run editing commands.
+      if (document.getElementById('stage-fullscreen-container')?.dataset.fullscreen === 'true') return;
       // 1. Skip shortcuts when user is typing in interactive form elements
       const target = e.target as HTMLElement | null;
       if (target) {

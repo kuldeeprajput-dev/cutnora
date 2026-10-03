@@ -25,6 +25,7 @@ import {
   Layers,
   Check,
   Minus,
+  Gauge,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -35,6 +36,7 @@ import {
   MAX_TRACK_HEIGHT,
 } from "@/modules/editor/store/useEditorUIStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { playbackClock } from "@/modules/editor/features/playback/services/playback-clock";
 import { useProjectStore } from "@/modules/projects";
 import { IconButton } from "@/shared/components/ui/IconButton";
 import { Button } from "@/shared/components/ui/Button";
@@ -61,6 +63,10 @@ const STAGE_ZOOM_OPTIONS: Array<{ label: string; value: "fit" | number }> = [
   { label: "150%", value: 150 },
   { label: "200%", value: 200 },
 ];
+
+const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const TRANSPORT_BUTTON_CLASS =
+  "rounded-lg text-studio-muted hover:text-studio-fg hover:bg-studio-hover active:bg-studio-hover active:scale-95 transition-[color,background-color,transform] duration-150";
 
 function truncateFileName(name: string, maxLength = 22): string {
   if (!name || name.length <= maxLength) return name;
@@ -108,6 +114,7 @@ export function TimelineToolbar({
     fps,
     isPlaying,
     isLooping,
+    playbackRate,
     togglePlay,
     toggleLooping,
     stepForward,
@@ -407,6 +414,7 @@ export function TimelineToolbar({
         <div className="flex items-center shrink-0 w-[78px]">
           <DropdownMenu
             align="left"
+            animated={false}
             className="w-28 p-1"
             trigger={(isOpen) => (
               <button
@@ -423,7 +431,7 @@ export function TimelineToolbar({
                 </span>
                 <ChevronDown
                   className={cn(
-                    "h-3 w-3 text-studio-muted transition-transform duration-150 shrink-0",
+                    "h-3 w-3 text-studio-muted shrink-0",
                     isOpen && "rotate-180 text-studio-fg"
                   )}
                 />
@@ -457,22 +465,24 @@ export function TimelineToolbar({
         <div className="flex items-center gap-1">
           <IconButton
             label="Step backward 1 frame"
+            showTooltip={false}
             size="sm"
             variant="ghost"
             onClick={stepBackward}
-            showTooltip={false}
-            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised"
+            shortcut="ArrowLeft"
+            className={TRANSPORT_BUTTON_CLASS}
           >
             <SkipBack className="h-3.5 w-3.5" />
           </IconButton>
 
           <IconButton
             label={isPlaying ? "Pause" : "Play"}
+            showTooltip={false}
             size="sm"
             variant="ghost"
             onClick={togglePlay}
-            showTooltip={false}
-            className="cursor-pointer rounded-md bg-studio-fg text-studio-bg hover:opacity-90 active:scale-95 transition-all shadow-xs flex items-center justify-center"
+            shortcut="Space"
+            className="rounded-lg border border-studio-fg/10 bg-studio-fg text-studio-bg shadow-sm hover:bg-studio-fg hover:text-studio-bg hover:opacity-90 hover:shadow-md active:scale-95 transition-[opacity,box-shadow,transform] duration-150"
           >
             {isPlaying ? (
               <Pause className="h-3.5 w-3.5 fill-current text-current" />
@@ -483,26 +493,26 @@ export function TimelineToolbar({
 
           <IconButton
             label="Step forward 1 frame"
+            showTooltip={false}
             size="sm"
             variant="ghost"
             onClick={stepForward}
-            showTooltip={false}
-            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised"
+            shortcut="ArrowRight"
+            className={TRANSPORT_BUTTON_CLASS}
           >
             <SkipForward className="h-3.5 w-3.5" />
           </IconButton>
 
           <IconButton
             label={isLooping ? "Disable loop" : "Enable loop"}
+            showTooltip={false}
             size="sm"
             variant="ghost"
             onClick={toggleLooping}
-            showTooltip={false}
+            aria-pressed={isLooping}
             className={cn(
-              "cursor-pointer transition-colors hover:bg-studio-panel-raised",
-              isLooping
-                ? "text-studio-fg"
-                : "text-studio-muted hover:text-studio-fg",
+              TRANSPORT_BUTTON_CLASS,
+              "active:bg-transparent active:scale-100",
             )}
           >
             {isLooping ? (
@@ -511,6 +521,47 @@ export function TimelineToolbar({
               <Repeat className="h-3.5 w-3.5" />
             )}
           </IconButton>
+
+          <DropdownMenu
+            align="left"
+            animated={false}
+            className="w-36"
+            trigger={(isOpen) => (
+              <button
+                type="button"
+                aria-label={`Playback speed: ${playbackRate}x`}
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                className={cn(
+                  "ml-1 flex h-8 items-center gap-1.5 rounded-lg px-2 text-[11px] font-medium tabular-nums text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/40 transition-colors cursor-pointer",
+                  isOpen && "bg-studio-hover text-studio-fg",
+                )}
+              >
+                <Gauge className="h-3.5 w-3.5" />
+                <span>{playbackRate}x</span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            )}
+          >
+            <div className="px-2.5 py-1.5 text-[10px] font-medium text-studio-muted">
+              Playback speed
+            </div>
+            {PLAYBACK_RATES.map((rate) => (
+              <DropdownMenuItem
+                key={rate}
+                role="menuitemradio"
+                aria-checked={playbackRate === rate}
+                onClick={() => playbackClock.setPlaybackRate(rate)}
+                className={cn(
+                  "justify-between tabular-nums",
+                  playbackRate === rate && "bg-studio-hover",
+                )}
+              >
+                <span>{rate}x{rate === 1 ? " · Normal" : ""}</span>
+                {playbackRate === rate && <Check className="h-3.5 w-3.5" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenu>
 
           <span className="ml-1.5 font-mono text-[11px] font-semibold text-studio-fg whitespace-nowrap select-none">
             {formatTimecode(playhead, fps, false)}{" "}
@@ -521,21 +572,23 @@ export function TimelineToolbar({
           </span>
 
           <IconButton
-            label={isVideoFullscreen ? "Exit video fullscreen" : "Full screen video"}
+            aria-pressed={isVideoFullscreen}
+            label={isVideoFullscreen ? "Exit preview fullscreen" : "Full screen preview"}
             size="sm"
             variant="ghost"
-            showTooltip={true}
+            showTooltip={false}
             onClick={() => {
               const stage = document.getElementById("stage-fullscreen-container");
-              if (document.fullscreenElement === stage) {
-                document.exitFullscreen().catch(() => {});
+              if (!stage) return;
+              if (isVideoFullscreen || document.fullscreenElement === stage) {
+                if (document.fullscreenElement === stage) void document.exitFullscreen().catch(() => {});
                 useEditorUIStore.getState().setIsFullscreen(false);
               } else {
-                stage?.requestFullscreen().catch(() => {});
+                void stage.requestFullscreen?.().catch(() => {});
                 useEditorUIStore.getState().setIsFullscreen(true);
               }
             }}
-            className="cursor-pointer text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised ml-0.5"
+            className={cn(TRANSPORT_BUTTON_CLASS, "ml-0.5")}
           >
             {isVideoFullscreen ? (
               <Minimize2 className="h-3.5 w-3.5" />

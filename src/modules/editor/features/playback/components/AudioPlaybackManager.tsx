@@ -18,6 +18,8 @@ function AudioClipPlayer({ clip, track }: AudioClipPlayerProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const playhead = usePlaybackStore((state) => state.playhead);
   const isPlaying = usePlaybackStore((state) => state.isPlaying);
+  const playbackRate = usePlaybackStore((state) => state.playbackRate);
+  const previewMuted = usePlaybackStore((state) => state.previewMuted);
 
   // Refs to track transitions and avoid frame-by-frame seeks
   const wasPlayingRef = useRef(false);
@@ -52,10 +54,10 @@ function AudioClipPlayer({ clip, track }: AudioClipPlayerProps) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const speed = Math.max(0.25, Math.min(4, clip.speed || 1));
+    const speed = Math.max(0.0625, Math.min(16, (clip.speed || 1) * playbackRate));
     const isTrackMuted = track.muted || track.hidden;
     const isClipMuted = clip.audio?.muted ?? false;
-    const isMuted = isTrackMuted || isClipMuted;
+    const isMuted = previewMuted || isTrackMuted || isClipMuted;
     const volume = Math.max(0, Math.min(1, clip.audio?.volume ?? 1));
 
     if (audio.playbackRate !== speed) {
@@ -67,7 +69,7 @@ function AudioClipPlayer({ clip, track }: AudioClipPlayerProps) {
     if (audio.volume !== (isMuted ? 0 : volume)) {
       audio.volume = isMuted ? 0 : volume;
     }
-  }, [clip.speed, clip.audio?.muted, clip.audio?.volume, track.muted, track.hidden]);
+  }, [audioUrl, playbackRate, previewMuted, clip.speed, clip.audio?.muted, clip.audio?.volume, track.muted, track.hidden]);
 
   // Playhead & Play/Pause state synchronization
   useEffect(() => {

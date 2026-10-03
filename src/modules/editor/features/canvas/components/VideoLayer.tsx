@@ -17,7 +17,7 @@ export function VideoLayer({ clip, trackMuted = false }: VideoLayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [posterUrl, setPosterUrl] = useState<string | null>(null);
-  const { playhead, isPlaying } = usePlaybackStore();
+  const { playhead, isPlaying, playbackRate, previewMuted } = usePlaybackStore();
   const asset = useLiveQuery(
     () => (clip.assetId ? db.assets.get(clip.assetId) : undefined),
     [clip.assetId],
@@ -66,8 +66,8 @@ export function VideoLayer({ clip, trackMuted = false }: VideoLayerProps) {
     if (!video || !videoUrl) return;
 
     const speed = clip.speed || 1;
-    const isMuted = trackMuted || clip.audio?.muted;
-    video.playbackRate = speed;
+    const isMuted = previewMuted || trackMuted || clip.audio?.muted;
+    video.playbackRate = Math.max(0.0625, Math.min(16, speed * playbackRate));
     video.muted = isMuted;
     video.volume = isMuted ? 0 : (clip.audio?.volume ?? 1);
 
@@ -116,6 +116,8 @@ export function VideoLayer({ clip, trackMuted = false }: VideoLayerProps) {
   }, [
     playhead,
     isPlaying,
+    playbackRate,
+    previewMuted,
     videoUrl,
     clip.speed,
     clip.audio?.muted,
@@ -163,7 +165,7 @@ export function VideoLayer({ clip, trackMuted = false }: VideoLayerProps) {
       poster={posterUrl ?? undefined}
       preload="metadata"
       controls={false}
-      muted={trackMuted || clip.audio?.muted}
+      muted={previewMuted || trackMuted || clip.audio?.muted}
       playsInline
       className="h-full w-full pointer-events-none"
       style={{

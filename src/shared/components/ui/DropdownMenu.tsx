@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useRef, useEffect, useEffectEvent, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
@@ -37,19 +37,25 @@ export function DropdownMenu({
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    onOpenChange?.(isOpen);
-  }, [isOpen, onOpenChange]);
+  const notifyOpenChange = useEffectEvent((open: boolean) => {
+    onOpenChange?.(open);
+  });
 
-  const timelineHeight = useEditorUIStore((state) => state.timelineHeight);
-  const leftPanelWidth = useEditorUIStore((state) => state.leftPanelWidth);
+  useEffect(() => {
+    notifyOpenChange(isOpen);
+  }, [isOpen]);
 
   const close = () => setIsOpen(false);
 
-  // Automatically close dropdown when adjusting bottom bar height or sidebar width
+  // Subscribe only while open; mounting or unrelated store updates must not close it.
   useEffect(() => {
-    setIsOpen(false);
-  }, [timelineHeight, leftPanelWidth]);
+    if (!isOpen) return;
+    return useEditorUIStore.subscribe((state, previous) => {
+      if (state.timelineHeight !== previous.timelineHeight || state.leftPanelWidth !== previous.leftPanelWidth) {
+        setIsOpen(false);
+      }
+    });
+  }, [isOpen]);
 
   const updateCoords = useCallback(() => {
     if (triggerRef.current) {
@@ -63,11 +69,12 @@ export function DropdownMenu({
       let top = openUpwards ? rect.top - menuHeight - 4 : rect.bottom + 4;
       top = Math.max(10, Math.min(top, viewportHeight - menuHeight - 10));
 
-      setCoords({
-        top,
-        left: align === 'right' ? rect.right : rect.left,
-        width: rect.width,
-      });
+      const left = align === 'right' ? rect.right : rect.left;
+      setCoords((previous) =>
+        previous.top === top && previous.left === left && previous.width === rect.width
+          ? previous
+          : { top, left, width: rect.width }
+      );
     }
   }, [align]);
 
