@@ -8,6 +8,7 @@ import { historyManager } from '@/modules/editor/store/useHistoryStore';
 import { CanvasRenderer } from './CanvasRenderer';
 import { calculateFitScale, type Point } from '../utils/stage-math';
 import type { TimelineClip } from '@/modules/editor/types';
+import { clampTextScale, defaultTextStyle, scaleTextStyle } from '@/modules/editor/features/text/utils/text-layout';
 import { Play, Pause, Minimize2 } from 'lucide-react';
 
 const MOBILE_CANVAS_QUERY = '(max-width: 1023px)';
@@ -62,6 +63,7 @@ export function CanvasStage() {
   const pendingPinchRef = useRef<{
     clipId: string;
     transform: TimelineClip['transform'];
+    textStyle?: TimelineClip['textStyle'];
   } | null>(null);
   const suppressStageClickRef = useRef(false);
   const pinchGestureRef = useRef({
@@ -70,6 +72,7 @@ export function CanvasStage() {
     startDistance: 1,
     startMidpoint: { x: 0, y: 0 },
     startTransform: null as TimelineClip['transform'] | null,
+    startTextStyle: undefined as TimelineClip['textStyle'],
     historyCaptured: false,
   });
 
@@ -239,6 +242,7 @@ export function CanvasStage() {
         const clip = track.clips.find((item) => item.id === pending.clipId);
         if (!clip) continue;
         clip.transform = pending.transform;
+        if (pending.textStyle) clip.textStyle = pending.textStyle;
         break;
       }
     });
@@ -266,6 +270,9 @@ export function CanvasStage() {
       startDistance: Math.max(1, getPointerDistance(first, second)),
       startMidpoint,
       startTransform: { ...selectedClip.transform },
+      startTextStyle: selectedClip.type === 'text'
+        ? { ...defaultTextStyle, text: selectedClip.name || 'Sample Text', ...selectedClip.textStyle }
+        : undefined,
       historyCaptured: false,
     };
     suppressStageClickRef.current = true;
@@ -289,9 +296,11 @@ export function CanvasStage() {
 
     const [first, second] = Array.from(touchPointersRef.current.values());
     const distanceRatio = getPointerDistance(first, second) / gesture.startDistance;
-    const mediaScale = Math.min(8, Math.max(0.1, distanceRatio));
+    let mediaScale = Math.min(8, Math.max(0.1, distanceRatio));
     const midpoint = getPointerMidpoint(first, second);
     const startTransform = gesture.startTransform;
+    if (gesture.startTextStyle)
+      mediaScale = clampTextScale(gesture.startTextStyle, startTransform.width, startTransform.height, mediaScale);
     const nextWidth = Math.max(20, startTransform.width * mediaScale);
     const nextHeight = Math.max(20, startTransform.height * mediaScale);
     const centerX =
@@ -305,6 +314,7 @@ export function CanvasStage() {
 
     pendingPinchRef.current = {
       clipId: gesture.clipId,
+      ...(gesture.startTextStyle ? { textStyle: scaleTextStyle(gesture.startTextStyle, mediaScale) } : {}),
       transform: {
         ...startTransform,
         x: centerX - nextWidth / 2,

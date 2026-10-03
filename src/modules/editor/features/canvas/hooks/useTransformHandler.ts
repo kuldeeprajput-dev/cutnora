@@ -4,6 +4,12 @@ import { autosaveService, useProjectStore } from "@/modules/projects";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { historyManager } from "@/modules/editor/store/useHistoryStore";
 import { calculateSnapping } from "../utils/snapping-utils";
+import {
+  clampTextScale,
+  defaultTextStyle,
+  getTextLayout,
+  scaleTextStyle,
+} from "@/modules/editor/features/text/utils/text-layout";
 
 export type TransformMode =
   | "translate"
@@ -58,8 +64,8 @@ export function useTransformHandler(
   const rotationGestureRef = useRef({
     centerX: 0,
     centerY: 0,
-    startAngle: 0,
-    startRotation: 0,
+    lastAngle: 0,
+    rotation: 0,
   });
 
   const flushMobileUpdate = () => {
@@ -107,14 +113,19 @@ export function useTransformHandler(
     mode: TransformMode,
     e: React.PointerEvent,
   ) => {
+    if (activeClipRef.current || e.button !== 0) return;
+    if (mode !== "translate") e.preventDefault();
     e.stopPropagation();
+    const pointerId = e.pointerId;
     activeClipRef.current = clip;
     modeRef.current = mode;
     startPointerRef.current = { x: e.clientX, y: e.clientY };
     startTransformRef.current = { ...clip.transform };
     startTextStyleRef.current = clip.textStyle
       ? { ...clip.textStyle }
-      : undefined;
+      : clip.type === "text"
+        ? { ...defaultTextStyle, text: clip.name || "Sample Text" }
+        : undefined;
     isMobileGestureRef.current = window.matchMedia(
       "(max-width: 1023px)",
     ).matches;
@@ -138,8 +149,8 @@ export function useTransformHandler(
       rotationGestureRef.current = {
         centerX,
         centerY,
-        startAngle: Math.atan2(e.clientY - centerY, e.clientX - centerX),
-        startRotation: clip.transform.rotation,
+        lastAngle: Math.atan2(e.clientY - centerY, e.clientX - centerX),
+        rotation: clip.transform.rotation,
       };
     }
 
@@ -153,7 +164,7 @@ export function useTransformHandler(
     setIsDragging(true);
 
     const handlePointerMove = (moveEv: PointerEvent) => {
-      if (!activeClipRef.current) return;
+      if (!activeClipRef.current || moveEv.pointerId !== pointerId) return;
 
       const deltaScreenX = moveEv.clientX - startPointerRef.current.x;
       const deltaScreenY = moveEv.clientY - startPointerRef.current.y;
@@ -177,6 +188,7 @@ export function useTransformHandler(
       let newW = startT.width;
       let newH = startT.height;
       let newRotation = startT.rotation;
+      let updatedTextStyle = activeClipRef.current.textStyle;
 
       if (mode === "translate") {
         const rawX = startT.x + deltaProjectX;
@@ -208,21 +220,38 @@ export function useTransformHandler(
         newX = snapResult.x;
         newY = snapResult.y;
       } else if (mode === "rotate") {
-        // Both mobile and desktop: use angular delta from start angle to current angle
-        const { centerX, centerY, startAngle, startRotation } =
-          rotationGestureRef.current;
+        const gesture = rotationGestureRef.current;
+        const { centerX, centerY } = gesture;
         const currentAngle = Math.atan2(
           moveEv.clientY - centerY,
           moveEv.clientX - centerX,
         );
-        const angleDelta = (currentAngle - startAngle) * (180 / Math.PI);
-        newRotation = Math.round(startRotation + angleDelta);
+        // Unwrap each angular step so crossing +/-180 degrees never jumps.
+        const delta = currentAngle - gesture.lastAngle;
+        gesture.rotation +=
+          Math.atan2(Math.sin(delta), Math.cos(delta)) * (180 / Math.PI);
+        gesture.lastAngle = currentAngle;
+        newRotation = moveEv.shiftKey
+          ? Math.round(gesture.rotation / 15) * 15
+          : Math.round(gesture.rotation);
       } else if (mode.startsWith("resize-")) {
         const resizeDirection = mode.slice("resize-".length);
         const resizeFromEast = resizeDirection.includes("e");
         const resizeFromWest = resizeDirection.includes("w");
         const resizeFromNorth = resizeDirection.includes("n");
         const resizeFromSouth = resizeDirection.includes("s");
+        const isCorner =
+          (resizeFromEast || resizeFromWest) &&
+          (resizeFromNorth || resizeFromSouth);
+        const isElementResize =
+          activeClipRef.current.type === "overlay" ||
+          (activeClipRef.current.type === "image" &&
+            currentProject?.tracks.some(
+              (track) => track.id === activeClipRef.current?.trackId && track.type === "overlay",
+            ));
+        const startTextStyle = startTextStyleRef.current;
+        const isTextResize =
+          activeClipRef.current.type === "text" && startTextStyle;
         const preserveMediaRatio =
           (activeClipRef.current.type === "image" ||
             activeClipRef.current.type === "video") &&
@@ -233,7 +262,58 @@ export function useTransformHandler(
           startT.fitMode !== "cover" &&
           startT.fitMode !== "fill";
 
-        if (preserveMediaRatio) {
+        if (isTextResize) {
+          if (isCorner) {
+            const dx = localDeltaProjectX * (resizeFromWest ? -1 : 1);
+            const dy = localDeltaProjectY * (resizeFromNorth ? -1 : 1);
+            const requestedScale =
+              1 +
+              (dx * startT.width + dy * startT.height) /
+                (startT.width ** 2 + startT.height ** 2);
+            const scale = clampTextScale(
+              startTextStyle,
+              startT.width,
+              startT.height,
+              requestedScale,
+            );
+            newW = startT.width * scale;
+            newH = startT.height * scale;
+            updatedTextStyle = scaleTextStyle(startTextStyle, scale);
+          } else {
+            newW = Math.max(
+              20,
+              startT.width +
+                (resizeFromWest
+                  ? -localDeltaProjectX
+                  : resizeFromEast
+                    ? localDeltaProjectX
+                    : 0),
+            );
+            const requiredHeight = getTextLayout(startTextStyle, newW).height;
+            newH =
+              resizeFromNorth || resizeFromSouth
+                ? Math.max(
+                    requiredHeight,
+                    startT.height +
+                      (resizeFromNorth
+                        ? -localDeltaProjectY
+                        : localDeltaProjectY),
+                  )
+                : requiredHeight;
+            updatedTextStyle = startTextStyle;
+          }
+        } else if (isElementResize && isCorner) {
+          const dx = localDeltaProjectX * (resizeFromWest ? -1 : 1);
+          const dy = localDeltaProjectY * (resizeFromNorth ? -1 : 1);
+          const scale = Math.max(
+            20 / Math.max(1, startT.width),
+            20 / Math.max(1, startT.height),
+            1 + (dx * startT.width + dy * startT.height) /
+              Math.max(1, startT.width ** 2 + startT.height ** 2),
+          );
+          newW = startT.width * scale;
+          newH = startT.height * scale;
+        } else if (preserveMediaRatio) {
           const hasHorizontalEdge = resizeFromEast || resizeFromWest;
           const hasVerticalEdge = resizeFromNorth || resizeFromSouth;
           const candidateW = resizeFromEast
@@ -320,23 +400,6 @@ export function useTransformHandler(
         newY = startCenterY + worldCenterShiftY - newH / 2;
       }
 
-      // If text clip, scale font size proportionally with width change
-      let updatedTextStyle = activeClipRef.current.textStyle;
-      if (activeClipRef.current.type === "text" && mode.startsWith("resize-")) {
-        const startFontSize = startTextStyleRef.current?.fontSize || 48;
-        const scaleFactor = newW / (startT.width || 1);
-        const newFontSize = Math.max(
-          10,
-          Math.min(400, Math.round(startFontSize * scaleFactor)),
-        );
-        if (updatedTextStyle) {
-          updatedTextStyle = {
-            ...updatedTextStyle,
-            fontSize: newFontSize,
-          };
-        }
-      }
-
       const updates: Partial<TimelineClip> = {
         transform: {
           ...startT,
@@ -372,7 +435,8 @@ export function useTransformHandler(
       };
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (event?: PointerEvent) => {
+      if (event && event.pointerId !== pointerId) return;
       if (isMobileGestureRef.current && pendingMobileUpdateRef.current) {
         if (mobileFrameRef.current !== null) {
           window.cancelAnimationFrame(mobileFrameRef.current);

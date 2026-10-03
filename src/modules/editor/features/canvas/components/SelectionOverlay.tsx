@@ -9,6 +9,9 @@ import { getVisibleMediaBounds } from "../utils/media-bounds";
 import { getRotatedResizeCursor } from "../utils/resize-cursor";
 import { RotateCw } from "lucide-react";
 
+const isCornerHandle = (mode: TransformMode) =>
+  ["resize-nw", "resize-ne", "resize-sw", "resize-se"].includes(mode);
+
 export interface SelectionOverlayProps {
   clip: TimelineClip;
   stageScale: number;
@@ -18,6 +21,9 @@ export interface SelectionOverlayProps {
     e: React.PointerEvent,
   ) => void;
   isDragging?: boolean;
+  isSticker?: boolean;
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
 export function SelectionOverlay({
@@ -25,8 +31,15 @@ export function SelectionOverlay({
   stageScale,
   onStartTransform,
   isDragging = false,
+  isSticker = false,
+  canvasWidth,
+  canvasHeight,
 }: SelectionOverlayProps) {
   const isMediaClip = clip.type === "image" || clip.type === "video";
+  const isTextClip = clip.type === "text";
+  const isElementClip = clip.type === "overlay" || isSticker;
+  const compactControls = isTextClip || isSticker;
+  const mediaControls = isMediaClip && !isSticker;
   const asset = useLiveQuery(
     () =>
       isMediaClip && clip.assetId ? db.assets.get(clip.assetId) : undefined,
@@ -41,6 +54,30 @@ export function SelectionOverlay({
     sourceHeight: isMediaClip ? asset?.height : undefined,
     fitMode: isMediaClip ? clip.transform.fitMode : "fill",
   });
+  const prefersRotationOutside =
+    !isMediaClip ||
+    isSticker ||
+    visibleBounds.width * stageScale < 160 ||
+    visibleBounds.height * stageScale < 100;
+  // Check the rotated control in canvas coordinates, including its touch area.
+  // Full-height selections keep rotation inside so the stage cannot clip it.
+  const controlRadius = (compactControls ? 22 : 20) / (stageScale || 1);
+  const controlDistance = visibleBounds.height / 2 +
+    (compactControls ? 26 : 44) / (stageScale || 1);
+  const radians = (clip.transform.rotation * Math.PI) / 180;
+  const controlX =
+    clip.transform.x + visibleBounds.x + visibleBounds.width / 2 +
+    Math.sin(radians) * controlDistance;
+  const controlY =
+    clip.transform.y + visibleBounds.y + visibleBounds.height / 2 -
+    Math.cos(radians) * controlDistance;
+  const rotationOutside =
+    prefersRotationOutside &&
+    visibleBounds.height < canvasHeight - 1 &&
+    controlX - controlRadius >= 0 &&
+    controlX + controlRadius <= canvasWidth &&
+    controlY - controlRadius >= 0 &&
+    controlY + controlRadius <= canvasHeight;
 
   // Resize from the visible media rectangle rather than its letterboxed wrapper.
   // Its center is unchanged, so this also removes old gaps without a visual jump.
@@ -103,6 +140,9 @@ export function SelectionOverlay({
       className: "top-1/2 -left-1.5 -translate-y-1/2",
     },
   ];
+  const resizeHandles = isSticker
+    ? handles.filter((handle) => isCornerHandle(handle.mode))
+    : handles;
 
   // Avoid briefly drawing the old full-box selection while IndexedDB resolves.
   if (isMediaClip && clip.assetId && asset === null) return null;
@@ -110,7 +150,7 @@ export function SelectionOverlay({
   return (
     <div
       id={`overlay-${clip.id}`}
-      className="absolute pointer-events-none border-[1.5px] border-white shadow-[0_0_0_1px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.35)] z-30 select-none"
+      className={`absolute pointer-events-none z-30 select-none ${compactControls ? "border border-white/80 shadow-[0_0_0_1px_rgba(0,0,0,0.25)]" : mediaControls ? "border-[1.5px] border-white/95 shadow-[0_0_0_1px_rgba(0,0,0,0.3)]" : "border-[1.5px] border-white shadow-[0_0_0_1px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.35)]"}`}
       style={{
         left: visibleBounds.x * stageScale,
         top: visibleBounds.y * stageScale,
@@ -119,32 +159,59 @@ export function SelectionOverlay({
       }}
     >
       {/* Center Dot Indicator during drag */}
-      {isDragging && (
+      {isDragging && !compactControls && (
         <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black/80 bg-white shadow-lg z-40" />
       )}
 
-      {/* Rotation Handle - Positioned below top selection line */}
+      {/* Keep rotation outside when it fits, and inside at the canvas edges. */}
       <div
         onPointerDown={(e) => onStartTransform(clip, "rotate", e)}
-        className="pointer-events-auto absolute left-1/2 top-2 z-40 flex h-10 w-10 -translate-x-1/2 touch-none items-center justify-center rounded-full border border-studio-border bg-studio-panel-raised/95 text-studio-fg shadow-xl backdrop-blur-md transition-all active:scale-95 active:cursor-grabbing hover:bg-studio-hover hover:border-studio-border-strong hover:scale-110 lg:top-3 lg:h-6.5 lg:w-6.5 lg:cursor-grab lg:border-studio-border lg:bg-studio-panel-raised/95"
-        title="Drag to rotate"
-        aria-label="Rotate selected media"
+        className={`pointer-events-auto absolute left-1/2 ${rotationOutside ? compactControls ? "-top-12 lg:-top-10" : "-top-16 lg:-top-12" : "top-2 lg:top-3"} z-50 flex -translate-x-1/2 touch-none cursor-grab items-center justify-center rounded-full text-studio-fg active:cursor-grabbing ${compactControls ? "group/rotate h-11 w-11 lg:h-8 lg:w-8" : "h-10 w-10 border border-studio-border bg-studio-panel-raised/95 shadow-xl backdrop-blur-md transition-colors hover:bg-studio-hover hover:border-studio-border-strong lg:h-6.5 lg:w-6.5"}`}
+        title="Drag to rotate. Hold Shift to snap."
+        aria-label={
+          isTextClip
+            ? "Rotate selected text"
+            : isElementClip
+              ? "Rotate selected element"
+              : "Rotate selected media"
+        }
       >
-        <RotateCw className="h-4.5 w-4.5 text-studio-fg lg:h-3.5 lg:w-3.5" />
+        <span className={compactControls ? "pointer-events-none flex h-5.5 w-5.5 items-center justify-center rounded-full border border-studio-bg/15 bg-studio-fg text-studio-bg shadow-[0_2px_5px_rgba(0,0,0,0.2)] transition-colors group-hover/rotate:bg-studio-fg/90" : "contents"}>
+          <RotateCw
+            style={{ transform: `rotate(${-clip.transform.rotation}deg)` }}
+            strokeWidth={2}
+            className={compactControls ? "h-3.5 w-3.5" : "h-4.5 w-4.5 lg:h-3.5 lg:w-3.5"}
+          />
+        </span>
       </div>
 
-      {/* 8 Resize Handles */}
-      {handles.map((h) => (
+      {/* Stickers scale from corners; text and shapes also expose box edges. */}
+      {resizeHandles.map((h) => (
         <div
           key={h.mode}
+          title={
+            isTextClip
+              ? isCornerHandle(h.mode)
+                ? "Scale text"
+                : "Resize text box"
+              : isSticker
+                ? "Scale sticker"
+                : isElementClip
+                  ? "Resize element"
+                  : "Resize media"
+          }
           onPointerDown={(e) =>
             onStartTransform(clipForResize(h.mode), h.mode, e)
           }
           style={{
             cursor: getRotatedResizeCursor(h.mode, clip.transform.rotation),
           }}
-          className={`pointer-events-auto absolute hidden h-3 w-3 lg:block rounded-full border-2 border-black/90 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.6)] z-40 hover:scale-125 hover:border-black transition-transform ${h.className}`}
-        />
+          className={`pointer-events-auto absolute ${isTextClip || isElementClip ? `${compactControls ? "flex" : "block"} touch-none before:absolute before:-inset-4 before:content-[''] lg:before:hidden` : "hidden lg:block"} h-3 w-3 z-40 ${compactControls ? "rounded-full items-center justify-center" : mediaControls ? `${isCornerHandle(h.mode) ? "rounded-[4px]" : "rounded-full"} border-[1.5px] border-black/65 bg-white shadow-[0_2px_5px_rgba(0,0,0,0.28)] ring-1 ring-white/20 transition-transform duration-150 hover:scale-110 hover:border-black/85` : "rounded-full border-2 border-black/90 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.6)] hover:scale-125 hover:border-black transition-transform"} ${h.className}`}
+        >
+          {compactControls && (
+            <span className={`pointer-events-none rounded-full border border-black/60 bg-white shadow-sm ${isCornerHandle(h.mode) ? "h-1.5 w-1.5" : "h-1 w-1"}`} />
+          )}
+        </div>
       ))}
     </div>
   );
