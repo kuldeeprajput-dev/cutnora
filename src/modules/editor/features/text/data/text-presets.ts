@@ -2,6 +2,8 @@ import type { TextPreset } from "./types";
 import { basicPresets } from "./presets/basic";
 import { captionPresets } from "./presets/captions";
 import { labelPresets } from "./presets/labels";
+import { creativePresets } from "./presets/creative";
+import { effectPresets } from "./presets/effects";
 
 export type {
   TextPreset,
@@ -17,4 +19,6 @@ export const textPresets: TextPreset[] = [
   ...basicPresets,
   ...captionPresets,
   ...labelPresets,
+  ...creativePresets,
+  ...effectPresets,
 ];
