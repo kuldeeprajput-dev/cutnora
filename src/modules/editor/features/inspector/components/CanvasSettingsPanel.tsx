@@ -245,12 +245,12 @@ export function CanvasSettingsPanel() {
     settings.backgroundColor.toLowerCase() !== "#000"
   );
 
-  if (!settings) return null;
-
-  const matchedPreset = SOCIAL_PRESETS.find(
-    (preset) =>
-      preset.width === settings.width && preset.height === settings.height,
-  );
+  const matchedPreset = settings
+    ? SOCIAL_PRESETS.find(
+        (preset) =>
+          preset.width === settings.width && preset.height === settings.height,
+      )
+    : undefined;
   const activePreset =
     SOCIAL_PRESETS.find((preset) => preset.id === presetId) ?? matchedPreset;
 
@@ -270,6 +270,7 @@ export function CanvasSettingsPanel() {
   };
 
   const commitDimension = (key: "width" | "height") => {
+    if (!settings) return;
     const raw = dimensionDraft[key].trim();
     const parsed = Number.parseInt(raw, 10);
 
@@ -324,6 +325,7 @@ export function CanvasSettingsPanel() {
   };
 
   const handleApplyResolutionScale = (baseW: number, baseH: number) => {
+    if (!settings) return;
     const isPortrait = settings.height > settings.width;
     const nextW = isPortrait ? Math.min(baseW, baseH) : Math.max(baseW, baseH);
     const nextH = isPortrait ? Math.max(baseW, baseH) : Math.min(baseW, baseH);
@@ -335,6 +337,7 @@ export function CanvasSettingsPanel() {
   };
 
   const handleSwapOrientation = () => {
+    if (!settings) return;
     const newW = settings.height;
     const newH = settings.width;
     const swappedRatio =
@@ -398,7 +401,9 @@ export function CanvasSettingsPanel() {
       return matchedQuality.label.split(" ")[0];
     }
     return "Custom";
-  }, [settings?.width, settings?.height, customResolutionOpen]);
+  }, [settings, customResolutionOpen]);
+
+  if (!settings) return null;
 
   return (
     <div className="flex flex-col gap-3 text-studio-fg pb-3 select-none">

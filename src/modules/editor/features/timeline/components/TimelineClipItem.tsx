@@ -163,7 +163,7 @@ export function TimelineClipItem({
     return () => {
       isMounted = false;
     };
-  }, [clip.assetId]);
+  }, [clip.assetId, clip.type]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (track.locked) return;

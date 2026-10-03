@@ -43,16 +43,17 @@ export function ProjectsSubheader({
     <div className="sticky top-16 z-10 flex items-center justify-between px-2 sm:px-6 h-14 pt-2 bg-background max-w-full shrink-0">
       <div className="flex items-center gap-2">
         {/* Select all label & checkbox */}
-        <label
-          className="text-xs text-muted-foreground font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-3 cursor-pointer px-2"
-          htmlFor="select-all-projects"
+        <div
+          className="text-xs text-muted-foreground font-medium leading-none flex items-center gap-3 cursor-pointer px-2"
+          onClick={onToggleSelectAll}
         >
           <button
             type="button"
             role="checkbox"
             aria-checked={
-              isAllSelected ? "true" : selectedCount > 0 ? "mixed" : "false"
+              isAllSelected ? true : selectedCount > 0 ? "mixed" : false
             }
+            aria-label={isAllSelected ? "Deselect all projects" : "Select all projects"}
             data-state={
               isAllSelected
                 ? "checked"
@@ -61,7 +62,10 @@ export function ProjectsSubheader({
                 : "unchecked"
             }
             value="on"
-            onClick={onToggleSelectAll}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelectAll();
+            }}
             className="cursor-pointer bg-background peer focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary shrink-0 shadow-xs rounded-sm border border-border focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 size-5 flex items-center justify-center"
             id="select-all-projects"
           >
@@ -75,10 +79,10 @@ export function ProjectsSubheader({
               </span>
             )}
           </button>
-          <span className="text-muted-foreground hidden md:block">
+          <span className="text-muted-foreground hidden md:block select-none">
             {selectedCount > 0 ? `${selectedCount} Selected` : "Select all"}
           </span>
-        </label>
+        </div>
 
         <div className="h-4 w-px bg-border/50"></div>
 
@@ -135,17 +139,28 @@ export function ProjectsSubheader({
           </button>
         </div>
 
-        {/* Mobile Batch Delete Button */}
+        {/* Mobile Batch Actions */}
         {selectedCount > 0 && (
-          <button
-            className="flex sm:hidden items-center cursor-pointer justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-border bg-background hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 rounded-sm size-8 text-foreground transition-colors"
-            type="button"
-            aria-label="Delete selected projects"
-            title="Delete selected"
-            onClick={onBatchDelete}
-          >
-            <Trash2 className="size-4" />
-          </button>
+          <div className="flex sm:hidden items-center gap-1.5">
+            <button
+              className="inline-flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring border border-border bg-background hover:bg-accent rounded-sm size-8 text-foreground transition-colors"
+              type="button"
+              aria-label="Duplicate selected projects"
+              title="Duplicate selected"
+              onClick={onBatchDuplicate}
+            >
+              <Copy className="size-3.5" />
+            </button>
+            <button
+              className="flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring border border-border bg-background hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 rounded-sm size-8 text-foreground transition-colors"
+              type="button"
+              aria-label="Delete selected projects"
+              title="Delete selected"
+              onClick={onBatchDelete}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          </div>
         )}
       </div>
     </div>

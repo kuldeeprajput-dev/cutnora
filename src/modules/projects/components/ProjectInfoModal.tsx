@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Copy, Check } from "lucide-react";
 import type { Project } from "../types";
 import {
@@ -17,6 +17,15 @@ export interface ProjectInfoModalProps {
 export function ProjectInfoModal({ project, onClose }: ProjectInfoModalProps) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!project) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [project, onClose]);
+
   if (!project) return null;
 
   const handleCopyId = () => {
@@ -32,12 +41,15 @@ export function ProjectInfoModal({ project, onClose }: ProjectInfoModalProps) {
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="info-modal-title"
         className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Project Name - No cross icon in the top right */}
         <div className="pb-3 border-b border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight break-words">
+          <h3 id="info-modal-title" className="text-base sm:text-lg font-semibold text-foreground tracking-tight break-words">
             {project.name || "Untitled project"}
           </h3>
         </div>

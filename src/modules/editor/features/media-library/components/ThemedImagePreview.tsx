@@ -20,8 +20,6 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
-  const positionRef = useRef({ x: 0, y: 0 });
-  positionRef.current = position;
 
   // Reset zoom & pan when image src changes
   useEffect(() => {
@@ -103,10 +101,10 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
     e.preventDefault();
     setIsDragging(true);
     dragStartRef.current = {
-      x: e.clientX - positionRef.current.x,
-      y: e.clientY - positionRef.current.y,
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
     };
-  }, [scale]);
+  }, [scale, position]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging) return;
@@ -127,10 +125,10 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
     const touch = e.touches[0];
     setIsDragging(true);
     dragStartRef.current = {
-      x: touch.clientX - positionRef.current.x,
-      y: touch.clientY - positionRef.current.y,
+      x: touch.clientX - position.x,
+      y: touch.clientY - position.y,
     };
-  }, [scale]);
+  }, [scale, position]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging || e.touches.length !== 1) return;

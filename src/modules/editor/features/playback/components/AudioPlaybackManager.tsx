@@ -150,9 +150,10 @@ function AudioClipPlayer({ clip, track }: AudioClipPlayerProps) {
 
   // Ensure audio is paused if component unmounts
   useEffect(() => {
+    const audioEl = audioRef.current;
     return () => {
-      if (audioRef.current && !audioRef.current.paused) {
-        audioRef.current.pause();
+      if (audioEl && !audioEl.paused) {
+        audioEl.pause();
       }
     };
   }, []);

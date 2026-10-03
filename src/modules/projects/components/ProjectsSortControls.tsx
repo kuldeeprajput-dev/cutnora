@@ -110,8 +110,8 @@ export function ProjectsSortControls({
                 <button
                   key={option}
                   type="button"
-                  role="menuitem"
-                  aria-selected={isActive}
+                  role="menuitemradio"
+                  aria-checked={isActive}
                   onClick={() => onSelectSort(option)}
                   className={cn(
                     "flex w-full h-8 items-center justify-between rounded-lg px-3 text-sm transition-colors cursor-pointer",

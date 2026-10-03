@@ -21,6 +21,17 @@ export function ViewModeToggle({
 
   return (
     <div
+      role="group"
+      aria-label="View mode"
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          onViewModeChange("grid");
+        } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          onViewModeChange("list");
+        }
+      }}
       className={cn(
         "flex items-center rounded-md border border-border",
         isSm ? "p-0.5 h-8" : "p-1 px-1.5 h-10",

@@ -241,7 +241,9 @@ export function ColorPicker({
   const [pasted, setPasted] = useState(false);
 
   const hsvRef = useRef<HSV>(hsv);
-  hsvRef.current = hsv;
+  useEffect(() => {
+    hsvRef.current = hsv;
+  }, [hsv]);
 
   const isTypingRef = useRef<"hex" | "r" | "g" | "b" | null>(null);
   const isDraggingRef = useRef(false);
@@ -534,7 +536,6 @@ export function ColorPicker({
   const handleEyeDropper = async () => {
     if (typeof window !== "undefined" && "EyeDropper" in window) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dropper = new (window as any).EyeDropper();
         const result = await dropper.open();
         if (result?.sRGBHex) {
@@ -820,7 +821,6 @@ export function ColorPicker({
                 const targetColor = isTransparent ? "transparent" : cleanPreset;
                 if (!isTransparent) {
                   const nextHsv = hexToHsv(cleanPreset);
-                  hsvRef.current = nextHsv;
                   setHsv(nextHsv);
                 }
                 onChange(targetColor);

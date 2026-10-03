@@ -111,6 +111,12 @@ export function ProjectsHeader({
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 aria-label="Search projects"
+                onKeyDown={(e) => {
+                  if (e.key === "Escape" && searchQuery) {
+                    e.stopPropagation();
+                    onSearchChange("");
+                  }
+                }}
               />
               {searchQuery && (
                 <button
@@ -154,6 +160,12 @@ export function ProjectsHeader({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             aria-label="Search projects on mobile"
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && searchQuery) {
+                e.stopPropagation();
+                onSearchChange("");
+              }
+            }}
           />
           {searchQuery && (
             <button

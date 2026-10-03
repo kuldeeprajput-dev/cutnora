@@ -21,6 +21,15 @@ export function RenameModal({
     setInputName(initialName);
   }, [initialName]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,12 +46,15 @@ export function RenameModal({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rename-modal-title"
         className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header without cross icon */}
         <div className="pb-4">
-          <h3 className="text-base font-semibold text-foreground">Rename project</h3>
+          <h3 id="rename-modal-title" className="text-base font-semibold text-foreground">Rename project</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-1">

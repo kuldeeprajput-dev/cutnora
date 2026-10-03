@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, createContext, useContext } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
 import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
@@ -51,9 +51,9 @@ export function DropdownMenu({
     if (isOpen) {
       setIsOpen(false);
     }
-  }, [timelineHeight, leftPanelWidth]);
+  }, [timelineHeight, leftPanelWidth, isOpen]);
 
-  const updateCoords = () => {
+  const updateCoords = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const menuHeight = menuRef.current?.offsetHeight || 130;
@@ -71,7 +71,7 @@ export function DropdownMenu({
         width: rect.width,
       });
     }
-  };
+  }, [align]);
 
   const toggleOpen = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -84,7 +84,7 @@ export function DropdownMenu({
   // Measure before paint so the menu opens directly at its final position.
   useLayoutEffect(() => {
     if (isOpen) updateCoords();
-  }, [isOpen, align]);
+  }, [isOpen, updateCoords]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -120,7 +120,7 @@ export function DropdownMenu({
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [isOpen, align]);
+  }, [isOpen, updateCoords]);
 
   return (
     <DropdownContext.Provider value={{ close }}>

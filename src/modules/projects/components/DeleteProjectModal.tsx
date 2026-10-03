@@ -26,6 +26,15 @@ export function DeleteProjectModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const isBatch = batchCount > 1 || (!project && batchCount > 0);
@@ -52,12 +61,15 @@ export function DeleteProjectModal({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-modal-title"
         className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - matched to RenameModal */}
         <div className="pb-3">
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          <h3 id="delete-modal-title" className="text-base font-semibold text-foreground">{title}</h3>
           <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
             This will permanently delete{" "}
             <span className="font-medium text-foreground">

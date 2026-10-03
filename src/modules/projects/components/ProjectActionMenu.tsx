@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { CheckSquare, Pencil, Copy, Info, Trash2 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
@@ -27,10 +27,37 @@ export function ProjectActionMenu({
   onDelete,
   className,
 }: ProjectActionMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div
+      ref={menuRef}
+      role="menu"
+      aria-label="Project actions"
       className={cn(
         "absolute right-0 z-50 w-44 rounded-2xl border border-border bg-card text-card-foreground p-1.5 shadow-2xl animate-in fade-in-50",
         className || "top-full mt-1.5",
@@ -40,6 +67,7 @@ export function ProjectActionMenu({
       {onSelect && (
         <button
           type="button"
+          role="menuitem"
           onClick={(e) => {
             onClose();
             onSelect(e);
@@ -54,6 +82,7 @@ export function ProjectActionMenu({
       {/* Rename */}
       <button
         type="button"
+        role="menuitem"
         onClick={(e) => {
           onClose();
           onRename(e);
@@ -67,6 +96,7 @@ export function ProjectActionMenu({
       {/* Duplicate */}
       <button
         type="button"
+        role="menuitem"
         onClick={(e) => {
           onClose();
           onDuplicate(e);
@@ -80,6 +110,7 @@ export function ProjectActionMenu({
       {/* Info */}
       <button
         type="button"
+        role="menuitem"
         onClick={(e) => {
           onClose();
           onInfo(e);
@@ -93,6 +124,7 @@ export function ProjectActionMenu({
       {/* Delete */}
       <button
         type="button"
+        role="menuitem"
         onClick={(e) => {
           onClose();
           onDelete(e);
