@@ -64,6 +64,7 @@ function matchesShortcut(e: KeyboardEvent, shortcutStr: string, modKey: boolean)
   if (hasMod && !modKey) return false;
   if (!hasMod && (e.ctrlKey || e.metaKey)) return false;
   if (hasAlt && !e.altKey) return false;
+  if (!hasAlt && e.altKey) return false;
 
   const key = e.key;
 
@@ -95,6 +96,10 @@ function matchesShortcut(e: KeyboardEvent, shortcutStr: string, modKey: boolean)
       return key === 'ArrowLeft';
     case 'ArrowRight':
       return key === 'ArrowRight';
+    case 'ArrowUp':
+      return key === 'ArrowUp';
+    case 'ArrowDown':
+      return key === 'ArrowDown';
     case 'Home':
       return key === 'Home';
     case 'End':
@@ -103,6 +108,10 @@ function matchesShortcut(e: KeyboardEvent, shortcutStr: string, modKey: boolean)
       return key === 'Delete' || key === 'Backspace';
     case 'Escape':
       return key === 'Escape';
+    case '[':
+      return key === '[';
+    case ']':
+      return key === ']';
     case 'Plus':
       return key === '+' || key === '=' || e.code === 'Equal' || e.code === 'NumpadAdd';
     case 'Minus':

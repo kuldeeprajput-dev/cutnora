@@ -11,6 +11,7 @@ import {
   resetClipToOriginal,
   deleteClipsFromTracks,
   duplicateClipsInTracks,
+  nudgeClipsInTracks,
   reorderTrackLanes,
   calculateProjectDuration,
 } from "@/modules/editor/utils/timeline-utils";
@@ -86,6 +87,7 @@ interface ProjectState {
   splitClip: (clipId: string, splitTime: number) => void;
   deleteClips: (clipIds: string[]) => void;
   duplicateClips: (clipIds: string[]) => void;
+  nudgeClips: (clipIds: string[], deltaSeconds: number) => void;
 
   undo: () => void;
   redo: () => void;
@@ -617,6 +619,26 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = duplicateClipsInTracks(
             state.currentProject.tracks,
             clipIds,
+          );
+          syncProjectDuration(state.currentProject);
+        }
+      });
+
+      const updated = get().currentProject;
+      if (updated) autosaveService.scheduleSave(updated);
+    },
+
+    nudgeClips: (clipIds, deltaSeconds) => {
+      const current = get().currentProject;
+      if (!current || clipIds.length === 0 || deltaSeconds === 0) return;
+
+      historyManager.pushState(current);
+      set((state) => {
+        if (state.currentProject) {
+          state.currentProject.tracks = nudgeClipsInTracks(
+            state.currentProject.tracks,
+            clipIds,
+            deltaSeconds,
           );
           syncProjectDuration(state.currentProject);
         }

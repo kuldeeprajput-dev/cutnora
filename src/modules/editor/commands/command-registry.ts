@@ -8,6 +8,10 @@ import {
   getNextTimelineZoom,
   MIN_TIMELINE_ZOOM,
 } from '@/modules/editor/features/timeline/utils/timeline-zoom-utils';
+import {
+  findAdjacentCutPoint,
+  findAdjacentClipId,
+} from '@/modules/editor/utils/timeline-utils';
 
 export type CommandCategory = 'playback' | 'editing' | 'navigation' | 'help';
 
@@ -19,6 +23,34 @@ export interface Command {
   category: CommandCategory;
   isEnabled?: () => boolean;
   execute: () => void;
+}
+
+function stepPlayheadSeconds(delta: number) {
+  const { playhead, setPlayhead } = usePlaybackStore.getState();
+  const duration = useProjectStore.getState().currentProject?.settings.duration || 60;
+  setPlayhead(Math.max(0, Math.min(duration, playhead + delta)));
+}
+
+function jumpToCutPoint(direction: 'prev' | 'next') {
+  const project = useProjectStore.getState().currentProject;
+  if (!project) return;
+  const targetTime = findAdjacentCutPoint(project.tracks, usePlaybackStore.getState().playhead, direction);
+  if (targetTime !== null) usePlaybackStore.getState().setPlayhead(targetTime);
+}
+
+function nudgeSelectedClipsByFrames(frames: number) {
+  const selectedIds = useEditorUIStore.getState().selectedClipIds;
+  if (selectedIds.length === 0) return;
+  const fps = useProjectStore.getState().currentProject?.settings.fps || 30;
+  useProjectStore.getState().nudgeClips(selectedIds, frames / fps);
+}
+
+function cycleClipSelection(direction: 'next' | 'prev') {
+  const project = useProjectStore.getState().currentProject;
+  if (!project) return;
+  const currentSelected = useEditorUIStore.getState().selectedClipIds[0] ?? null;
+  const nextId = findAdjacentClipId(project.tracks, currentSelected, direction);
+  if (nextId) useEditorUIStore.getState().setSelectedClipIds([nextId]);
 }
 
 export const COMMAND_REGISTRY: Command[] = [
@@ -57,6 +89,38 @@ export const COMMAND_REGISTRY: Command[] = [
       const duration = useProjectStore.getState().currentProject?.settings.duration || 60;
       setPlayhead(Math.min(duration, playhead + 1 / fps));
     },
+  },
+  {
+    id: 'playback.step-back-second',
+    label: 'Step 1s Backward',
+    description: 'Move playhead backward by 1 second',
+    shortcut: 'Shift+ArrowLeft',
+    category: 'playback',
+    execute: () => stepPlayheadSeconds(-1),
+  },
+  {
+    id: 'playback.step-forward-second',
+    label: 'Step 1s Forward',
+    description: 'Move playhead forward by 1 second',
+    shortcut: 'Shift+ArrowRight',
+    category: 'playback',
+    execute: () => stepPlayheadSeconds(1),
+  },
+  {
+    id: 'playback.prev-cut',
+    label: 'Previous Cut Point',
+    description: 'Jump playhead to previous clip boundary',
+    shortcut: 'ArrowUp',
+    category: 'playback',
+    execute: () => jumpToCutPoint('prev'),
+  },
+  {
+    id: 'playback.next-cut',
+    label: 'Next Cut Point',
+    description: 'Jump playhead to next clip boundary',
+    shortcut: 'ArrowDown',
+    category: 'playback',
+    execute: () => jumpToCutPoint('next'),
   },
   {
     id: 'playback.start',
@@ -268,6 +332,58 @@ export const COMMAND_REGISTRY: Command[] = [
     execute: () => {
       useEditorUIStore.getState().clearSelection();
     },
+  },
+  {
+    id: 'editing.nudge-left',
+    label: 'Nudge Clip Left (1 Frame)',
+    description: 'Nudge selected clip(s) backward by 1 frame',
+    shortcut: 'Alt+ArrowLeft',
+    category: 'editing',
+    isEnabled: () => useEditorUIStore.getState().selectedClipIds.length > 0,
+    execute: () => nudgeSelectedClipsByFrames(-1),
+  },
+  {
+    id: 'editing.nudge-right',
+    label: 'Nudge Clip Right (1 Frame)',
+    description: 'Nudge selected clip(s) forward by 1 frame',
+    shortcut: 'Alt+ArrowRight',
+    category: 'editing',
+    isEnabled: () => useEditorUIStore.getState().selectedClipIds.length > 0,
+    execute: () => nudgeSelectedClipsByFrames(1),
+  },
+  {
+    id: 'editing.nudge-left-large',
+    label: 'Nudge Clip Left (10 Frames)',
+    description: 'Nudge selected clip(s) backward by 10 frames',
+    shortcut: 'Shift+Alt+ArrowLeft',
+    category: 'editing',
+    isEnabled: () => useEditorUIStore.getState().selectedClipIds.length > 0,
+    execute: () => nudgeSelectedClipsByFrames(-10),
+  },
+  {
+    id: 'editing.nudge-right-large',
+    label: 'Nudge Clip Right (10 Frames)',
+    description: 'Nudge selected clip(s) forward by 10 frames',
+    shortcut: 'Shift+Alt+ArrowRight',
+    category: 'editing',
+    isEnabled: () => useEditorUIStore.getState().selectedClipIds.length > 0,
+    execute: () => nudgeSelectedClipsByFrames(10),
+  },
+  {
+    id: 'editing.select-prev-clip',
+    label: 'Select Previous Clip',
+    description: 'Cycle selection to previous clip on timeline',
+    shortcut: '[',
+    category: 'editing',
+    execute: () => cycleClipSelection('prev'),
+  },
+  {
+    id: 'editing.select-next-clip',
+    label: 'Select Next Clip',
+    description: 'Cycle selection to next clip on timeline',
+    shortcut: ']',
+    category: 'editing',
+    execute: () => cycleClipSelection('next'),
   },
 
   // --- NAVIGATION COMMANDS ---

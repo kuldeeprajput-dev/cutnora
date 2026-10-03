@@ -371,3 +371,99 @@ export function reorderTrackLanes(tracks: Track[], startIndex: number, endIndex:
   result.splice(endIndex, 0, removed);
   return result.map((track, index) => ({ ...track, order: index }));
 }
+
+export function nudgeClipsInTracks(
+  tracks: Track[],
+  clipIds: string[],
+  deltaSeconds: number
+): Track[] {
+  if (clipIds.length === 0 || deltaSeconds === 0) return tracks;
+
+  const targetIds = new Set(clipIds);
+  const targetedClips = tracks.flatMap((t) => t.clips).filter((c) => targetIds.has(c.id));
+  if (targetedClips.length === 0) return tracks;
+
+  const minStart = Math.min(...targetedClips.map((c) => c.timelineStart));
+  const effectiveDelta = minStart + deltaSeconds < 0 ? -minStart : deltaSeconds;
+  if (Math.abs(effectiveDelta) < 0.0001) return tracks;
+
+  return tracks.map((track) => {
+    const hasTarget = track.clips.some((c) => targetIds.has(c.id));
+    if (!hasTarget) return track;
+
+    const unselected = track.clips.filter((c) => !targetIds.has(c.id));
+    const selected = track.clips.filter((c) => targetIds.has(c.id));
+    const sortedSelected = [...selected].sort((a, b) =>
+      effectiveDelta > 0
+        ? b.timelineStart - a.timelineStart
+        : a.timelineStart - b.timelineStart
+    );
+
+    const updatedClips: TimelineClip[] = [...unselected];
+    for (const clip of sortedSelected) {
+      const targetStart = Math.max(0, Number((clip.timelineStart + effectiveDelta).toFixed(3)));
+      const safeStart = preventClipOverlap(
+        updatedClips,
+        clip.id,
+        targetStart,
+        clip.timelineDuration
+      );
+      updatedClips.push({ ...clip, timelineStart: safeStart });
+    }
+
+    return {
+      ...track,
+      clips: updatedClips.sort((a, b) => a.timelineStart - b.timelineStart),
+    };
+  });
+}
+
+export function findAdjacentCutPoint(
+  tracks: Track[],
+  currentTime: number,
+  direction: 'prev' | 'next',
+  threshold = 0.01
+): number | null {
+  const points = new Set<number>([0]);
+  tracks.forEach((track) => {
+    track.clips.forEach((clip) => {
+      points.add(clip.timelineStart);
+      points.add(clip.timelineStart + clip.timelineDuration);
+    });
+  });
+
+  const sortedPoints = Array.from(points).sort((a, b) => a - b);
+  if (direction === 'prev') {
+    const point = [...sortedPoints].reverse().find((p) => p < currentTime - threshold);
+    return point !== undefined ? Number(point.toFixed(3)) : null;
+  }
+  const point = sortedPoints.find((p) => p > currentTime + threshold);
+  return point !== undefined ? Number(point.toFixed(3)) : null;
+}
+
+export function findAdjacentClipId(
+  tracks: Track[],
+  currentSelectedId: string | null,
+  direction: 'next' | 'prev'
+): string | null {
+  const allClips = tracks
+    .flatMap((t) => t.clips)
+    .sort((a, b) => a.timelineStart - b.timelineStart || a.trackId.localeCompare(b.trackId));
+
+  if (allClips.length === 0) return null;
+  if (!currentSelectedId) {
+    return direction === 'next' ? allClips[0].id : allClips[allClips.length - 1].id;
+  }
+
+  const currentIndex = allClips.findIndex((c) => c.id === currentSelectedId);
+  if (currentIndex === -1) {
+    return allClips[0].id;
+  }
+
+  if (direction === 'next') {
+    return allClips[(currentIndex + 1) % allClips.length].id;
+  } else {
+    return allClips[(currentIndex - 1 + allClips.length) % allClips.length].id;
+  }
+}
+
