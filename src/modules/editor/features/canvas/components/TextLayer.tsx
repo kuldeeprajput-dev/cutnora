@@ -1,144 +1,149 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import type { TimelineClip } from '@/modules/editor/types';
-import { useProjectStore } from '@/modules/projects';
-import { AlertTriangle } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import type { TimelineClip } from "@/modules/editor/types";
+import { useProjectStore } from "@/modules/projects";
+import { AlertTriangle } from "lucide-react";
+import {
+  defaultTextStyle,
+  fitTextBox,
+  getTextLayout,
+} from "@/modules/editor/features/text/utils/text-layout";
 
 export interface TextLayerProps {
   clip: TimelineClip;
+  stageScale: number;
 }
 
-export function TextLayer({ clip }: TextLayerProps) {
+export const TextLayer = React.memo(function TextLayer({
+  clip,
+  stageScale,
+}: TextLayerProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [textInput, setTextInput] = useState(clip.textStyle?.text || clip.name || 'Sample Text');
+  const [textInput, setTextInput] = useState("");
+  const editingRef = useRef(false);
+  const [, refreshFonts] = useState(0);
   const { updateClip, currentProject } = useProjectStore();
+  const textStyle = clip.textStyle || {
+    ...defaultTextStyle,
+    text: clip.name || "Sample Text",
+  };
+  const fontKey = `${textStyle.fontStyle || "normal"} ${textStyle.fontWeight} 48px ${textStyle.fontFamily}`;
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  useEffect(() => {
+    if (!document.fonts) return;
+    let active = true;
+    const triggerRefresh = () => { if (active) refreshFonts((v) => v + 1); };
+    document.fonts.load(fontKey).then(triggerRefresh, triggerRefresh);
+    return () => { active = false; };
+  }, [fontKey]);
+
+  const layout = getTextLayout(textStyle, clip.transform.width);
+  const startEditing = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (editingRef.current) return;
+    setTextInput(textStyle.text);
+    editingRef.current = true;
     setIsEditing(true);
   };
-
-  const handleBlur = () => {
+  const finishEditing = (cancel = false) => {
+    if (!editingRef.current) return;
+    editingRef.current = false;
     setIsEditing(false);
-    if (textInput.trim() !== clip.textStyle?.text) {
-      updateClip(clip.id, {
-        textStyle: {
-          fontSize: 48,
-          fontFamily: 'Inter, sans-serif',
-          color: '#FFFFFF',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          ...clip.textStyle,
-          text: textInput,
-        },
-      });
-    }
+    if (cancel || textInput === textStyle.text) return;
+    const updatedStyle = { ...textStyle, text: textInput };
+    updateClip(clip.id, {
+      name: textInput.slice(0, 20) || "Text",
+      textStyle: updatedStyle,
+      transform: fitTextBox(clip.transform, updatedStyle),
+    });
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Escape') {
-      setIsEditing(false);
-      setTextInput(clip.textStyle?.text || clip.name || 'Sample Text');
-    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      handleBlur();
-    }
-  };
-
-  const textStyle = clip.textStyle || {
-    text: clip.name || 'Sample Text',
-    fontSize: 48,
-    fontFamily: 'Inter, sans-serif',
-    color: '#FFFFFF',
-    textAlign: 'center' as const,
-    fontWeight: 'bold' as const,
-  };
-
-  // Check canvas bounds overflow warning
-  const projW = currentProject?.settings.width || 1920;
-  const projH = currentProject?.settings.height || 1080;
+  const projectWidth = currentProject?.settings.width || 1920;
+  const projectHeight = currentProject?.settings.height || 1080;
   const isOverflowing =
-    clip.transform.x < 0 ||
-    clip.transform.y < 0 ||
-    clip.transform.x + clip.transform.width > projW ||
-    clip.transform.y + clip.transform.height > projH;
+    clip.transform.x < 0 || clip.transform.y < 0 ||
+    clip.transform.x + clip.transform.width > projectWidth ||
+    clip.transform.y + clip.transform.height > projectHeight;
+  const hasClippedText = layout.height > clip.transform.height + 1;
 
-  const shadowCss = textStyle.shadowColor
-    ? `${textStyle.shadowOffsetX || 0}px ${textStyle.shadowOffsetY || 0}px ${textStyle.shadowBlur || 0}px ${textStyle.shadowColor}`
-    : undefined;
-
-  const outlineStyle: React.CSSProperties = textStyle.outlineWidth
-    ? {
-        WebkitTextStroke: `${textStyle.outlineWidth}px ${textStyle.outlineColor || '#000000'}`,
-      }
-    : {};
-
-  if (isEditing) {
-    return (
-      <textarea
-        value={textInput}
-        onChange={(e) => setTextInput(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        autoFocus
-        className="h-full w-full bg-transparent p-2 focus:outline-none resize-none leading-normal font-sans"
-        style={{
-          fontSize: `${textStyle.fontSize}px`,
-          fontFamily: textStyle.fontFamily,
-          color: textStyle.color,
-          fontWeight: textStyle.fontWeight,
-          fontStyle: textStyle.fontStyle || 'normal',
-          textDecoration: textStyle.textDecoration,
-          textTransform: textStyle.textTransform,
-          textAlign: textStyle.textAlign,
-          lineHeight: textStyle.lineHeight || 1.2,
-          letterSpacing: textStyle.letterSpacing ? `${textStyle.letterSpacing}px` : undefined,
-          backgroundColor: textStyle.backgroundColor || 'rgba(0,0,0,0.5)',
-          padding: textStyle.bgPadding ? `${textStyle.bgPadding}px` : undefined,
-          borderRadius: textStyle.bgRadius ? `${textStyle.bgRadius}px` : undefined,
-          whiteSpace: 'pre-wrap',
-          ...outlineStyle,
-        }}
-      />
-    );
-  }
+  // Text uses project pixels inside a scaled wrapper, just like its selection.
+  const style: React.CSSProperties = {
+    width: clip.transform.width,
+    height: clip.transform.height,
+    transform: `scale(${stageScale})`,
+    transformOrigin: "top left",
+    fontSize: textStyle.fontSize,
+    fontFamily: textStyle.fontFamily,
+    color: textStyle.color,
+    fontWeight: textStyle.fontWeight,
+    fontStyle: textStyle.fontStyle || "normal",
+    textDecoration: textStyle.textDecoration,
+    textTransform: textStyle.textTransform,
+    textAlign: textStyle.textAlign,
+    lineHeight: textStyle.lineHeight || 1.2,
+    letterSpacing: textStyle.letterSpacing || 0,
+    backgroundColor: textStyle.backgroundColor,
+    padding: layout.padding,
+    opacity: clip.transform.opacity,
+    borderRadius: textStyle.bgRadius || 0,
+    textShadow: textStyle.shadowColor ? `${textStyle.shadowOffsetX || 0}px ${textStyle.shadowOffsetY || 0}px ${textStyle.shadowBlur || 0}px ${textStyle.shadowColor}` : undefined,
+    WebkitTextStroke: textStyle.outlineWidth ? `${textStyle.outlineWidth}px ${textStyle.outlineColor || "#000000"}` : undefined,
+    paintOrder: "stroke fill",
+  };
 
   return (
     <div
-      onDoubleClick={handleDoubleClick}
-      className="group/text relative flex h-full w-full items-center justify-center p-2 select-none overflow-hidden"
-      style={{
-        fontSize: `${textStyle.fontSize}px`,
-        fontFamily: textStyle.fontFamily,
-        color: textStyle.color,
-        fontWeight: textStyle.fontWeight,
-        fontStyle: textStyle.fontStyle || 'normal',
-        textDecoration: textStyle.textDecoration,
-        textTransform: textStyle.textTransform,
-        backgroundColor: textStyle.backgroundColor,
-        textAlign: textStyle.textAlign,
-        lineHeight: textStyle.lineHeight || 1.2,
-        letterSpacing: textStyle.letterSpacing ? `${textStyle.letterSpacing}px` : undefined,
-        padding: textStyle.bgPadding ? `${textStyle.bgPadding}px` : undefined,
-        borderRadius: textStyle.bgRadius ? `${textStyle.bgRadius}px` : undefined,
-        textShadow: shadowCss,
-        whiteSpace: 'pre-wrap',
-        opacity: clip.transform.opacity,
-        ...outlineStyle,
-      }}
+      onDoubleClick={startEditing}
+      style={style}
+      className="group/text relative flex items-center justify-center select-none overflow-hidden"
+      title={
+        hasClippedText
+          ? "Text exceeds this box. Use Fit text box in Text properties."
+          : "Double-click to edit text"
+      }
     >
-      <span className="w-full break-words whitespace-pre-wrap">{textStyle.text}</span>
-
-      {/* Overflow Warning Badge */}
-      {isOverflowing && (
+      {isEditing ? (
+        <textarea
+          value={textInput}
+          onChange={(event) => setTextInput(event.target.value)}
+          onBlur={() => finishEditing()}
+          autoFocus
+          aria-label="Edit canvas text"
+          onPointerDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            event.stopPropagation();
+            if (event.key === "Escape") {
+              event.preventDefault();
+              finishEditing(true);
+            } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              event.preventDefault();
+              finishEditing();
+            }
+          }}
+          className="h-full w-full resize-none border-0 bg-transparent p-0 focus:outline-none"
+          style={{ font: "inherit", color: "inherit", textAlign: "inherit", letterSpacing: "inherit", lineHeight: "inherit", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+        />
+      ) : (
+        <span className="w-full whitespace-pre">
+          {layout.lines.map((line, index) => (
+            <span key={index} className="block">
+              {line || "\u00a0"}
+            </span>
+          ))}
+        </span>
+      )}
+      {(isOverflowing || hasClippedText) && !isEditing && (
         <div
-          className="absolute -top-3 -right-3 z-40 rounded-full bg-brand p-1 text-brand-contrast shadow-lg opacity-0 group-hover/text:opacity-100 transition-opacity"
-          title="Clip extends outside video canvas boundaries!"
+          className="absolute right-1 top-1 z-40 rounded-full bg-brand p-1 text-brand-contrast shadow-lg opacity-0 group-hover/text:opacity-100"
+          title={
+            hasClippedText
+              ? "Text exceeds its box. Use Fit text box."
+              : "Clip extends outside the canvas."
+          }
         >
           <AlertTriangle className="h-3 w-3" />
         </div>
       )}
     </div>
   );
-}
+});

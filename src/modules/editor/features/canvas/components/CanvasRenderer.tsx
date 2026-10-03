@@ -79,7 +79,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
       case 'image':
         return <ImageLayer clip={clip} />;
       case 'text':
-        return <TextLayer clip={clip} />;
+        return <TextLayer clip={clip} stageScale={stageScale} />;
       case 'overlay':
         return <ElementLayer clip={clip} />;
       default:
@@ -219,6 +219,9 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
               <SelectionOverlay
                 clip={clip}
                 stageScale={stageScale}
+                isSticker={clip.type === 'image' && track.type === 'overlay'}
+                canvasWidth={currentProject.settings.width}
+                canvasHeight={currentProject.settings.height}
                 onStartTransform={(c, mode, e) => {
                   if (mode === 'translate') handleClipPointerDown(clip, track, e);
                   else startTransform(c, mode as TransformMode, e);
