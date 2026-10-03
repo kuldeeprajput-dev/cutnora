@@ -24,20 +24,11 @@ import { Input } from "@/shared/components/ui/Input";
 import { Select } from "@/shared/components/ui/Select";
 import { Slider } from "@/shared/components/ui/Slider";
 import { cn } from "@/shared/utils/cn";
+import { textFontFamilies } from "../utils/text-fonts";
 
 export interface TextInspectorTabProps {
   clip: TimelineClip;
 }
-
-const fontFamilies = [
-  { label: "Inter (Sans-Serif)", value: "Inter, sans-serif" },
-  { label: "Arial", value: "Arial, sans-serif" },
-  { label: "Georgia", value: "Georgia, serif" },
-  { label: "Times New Roman", value: "Times New Roman, serif" },
-  { label: "Courier New (Monospace)", value: "Courier New, monospace" },
-  { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
-  { label: "Verdana", value: "Verdana, sans-serif" },
-];
 
 const formatButtonClass =
   "flex h-7 items-center justify-center rounded-md border text-xs transition-colors focus-visible:outline-none cursor-pointer";
@@ -101,7 +92,14 @@ export function TextInspectorTab({ clip }: TextInspectorTabProps) {
               }
               className="mt-1.5 h-9 text-xs"
             >
-              {fontFamilies.map((font) => (
+              {!textFontFamilies.some(
+                (font) => font.value === textStyle.fontFamily,
+              ) && (
+                <option value={textStyle.fontFamily}>
+                  {textStyle.fontFamily.split(",")[0]}
+                </option>
+              )}
+              {textFontFamilies.map((font) => (
                 <option key={font.value} value={font.value}>
                   {font.label}
                 </option>

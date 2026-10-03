@@ -19,6 +19,7 @@ import type {
   ExportPhase,
 } from "@/modules/editor/store/useExportStore";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
+import { loadTextFonts } from "@/modules/editor/features/text/utils/text-fonts";
 
 export interface ExportSettings {
   filename: string;
@@ -81,6 +82,14 @@ export async function runExportTask(
     wakeLock = await acquireScreenWakeLock();
 
     onProgress(0, project.settings.duration, 0, "rendering");
+
+    await loadTextFonts(
+      project.tracks.flatMap((track) =>
+        track.clips.flatMap((clip) =>
+          clip.type === "text" && clip.textStyle ? [clip.textStyle] : [],
+        ),
+      ),
+    );
 
     // 1. Preload Media Elements (Images, Videos, & Audio) from IndexedDB
     for (const assetId of project.assetIds) {
