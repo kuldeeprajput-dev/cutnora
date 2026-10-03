@@ -39,6 +39,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
+export interface ClipDragAppearance {
+  thumbnailUrl: string | null;
+  aspectRatio: number;
+}
+
 export interface TimelineClipItemProps {
   clip: TimelineClip;
   track: Track;
@@ -49,6 +54,7 @@ export interface TimelineClipItemProps {
     clip: TimelineClip,
     mode: "move" | "trim-start" | "trim-end",
     e: React.PointerEvent,
+    appearance?: ClipDragAppearance,
   ) => void;
 }
 
@@ -164,7 +170,10 @@ export function TimelineClipItem({
     e.preventDefault();
     e.stopPropagation();
     toggleClipSelection(clip.id, e.shiftKey);
-    onStartDrag(clip, "move", e);
+    onStartDrag(clip, "move", e, {
+      thumbnailUrl: thumbUrl,
+      aspectRatio: assetAspectRatio,
+    });
   };
 
   const getClipStyling = () => {

@@ -10,6 +10,7 @@ import { TimelineToolbar } from "./TimelineToolbar";
 import { TimeRuler } from "./TimeRuler";
 import { TrackHeader } from "./TrackHeader";
 import { TrackLane } from "./TrackLane";
+import type { ClipDragAppearance } from "./TimelineClipItem";
 import { TimelineContextMenu } from "./TimelineContextMenu";
 import { snapTimelineTime } from "../utils/timeline-snap-utils";
 import { preventClipOverlap } from "@/modules/editor/utils/timeline-utils";
@@ -36,6 +37,8 @@ import {
   Image as ImageIcon,
   Music,
   Plus,
+  Move,
+  Ban,
   Shapes,
   Type,
 } from "lucide-react";
@@ -48,7 +51,7 @@ import {
 
 const NEW_TRACK_DROP_THRESHOLD = 10;
 
-interface ClipDragPreview {
+interface ClipDragPreview extends Partial<ClipDragAppearance> {
   clipId: string;
   clipName: string;
   clipType: TimelineClip["type"];
@@ -394,6 +397,7 @@ export function TimelineEditor() {
     clip: TimelineClip,
     mode: "move" | "trim-start" | "trim-end",
     e: React.PointerEvent,
+    appearance?: ClipDragAppearance,
   ) => {
     const startX = e.clientX;
     const startY = e.clientY;
@@ -479,6 +483,7 @@ export function TimelineEditor() {
           : targetStart;
 
         latestMovePreview = {
+          ...appearance,
           clipId: clip.id,
           clipName: clip.name,
           clipType: clip.type,
@@ -901,13 +906,44 @@ export function TimelineEditor() {
                       : "border-destructive bg-destructive/20 text-destructive",
                   )}
                 >
-                  <div className="flex min-w-0 items-center gap-1.5">
+                  {clipDragPreview.thumbnailUrl && (
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-black/20"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.35), transparent), url(${JSON.stringify(clipDragPreview.thumbnailUrl)})`,
+                        backgroundSize: `auto, ${Math.max(30, Math.round((trackHeight - 8) * (clipDragPreview.aspectRatio ?? 16 / 9)))}px 100%`,
+                        backgroundRepeat: "no-repeat, repeat-x",
+                      }}
+                    />
+                  )}
+                  <div className={cn(
+                    "relative flex min-w-0 items-center gap-1.5",
+                    clipDragPreview.thumbnailUrl && "[&>svg]:text-white/90",
+                  )}>
                     {renderDragClipIcon(clipDragPreview.clipType)}
-                    <span className="truncate text-[11px] font-semibold text-studio-fg">
+                    <span className={cn(
+                      "truncate text-[11px] font-semibold text-studio-fg",
+                      clipDragPreview.thumbnailUrl && "text-white drop-shadow-sm",
+                    )}>
                       {clipDragPreview.clipName}
                     </span>
                   </div>
-                  <span className="ml-2 shrink-0 rounded bg-studio-hover px-1.5 py-0.5 text-[9px] font-medium text-studio-fg">
+                  <span className={cn(
+                    "relative ml-2 inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-[10px] font-semibold leading-none shadow-sm",
+                    !clipDragPreview.valid
+                      ? "border-destructive/40 bg-studio-bg/95 text-destructive"
+                      : clipDragPreview.createTrack
+                        ? "border-studio-fg/15 bg-studio-fg text-studio-bg"
+                        : "border-studio-border-strong bg-studio-bg/95 text-studio-fg",
+                  )}>
+                    {!clipDragPreview.valid ? (
+                      <Ban aria-hidden="true" className="h-3 w-3" />
+                    ) : clipDragPreview.createTrack ? (
+                      <Plus aria-hidden="true" className="h-3 w-3" />
+                    ) : (
+                      <Move aria-hidden="true" className="h-3 w-3" />
+                    )}
                     {clipDragPreview.createTrack
                       ? "New track"
                       : clipDragPreview.valid

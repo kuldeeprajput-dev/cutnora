@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import type { Track, TimelineClip } from "@/modules/editor/types";
+import type { Track } from "@/modules/editor/types";
 import { cn } from "@/shared/utils/cn";
-import { TimelineClipItem } from "./TimelineClipItem";
+import { TimelineClipItem, type TimelineClipItemProps } from "./TimelineClipItem";
 
 export interface TrackLaneProps {
   track: Track;
@@ -14,11 +14,7 @@ export interface TrackLaneProps {
   draggingClipId?: string | null;
   reorderState?: "active" | "over" | null;
   reorderDropPosition?: "before" | "after";
-  onStartDragClip: (
-    clip: TimelineClip,
-    mode: "move" | "trim-start" | "trim-end",
-    e: React.PointerEvent,
-  ) => void;
+  onStartDragClip: TimelineClipItemProps["onStartDrag"];
 }
 
 export function TrackLane({
