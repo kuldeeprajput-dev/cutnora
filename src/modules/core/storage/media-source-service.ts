@@ -11,7 +11,14 @@ export function getMediaSourceRef(asset: MediaAsset): MediaSourceRef {
 
 export async function resolveMediaAssetBlob(asset: MediaAsset): Promise<Blob> {
   const source = getMediaSourceRef(asset);
-  if (source.kind === "opfs") return getOpfsFile(source.path);
+  if (source.kind === "opfs") {
+    const file = await getOpfsFile(source.path);
+    // OPFS filenames are asset IDs without extensions, so their File type can
+    // be empty. SVG decoding requires its saved image/svg+xml MIME type.
+    return !file.type && asset.mimeType
+      ? file.slice(0, file.size, asset.mimeType)
+      : file;
+  }
   if (source.kind === "indexeddb") {
     const record = await db.blobs.get(source.blobId);
     if (!record)
@@ -19,7 +26,10 @@ export async function resolveMediaAssetBlob(asset: MediaAsset): Promise<Blob> {
     if (!asset.source) {
       void db.assets.update(asset.id, { source }).catch(() => undefined);
     }
-    return record.blob;
+    const mimeType = asset.mimeType || record.mimeType;
+    return !record.blob.type && mimeType
+      ? record.blob.slice(0, record.blob.size, mimeType)
+      : record.blob;
   }
   throw new Error("Remote media does not have a local Blob.");
 }

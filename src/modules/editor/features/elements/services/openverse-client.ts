@@ -43,6 +43,9 @@ const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 60 * 1000;
 const RATE_LIMIT_STORAGE_KEY = "cutnora:openverse-rate-limit-until";
 const ALLOWED_LICENSES = new Set(["cc0", "pdm"]);
 const inflightRequests = new Map<string, Promise<OpenversePage>>();
+const pageCache = new Map<string, { page: OpenversePage; expiresAt: number }>();
+const PAGE_CACHE_TTL_MS = 5 * 60 * 1000;
+const PAGE_CACHE_LIMIT = 40;
 let memoryRateLimitUntil = 0;
 
 export class OpenverseRateLimitError extends Error {
@@ -201,6 +204,10 @@ export async function fetchOpenverseGifPage({
   const safePage = Math.max(1, Math.floor(page));
   const safeLimit = Math.min(20, Math.max(1, Math.floor(limit)));
   const requestKey = [cleanQuery, safePage, safeLimit].join("|");
+  if (signal?.aborted) throw createAbortError();
+  const cached = pageCache.get(requestKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.page;
+  pageCache.delete(requestKey);
   const existingRequest = inflightRequests.get(requestKey);
   if (existingRequest) return waitForRequest(existingRequest, signal);
 
@@ -240,11 +247,20 @@ export async function fetchOpenverseGifPage({
     const currentPage = payload.page ?? safePage;
     const pageCount = payload.page_count ?? currentPage;
 
-    return {
+    const page: OpenversePage = {
       items,
       nextPage: currentPage + 1,
       hasMore: results.length > 0 && currentPage < pageCount,
     };
+    if (pageCache.size >= PAGE_CACHE_LIMIT) {
+      const oldestKey = pageCache.keys().next().value;
+      if (oldestKey !== undefined) pageCache.delete(oldestKey);
+    }
+    pageCache.set(requestKey, {
+      page,
+      expiresAt: Date.now() + PAGE_CACHE_TTL_MS,
+    });
+    return page;
   })();
 
   inflightRequests.set(requestKey, request);

@@ -16,7 +16,6 @@ import { MediaDropzone } from "./MediaDropzone";
 import { AssetCard } from "./AssetCard";
 import { MediaPreviewDialog } from "./MediaPreviewDialog";
 import { addMediaAssetToTimeline } from "../utils/add-media-asset-to-timeline";
-import { Input } from "@/shared/components/ui/Input";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -186,13 +185,13 @@ export function MediaLibraryPanel() {
             <div className="flex w-full min-w-0 items-center gap-2">
               <label className="relative min-w-0 flex-1">
                 <span className="sr-only">Search media by filename</span>
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
-                <Input
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
+                <input
                   type="search"
                   placeholder="Search…"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="h-8 min-w-0 pl-8 pr-8 text-xs bg-studio-panel-raised/60 border-studio-border placeholder:text-studio-muted text-studio-fg focus:border-studio-border-strong focus:bg-studio-panel-raised"
+                  className="h-11 lg:h-9 w-full min-w-0 rounded-xl border border-studio-border bg-studio-panel-raised/60 pl-9 pr-8 text-base lg:text-xs text-studio-fg placeholder:text-studio-muted focus:border-studio-fg/40 focus:ring-1 focus:ring-studio-fg/20 focus:outline-none transition-colors"
                 />
                 {search ? (
                   <button

@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { nanoid } from "nanoid";
-import { ChevronRight, LoaderCircle, Plus, Search, X } from "lucide-react";
+import { ChevronRight, Search, X } from "lucide-react";
 import { db } from "@/modules/core/db/database";
 import { useProjectStore } from "@/modules/projects";
 import type { MediaAsset } from "@/modules/projects/types";
@@ -12,6 +18,7 @@ import { processAndStoreMediaFile } from "@/modules/editor/features/media-librar
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 import type { TimelineClip } from "@/modules/editor/types";
 import { ElementLibraryBrowser } from "./ElementLibraryBrowser";
+import { ElementMediaCard } from "./ElementMediaCard";
 import {
   elementPresets,
   fallbackEmojis,
@@ -58,18 +65,26 @@ function SectionHeader({
     <button
       type="button"
       onClick={() => onOpen(section)}
-      className="group mb-3 flex items-center gap-1 text-[13px] font-bold text-studio-muted transition-colors hover:text-studio-fg"
+      className="group mb-2 flex min-h-11 w-full items-center justify-between gap-2 rounded-md text-[13px] font-semibold text-studio-fg transition-colors hover:text-studio-fg/80 focus-visible:outline-2 focus-visible:outline-brand lg:min-h-9"
     >
       <span>{SECTION_LABELS[section]}</span>
-      <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      <span className="flex items-center gap-1 text-[11px] font-normal text-studio-muted">
+        View all <ChevronRight className="h-3.5 w-3.5" />
+      </span>
     </button>
   );
 }
 
 export function ElementsPanel() {
-  const { addClip, addTrack } = useProjectStore();
-  const { playhead } = usePlaybackStore();
-  const { setSelectedClipIds } = useEditorUIStore();
+  const addClip = useProjectStore((state) => state.addClip);
+  const addTrack = useProjectStore((state) => state.addTrack);
+  const setSelectedClipIds = useEditorUIStore(
+    (state) => state.setSelectedClipIds,
+  );
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const gifsRef = useRef<HTMLElement>(null);
+  const previewsLoadedRef = useRef(false);
+  const addingRef = useRef(false);
   const [search, setSearch] = useState("");
   const [activeSection, setActiveSection] =
     useState<ElementLibrarySection | null>(null);
@@ -86,36 +101,56 @@ export function ElementsPanel() {
   });
 
   useEffect(() => {
+    if (activeSection || previewsLoadedRef.current) return;
     const controller = new AbortController();
-    setIsLoadingPreviews(true);
-
-    fetchOpenverseGifPage({
-      limit: 10,
-      signal: controller.signal,
-    })
-      .then((gifsPage) => {
+    let started = false;
+    const loadPreviews = async () => {
+      if (started) return;
+      started = true;
+      setIsLoadingPreviews(true);
+      try {
+        const page = await fetchOpenverseGifPage({
+          limit: 6,
+          signal: controller.signal,
+        });
         if (controller.signal.aborted) return;
-        setPreviews((current) => ({ ...current, gifs: gifsPage.items }));
-      })
-      .catch((error) => {
+        previewsLoadedRef.current = true;
+        setPreviews((current) => ({ ...current, gifs: page.items }));
+      } catch (error) {
         if (
-          (error as Error).name !== "AbortError" &&
+          !controller.signal.aborted &&
           !(error instanceof OpenverseRateLimitError)
         ) {
           useToastStore
             .getState()
             .showToast(
-              `Openverse previews unavailable: ${(error as Error).message}`,
+              "GIF previews are unavailable. Open GIFs to retry.",
               "warning",
             );
         }
-      })
-      .finally(() => {
+      } finally {
         if (!controller.signal.aborted) setIsLoadingPreviews(false);
-      });
-
-    return () => controller.abort();
-  }, []);
+      }
+    };
+    if (typeof IntersectionObserver === "undefined") {
+      void loadPreviews();
+      return () => controller.abort();
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          void loadPreviews();
+        }
+      },
+      { root: scrollRef.current, rootMargin: "100px" },
+    );
+    if (gifsRef.current) observer.observe(gifsRef.current);
+    return () => {
+      observer.disconnect();
+      controller.abort();
+    };
+  }, [activeSection]);
 
   const normalizedSearch = search.trim().toLowerCase();
   const filteredShapes = useMemo(
@@ -174,7 +209,7 @@ export function ElementsPanel() {
         id: newClipId,
         trackId: track.id,
         type: "overlay",
-        timelineStart: playhead,
+        timelineStart: usePlaybackStore.getState().playhead,
         timelineDuration: 5,
         sourceStart: 0,
         sourceDuration: 5,
@@ -206,7 +241,7 @@ export function ElementsPanel() {
       addClip(track.id, newClip);
       setSelectedClipIds([newClipId]);
     },
-    [addClip, ensureOverlayTrack, playhead, setSelectedClipIds],
+    [addClip, ensureOverlayTrack, setSelectedClipIds],
   );
 
   const addMediaClip = useCallback(
@@ -237,7 +272,7 @@ export function ElementsPanel() {
         trackId: track.id,
         assetId: asset.id,
         type: "image",
-        timelineStart: playhead,
+        timelineStart: usePlaybackStore.getState().playhead,
         timelineDuration: 5,
         sourceStart: 0,
         sourceDuration: 5,
@@ -268,13 +303,14 @@ export function ElementsPanel() {
       addClip(track.id, newClip);
       setSelectedClipIds([clipId]);
     },
-    [addClip, ensureOverlayTrack, playhead, setSelectedClipIds],
+    [addClip, ensureOverlayTrack, setSelectedClipIds],
   );
 
   const handleAddMedia = useCallback(
     async (item: LibraryMedia) => {
       const project = useProjectStore.getState().currentProject;
-      if (!project || addingId) return;
+      if (!project || addingRef.current) return;
+      addingRef.current = true;
       setAddingId(item.id);
 
       try {
@@ -296,6 +332,9 @@ export function ElementsPanel() {
           `${safeFilename(item.name)}.${extension}`,
           { type: mimeType },
         );
+        if (useProjectStore.getState().currentProject?.id !== project.id) {
+          throw new Error("The project changed. Please add the element again.");
+        }
         const imported = await processAndStoreMediaFile(file, project.id);
         const asset: MediaAsset = {
           ...imported.asset,
@@ -306,6 +345,9 @@ export function ElementsPanel() {
         };
         await db.assets.put(asset);
 
+        if (useProjectStore.getState().currentProject?.id !== project.id) {
+          throw new Error("The project changed. Please add the element again.");
+        }
         useProjectStore.getState().addAsset(asset);
         addMediaClip(asset, item);
         useToastStore
@@ -319,31 +361,72 @@ export function ElementsPanel() {
             "error",
           );
       } finally {
+        addingRef.current = false;
         setAddingId(null);
       }
     },
-    [addMediaClip, addingId],
+    [addMediaClip],
   );
 
   if (activeSection) {
     return (
-      <div className="h-full p-0.5">
+      <div className="h-full min-h-0">
         <ElementLibraryBrowser
           section={activeSection}
           addingId={addingId}
           onBack={() => setActiveSection(null)}
           onAddElement={handleAddElement}
           onAddMedia={handleAddMedia}
+          initialSearch={search}
         />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-studio-panel text-studio-fg select-none">
-
-
-      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3.5 pb-5 pt-2">
+    <div className="@container flex h-full min-h-0 flex-col bg-studio-panel text-studio-fg select-none">
+      <div className="shrink-0 border-b border-studio-border px-3.5 py-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
+          <input
+            type="search"
+            aria-label="Search element previews"
+            placeholder="Search elements…"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="h-11 lg:h-9 w-full rounded-xl border border-studio-border bg-studio-panel-raised/60 pl-9 pr-11 text-base lg:text-xs text-studio-fg placeholder:text-studio-muted focus:border-studio-fg/40 focus:ring-1 focus:ring-studio-fg/20 focus:outline-none transition-colors"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="Clear element search"
+              className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-studio-muted hover:text-studio-fg lg:h-9"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <p className="mt-2 text-[11px] text-studio-muted">
+          Add shapes, stickers, emoji, and GIFs to your timeline.
+        </p>
+      </div>
+      <div
+        ref={scrollRef}
+        className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-5 pt-2"
+      >
+        {normalizedSearch &&
+          !filteredShapes.length &&
+          !filteredStickers.length &&
+          !filteredEmojis.length &&
+          !filteredGifs.length && (
+            <p
+              role="status"
+              className="rounded-lg border border-studio-border bg-studio-panel-raised p-3 text-xs leading-5 text-studio-muted"
+            >
+              No matching previews. Open a category to search its full library.
+            </p>
+          )}
         <LibrarySection section="shapes" onOpen={setActiveSection}>
           {filteredShapes.map((preset) => (
             <button
@@ -351,19 +434,26 @@ export function ElementsPanel() {
               type="button"
               onClick={() => handleAddElement(preset)}
               title={`Add ${preset.name}`}
-              className="flex h-[83px] items-center justify-center overflow-hidden rounded-md bg-studio-panel-raised transition-colors hover:bg-studio-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              className="flex flex-col overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised transition-colors hover:border-studio-border-strong hover:bg-studio-hover focus-visible:outline-2 focus-visible:outline-brand"
             >
-              <ShapeArtwork preset={preset} />
+              <span className="flex h-[83px] w-full items-center justify-center">
+                <ShapeArtwork preset={preset} />
+              </span>
+              <span className="w-full truncate border-t border-studio-border/60 px-2 py-1.5 text-left text-[11px] font-medium">
+                {preset.name}
+              </span>
             </button>
           ))}
         </LibrarySection>
 
         <LibrarySection section="stickers" onOpen={setActiveSection}>
           {filteredStickers.map((item) => (
-            <MediaTile
+            <ElementMediaCard
               key={item.id}
               item={item}
               isAdding={addingId === item.id}
+              isBusy={addingId !== null}
+              compact
               onAdd={handleAddMedia}
             />
           ))}
@@ -371,35 +461,43 @@ export function ElementsPanel() {
 
         <LibrarySection section="emoji" onOpen={setActiveSection}>
           {filteredEmojis.map((item) => (
-            <MediaTile
+            <ElementMediaCard
               key={item.id}
               item={item}
               isAdding={addingId === item.id}
+              isBusy={addingId !== null}
+              compact
               onAdd={handleAddMedia}
             />
           ))}
         </LibrarySection>
 
-        <LibrarySection section="gifs" onOpen={setActiveSection} wide>
+        <LibrarySection
+          section="gifs"
+          onOpen={setActiveSection}
+          sectionRef={gifsRef}
+          wide
+        >
           {isLoadingPreviews ? (
             <PreviewSkeletons />
           ) : filteredGifs.length ? (
             filteredGifs.map((item) => (
-              <MediaTile
+              <ElementMediaCard
                 key={item.id}
                 item={item}
                 isAdding={addingId === item.id}
+                isBusy={addingId !== null}
+                compact
                 onAdd={handleAddMedia}
-                wide
               />
             ))
           ) : (
             <button
               type="button"
               onClick={() => setActiveSection("gifs")}
-              className="flex h-[83px] w-[190px] items-center justify-center rounded-md border border-dashed border-studio-border bg-studio-panel-raised px-3 text-center text-[10px] leading-4 text-studio-muted"
+              className="flex min-h-[111px] items-center justify-center rounded-md border border-dashed border-studio-border bg-studio-panel-raised px-3 text-center text-[10px] leading-4 text-studio-muted"
             >
-              Open Openverse to browse CC0 and Public Domain GIFs
+              Browse GIFs
             </button>
           )}
         </LibrarySection>
@@ -438,14 +536,16 @@ function LibrarySection({
   onOpen,
   children,
   wide = false,
+  sectionRef,
 }: {
   section: ElementLibrarySection;
   onOpen: (section: ElementLibrarySection) => void;
   children: React.ReactNode;
   wide?: boolean;
+  sectionRef?: React.Ref<HTMLElement>;
 }) {
   return (
-    <section className="mb-7">
+    <section ref={sectionRef} className="mb-5">
       <SectionHeader section={section} onOpen={onOpen} />
       <div
         className={`grid grid-flow-col gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${wide ? "auto-cols-[144px]" : "auto-cols-[82px]"}`}
@@ -460,59 +560,7 @@ function PreviewSkeletons() {
   return Array.from({ length: 4 }, (_, index) => (
     <div
       key={index}
-      className="h-[83px] animate-pulse rounded-md bg-studio-panel-raised"
+      className="h-[111px] animate-pulse rounded-md bg-studio-panel-raised"
     />
   ));
-}
-
-function MediaTile({
-  item,
-  isAdding,
-  onAdd,
-  wide = false,
-}: {
-  item: LibraryMedia;
-  isAdding: boolean;
-  onAdd: (item: LibraryMedia) => void;
-  wide?: boolean;
-}) {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  return (
-    <button
-      type="button"
-      onClick={() => onAdd(item)}
-      disabled={isAdding}
-      title={`Add ${item.name}`}
-      className="group relative flex h-[83px] items-center justify-center overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-studio-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
-    >
-      {/* Provider media is loaded from its original URL to preserve animation. */}
-      {!isLoaded && (
-        <span className="absolute inset-0 animate-pulse bg-studio-hover/50" />
-      )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={item.previewUrl}
-        srcSet={item.previewSrcSet}
-        sizes={wide ? "144px" : "56px"}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        onLoad={() => setIsLoaded(true)}
-        className={
-          `${isLoaded ? "opacity-100" : "opacity-0"} relative transition-[opacity,transform] duration-300 group-hover:scale-[1.02] ` +
-          (wide ? "h-full w-full object-cover" : "h-14 w-14 object-contain")
-        }
-      />
-      <span className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-        {isAdding ? (
-          <LoaderCircle className="h-5 w-5 animate-spin text-white" />
-        ) : (
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black shadow-md">
-            <Plus className="h-4 w-4" />
-          </span>
-        )}
-      </span>
-    </button>
-  );
 }

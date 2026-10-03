@@ -7,7 +7,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ArrowLeft, LoaderCircle, Plus, Search, X } from "lucide-react";
+import { ArrowLeft, LoaderCircle, Search, X } from "lucide-react";
+import { ElementMediaCard } from "./ElementMediaCard";
 import {
   elementPresets,
   fallbackEmojis,
@@ -31,6 +32,7 @@ interface ElementLibraryBrowserProps {
   onBack: () => void;
   onAddElement: (preset: ElementPreset) => void;
   onAddMedia: (item: LibraryMedia) => void;
+  initialSearch?: string;
 }
 
 const SECTION_TITLES: Record<ElementLibrarySection, string> = {
@@ -58,14 +60,16 @@ export function ElementLibraryBrowser({
   onBack,
   onAddElement,
   onAddMedia,
+  initialSearch = "",
 }: ElementLibraryBrowserProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
   const requestRef = useRef(0);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [query, setQuery] = useState("");
+  const requestControllerRef = useRef<AbortController | null>(null);
+  const [searchOpen, setSearchOpen] = useState(Boolean(initialSearch));
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [query, setQuery] = useState(initialSearch.trim());
   const [items, setItems] = useState<LibraryMedia[]>([]);
   const [pageCursor, setPageCursor] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -89,10 +93,17 @@ export function ElementLibraryBrowser({
       setIsLoading(true);
       setError(null);
       const requestId = ++requestRef.current;
+      const controller = new AbortController();
+      requestControllerRef.current = controller;
 
       try {
         const page = isOpenverseSection
-          ? await fetchOpenverseGifPage({ query, page: cursor, limit: 18 })
+          ? await fetchOpenverseGifPage({
+              query,
+              page: cursor,
+              limit: 18,
+              signal: controller.signal,
+            })
           : await fetchOpenMojiPage({
               section: section as "stickers" | "emoji",
               query,
@@ -153,6 +164,10 @@ export function ElementLibraryBrowser({
     setError(null);
     scrollRef.current?.scrollTo({ top: 0 });
     if (isMediaSection) void loadPage(firstCursor, true);
+    return () => {
+      requestRef.current += 1;
+      requestControllerRef.current?.abort();
+    };
   }, [isMediaSection, isOpenverseSection, loadPage, query, section]);
 
   useEffect(() => {
@@ -201,34 +216,35 @@ export function ElementLibraryBrowser({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-studio-border bg-studio-panel text-studio-fg">
+    <div className="@container flex h-full min-h-0 flex-col overflow-hidden bg-studio-panel text-studio-fg">
       <header className="flex h-[56px] shrink-0 items-center justify-between border-b border-studio-border px-3 gap-2">
         <button
           type="button"
           onClick={onBack}
           aria-label="Back to elements"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg focus-visible:outline-2 focus-visible:outline-brand lg:h-8 lg:w-8"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
 
         {searchOpen ? (
           <div className="relative flex-1 min-w-0">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
             <input
               autoFocus
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder={`Search ${SECTION_TITLES[section].toLowerCase()}...`}
-              className="h-8.5 w-full rounded-lg border border-studio-border bg-studio-panel-raised pl-8 pr-7 text-xs text-studio-fg outline-none transition-colors placeholder:text-studio-muted focus:border-brand focus:ring-1 focus:ring-brand"
+              aria-label={`Search ${SECTION_TITLES[section].toLowerCase()}`}
+              className="h-11 lg:h-9 w-full rounded-xl border border-studio-border bg-studio-panel-raised/60 pl-9 pr-11 text-base lg:text-xs text-studio-fg placeholder:text-studio-muted focus:border-studio-fg/40 focus:ring-1 focus:ring-studio-fg/20 focus:outline-none transition-colors"
             />
             {searchInput && (
               <button
                 type="button"
                 onClick={() => setSearchInput("")}
                 aria-label="Clear search text"
-                className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-studio-muted hover:text-studio-fg"
+                className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded text-studio-muted hover:text-studio-fg lg:h-8 lg:w-8"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -249,7 +265,7 @@ export function ElementLibraryBrowser({
           aria-label={
             searchOpen ? "Close search" : `Search ${SECTION_TITLES[section]}`
           }
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg focus-visible:outline-2 focus-visible:outline-brand lg:h-8 lg:w-8"
         >
           {searchOpen ? (
             <X className="h-4 w-4" />
@@ -261,31 +277,51 @@ export function ElementLibraryBrowser({
 
       <div
         ref={scrollRef}
-        className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-7"
+        className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-3"
       >
         {section === "shapes" ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 @[420px]:grid-cols-4">
             {visibleShapes.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
                 onClick={() => onAddElement(preset)}
                 title={`Add ${preset.name}`}
-                className="flex aspect-square items-center justify-center rounded-md bg-studio-panel-raised transition-colors hover:bg-studio-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                aria-label={`Add ${preset.name} to timeline`}
+                className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised transition-colors hover:border-studio-border-strong hover:bg-studio-hover focus-visible:outline-2 focus-visible:outline-brand"
               >
-                <ShapeArtwork preset={preset} />
+                <span className="flex aspect-square w-full items-center justify-center">
+                  <ShapeArtwork preset={preset} />
+                </span>
+                <span className="w-full truncate border-t border-studio-border/60 px-2 py-1.5 text-left text-[11px] font-medium">
+                  {preset.name}
+                </span>
               </button>
             ))}
           </div>
         ) : items.length ? (
-          <div className="columns-2 gap-2">
+          <div
+            className={
+              isOpenverseSection
+                ? "columns-2 gap-2 @[480px]:columns-3"
+                : "grid grid-cols-3 gap-2 @[420px]:grid-cols-4"
+            }
+          >
             {items.map((item) => (
-              <MasonryMediaTile
+              <div
                 key={item.id}
-                item={item}
-                isAdding={addingId === item.id}
-                onAdd={onAddMedia}
-              />
+                className={
+                  isOpenverseSection ? "mb-2 break-inside-avoid" : "min-w-0"
+                }
+              >
+                <ElementMediaCard
+                  key={item.id}
+                  item={item}
+                  isAdding={addingId === item.id}
+                  isBusy={addingId !== null}
+                  onAdd={onAddMedia}
+                />
+              </div>
             ))}
           </div>
         ) : !isLoading && !error ? (
@@ -293,6 +329,12 @@ export function ElementLibraryBrowser({
             No {SECTION_TITLES[section].toLowerCase()} found.
           </p>
         ) : null}
+
+        {section === "shapes" && visibleShapes.length === 0 && (
+          <p className="py-12 text-center text-xs text-studio-muted">
+            No shapes match your search.
+          </p>
+        )}
 
         {error && (
           <div
@@ -337,56 +379,5 @@ export function ElementLibraryBrowser({
         <div ref={sentinelRef} className="h-px" aria-hidden="true" />
       </div>
     </div>
-  );
-}
-
-function MasonryMediaTile({
-  item,
-  isAdding,
-  onAdd,
-}: {
-  item: LibraryMedia;
-  isAdding: boolean;
-  onAdd: (item: LibraryMedia) => void;
-}) {
-  const rawRatio = (item.width || 1) / (item.height || 1);
-  const ratio = Number.isFinite(rawRatio) && rawRatio > 0 ? rawRatio : 1;
-  const transparent = item.kind !== "gif";
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  return (
-    <button
-      type="button"
-      onClick={() => onAdd(item)}
-      disabled={isAdding}
-      title={`Add ${item.name}`}
-      className="group relative mb-2.5 block w-full break-inside-avoid overflow-hidden rounded-lg border border-studio-border bg-studio-panel-raised shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-studio-border-strong hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-wait"
-      style={{ aspectRatio: ratio }}
-    >
-      {/* Original source URLs preserve Openverse GIF animation and resolution. */}
-      {!isLoaded && (
-        <span className="absolute inset-0 animate-pulse bg-studio-hover/50" />
-      )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={item.previewUrl}
-        srcSet={item.previewSrcSet}
-        sizes="260px"
-        alt={item.name}
-        loading="lazy"
-        decoding="async"
-        onLoad={() => setIsLoaded(true)}
-        className={`relative h-full w-full transition-[opacity,transform] duration-300 group-hover:scale-[1.015] ${isLoaded ? "opacity-100" : "opacity-0"} ${transparent ? "object-contain p-2" : "object-cover"}`}
-      />
-      <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/45 via-black/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-        {isAdding ? (
-          <LoaderCircle className="h-5 w-5 animate-spin text-white" />
-        ) : (
-          <span className="flex h-9 w-9 scale-90 items-center justify-center rounded-full bg-white text-black shadow-xl transition-transform group-hover:scale-100">
-            <Plus className="h-4 w-4" />
-          </span>
-        )}
-      </span>
-    </button>
   );
 }

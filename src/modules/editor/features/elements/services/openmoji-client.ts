@@ -31,6 +31,8 @@ const STICKER_GROUP_ORDER = [
 ];
 const STICKER_GROUPS = new Set(STICKER_GROUP_ORDER);
 let catalogRequest: Promise<OpenMojiEntry[]> | null = null;
+const sectionCatalogs = new Map<"stickers" | "emoji", OpenMojiEntry[]>();
+const searchText = new WeakMap<OpenMojiEntry, string>();
 
 function getCatalog() {
   if (catalogRequest) return catalogRequest;
@@ -63,16 +65,20 @@ function getKeywords(entry: OpenMojiEntry) {
 
 function matchesQuery(entry: OpenMojiEntry, query: string) {
   if (!query) return true;
-  const haystack = [
-    entry.annotation,
-    entry.tags,
-    entry.openmoji_tags,
-    entry.group,
-    entry.subgroups,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  let haystack = searchText.get(entry);
+  if (haystack === undefined) {
+    haystack = [
+      entry.annotation,
+      entry.tags,
+      entry.openmoji_tags,
+      entry.group,
+      entry.subgroups,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    searchText.set(entry, haystack);
+  }
   return haystack.includes(query);
 }
 
@@ -91,22 +97,28 @@ export async function fetchOpenMojiPage({
   const cleanQuery = query.trim().toLowerCase().slice(0, 100);
   const safeOffset = Math.max(0, Math.floor(offset));
   const safeLimit = Math.min(48, Math.max(1, Math.floor(limit)));
-  const filtered = catalog
-    .filter(
-      (entry) =>
-        entry.hexcode &&
-        entry.annotation &&
-        entry.group !== "component" &&
-        (section === "emoji" || STICKER_GROUPS.has(entry.group ?? "")) &&
-        matchesQuery(entry, cleanQuery),
-    )
-    .sort((left, right) => {
-      if (section === "emoji") return 0;
-      return (
-        STICKER_GROUP_ORDER.indexOf(left.group ?? "") -
-        STICKER_GROUP_ORDER.indexOf(right.group ?? "")
-      );
-    });
+  let sectionCatalog = sectionCatalogs.get(section);
+  if (!sectionCatalog) {
+    sectionCatalog = catalog
+      .filter(
+        (entry) =>
+          entry.hexcode &&
+          entry.annotation &&
+          entry.group !== "component" &&
+          (section === "emoji" || STICKER_GROUPS.has(entry.group ?? "")),
+      )
+      .sort((left, right) => {
+        if (section === "emoji") return 0;
+        return (
+          STICKER_GROUP_ORDER.indexOf(left.group ?? "") -
+          STICKER_GROUP_ORDER.indexOf(right.group ?? "")
+        );
+      });
+    sectionCatalogs.set(section, sectionCatalog);
+  }
+  const filtered = cleanQuery
+    ? sectionCatalog.filter((entry) => matchesQuery(entry, cleanQuery))
+    : sectionCatalog;
   const pageEntries = filtered.slice(safeOffset, safeOffset + safeLimit);
   const items = pageEntries.map((entry) =>
     createOpenMojiMedia(

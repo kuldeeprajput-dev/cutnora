@@ -48,10 +48,8 @@ export function DropdownMenu({
 
   // Automatically close dropdown when adjusting bottom bar height or sidebar width
   useEffect(() => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
-  }, [timelineHeight, leftPanelWidth, isOpen]);
+    setIsOpen(false);
+  }, [timelineHeight, leftPanelWidth]);
 
   const updateCoords = useCallback(() => {
     if (triggerRef.current) {
