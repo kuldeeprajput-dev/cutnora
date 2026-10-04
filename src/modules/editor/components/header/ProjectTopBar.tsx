@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Undo2,
   Redo2,
@@ -13,6 +13,11 @@ import {
   Wrench,
   Maximize2,
   Minimize2,
+  FolderOpen,
+  Plus,
+  Pencil,
+  Keyboard,
+  LogOut,
 } from "lucide-react";
 import {
   useProjectStore,
@@ -26,12 +31,37 @@ import { Button } from "@/shared/components/ui/Button";
 import { BrandMark } from "@/shared/components/BrandMark";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
+import { DropdownMenu, DropdownMenuItem } from "@/shared/components/ui/DropdownMenu";
+
+const EDITOR_MENU_ITEM_CLASS =
+  "rounded-md px-2 py-2 text-studio-fg/75 hover:bg-studio-fg/5 hover:text-studio-fg";
 
 export interface ProjectTopBarProps {
   onOpenHelp?: () => void;
 }
 
 export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const navigateFromEditor = async (href: string) => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    try {
+      const project = useProjectStore.getState().currentProject;
+      if (project) {
+        autosaveService.scheduleSave(project, 0);
+        await autosaveService.executeSave();
+        if (autosaveService.getStatus() === "error") return;
+      }
+      router.push(href);
+    } catch {
+      useToastStore.getState().showToast("Could not leave the editor. Please try again.", "error");
+    } finally {
+      setIsNavigating(false);
+    }
+  };
+
   const projectName = useProjectStore(
     (state) => state.currentProject?.name ?? "Untitled video",
   );
@@ -146,16 +176,46 @@ export function ProjectTopBar({ onOpenHelp }: ProjectTopBarProps) {
       <div className="flex min-w-0 items-center">
         {/* Logo aligned with sidebar rail center axis (10px padding + 1px border + 32px center = 43px) */}
         <div className="ml-[11px] flex w-[64px] shrink-0 items-center justify-center">
-          <Link
-            href="/"
-            className="flex items-center justify-center group"
-            title="Return to home"
+          <DropdownMenu
+            animated={false}
+            className="w-44 border-studio-border-strong bg-studio-topbar shadow-lg shadow-black/15 backdrop-blur-none"
+            trigger={(isOpen) => (
+              <button
+                type="button"
+                aria-label="Open Cutnora menu"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                disabled={isNavigating}
+                className="group flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-studio-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/40 disabled:cursor-wait"
+              >
+                <BrandMark size={28} />
+              </button>
+            )}
           >
-            <BrandMark
-              size={28}
-              className="transition-transform group-hover:-rotate-3"
-            />
-          </Link>
+            <DropdownMenuItem className={EDITOR_MENU_ITEM_CLASS} disabled={isNavigating} onClick={() => void navigateFromEditor("/projects")}>
+              <FolderOpen className="h-4 w-4 text-studio-muted" />
+              Projects
+            </DropdownMenuItem>
+            <DropdownMenuItem className={EDITOR_MENU_ITEM_CLASS} disabled={isNavigating} onClick={() => void navigateFromEditor("/projects/new")}>
+              <Plus className="h-4 w-4 text-studio-muted" />
+              New project
+            </DropdownMenuItem>
+            <DropdownMenuItem className={EDITOR_MENU_ITEM_CLASS} onClick={() => setIsEditingName(true)}>
+              <Pencil className="h-4 w-4 text-studio-muted" />
+              Rename project
+            </DropdownMenuItem>
+            <div role="separator" className="my-1 border-t border-studio-border" />
+            {onOpenHelp && (
+              <DropdownMenuItem className={EDITOR_MENU_ITEM_CLASS} onClick={onOpenHelp}>
+                <Keyboard className="h-4 w-4 text-studio-muted" />
+                Keyboard shortcuts
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem className={EDITOR_MENU_ITEM_CLASS} disabled={isNavigating} onClick={() => void navigateFromEditor("/")}>
+              <LogOut className="h-4 w-4 text-studio-muted" />
+              Exit editor
+            </DropdownMenuItem>
+          </DropdownMenu>
         </div>
 
         {/* Editable Project Name */}
