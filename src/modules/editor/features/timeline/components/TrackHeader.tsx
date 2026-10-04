@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuItem,
 } from "@/shared/components/ui/DropdownMenu";
-import { confirm } from "@/shared/components/ui/Popup";
 import { TrackHeaderContextMenu } from "./TrackHeaderContextMenu";
 import {
   Lock,
@@ -46,7 +45,7 @@ export function TrackHeader({
 }: TrackHeaderProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(track.name);
-  const { currentProject, deleteTrack } = useProjectStore();
+  const deleteTrack = useProjectStore((state) => state.deleteTrack);
   const activeTrackId = useEditorUIStore((state) => state.activeTrackId);
   const setActiveTrackId = useEditorUIStore((state) => state.setActiveTrackId);
   const trackHeaderWidth = useEditorUIStore((state) =>
@@ -112,20 +111,8 @@ export function TrackHeader({
     }
   };
 
-  const handleDeleteTrack = async () => {
-    if (track.clips.length > 0) {
-      const ok = await confirm({
-        title: "Delete Track",
-        message: `Track "${track.name}" contains ${track.clips.length} clip(s). Are you sure you want to delete this track and all of its clips?`,
-        confirmText: "Delete Track",
-        variant: "destructive",
-      });
-      if (!ok) return;
-    }
-    if (!currentProject) return;
+  const handleDeleteTrack = () => {
     deleteTrack(track.id);
-    if (activeTrackId === track.id) setActiveTrackId(null);
-    useEditorUIStore.getState().clearSelection();
   };
 
   const renderTypeIcon = () => {

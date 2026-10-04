@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
-import { GlobalPopups } from "@/shared/components/providers/GlobalPopups";
+import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
 
 export const metadata: Metadata = {
   title: {
@@ -72,7 +72,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         {children}
-        <GlobalPopups />
+        <ToastContainer />
       </body>
     </html>
   );

@@ -21,7 +21,6 @@ export interface SelectionOverlayProps {
     e: React.PointerEvent,
   ) => void;
   isDragging?: boolean;
-  isSticker?: boolean;
   canvasWidth: number;
   canvasHeight: number;
 }
@@ -31,21 +30,25 @@ export function SelectionOverlay({
   stageScale,
   onStartTransform,
   isDragging = false,
-  isSticker = false,
   canvasWidth,
   canvasHeight,
 }: SelectionOverlayProps) {
   const isMediaClip = clip.type === "image" || clip.type === "video";
   const isTextClip = clip.type === "text";
-  const isElementClip = clip.type === "overlay" || isSticker;
-  const compactControls = isTextClip || isSticker;
-  const mediaControls = isMediaClip && !isSticker;
   const asset = useLiveQuery(
     () =>
       isMediaClip && clip.assetId ? db.assets.get(clip.assetId) : undefined,
     [clip.assetId, isMediaClip],
     null,
   );
+  // Selection styling follows the content even when it moves to another track.
+  const isSticker =
+    isMediaClip &&
+    (/^image\/(svg\+xml|gif)(?:;|$)/i.test(asset?.mimeType ?? "") ||
+      /\.(svg|gif)$/i.test(asset?.name ?? clip.name));
+  const isElementClip = clip.type === "overlay" || isSticker;
+  const compactControls = isTextClip || isElementClip;
+  const mediaControls = isMediaClip && !isSticker;
 
   const visibleBounds = getVisibleMediaBounds({
     containerWidth: clip.transform.width,
@@ -166,7 +169,7 @@ export function SelectionOverlay({
       {/* Keep rotation outside when it fits, and inside at the canvas edges. */}
       <div
         onPointerDown={(e) => onStartTransform(clip, "rotate", e)}
-        className={`pointer-events-auto absolute left-1/2 ${rotationOutside ? compactControls ? "-top-12 lg:-top-10" : "-top-16 lg:-top-12" : "top-2 lg:top-3"} z-50 flex -translate-x-1/2 touch-none cursor-grab items-center justify-center rounded-full text-studio-fg active:cursor-grabbing ${compactControls ? "group/rotate h-11 w-11 lg:h-8 lg:w-8" : "h-10 w-10 border border-studio-border bg-studio-panel-raised/95 shadow-xl backdrop-blur-md transition-colors hover:bg-studio-hover hover:border-studio-border-strong lg:h-6.5 lg:w-6.5"}`}
+        className={`pointer-events-auto absolute left-1/2 ${rotationOutside ? compactControls ? "-top-12 lg:-top-8.5" : "-top-16 lg:-top-12" : "top-2 lg:top-3"} z-50 flex -translate-x-1/2 touch-none cursor-grab items-center justify-center rounded-full text-studio-fg active:cursor-grabbing ${compactControls ? "group/rotate h-11 w-11 lg:h-7 lg:w-7" : "h-10 w-10 border border-studio-border bg-studio-panel-raised/95 shadow-xl backdrop-blur-md transition-colors hover:bg-studio-hover hover:border-studio-border-strong lg:h-6.5 lg:w-6.5"}`}
         title="Drag to rotate. Hold Shift to snap."
         aria-label={
           isTextClip
@@ -176,11 +179,11 @@ export function SelectionOverlay({
               : "Rotate selected media"
         }
       >
-        <span className={compactControls ? "pointer-events-none flex h-5.5 w-5.5 items-center justify-center rounded-full border border-studio-border bg-studio-panel-raised/95 text-studio-fg shadow-[0_2px_5px_rgba(0,0,0,0.2)] transition-colors group-hover/rotate:border-studio-border-strong group-hover/rotate:bg-studio-hover" : "contents"}>
+        <span className={compactControls ? "pointer-events-none flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/20 bg-studio-panel-raised/95 text-white/90 shadow-[0_1px_3px_rgba(0,0,0,0.16)] transition-colors group-hover/rotate:border-white/40 group-hover/rotate:bg-studio-hover group-hover/rotate:text-white group-active/rotate:border-white/60" : "contents"}>
           <RotateCw
             style={{ transform: `rotate(${-clip.transform.rotation}deg)` }}
-            strokeWidth={2}
-            className={compactControls ? "h-3.5 w-3.5" : "h-4.5 w-4.5 lg:h-3.5 lg:w-3.5"}
+            strokeWidth={compactControls ? 1.75 : 2}
+            className={compactControls ? "h-3 w-3" : "h-4.5 w-4.5 lg:h-3.5 lg:w-3.5"}
           />
         </span>
       </div>

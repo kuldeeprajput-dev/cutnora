@@ -125,7 +125,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       setClipInspectorSide: (side) =>
         set((state) => {
           state.clipInspectorSide = side;
-          state.activeTool = "canvas";
+          if (side === "left") state.activeTool = "canvas";
           state.inspectorMode = "clip";
         }),
 
@@ -138,7 +138,7 @@ export const useEditorUIStore = create<EditorUIState>()(
         set((state) => {
           state.selectedClipIds = ids;
           if (ids.length > 0) {
-            state.activeTool = "canvas";
+            if (state.clipInspectorSide === "left") state.activeTool = "canvas";
             state.inspectorMode = "clip";
             autoSeekToClipIfOutOfBounds(ids);
           }
@@ -158,7 +158,7 @@ export const useEditorUIStore = create<EditorUIState>()(
             state.selectedClipIds = [id];
           }
           if (state.selectedClipIds.length > 0) {
-            state.activeTool = "canvas";
+            if (state.clipInspectorSide === "left") state.activeTool = "canvas";
             state.inspectorMode = "clip";
             autoSeekToClipIfOutOfBounds(state.selectedClipIds);
           }

@@ -31,6 +31,7 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     activeTool,
     activeInspectorTab,
     inspectorMode,
+    clipInspectorSide,
     isFullscreen,
   } = useEditorUIStore();
   const { startTransform, isDragging } = useTransformHandler(stageScale);
@@ -190,7 +191,10 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
           activeInspectorTab === 'transform' ||
           activeInspectorTab === 'text' ||
           activeInspectorTab === 'element';
-        const isCanvasToolActive = activeTool === 'canvas' || activeTool === 'select';
+        const isCanvasToolActive =
+          activeTool === 'canvas' ||
+          activeTool === 'select' ||
+          (clipInspectorSide === 'right' && activeTool !== 'crop');
 
         const canShowCrop = isSelected && !track.locked && !isFull && activeTool === 'crop';
         const canShowSelection =
@@ -221,7 +225,6 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
               <SelectionOverlay
                 clip={clip}
                 stageScale={stageScale}
-                isSticker={clip.type === 'image' && track.type === 'overlay'}
                 canvasWidth={currentProject.settings.width}
                 canvasHeight={currentProject.settings.height}
                 onStartTransform={(c, mode, e) => {

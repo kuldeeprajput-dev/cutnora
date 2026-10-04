@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { IconButton } from "./IconButton";
@@ -73,7 +74,7 @@ export function Dialog({
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (closeOnBackdropClick && e.target === e.currentTarget) {
@@ -81,7 +82,8 @@ export function Dialog({
     }
   };
 
-  return (
+  // Render above editor panel stacking contexts, including the timeline playhead.
+  return createPortal(
     <div
       onClick={handleBackdropClick}
       className={cn(
@@ -135,6 +137,7 @@ export function Dialog({
 
         <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

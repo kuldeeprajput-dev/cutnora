@@ -17,6 +17,7 @@ import {
 } from "@/modules/editor/utils/timeline-utils";
 import { historyManager } from "@/modules/editor/store/useHistoryStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { autosaveService } from "../services/autosave-service";
 import { db } from "@/modules/core/db/database";
 
@@ -341,7 +342,9 @@ export const useProjectStore = create<ProjectState>()(
 
     deleteTrack: (trackId) => {
       const current = get().currentProject;
-      if (!current) return;
+      if (!current || !current.tracks.some((track) => track.id === trackId)) {
+        return;
+      }
 
       historyManager.pushState(current);
       set((state) => {
@@ -349,13 +352,29 @@ export const useProjectStore = create<ProjectState>()(
           state.currentProject.tracks = state.currentProject.tracks.filter(
             (t) => t.id !== trackId,
           );
-          removeEmptyTracks(state.currentProject);
+          state.currentProject.tracks.forEach((track, index) => {
+            track.order = index;
+          });
           syncProjectDuration(state.currentProject);
         }
       });
 
       const updated = get().currentProject;
-      if (updated) autosaveService.scheduleSave(updated);
+      if (updated) {
+        const remainingClipIds = new Set(
+          updated.tracks.flatMap((track) => track.clips.map((clip) => clip.id)),
+        );
+        useEditorUIStore.setState((state) => {
+          if (state.activeTrackId === trackId) state.activeTrackId = null;
+          const selection = state.selectedClipIds.filter((id) =>
+            remainingClipIds.has(id),
+          );
+          if (selection.length !== state.selectedClipIds.length) {
+            state.selectedClipIds = selection;
+          }
+        });
+        autosaveService.scheduleSave(updated);
+      }
     },
 
     reorderTracks: (startIndex, endIndex) => {
