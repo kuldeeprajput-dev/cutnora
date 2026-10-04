@@ -138,10 +138,12 @@ export function TimelineEditor() {
     clearSelection,
     trackHeaderWidth: rawTrackHeaderWidth = 180,
     setTrackHeaderWidth,
-    showTrackHeaders = true,
+    showTrackHeaders: savedShowTrackHeaders = false,
     toggleTrackHeaders,
   } = useEditorUIStore();
   const trackHeaderWidth = Math.max(170, rawTrackHeaderWidth);
+  const showTrackHeaders =
+    savedShowTrackHeaders && (currentProject?.tracks.length ?? 0) > 0;
   const { playhead, isPlaying } = usePlaybackStore();
 
   const handleStartResizeTrackHeader = (e: React.PointerEvent) => {

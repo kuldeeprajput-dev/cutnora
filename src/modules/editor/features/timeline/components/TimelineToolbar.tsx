@@ -104,7 +104,7 @@ export function TimelineToolbar({
     setZoomMode,
     stageScale,
     triggerResetView,
-    showTrackHeaders = true,
+    showTrackHeaders: savedShowTrackHeaders = false,
     toggleTrackHeaders,
     isFullscreen: isVideoFullscreen,
   } = useEditorUIStore();
@@ -133,6 +133,8 @@ export function TimelineToolbar({
   };
 
   const hasSelection = selectedClipIds.length > 0;
+  const hasTracks = (currentProject?.tracks.length ?? 0) > 0;
+  const showTrackHeaders = savedShowTrackHeaders && hasTracks;
   const hasTimelineMedia = (currentProject?.tracks ?? []).some(
     (track) => track.clips.length > 0,
   );
@@ -392,6 +394,7 @@ export function TimelineToolbar({
           size="sm"
           variant="ghost"
           onClick={toggleTrackHeaders}
+          disabled={!hasTracks}
           tooltipPosition="top"
           className={cn(
             "cursor-pointer h-7 w-7 transition-colors",

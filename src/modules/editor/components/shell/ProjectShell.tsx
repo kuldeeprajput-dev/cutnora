@@ -94,43 +94,6 @@ export function ProjectShell() {
   }, [currentProjectId, setSelectedClipIds]);
 
   useEffect(() => {
-    const savedWidth = localStorage.getItem("cutnora_panel_width");
-    const savedRightWidth = localStorage.getItem("cutnora_right_panel_width");
-    const savedHeight = localStorage.getItem("cutnora_timeline_height");
-    const uiState = useEditorUIStore.getState();
-    const currentLeftWidth = uiState.leftPanelWidth;
-    const parsedRightWidth = Number(savedRightWidth);
-    const initialRightWidth =
-      Number.isFinite(parsedRightWidth) && parsedRightWidth > 0
-        ? parsedRightWidth
-        : uiState.rightPanelWidth;
-    const project = useProjectStore.getState().currentProject;
-    const hasSelectedClip =
-      project?.tracks.some((track) =>
-        track.clips.some((clip) => uiState.selectedClipIds.includes(clip.id)),
-      ) ?? false;
-    setRightPanelWidth(
-      Math.min(
-        maximumRightPanelWidth(window.innerWidth, currentLeftWidth),
-        Math.max(320, initialRightWidth),
-      ),
-    );
-    if (savedWidth && Number.isFinite(Number(savedWidth))) {
-      const responsiveMaximum = maximumLeftPanelWidth(
-        window.innerWidth,
-        uiState.clipInspectorSide === "right" && hasSelectedClip,
-        initialRightWidth,
-      );
-      setLeftPanelWidth(
-        Math.min(responsiveMaximum, Math.max(350, Number(savedWidth))),
-      );
-    }
-    if (savedHeight && Number.isFinite(Number(savedHeight))) {
-      setTimelineHeight(Number(savedHeight));
-    }
-  }, [setLeftPanelWidth, setRightPanelWidth, setTimelineHeight]);
-
-  useEffect(() => {
     const clampPanelToViewport = () => {
       const maximumWidth = maximumLeftPanelWidth(
         window.innerWidth,

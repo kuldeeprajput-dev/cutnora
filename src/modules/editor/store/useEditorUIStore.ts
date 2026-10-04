@@ -9,6 +9,12 @@ import { clampTimelineZoom } from "../features/timeline/utils/timeline-zoom-util
 export const MIN_TRACK_HEIGHT = 48;
 export const MAX_TRACK_HEIGHT = 144;
 
+const DEFAULT_EDITOR_LAYOUT = {
+  leftPanelWidth: 410,
+  rightPanelWidth: 440,
+  timelineHeight: 340,
+};
+
 function clampTrackHeight(height: unknown): number {
   return typeof height === "number" && Number.isFinite(height)
     ? Math.min(MAX_TRACK_HEIGHT, Math.max(MIN_TRACK_HEIGHT, Math.round(height)))
@@ -88,7 +94,7 @@ export const useEditorUIStore = create<EditorUIState>()(
       activeTool: "media",
       activeInspectorTab: "transform",
       inspectorMode: "clip",
-      clipInspectorSide: "left",
+      clipInspectorSide: "right",
       isLeftSidebarCollapsed: false,
       selectedClipIds: [],
       activeTrackId: null,
@@ -96,12 +102,10 @@ export const useEditorUIStore = create<EditorUIState>()(
       scrollLeft: 0,
       previewScale: 1,
       snappingEnabled: true,
-      leftPanelWidth: 350,
-      rightPanelWidth: 350,
-      timelineHeight: 220,
+      ...DEFAULT_EDITOR_LAYOUT,
       trackHeight: MIN_TRACK_HEIGHT,
       trackHeaderWidth: 180,
-      showTrackHeaders: true,
+      showTrackHeaders: false,
       stageScale: 0.5,
       zoomMode: "fit",
       resetViewCount: 0,
@@ -256,6 +260,19 @@ export const useEditorUIStore = create<EditorUIState>()(
     })),
     {
       name: "cutnora-editor-ui-store",
+      version: 1,
+      migrate: (persistedState) => {
+        const saved = persistedState as EditorUIState;
+        // Upgrade the old untouched layout without replacing custom panel sizes.
+        if (
+          saved?.leftPanelWidth === 350 &&
+          saved.rightPanelWidth === 350 &&
+          saved.timelineHeight === 220
+        ) {
+          return { ...saved, ...DEFAULT_EDITOR_LAYOUT };
+        }
+        return saved;
+      },
       merge: (persistedState, currentState) => {
         const saved = persistedState as Partial<EditorUIState> | undefined;
         return {

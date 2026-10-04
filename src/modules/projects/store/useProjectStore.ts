@@ -127,6 +127,16 @@ export const useProjectStore = create<ProjectState>()(
 
       await db.projects.put(newProject);
       historyManager.clear();
+      // Keep saved layout preferences while clearing the previous project context.
+      useEditorUIStore.setState({
+        activeTool: "media",
+        selectedClipIds: [],
+        activeTrackId: null,
+        inspectorMode: "clip",
+        scrollLeft: 0,
+        isFullscreen: false,
+      });
+      usePlaybackStore.setState({ isPlaying: false, playhead: 0 });
       set((state) => {
         state.currentProject = newProject;
         if (state.currentProject) {
