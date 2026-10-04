@@ -688,7 +688,12 @@ export function TimelineEditor() {
       />
 
       {/* Fixed Time Ruler Header Row */}
-      <div className="flex h-6 w-full shrink-0 border-b border-studio-border bg-transparent z-20">
+      <div
+        className={cn(
+          "flex h-6 w-full shrink-0 border-b border-studio-border bg-transparent z-20",
+          timelineClipCount === 0 && "hidden",
+        )}
+      >
         {/* Left header corner over track headers */}
         <div
           style={{ width: `${trackHeaderWidth}px` }}
@@ -895,12 +900,24 @@ export function TimelineEditor() {
         >
           {/* Track Lanes */}
           {tracks.length === 0 ? (
-            <div className="flex min-h-[160px] flex-1 items-center justify-center px-5 text-center">
-              <p className="text-[11px] text-studio-muted">
-                Import media or use{" "}
-                <span className="font-medium text-studio-fg">Add Track</span>{" "}
-                above to begin editing.
-              </p>
+            <div className="flex h-full min-h-32 w-full items-center justify-center px-6 py-5 text-center">
+              <div className="flex max-w-md flex-col items-center">
+                <div className="mb-3 flex items-center gap-3">
+                  <span aria-hidden="true" className="h-px w-6 bg-studio-fg/10" />
+                  <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-studio-muted/70">
+                    Timeline
+                  </p>
+                  <span aria-hidden="true" className="h-px w-6 bg-studio-fg/10" />
+                </div>
+                <p className="text-xl font-medium leading-tight tracking-tight text-studio-fg/90 sm:text-2xl">
+                  Start with your first clip
+                </p>
+                <p className="mt-3 max-w-xs text-xs leading-6 text-studio-muted">
+                  Add media from your library, or create a track using{" "}
+                  <span className="font-medium text-studio-fg/80">Add Track</span>{" "}
+                  above.
+                </p>
+              </div>
             </div>
           ) : (
             <div

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
+import { NativeContextMenuBlocker } from "@/shared/components/providers/NativeContextMenuBlocker";
 
 export const metadata: Metadata = {
   title: {
@@ -71,6 +72,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <NativeContextMenuBlocker />
         {children}
         <ToastContainer />
       </body>
