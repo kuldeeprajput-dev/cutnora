@@ -1049,7 +1049,7 @@ export function TimelineEditor() {
                   height:
                     playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0,
                 }}
-                className={`absolute top-0 w-0.5 bg-studio-fg z-30 pointer-events-none shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_rgba(255,255,255,0.8)] -translate-x-1/2 ${
+                className={`absolute top-0 w-[1.5px] bg-studio-fg/95 z-30 pointer-events-none shadow-[0_0_0_1px_rgba(0,0,0,0.18)] -translate-x-1/2 ${
                   playheadLineHeight === 0 ? "hidden" : ""
                 }`}
               />

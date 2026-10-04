@@ -101,9 +101,13 @@ export function TimeRuler({
       ))}
       <div
         style={{ left: `${playheadLeftPx}px` }}
-        className="pointer-events-none absolute inset-y-0 z-30 -translate-x-1/2"
+        className="pointer-events-none absolute inset-y-0 z-30 w-3 -translate-x-1/2"
       >
-        <div className="-mt-1 h-2.5 w-2.5 rotate-45 bg-studio-fg shadow-[0_1px_4px_rgba(0,0,0,0.5)]" />
+        <div
+          className="relative z-10 h-3 w-3 rounded-t-[2px] bg-studio-fg"
+          style={{ clipPath: "polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%)" }}
+        />
+        <div className="absolute bottom-0 left-1/2 top-3 w-[1.5px] -translate-x-1/2 bg-studio-fg/95" />
       </div>
     </div>
   );
