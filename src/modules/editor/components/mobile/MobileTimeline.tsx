@@ -31,6 +31,7 @@ import { useClipboardStore } from "@/modules/editor/store/useClipboardStore";
 import { ContextMenu, type ContextMenuItemData } from "@/shared/components/ui/ContextMenu";
 import { cn } from "@/shared/utils/cn";
 import { getMobileRulerInterval } from "./mobile-timeline-utils";
+import { getMobileLayerReorderTarget } from "./mobile-layer-utils";
 import { preventClipOverlap, trimClipBounds } from "@/modules/editor/utils/timeline-utils";
 
 const MAX_PIXELS_PER_SECOND = 48;
@@ -629,16 +630,15 @@ export function MobileTimeline() {
 
   const menuClip = clipMenu ? clips.find((clip) => clip.id === clipMenu.clipId) : undefined;
   const menuTrack = menuClip ? tracks.find((track) => track.id === menuClip.trackId) : undefined;
-  const menuTrackIndex = currentProject?.tracks.findIndex((track) => track.id === menuTrack?.id) ?? -1;
+  const menuForward = menuTrack ? getMobileLayerReorderTarget(currentProject?.tracks ?? [], menuTrack.id, 1, playhead) : null;
+  const menuBackward = menuTrack ? getMobileLayerReorderTarget(currentProject?.tracks ?? [], menuTrack.id, -1, playhead) : null;
 
-  const reorderMenuLayer = (offset: number) => {
+  const reorderMenuLayer = (offset: -1 | 1) => {
     if (!menuTrack) return;
     const project = useProjectStore.getState().currentProject;
-    const index = project?.tracks.findIndex((track) => track.id === menuTrack.id) ?? -1;
-    const targetIndex = index + offset;
-    if (project && index >= 0 && targetIndex >= 0 && targetIndex < project.tracks.length) {
-      useProjectStore.getState().reorderTracks(index, targetIndex);
-    }
+    if (!project) return;
+    const target = getMobileLayerReorderTarget(project.tracks, menuTrack.id, offset, usePlaybackStore.getState().playhead);
+    if (target) useProjectStore.getState().reorderTracks(target.fromIndex, target.toIndex);
   };
 
   const toggleMenuLayerFlag = (flag: "locked" | "hidden") => {
@@ -676,12 +676,12 @@ export function MobileTimeline() {
     ...(menuClip.type !== "audio" ? [
       {
         id: "forward", label: "Bring forward", icon: <ArrowUp className="h-3.5 w-3.5" />,
-        disabled: menuTrackIndex >= tracks.length - 1,
+        disabled: !menuForward,
         onClick: () => reorderMenuLayer(1),
       },
       {
         id: "backward", label: "Send backward", icon: <ArrowDown className="h-3.5 w-3.5" />,
-        disabled: menuTrackIndex <= 0,
+        disabled: !menuBackward,
         onClick: () => reorderMenuLayer(-1),
       },
     ] : []),

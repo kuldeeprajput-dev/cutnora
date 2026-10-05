@@ -15,6 +15,8 @@ import { useTransformHandler, type TransformMode } from '../hooks/useTransformHa
 import { ContextMenu, type ContextMenuItemData } from '@/shared/components/ui/ContextMenu';
 import { useClipboardStore } from '@/modules/editor/store/useClipboardStore';
 import { Scissors, Copy, Trash2, ArrowUp, ArrowDown, Lock, EyeOff } from 'lucide-react';
+import { getVisibleMediaBounds } from '../utils/media-bounds';
+import { getMobileLayerReorderTarget } from '@/modules/editor/components/mobile/mobile-layer-utils';
 
 export interface CanvasRendererProps {
   stageScale: number;
@@ -35,7 +37,8 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     isFullscreen,
   } = useEditorUIStore();
   const { startTransform, isDragging } = useTransformHandler(stageScale);
-  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; clip: TimelineClip; track: Track } | null>(null);
+  const canvasRef = React.useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; clip: TimelineClip; track: Track; mobile: boolean } | null>(null);
 
   if (!currentProject) return null;
 
@@ -56,6 +59,44 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     }
   }
 
+  const pickMobileClip = (clientX: number, clientY: number) => {
+    const bounds = canvasRef.current?.getBoundingClientRect();
+    if (!bounds || stageScale <= 0) return null;
+    const pointX = (clientX - bounds.left) / stageScale;
+    const pointY = (clientY - bounds.top) / stageScale;
+    for (let index = activeClipsWithTrack.length - 1; index >= 0; index--) {
+      const item = activeClipsWithTrack[index];
+      const { transform } = item.clip;
+      if (transform.opacity <= 0) continue;
+      const layer = document.getElementById(`layer-${item.clip.id}`);
+      const media = layer?.querySelector('img, video');
+      const isMedia = item.clip.type === 'image' || item.clip.type === 'video';
+      if (isMedia && !media) continue;
+      const sourceWidth = media instanceof HTMLImageElement ? media.naturalWidth
+        : media instanceof HTMLVideoElement ? media.videoWidth : undefined;
+      const sourceHeight = media instanceof HTMLImageElement ? media.naturalHeight
+        : media instanceof HTMLVideoElement ? media.videoHeight : undefined;
+      const visible = getVisibleMediaBounds({
+        containerWidth: transform.width, containerHeight: transform.height,
+        sourceWidth, sourceHeight, fitMode: transform.fitMode,
+      });
+      const angle = transform.rotation * Math.PI / 180;
+      const dx = pointX - transform.x - transform.width / 2;
+      const dy = pointY - transform.y - transform.height / 2;
+      const localX = (dx * Math.cos(angle) + dy * Math.sin(angle)) /
+        (isMedia ? transform.scaleX || 1 : 1) + transform.width / 2;
+      const localY = (-dx * Math.sin(angle) + dy * Math.cos(angle)) /
+        (isMedia ? transform.scaleY || 1 : 1) + transform.height / 2;
+      const crop = isMedia ? transform.crop : undefined;
+      const left = Math.max(visible.x, transform.width * (crop?.left ?? 0) / 100);
+      const top = Math.max(visible.y, transform.height * (crop?.top ?? 0) / 100);
+      const right = Math.min(visible.x + visible.width, transform.width * (1 - (crop?.right ?? 0) / 100));
+      const bottom = Math.min(visible.y + visible.height, transform.height * (1 - (crop?.bottom ?? 0) / 100));
+      if (localX >= left && localX <= right && localY >= top && localY <= bottom) return item;
+    }
+    return null;
+  };
+
   const handleClipPointerDown = (clip: TimelineClip, track: Track, e: React.PointerEvent) => {
     if (isFullscreenActive) return;
     if (track.locked) return; // Locked tracks cannot be selected from stage
@@ -71,8 +112,11 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     if (isFullscreenActive) return;
     e.preventDefault();
     e.stopPropagation();
-    setSelectedClipIds([clip.id]);
-    setContextMenu({ x: e.clientX, y: e.clientY, clip, track });
+    const mobile = window.matchMedia('(max-width: 1023px)').matches;
+    const hit = mobile ? pickMobileClip(e.clientX, e.clientY) : { clip, track };
+    if (!hit) return;
+    setSelectedClipIds([hit.clip.id]);
+    setContextMenu({ x: e.clientX, y: e.clientY, clip: hit.clip, track: hit.track, mobile });
   };
 
   const renderClipContent = (clip: TimelineClip, track: Track) => {
@@ -88,6 +132,16 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
       default:
         return null;
     }
+  };
+
+  const mobileForward = contextMenu?.mobile ? getMobileLayerReorderTarget(currentProject.tracks, contextMenu.track.id, 1, playhead) : null;
+  const mobileBackward = contextMenu?.mobile ? getMobileLayerReorderTarget(currentProject.tracks, contextMenu.track.id, -1, playhead) : null;
+  const reorderMobileLayer = (direction: -1 | 1) => {
+    if (!contextMenu) return;
+    const project = useProjectStore.getState().currentProject;
+    if (!project) return;
+    const target = getMobileLayerReorderTarget(project.tracks, contextMenu.track.id, direction, usePlaybackStore.getState().playhead);
+    if (target) reorderTracks(target.fromIndex, target.toIndex);
   };
 
   const stageMenuItems: ContextMenuItemData[] = contextMenu ? [
@@ -116,8 +170,10 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     {
       id: 'bring-forward',
       label: 'Bring forward',
+      disabled: contextMenu.mobile && !mobileForward,
       icon: <ArrowUp className="h-3.5 w-3.5" />,
       onClick: () => {
+        if (contextMenu.mobile) { reorderMobileLayer(1); return; }
         const tracks = currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === contextMenu.track.id);
         if (idx >= 0 && idx < tracks.length - 1) reorderTracks(idx, idx + 1);
@@ -126,8 +182,10 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
     {
       id: 'bring-backward',
       label: 'Send backward',
+      disabled: contextMenu.mobile && !mobileBackward,
       icon: <ArrowDown className="h-3.5 w-3.5" />,
       onClick: () => {
+        if (contextMenu.mobile) { reorderMobileLayer(-1); return; }
         const tracks = currentProject?.tracks || [];
         const idx = tracks.findIndex((t) => t.id === contextMenu.track.id);
         if (idx > 0) reorderTracks(idx, idx - 1);
@@ -170,7 +228,20 @@ export function CanvasRenderer({ stageScale, isFullscreenActive = false }: Canva
   ] : [];
 
   return (
-    <div inert={isFullscreenActive} className={`relative h-full w-full overflow-hidden ${isFullscreenActive ? 'pointer-events-none' : ''}`}>
+    <div
+      ref={canvasRef}
+      inert={isFullscreenActive}
+      onPointerDownCapture={(event) => {
+        if (isFullscreenActive || event.button !== 0 || !window.matchMedia('(max-width: 1023px)').matches) return;
+        if (!canvasRef.current?.contains(event.target as Node)) return;
+        if (activeTool === 'crop' || (event.target as HTMLElement).closest('[id^="overlay-"], input, textarea, [contenteditable="true"]')) return;
+        const hit = pickMobileClip(event.clientX, event.clientY);
+        event.stopPropagation();
+        if (hit) handleClipPointerDown(hit.clip, hit.track, event);
+        else setSelectedClipIds([]);
+      }}
+      className={`relative h-full w-full overflow-hidden ${isFullscreenActive ? 'pointer-events-none' : ''}`}
+    >
       {activeClipsWithTrack.map(({ clip, track }) => {
         const isSelected = selectedClipIds.includes(clip.id);
         const { transform } = clip;
