@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Image as ImageIcon,
   Minus,
   Music,
   Plus,
-  RotateCcw,
   Type,
   Video,
 } from "lucide-react";
@@ -24,8 +23,8 @@ const MAX_PIXELS_PER_SECOND = 48;
 const MIN_PIXELS_PER_SECOND = 0.05;
 const TIMELINE_GUTTER = 16;
 const MIN_CLIP_DURATION = 0.1;
-const MIN_TIMELINE_ZOOM = 0.75;
-const MAX_TIMELINE_ZOOM = 3;
+const MIN_TIMELINE_ZOOM = 0.5;
+const MAX_TIMELINE_ZOOM = 6;
 const TIMELINE_ZOOM_STEP = 0.25;
 
 function formatTime(seconds: number) {
@@ -46,6 +45,7 @@ type DragState = {
   clip: TimelineClip;
   mode: "move" | "trim-start" | "trim-end";
   pointerStartX: number;
+  moved: boolean;
 };
 
 export function MobileTimeline() {
@@ -63,6 +63,22 @@ export function MobileTimeline() {
   const isPlaying = usePlaybackStore((state) => state.isPlaying);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
+  const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{
+    distance: number;
+    zoom: number;
+    anchorTime: number;
+  } | null>(null);
+  const panRef = useRef<{
+    pointerId: number;
+    startX: number;
+    scrollLeft: number;
+    moved: boolean;
+  } | null>(null);
+  const zoomRef = useRef(1);
+  const zoomFrameRef = useRef<number | null>(null);
+  const pendingZoomRef = useRef<{ zoom: number; scrollLeft: number } | null>(null);
+  const pendingScrollRef = useRef<number | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [timelineZoom, setTimelineZoom] = useState(1);
   const [preview, setPreview] = useState<{
@@ -104,6 +120,20 @@ export function MobileTimeline() {
   const isOverflowing = viewportWidth > 0 && calculatedWidth > viewportWidth;
   const contentWidth = isOverflowing ? calculatedWidth : 0;
 
+  // Apply the scroll anchor after React updates the timeline's width.
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current !== null && scrollRef.current) {
+      scrollRef.current.scrollLeft = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+    }
+  }, [timelineZoom]);
+
+  useEffect(() => () => {
+    if (zoomFrameRef.current !== null) {
+      window.cancelAnimationFrame(zoomFrameRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     const element = scrollRef.current;
     if (!element) return;
@@ -117,7 +147,7 @@ export function MobileTimeline() {
 
   useEffect(() => {
     const element = scrollRef.current;
-    if (!element || !isPlaying || clips.length === 0) return;
+    if (!element || !isPlaying || clips.length === 0 || pinchRef.current || panRef.current?.moved) return;
 
     const playheadX = TIMELINE_GUTTER + playhead * pixelsPerSecond;
     const visibleRight = element.scrollLeft + element.clientWidth - 40;
@@ -142,17 +172,135 @@ export function MobileTimeline() {
         )
       : playhead;
 
-    setTimelineZoom(clamped);
-    window.requestAnimationFrame(() => {
-      if (!element) return;
-      const nextPixelsPerSecond = basePixelsPerSecond * clamped;
-      element.scrollLeft = Math.max(
+    if (element) {
+      pendingScrollRef.current = Math.max(
         0,
         TIMELINE_GUTTER +
-          centerTime * nextPixelsPerSecond -
+          centerTime * basePixelsPerSecond * clamped -
           element.clientWidth / 2,
       );
-    });
+    }
+    zoomRef.current = clamped;
+    setTimelineZoom(clamped);
+  };
+
+  const flushPinchZoom = () => {
+    zoomFrameRef.current = null;
+    const pending = pendingZoomRef.current;
+    pendingZoomRef.current = null;
+    if (!pending) return;
+
+    pendingScrollRef.current = pending.scrollLeft;
+    if (pending.zoom === zoomRef.current) {
+      // At a zoom limit the midpoint can still move without a React update.
+      if (scrollRef.current) scrollRef.current.scrollLeft = pending.scrollLeft;
+    } else {
+      zoomRef.current = pending.zoom;
+      setTimelineZoom(pending.zoom);
+    }
+  };
+
+  const handleTouchPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "touch" || clips.length === 0) return;
+    const element = event.currentTarget;
+    const points = touchPointsRef.current;
+    if (points.size >= 2 && !points.has(event.pointerId)) {
+      event.preventDefault();
+      event.stopPropagation();
+      element.setPointerCapture(event.pointerId);
+      return;
+    }
+    points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (points.size === 2) {
+      event.preventDefault();
+      event.stopPropagation();
+      dragRef.current = null;
+      panRef.current = null;
+      setPreview(null);
+      const [first, second] = Array.from(points.values());
+      const midpoint = (first.x + second.x) / 2 - element.getBoundingClientRect().left;
+      pinchRef.current = {
+        distance: Math.max(8, Math.hypot(second.x - first.x, second.y - first.y)),
+        zoom: zoomRef.current,
+        anchorTime: Math.max(0, (element.scrollLeft + midpoint - TIMELINE_GUTTER) / (basePixelsPerSecond * zoomRef.current)),
+      };
+      for (const pointerId of points.keys()) element.setPointerCapture(pointerId);
+      return;
+    }
+
+    if (!(event.target as HTMLElement).closest("[data-mobile-clip]")) {
+      event.preventDefault();
+      event.stopPropagation();
+      element.setPointerCapture(event.pointerId);
+      panRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        scrollLeft: element.scrollLeft,
+        moved: false,
+      };
+    }
+  };
+
+  const handleTouchPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const points = touchPointsRef.current;
+    if (event.pointerType !== "touch" || !points.has(event.pointerId)) return;
+    points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    const pinch = pinchRef.current;
+    if (pinch) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (points.size < 2) return;
+      const [first, second] = Array.from(points.values());
+      const distance = Math.hypot(second.x - first.x, second.y - first.y);
+      const zoom = Math.min(MAX_TIMELINE_ZOOM, Math.max(MIN_TIMELINE_ZOOM, pinch.zoom * distance / pinch.distance));
+      const midpoint = (first.x + second.x) / 2 - event.currentTarget.getBoundingClientRect().left;
+      pendingZoomRef.current = {
+        zoom,
+        scrollLeft: Math.max(0, TIMELINE_GUTTER + pinch.anchorTime * basePixelsPerSecond * zoom - midpoint),
+      };
+      if (zoomFrameRef.current === null) {
+        zoomFrameRef.current = window.requestAnimationFrame(flushPinchZoom);
+      }
+      return;
+    }
+
+    const pan = panRef.current;
+    if (!pan || pan.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const delta = event.clientX - pan.startX;
+    if (Math.abs(delta) > 6) pan.moved = true;
+    if (pan.moved) event.currentTarget.scrollLeft = Math.max(0, pan.scrollLeft - delta);
+  };
+
+  const handleTouchPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const points = touchPointsRef.current;
+    if (event.pointerType !== "touch" || !points.has(event.pointerId)) return;
+    points.delete(event.pointerId);
+
+    if (pinchRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (zoomFrameRef.current !== null) window.cancelAnimationFrame(zoomFrameRef.current);
+      flushPinchZoom();
+      // Ignore the remaining finger until the whole pinch has ended.
+      if (points.size === 0) pinchRef.current = null;
+    } else if (panRef.current?.pointerId === event.pointerId) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!panRef.current.moved && event.type === "pointerup") {
+        const element = event.currentTarget;
+        const x = event.clientX - element.getBoundingClientRect().left + element.scrollLeft - TIMELINE_GUTTER;
+        playbackClock.seek(Math.min(duration, Math.max(0, x / pixelsPerSecond)));
+        setSelectedClipIds([]);
+      }
+      panRef.current = null;
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
 
   useEffect(() => {
@@ -210,6 +358,14 @@ export function MobileTimeline() {
     const delta = (event.clientX - drag.pointerStartX) / pixelsPerSecond;
     const clip = drag.clip;
 
+    if (!drag.moved) {
+      setActiveInspectorTab("transform");
+      setSelectedClipIds([clip.id]);
+      dragRef.current = null;
+      setPreview(null);
+      return;
+    }
+
     if (drag.mode === "move") {
       const start = Math.max(0, clip.timelineStart + delta);
       moveClip(clip.id, clip.trackId, Number(start.toFixed(3)));
@@ -246,6 +402,12 @@ export function MobileTimeline() {
   const updateDragPreview = (event: React.PointerEvent) => {
     const drag = dragRef.current;
     if (!drag) return;
+    if (!drag.moved) {
+      if (Math.abs(event.clientX - drag.pointerStartX) < 6) return;
+      drag.moved = true;
+      setActiveInspectorTab("transform");
+      setSelectedClipIds([drag.clip.id]);
+    }
     const delta = (event.clientX - drag.pointerStartX) / pixelsPerSecond;
     const clip = drag.clip;
     if (drag.mode === "move") {
@@ -286,9 +448,13 @@ export function MobileTimeline() {
     event.preventDefault();
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
-    setActiveInspectorTab("transform");
-    setSelectedClipIds([clip.id]);
-    dragRef.current = { clip, mode, pointerStartX: event.clientX };
+    // Wait for a touch drag or release so a second finger can start a pinch
+    // without selecting, seeking to, or moving the first touched clip.
+    if (event.pointerType !== "touch") {
+      setActiveInspectorTab("transform");
+      setSelectedClipIds([clip.id]);
+    }
+    dragRef.current = { clip, mode, pointerStartX: event.clientX, moved: false };
     setPreview({
       clipId: clip.id,
       start: clip.timelineStart,
@@ -310,18 +476,18 @@ export function MobileTimeline() {
 
   return (
     <section aria-label="Timeline" className="flex min-h-0 flex-[1.15] flex-col overflow-hidden bg-timeline-bg">
-      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-studio-border px-3">
-        <div className="min-w-0">
-          <h2 className="text-[9px] font-semibold uppercase tracking-[0.16em] text-studio-muted">
-            Timeline
-          </h2>
-          <p className="truncate font-mono text-[10px] leading-4 tabular-nums text-studio-muted/80">
-            {formatTime(playhead)} / {formatTime(duration)} · {clips.length}{" "}
-            {clips.length === 1 ? "clip" : "clips"}
-          </p>
-        </div>
+      <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-b border-studio-border bg-studio-topbar px-3">
+        <p className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap font-mono text-[11px] leading-4 tabular-nums max-[359px]:text-[10px]">
+          <span className="shrink-0 font-medium text-studio-fg/90">{formatTime(playhead)}</span>
+          <span className="shrink-0 text-studio-muted/50">/</span>
+          <span className="shrink-0 text-studio-muted">{formatTime(duration)}</span>
+          <span className="ml-0.5 min-w-0 truncate border-l border-studio-border pl-2 font-sans text-[10px] text-studio-muted">
+            {clips.length} {clips.length === 1 ? "clip" : "clips"}
+          </span>
+        </p>
 
         <div
+          role="group"
           className="flex shrink-0 items-center gap-0.5"
           aria-label="Timeline zoom controls"
         >
@@ -329,10 +495,10 @@ export function MobileTimeline() {
             type="button"
             onClick={() => changeTimelineZoom(1)}
             disabled={clips.length === 0 || timelineZoom === 1}
-            aria-label="Reset timeline zoom"
-            className="flex h-11 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30 focus-visible:outline-brand"
+            aria-label="Fit timeline to screen"
+            className="flex h-9 w-8 touch-manipulation items-center justify-center rounded-md bg-transparent text-[10px] font-medium text-studio-fg active:text-brand disabled:opacity-40 focus-visible:outline-brand"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            Fit
           </button>
           <button
             type="button"
@@ -341,9 +507,9 @@ export function MobileTimeline() {
             }
             disabled={clips.length === 0 || timelineZoom <= MIN_TIMELINE_ZOOM}
             aria-label="Zoom timeline out"
-            className="flex h-11 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30 focus-visible:outline-brand"
+            className="flex h-9 w-8 touch-manipulation items-center justify-center rounded-md text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-40 focus-visible:outline-brand"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-3.5 w-3.5" />
           </button>
           <input
             type="range"
@@ -355,7 +521,13 @@ export function MobileTimeline() {
             disabled={clips.length === 0}
             aria-label="Timeline zoom level"
             aria-valuetext={`${Math.round(timelineZoom * 100)}%`}
-            className="h-11 w-14 cursor-pointer touch-manipulation accent-brand disabled:opacity-30 max-[359px]:w-10"
+            className={cn(
+              "h-9 w-16 cursor-pointer touch-manipulation appearance-none rounded-md bg-transparent disabled:cursor-default disabled:opacity-40 focus-visible:outline-brand max-[359px]:w-12",
+              "[&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-studio-fg/15",
+              "[&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-studio-fg",
+              "[&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-studio-fg/15",
+              "[&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-studio-fg",
+            )}
           />
           <button
             type="button"
@@ -364,19 +536,23 @@ export function MobileTimeline() {
             }
             disabled={clips.length === 0 || timelineZoom >= MAX_TIMELINE_ZOOM}
             aria-label="Zoom timeline in"
-            className="flex h-11 w-8 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-30 focus-visible:outline-brand"
+            className="flex h-9 w-8 touch-manipulation items-center justify-center rounded-md text-studio-muted active:bg-studio-hover active:text-studio-fg disabled:opacity-40 focus-visible:outline-brand"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
       <div
         ref={scrollRef}
+        onPointerDownCapture={handleTouchPointerDown}
+        onPointerMoveCapture={handleTouchPointerMove}
+        onPointerUpCapture={handleTouchPointerEnd}
+        onPointerCancelCapture={handleTouchPointerEnd}
         className={cn(
           "min-h-0 flex-1 overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
           clips.length > 0
-            ? "overflow-x-auto touch-pan-x"
+            ? "overflow-x-auto touch-none"
             : "overflow-x-hidden",
         )}
       >
@@ -425,7 +601,7 @@ export function MobileTimeline() {
             const visual = preview?.clipId === clip.id ? preview : null;
             const start = visual?.start ?? clip.timelineStart;
             const clipDuration = visual?.duration ?? clip.timelineDuration;
-            const selected = selectedClipIds.includes(clip.id);
+            const selected = selectedClipIds.includes(clip.id) || preview?.clipId === clip.id;
             const thumb = clip.assetId
               ? thumbnailUrls[clip.assetId]
               : undefined;
@@ -458,10 +634,10 @@ export function MobileTimeline() {
                     src={thumb}
                     alt=""
                     draggable={false}
-                    className="absolute inset-0 h-full w-full object-cover opacity-55"
+                    className="absolute inset-0 h-full w-full object-cover opacity-75"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-black/25" />
                 <div className="relative flex h-full items-center gap-1.5 px-2 text-[10px] font-medium text-white">
                   <Icon className="h-3 w-3 shrink-0" />
                   <span className="truncate">{clip.name}</span>
@@ -478,7 +654,7 @@ export function MobileTimeline() {
                       onPointerUp={commitDrag}
                       className="absolute inset-y-0 left-0 w-6 touch-none cursor-ew-resize bg-transparent"
                     >
-                      <span className="absolute inset-y-1 left-0 w-1 rounded-r bg-white shadow-sm" />
+                      <span className="absolute left-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-white shadow-sm" />
                     </button>
                     <button
                       type="button"
@@ -490,7 +666,7 @@ export function MobileTimeline() {
                       onPointerUp={commitDrag}
                       className="absolute inset-y-0 right-0 w-6 touch-none cursor-ew-resize bg-transparent"
                     >
-                      <span className="absolute inset-y-1 right-0 w-1 rounded-l bg-white shadow-sm" />
+                      <span className="absolute right-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-white shadow-sm" />
                     </button>
                   </>
                 ) : null}
@@ -508,6 +684,11 @@ export function MobileTimeline() {
           ) : null}
         </div>
       </div>
+      {clips.length > 0 ? (
+        <p className="pointer-events-none shrink-0 px-3 pb-2 pt-1 text-center text-[9px] leading-3 text-studio-muted/65">
+          Pinch to zoom · Swipe empty space to scroll
+        </p>
+      ) : null}
     </section>
   );
 }
