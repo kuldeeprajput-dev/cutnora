@@ -18,6 +18,8 @@ interface ThemedVideoPlayerProps {
   src: string;
   poster?: string;
   label: string;
+  previewFullscreen?: boolean;
+  onTogglePreviewFullscreen?: () => void;
 }
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
@@ -30,7 +32,7 @@ function formatMediaTime(seconds: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps) {
+export function ThemedVideoPlayer({ src, poster, label, previewFullscreen = false, onTogglePreviewFullscreen }: ThemedVideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
@@ -46,7 +48,8 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showRateMenu, setShowRateMenu] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const isFullscreen = isNativeFullscreen || previewFullscreen;
   const hideTimerRef = useRef<number | null>(null);
 
   const syncProgress = useCallback(() => {
@@ -86,6 +89,10 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
   };
 
   const toggleFullscreen = async () => {
+    if (window.matchMedia("(max-width: 1023px)").matches && onTogglePreviewFullscreen) {
+      onTogglePreviewFullscreen();
+      return;
+    }
     if (!containerRef.current) return;
     if (document.fullscreenElement) {
       await document.exitFullscreen().catch(() => {});
@@ -169,7 +176,11 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
   }, [syncProgress]);
 
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onFsChange = () => setIsNativeFullscreen(
+      window.matchMedia("(max-width: 1023px)").matches
+        ? document.fullscreenElement === containerRef.current
+        : Boolean(document.fullscreenElement),
+    );
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
@@ -191,7 +202,10 @@ export function ThemedVideoPlayer({ src, poster, label }: ThemedVideoPlayerProps
           toggleFullscreen();
         }
       }}
-      className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black outline-none ring-white/30 focus-visible:ring-2"
+      className={cn(
+        "group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black outline-none ring-white/30 focus-visible:ring-2",
+        isFullscreen && "max-lg:h-full max-lg:aspect-auto max-lg:rounded-none",
+      )}
       aria-label={`Video player: ${label}`}
     >
       <video

@@ -7,18 +7,21 @@ import { cn } from "@/shared/utils/cn";
 interface ThemedImagePreviewProps {
   src: string;
   alt: string;
+  previewFullscreen?: boolean;
+  onTogglePreviewFullscreen?: () => void;
 }
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const SCALE_STEP = 0.25;
 
-export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
+export function ThemedImagePreview({ src, alt, previewFullscreen = false, onTogglePreviewFullscreen }: ThemedImagePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const isFullscreen = isNativeFullscreen || previewFullscreen;
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Reset zoom & pan when image src changes
@@ -30,12 +33,20 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
 
   // Fullscreen change listener
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onFsChange = () => setIsNativeFullscreen(
+      window.matchMedia("(max-width: 1023px)").matches
+        ? document.fullscreenElement === containerRef.current
+        : Boolean(document.fullscreenElement),
+    );
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
+    if (window.matchMedia("(max-width: 1023px)").matches && onTogglePreviewFullscreen) {
+      onTogglePreviewFullscreen();
+      return;
+    }
     const el = containerRef.current;
     if (!el) return;
     try {
@@ -47,7 +58,7 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
     } catch {
       // Ignored if rejected by browser policy
     }
-  }, []);
+  }, [onTogglePreviewFullscreen]);
 
   const handleZoomIn = useCallback(() => {
     setScale((prev) => Math.min(MAX_SCALE, Math.round((prev + SCALE_STEP) * 100) / 100));
@@ -197,7 +208,9 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
       <div
         className={cn(
           "absolute z-20 flex items-center gap-1 rounded-full border border-white/10 bg-[#1A1A1A]/85 px-2.5 py-1 text-white shadow-xl backdrop-blur-md transition-opacity group-hover:opacity-100 sm:opacity-90",
-          isFullscreen ? "bottom-6 right-6" : "bottom-3 right-3"
+          isFullscreen
+            ? "bottom-6 right-6"
+            : "bottom-3 right-3"
         )}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
@@ -255,7 +268,7 @@ export function ThemedImagePreview({ src, alt }: ThemedImagePreviewProps) {
         <button
           type="button"
           onClick={toggleFullscreen}
-          aria-label={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
+          aria-label={previewFullscreen ? "Back to media details" : isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
           title={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
           className="flex h-6 w-6 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/15 hover:text-white cursor-pointer"
         >

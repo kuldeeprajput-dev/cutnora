@@ -116,6 +116,7 @@ function renderDragClipIcon(clipType: TimelineClip["type"]) {
 }
 
 export function TimelineEditor() {
+  const timelineRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const clipDragCleanupRef = useRef<(() => void) | null>(null);
 
@@ -228,7 +229,7 @@ export function TimelineEditor() {
   const isOverflowing =
     timelineViewportWidth > 0 && contentWidthPx > timelineViewportWidth;
   const totalWidthPx = isOverflowing ? Math.ceil(contentWidthPx) : 0;
-  const playheadLeftPx = 16 + playhead * zoom;
+  const playheadLeftPx = Math.round(16 + playhead * zoom - scrollLeft);
   const previousZoomRef = useRef(zoom);
 
   // Keep the visible playhead (or viewport center) in place while magnifying.
@@ -387,6 +388,7 @@ export function TimelineEditor() {
     const newScrollLeft = target.scrollLeft;
     const newScrollTop = target.scrollTop;
 
+    timelineRef.current?.style.setProperty("--timeline-scroll-top", `${newScrollTop}px`);
     setScrollLeft(newScrollLeft);
 
     rulerContainerRef.current?.scrollTo({ left: newScrollLeft });
@@ -676,11 +678,11 @@ export function TimelineEditor() {
 
   const playheadLineHeight =
     maxIntersectingTrackIndex >= 0
-      ? (maxIntersectingTrackIndex + 1) * trackHeight
+      ? (maxIntersectingTrackIndex + 1) * trackHeight - 4
       : 0;
 
   return (
-    <div className="flex h-full w-full flex-col bg-transparent text-studio-fg select-none overflow-hidden">
+    <div ref={timelineRef} className="flex h-full w-full flex-col bg-transparent text-studio-fg select-none overflow-hidden">
       {/* Top Timeline Toolbar */}
       <TimelineToolbar
         fitTimelineZoom={fitTimelineZoom}
@@ -690,7 +692,7 @@ export function TimelineEditor() {
       {/* Fixed Time Ruler Header Row */}
       <div
         className={cn(
-          "flex h-6 w-full shrink-0 border-b border-studio-border bg-transparent z-20",
+          "flex h-6 w-full shrink-0 bg-transparent z-20",
           timelineClipCount === 0 && "hidden",
         )}
       >
@@ -698,7 +700,7 @@ export function TimelineEditor() {
         <div
           style={{ width: `${trackHeaderWidth}px` }}
           className={cn(
-            "flex shrink-0 items-center justify-between border-r border-studio-border bg-transparent px-3",
+            "flex shrink-0 items-center justify-between border-b border-r border-studio-border bg-transparent px-3",
             !showTrackHeaders && "hidden",
           )}
         >
@@ -719,16 +721,32 @@ export function TimelineEditor() {
         />
 
         {/* Time Ruler Horizontal Scroll Area */}
-        <div
-          ref={rulerContainerRef}
-          className="flex-1 overflow-hidden relative"
-        >
-          <TimeRuler
-            duration={visibleTimelineDuration}
-            zoom={zoom}
-            scrollLeft={scrollLeft}
-            viewportWidth={timelineViewportWidth}
-          />
+        <div className="relative min-w-0 flex-1">
+          <div ref={rulerContainerRef} className="relative h-full overflow-hidden">
+            <TimeRuler
+              duration={visibleTimelineDuration}
+              zoom={zoom}
+              scrollLeft={scrollLeft}
+              viewportWidth={timelineViewportWidth}
+            />
+          </div>
+          <div className="pointer-events-none absolute inset-0 z-30 overflow-x-clip overflow-y-visible">
+            <div
+              className="absolute top-0 w-3 -translate-x-1/2"
+              style={{ left: playheadLeftPx }}
+            >
+              <div
+                className="relative z-10 h-3 w-3 rounded-t-[2px] bg-studio-fg"
+                style={{ clipPath: "polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%)" }}
+              />
+              <div
+                className="absolute left-1/2 top-2.5 w-0.5 -translate-x-1/2 bg-studio-fg"
+                style={{
+                  height: `max(14px, calc(${14 + playheadLineHeight}px - var(--timeline-scroll-top, 0px)))`,
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1041,18 +1059,6 @@ export function TimelineEditor() {
                   </span>
                 </div>
               )}
-
-              {/* Studio Scrubber Line */}
-              <div
-                style={{
-                  left: `${playheadLeftPx}px`,
-                  height:
-                    playheadLineHeight > 0 ? `${playheadLineHeight}px` : 0,
-                }}
-                className={`absolute top-0 w-[1.5px] bg-studio-fg/95 z-30 pointer-events-none shadow-[0_0_0_1px_rgba(0,0,0,0.18)] -translate-x-1/2 ${
-                  playheadLineHeight === 0 ? "hidden" : ""
-                }`}
-              />
 
               {/* Active Snapping Guideline */}
               {activeSnapLine !== null && (

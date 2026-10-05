@@ -22,7 +22,6 @@ export function TimeRuler({
 }: TimeRulerProps) {
   const rulerRef = useRef<HTMLDivElement>(null);
   const seekingPointer = useRef<number | null>(null);
-  const playhead = usePlaybackStore((state) => state.playhead);
   const fps = usePlaybackStore((state) => state.fps);
   const [isSeeking, setIsSeeking] = useState(false);
 
@@ -40,7 +39,6 @@ export function TimeRuler({
     [duration, zoom, fps, scrollLeft, viewportWidth],
   );
   const totalWidthPx = Math.max(100, duration * zoom + RULER_OFFSET_X + 60);
-  const playheadLeftPx = RULER_OFFSET_X + playhead * zoom;
 
   const seekFromPointer = (event: React.PointerEvent) => {
     if (!rulerRef.current) return;
@@ -92,23 +90,13 @@ export function TimeRuler({
           />
           {tick.label && (
             <span
-              className={`absolute bottom-0.5 whitespace-nowrap font-mono text-[10px] leading-none tabular-nums text-studio-muted ${tick.time === 0 ? "translate-x-0" : "-translate-x-1/2"}`}
+              className="absolute bottom-0.5 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] leading-none tabular-nums text-studio-muted"
             >
               {tick.label}
             </span>
           )}
         </div>
       ))}
-      <div
-        style={{ left: `${playheadLeftPx}px` }}
-        className="pointer-events-none absolute inset-y-0 z-30 w-3 -translate-x-1/2"
-      >
-        <div
-          className="relative z-10 h-3 w-3 rounded-t-[2px] bg-studio-fg"
-          style={{ clipPath: "polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%)" }}
-        />
-        <div className="absolute bottom-0 left-1/2 top-3 w-[1.5px] -translate-x-1/2 bg-studio-fg/95" />
-      </div>
     </div>
   );
 }

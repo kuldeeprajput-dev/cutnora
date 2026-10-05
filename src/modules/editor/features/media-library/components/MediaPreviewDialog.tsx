@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -23,6 +23,7 @@ import { ensureHighQualityThumbnail } from "@/modules/editor/features/media-libr
 import { Button } from "@/shared/components/ui/Button";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
+import { cn } from "@/shared/utils/cn";
 import { ThemedImagePreview } from "./ThemedImagePreview";
 import { ThemedVideoPlayer } from "./ThemedVideoPlayer";
 
@@ -84,9 +85,49 @@ export function MediaPreviewDialog({
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [posterUrl, setPosterUrl] = useState<string | undefined>();
   const [loadError, setLoadError] = useState("");
+  const [isPreviewFullscreen, setPreviewFullscreen] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
   const currentIndex = asset ? assets.findIndex((item) => item.id === asset.id) : -1;
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < assets.length - 1;
+
+  useEffect(() => setPreviewFullscreen(false), [asset?.id]);
+
+  useEffect(() => {
+    if (!isPreviewFullscreen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    previewRef.current?.querySelector<HTMLButtonElement>("[data-preview-back]")?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setPreviewFullscreen(false);
+      } else if (event.key === "Tab") {
+        event.stopPropagation();
+        const focusables = Array.from(previewRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), [tabindex="0"]',
+        ) ?? []).filter((element) => element.getClientRects().length > 0);
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    const mobileQuery = window.matchMedia("(max-width: 1023px)");
+    const handleResize = () => { if (!mobileQuery.matches) setPreviewFullscreen(false); };
+    window.addEventListener("keydown", handleKeyDown, true);
+    mobileQuery.addEventListener("change", handleResize);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      mobileQuery.removeEventListener("change", handleResize);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [isPreviewFullscreen]);
 
   useEffect(() => {
     let active = true;
@@ -157,11 +198,28 @@ export function MediaPreviewDialog({
       title="Media preview"
       description="Review source media before adding to timeline."
       mobileBottomSheet
-      className="max-w-[920px] overflow-y-auto border-studio-border bg-studio-panel p-3 sm:p-5"
+      className={cn(
+        "max-w-[920px] overflow-y-auto border-studio-border bg-studio-panel p-3 sm:p-5",
+        isPreviewFullscreen && "fixed inset-0 h-dvh max-h-none max-w-none overflow-hidden rounded-none border-0 bg-black p-0 sm:max-h-none sm:rounded-none sm:border-0 sm:p-0 [&>div:first-child]:hidden [&>div:last-child]:h-full",
+      )}
     >
-      <div className="grid min-h-0 overflow-hidden rounded-xl border border-studio-border bg-studio-panel-raised/40 lg:grid-cols-[minmax(0,1fr)_250px]">
-        <section className="min-w-0">
-          <div className="flex min-h-[210px] items-center justify-center p-2.5 sm:min-h-[300px] sm:p-4">
+      <div className={cn("grid min-h-0 overflow-hidden rounded-xl border border-studio-border bg-studio-panel-raised/40 lg:grid-cols-[minmax(0,1fr)_250px]", isPreviewFullscreen && "h-full rounded-none border-0 lg:grid-cols-1")}>
+        <section className={cn("min-w-0", isPreviewFullscreen && "h-full")}>
+          <div ref={previewRef} className={cn("flex min-h-[210px] items-center justify-center p-2.5 sm:min-h-[300px] sm:p-4", isPreviewFullscreen && "relative h-full min-h-0 p-0 sm:min-h-0 sm:p-0")}>
+            {isPreviewFullscreen && (
+              <div className="absolute inset-x-0 top-[env(safe-area-inset-top)] z-30 flex items-center gap-2 py-2 pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] text-white">
+                <button
+                  type="button"
+                  data-preview-back
+                  aria-label="Back to media details"
+                  onClick={() => setPreviewFullscreen(false)}
+                  className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full bg-black/60 active:bg-white/15"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <span className="min-w-0 truncate text-xs font-medium drop-shadow-md">{asset.name}</span>
+              </div>
+            )}
             {asset.type !== "audio" && !sourceUrl && !loadError && (
               <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-black/40">
                 <Loader2 className="h-6 w-6 animate-spin text-studio-muted" aria-label="Loading preview" />
@@ -174,14 +232,14 @@ export function MediaPreviewDialog({
                 <p className="max-w-sm text-xs text-studio-muted">{loadError}</p>
               </div>
             )}
-            {sourceUrl && asset.type === "video" && <ThemedVideoPlayer src={sourceUrl} poster={posterUrl} label={asset.name} />}
+            {sourceUrl && asset.type === "video" && <ThemedVideoPlayer src={sourceUrl} poster={posterUrl} label={asset.name} previewFullscreen={isPreviewFullscreen} onTogglePreviewFullscreen={() => setPreviewFullscreen((current) => !current)} />}
             {sourceUrl && asset.type === "image" && (
-              <ThemedImagePreview src={sourceUrl} alt={asset.name} />
+              <ThemedImagePreview src={sourceUrl} alt={asset.name} previewFullscreen={isPreviewFullscreen} onTogglePreviewFullscreen={() => setPreviewFullscreen((current) => !current)} />
             )}
             {asset.type === "audio" && <AudioArtwork asset={asset} />}
           </div>
 
-          <nav aria-label="Media preview navigation" className="flex items-center justify-between border-t border-studio-border bg-studio-panel-raised/60 px-2 py-2 sm:px-3">
+          <nav aria-label="Media preview navigation" className={cn("flex items-center justify-between border-t border-studio-border bg-studio-panel-raised/60 px-2 py-2 sm:px-3", isPreviewFullscreen && "hidden")}>
             <Button size="sm" variant="ghost" disabled={!hasPrevious} onClick={() => onSelect(assets[currentIndex - 1])} aria-label="Previous media" className="text-studio-muted hover:text-studio-fg hover:bg-studio-hover">
               <ArrowLeft className="h-3.5 w-3.5 mr-1" />
               <span className="hidden sm:inline">Previous</span>
@@ -195,7 +253,7 @@ export function MediaPreviewDialog({
           </nav>
         </section>
 
-        <aside className="flex min-w-0 flex-col border-t border-studio-border bg-studio-panel-raised/60 p-4 lg:border-l lg:border-t-0">
+        <aside className={cn("flex min-w-0 flex-col border-t border-studio-border bg-studio-panel-raised/60 p-4 lg:border-l lg:border-t-0", isPreviewFullscreen && "hidden")}>
           <div className="min-w-0">
             <Tooltip content={asset.name} position="bottom" className="max-w-72 whitespace-normal text-left">
               <p className="line-clamp-2 min-w-0 cursor-default text-sm font-semibold leading-5 text-studio-fg">{asset.name}</p>

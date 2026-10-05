@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -10,10 +10,9 @@ import {
   Copy,
   Download,
   FolderPlus,
-  Image as ImageIcon,
   Layout,
   Maximize,
-  Music,
+  Mic,
   Pause,
   Play,
   Redo2,
@@ -21,11 +20,9 @@ import {
   Scissors,
   Settings2,
   Shapes,
-  SlidersHorizontal,
   Trash2,
   Type,
   Undo2,
-  Video,
   Volume2,
   VolumeX,
   X,
@@ -74,13 +71,11 @@ const primaryTools: ToolItem[] = [
   { id: "media", label: "Media", icon: FolderPlus },
   { id: "canvas", label: "Canvas", icon: Layout },
   { id: "text", label: "Text", icon: Type },
-  { id: "audio", label: "Audio", icon: Music },
 ];
 
 const moreTools: ToolItem[] = [
-  { id: "videos", label: "Videos", icon: Video },
-  { id: "images", label: "Images", icon: ImageIcon },
   { id: "elements", label: "Elements", icon: Shapes },
+  { id: "record", label: "Record", icon: Mic },
 ];
 
 const ExportModal = dynamic(
@@ -133,10 +128,28 @@ export function MobileProjectShell() {
   );
   const isExportModalOpen = useExportStore((state) => state.isExportModalOpen);
   const [sheet, setSheet] = useState<MobileSheet>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [nameInput, setNameInput] = useState(currentProject?.name ?? "Untitled video");
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [isRepairing, setIsRepairing] = useState(false);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+
+  useLayoutEffect(() => {
+    const editor = editorRef.current;
+    const preview = previewRef.current;
+    if (!editor || !preview) return;
+
+    const updatePanelTop = () => {
+      const top = preview.getBoundingClientRect().bottom - editor.getBoundingClientRect().top;
+      editor.style.setProperty("--mobile-panel-top", `${Math.round(top)}px`);
+    };
+    updatePanelTop();
+    const observer = new ResizeObserver(updatePanelTop);
+    observer.observe(editor);
+    observer.observe(preview);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const syncFullscreen = () => setIsEditorFullscreen(Boolean(document.fullscreenElement));
@@ -298,13 +311,8 @@ export function MobileProjectShell() {
     togglePlay();
   };
 
-  const firstInspectorAction =
-    selectedClip?.type === "audio"
-      ? { label: "Volume", tab: "audio", icon: Music }
-      : { label: "Adjust", tab: "adjust", icon: SlidersHorizontal };
-
   return (
-    <div className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
+    <div ref={editorRef} className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
       <header className="flex h-[calc(60px+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-studio-border bg-studio-topbar px-2.5 pt-[env(safe-area-inset-top)]">
         <Link
           href="/projects"
@@ -407,7 +415,7 @@ export function MobileProjectShell() {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="relative min-h-[160px] flex-[0.85] overflow-hidden bg-canvas-bg [@media(max-height:600px)]:min-h-[120px] [@media(max-height:480px)]:min-h-[96px]">
+        <div ref={previewRef} className="relative min-h-[160px] flex-[0.85] overflow-hidden bg-canvas-bg [@media(max-height:600px)]:min-h-[120px] [@media(max-height:480px)]:min-h-[96px]">
           <ErrorBoundary
             fallbackTitle="Stage Preview Error"
             fallbackMessage="Stage failed to render preview frame."
@@ -570,50 +578,63 @@ export function MobileProjectShell() {
       </main>
 
       {selectedClip ? (
-        <nav aria-label="Clip actions" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <MobileNavButton
-            label="Split"
-            icon={Scissors}
-            onClick={handleSplit}
-          />
-          <MobileNavButton
-            label={firstInspectorAction.label}
-            icon={firstInspectorAction.icon}
-            onClick={() => openInspector(firstInspectorAction.tab)}
-          />
-          <MobileNavButton
-            label="Transform"
-            icon={Settings2}
-            onClick={() => openInspector("transform")}
-          />
-          <MobileNavButton
-            label="Duplicate"
-            icon={Copy}
-            onClick={() => duplicateClips([selectedClip.id])}
-          />
-          <MobileNavButton
-            label="Delete"
-            icon={Trash2}
-            onClick={handleDelete}
-            destructive
-          />
-          <MobileNavButton
-            label="Done"
-            icon={ChevronDown}
-            onClick={() => {
-              clearSelection();
-              setSheet(null);
-            }}
-          />
+        <nav aria-label="Clip actions" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 items-stretch overflow-hidden border-t border-studio-border bg-studio-topbar px-2 pb-[env(safe-area-inset-bottom)]">
+          <div className="flex min-w-0 flex-1 snap-x snap-mandatory items-center gap-1 overflow-x-auto overflow-y-hidden touch-pan-x py-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&>button]:h-[52px]">
+            <MobileNavButton
+              label="Split"
+              icon={Scissors}
+              onClick={handleSplit}
+            />
+            <MobileNavButton
+              label="Duplicate"
+              icon={Copy}
+              onClick={() => duplicateClips([selectedClip.id])}
+            />
+            <MobileNavButton
+              label="Delete"
+              icon={Trash2}
+              onClick={handleDelete}
+            />
+            {selectedClip.type !== "audio" && selectedClip.type !== "text" ? (
+              <MobileNavButton
+                label="Transform"
+                icon={Settings2}
+                onClick={() => openInspector("transform")}
+              />
+            ) : null}
+            {selectedClip.type === "text" ? (
+              <MobileNavButton
+                label="Text"
+                icon={Type}
+                onClick={() => openInspector("text")}
+              />
+            ) : null}
+          </div>
+          <div className="relative flex w-16 shrink-0 items-center justify-end bg-studio-topbar pl-2">
+            <button
+              type="button"
+              aria-label="Done editing this clip"
+              title="Done editing this clip"
+              onClick={() => {
+                clearSelection();
+                setSheet(null);
+              }}
+              className="group flex h-[52px] w-14 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold text-studio-fg active:bg-studio-hover focus-visible:outline-brand focus-visible:outline-offset-2"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-brand-contrast shadow-sm transition-transform group-active:scale-95">
+                <Check aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={2.5} />
+              </span>
+              <span>Done</span>
+            </button>
+          </div>
         </nav>
       ) : (
-        <nav aria-label="Editor tools" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <nav aria-label="Editor tools" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory items-center gap-1 overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-2 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&>button]:h-[52px]">
           {[...primaryTools, ...moreTools].map((tool) => (
             <MobileNavButton
               key={tool.id}
               label={tool.label}
               icon={tool.icon}
-              prominent={tool.id === "media"}
               active={activeTool === tool.id && sheet !== null}
               onClick={() => openTool(tool.id)}
             />
@@ -624,13 +645,15 @@ export function MobileProjectShell() {
       {sheet ? (
         <div
           className="absolute inset-0 z-40 bg-black/45 backdrop-blur-[1px]"
+          style={{ top: "var(--mobile-panel-top, 50%)" }}
           onPointerDown={() => setSheet(null)}
         />
       ) : null}
 
       {sheet ? (
         <aside
-          className="absolute inset-x-0 bottom-0 z-50 mx-auto flex h-[min(76dvh,680px)] max-h-[calc(100dvh-64px)] min-h-[360px] w-full flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-studio-border bg-studio-panel shadow-2xl sm:max-w-[720px]"
+          className="absolute inset-x-0 bottom-0 z-50 mx-auto flex min-h-0 w-full flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-studio-border bg-studio-panel shadow-2xl sm:max-w-[720px]"
+          style={{ top: "var(--mobile-panel-top, 50%)" }}
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="flex h-11 shrink-0 items-center gap-3 border-b border-studio-border px-4">
@@ -640,7 +663,9 @@ export function MobileProjectShell() {
                 ? selectedClip
                   ? "Clip settings"
                   : "Canvas settings"
-                : "Add to project"}
+                : activeTool === "record"
+                  ? "Record media"
+                  : "Add to project"}
             </h2>
             <button
               type="button"
@@ -674,15 +699,11 @@ function MobileNavButton({
   icon: Icon,
   onClick,
   active = false,
-  prominent = false,
-  destructive = false,
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   onClick: () => void;
   active?: boolean;
-  prominent?: boolean;
-  destructive?: boolean;
 }) {
   return (
     <button
@@ -690,20 +711,17 @@ function MobileNavButton({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "flex min-h-11 w-[62px] min-w-[62px] flex-1 snap-start touch-manipulation flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium transition-colors active:bg-studio-hover focus-visible:outline-brand",
-        active ? "text-brand" : "text-studio-muted",
-        destructive && "text-destructive",
+        "flex min-h-11 w-[62px] min-w-[62px] flex-1 snap-start touch-manipulation flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition-colors active:bg-studio-hover focus-visible:outline-brand",
+        active ? "text-brand" : "text-studio-fg/75",
       )}
     >
       <span
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-lg",
+          "flex h-8 w-8 items-center justify-center rounded-xl",
           active && "bg-brand/12",
-          prominent &&
-            "rounded-full bg-brand text-brand-contrast shadow-lg shadow-brand/25",
         )}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-4.5 w-4.5" />
       </span>
       <span className="truncate">{label}</span>
     </button>

@@ -209,7 +209,7 @@ export function SelectionOverlay({
           style={{
             cursor: getRotatedResizeCursor(h.mode, clip.transform.rotation),
           }}
-          className={`pointer-events-auto absolute ${isTextClip || isElementClip ? `${compactControls ? "flex" : "block"} touch-none before:absolute before:-inset-4 before:content-[''] lg:before:hidden` : "hidden lg:block"} h-3 w-3 z-40 ${compactControls ? "rounded-full items-center justify-center" : mediaControls ? `${isCornerHandle(h.mode) ? "rounded-[4px]" : "rounded-full"} border-[1.5px] border-black/65 bg-white shadow-[0_2px_5px_rgba(0,0,0,0.28)] ring-1 ring-white/20 transition-transform duration-150 hover:scale-110 hover:border-black/85` : "rounded-full border-2 border-black/90 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.6)] hover:scale-125 hover:border-black transition-transform"} ${h.className}`}
+          className={`pointer-events-auto absolute ${isTextClip ? "flex touch-none before:absolute before:-inset-4 before:content-[''] lg:before:hidden" : compactControls ? "hidden touch-none lg:flex" : "hidden lg:block"} h-3 w-3 z-40 ${compactControls ? "rounded-full items-center justify-center" : mediaControls ? `${isCornerHandle(h.mode) ? "rounded-[4px]" : "rounded-full"} border-[1.5px] border-black/65 bg-white shadow-[0_2px_5px_rgba(0,0,0,0.28)] ring-1 ring-white/20 transition-transform duration-150 hover:scale-110 hover:border-black/85` : "rounded-full border-2 border-black/90 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.6)] hover:scale-125 hover:border-black transition-transform"} ${h.className}`}
         >
           {compactControls && (
             <span className={`pointer-events-none rounded-full border border-black/60 bg-white shadow-sm ${isCornerHandle(h.mode) ? "h-1.5 w-1.5" : "h-1 w-1"}`} />
