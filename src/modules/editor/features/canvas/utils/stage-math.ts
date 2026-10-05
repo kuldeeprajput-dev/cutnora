@@ -15,6 +15,27 @@ export interface Bounds {
   height: number;
 }
 
+export function transformBoundsWithGesture(
+  bounds: Bounds,
+  startAnchor: Point,
+  anchor: Point,
+  scale: number,
+  rotation: number,
+): Bounds {
+  const offsetX = bounds.x + bounds.width / 2 - startAnchor.x;
+  const offsetY = bounds.y + bounds.height / 2 - startAnchor.y;
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const width = bounds.width * scale;
+  const height = bounds.height * scale;
+  return {
+    x: anchor.x + (offsetX * cos - offsetY * sin) * scale - width / 2,
+    y: anchor.y + (offsetX * sin + offsetY * cos) * scale - height / 2,
+    width,
+    height,
+  };
+}
+
 export function calculateFitScale(containerSize: Size, projectSize: Size): number {
   if (projectSize.width <= 0 || projectSize.height <= 0) return 1;
   const scaleX = containerSize.width / projectSize.width;

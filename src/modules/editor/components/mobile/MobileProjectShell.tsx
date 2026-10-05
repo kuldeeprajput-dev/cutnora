@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -26,15 +26,23 @@ import {
   Type,
   Undo2,
   Video,
+  Volume2,
+  VolumeX,
   X,
   SkipBack,
   SkipForward,
+  MoreHorizontal,
+  Pencil,
+  Minimize,
+  Wrench,
+  Loader2,
 } from "lucide-react";
 import { ContextualPanel } from "../panels/ContextualPanel";
 import { PreviewStage } from "../stage/PreviewStage";
 import { MobileTimeline } from "./MobileTimeline";
 import { useEditorUIStore } from "@/modules/editor/store/useEditorUIStore";
 import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
+import { playbackClock } from "@/modules/editor/features/playback/services/playback-clock";
 import { useExportStore } from "@/modules/editor/store/useExportStore";
 import { historyManager } from "@/modules/editor/store/useHistoryStore";
 import type { EditorTool, TimelineClip } from "@/modules/editor/types";
@@ -42,6 +50,17 @@ import { useProjectStore, autosaveService } from "@/modules/projects";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { cn } from "@/shared/utils/cn";
+import { DropdownMenu, DropdownMenuItem } from "@/shared/components/ui/DropdownMenu";
+import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
+
+const MOBILE_HEADER_MENU_ITEM_CLASS =
+  "min-h-11 gap-3 px-3 text-[13px] disabled:cursor-not-allowed disabled:opacity-35";
+const MOBILE_STAGE_ZOOM_OPTIONS = ["fit", 25, 50, 75, 100, 150] as const;
+const MOBILE_PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const MOBILE_PLAYBACK_MENU_CLASS =
+  "max-h-[min(55dvh,320px)] max-w-[calc(100vw-24px)] overflow-y-auto overscroll-contain p-0.5";
+const MOBILE_PLAYBACK_OPTION_CLASS =
+  "h-8 min-h-8 justify-between rounded-md px-2 py-0 text-[11px] leading-4 tabular-nums touch-manipulation active:bg-studio-hover [@media(max-height:480px)]:h-7 [@media(max-height:480px)]:min-h-7";
 
 type MobileSheet = "library" | "inspector" | null;
 
@@ -100,6 +119,9 @@ export function MobileProjectShell() {
   const setZoomMode = useEditorUIStore((state) => state.setZoomMode);
   const triggerResetView = useEditorUIStore((state) => state.triggerResetView);
   const isPlaying = usePlaybackStore((state) => state.isPlaying);
+  const playbackRate = usePlaybackStore((state) => state.playbackRate);
+  const previewMuted = usePlaybackStore((state) => state.previewMuted);
+  const setPreviewMuted = usePlaybackStore((state) => state.setPreviewMuted);
   const isLooping = usePlaybackStore((state) => state.isLooping);
   const togglePlay = usePlaybackStore((state) => state.togglePlay);
   const stepBackward = usePlaybackStore((state) => state.stepBackward);
@@ -111,40 +133,71 @@ export function MobileProjectShell() {
   );
   const isExportModalOpen = useExportStore((state) => state.isExportModalOpen);
   const [sheet, setSheet] = useState<MobileSheet>(null);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState("");
+  const [nameInput, setNameInput] = useState(currentProject?.name ?? "Untitled video");
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+
+  useEffect(() => {
+    const syncFullscreen = () => setIsEditorFullscreen(Boolean(document.fullscreenElement));
+    syncFullscreen();
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
+
+  const handleEditorFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      useToastStore.getState().showToast("Fullscreen is unavailable in this browser", "error");
+    }
+  };
+
+  const handleRepair = async () => {
+    if (isRepairing) return;
+    setIsRepairing(true);
+    try {
+      const fixed = await useProjectStore.getState().repairProjectReferences();
+      useToastStore.getState().showToast(
+        fixed > 0 ? `Repaired ${fixed} project reference(s)` : "All project references are healthy",
+        "success",
+      );
+    } catch {
+      useToastStore.getState().showToast("Failed to scan project references", "error");
+    } finally {
+      setIsRepairing(false);
+    }
+  };
 
   const projectName = currentProject?.name ?? "Untitled video";
 
   useEffect(() => {
-    setNameInput((currentName) =>
-      currentName === projectName ? currentName : projectName,
-    );
+    setNameInput((name) => name === projectName ? name : projectName);
   }, [projectName]);
 
-  const handleNameBlur = () => {
-    setIsEditingName(false);
+  const handleRename = (name: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setNameInput(projectName);
+      return;
+    }
     if (
       currentProject &&
-      nameInput.trim() &&
-      nameInput !== currentProject.name
+      trimmedName !== currentProject.name
     ) {
       useProjectStore.setState((state) => {
         if (state.currentProject) {
-          state.currentProject.name = nameInput.trim();
+          state.currentProject.name = trimmedName;
         }
       });
-      autosaveService.scheduleSave(currentProject);
+      const updatedProject = useProjectStore.getState().currentProject;
+      if (updatedProject) autosaveService.scheduleSave(updatedProject);
     }
-  };
-
-  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleNameBlur();
-    } else if (e.key === "Escape") {
-      setIsEditingName(false);
-      setNameInput(projectName);
-    }
+    setNameInput(trimmedName);
   };
 
   const clips = useMemo(
@@ -252,45 +305,47 @@ export function MobileProjectShell() {
 
   return (
     <div className="relative flex h-dvh w-full min-w-0 flex-col overflow-hidden bg-studio-bg text-studio-fg select-none">
-      <header className="flex h-[calc(54px+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-studio-border bg-studio-topbar px-3 pt-[env(safe-area-inset-top)]">
+      <header className="flex h-[calc(60px+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-studio-border bg-studio-topbar px-2.5 pt-[env(safe-area-inset-top)]">
         <Link
           href="/projects"
           aria-label="Back to projects"
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg"
+          className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg active:bg-studio-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/30"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
 
-        <div className="flex min-w-0 flex-1 items-center justify-center px-2">
-          {isEditingName ? (
-            <input
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={handleNameBlur}
-              onKeyDown={handleNameKeyDown}
-              autoFocus
-              className="h-7 w-full max-w-[150px] rounded border border-brand bg-studio-bg px-2 text-center text-xs font-bold text-studio-fg focus:outline-none"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsEditingName(true)}
-              title="Click to rename project"
-              className="truncate rounded-md px-2 py-1 text-xs font-bold text-studio-fg transition-colors hover:bg-studio-hover active:bg-studio-hover"
-            >
-              {projectName}
-            </button>
-          )}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+          <input
+            ref={titleInputRef}
+            type="text"
+            aria-label="Project name"
+            value={nameInput}
+            onChange={(event) => setNameInput(event.target.value)}
+            onBlur={(event) => handleRename(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                event.currentTarget.blur();
+              } else if (event.key === "Escape") {
+                event.currentTarget.value = projectName;
+                setNameInput(projectName);
+                event.currentTarget.blur();
+              }
+            }}
+            enterKeyHint="done"
+            autoComplete="off"
+            spellCheck={false}
+            className="h-5 w-full min-w-0 appearance-none rounded-none border-0 bg-transparent p-0 text-base font-semibold leading-5 tracking-tight text-studio-fg shadow-none outline-none focus:outline-none focus:ring-0"
+          />
         </div>
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           <button
             type="button"
             onClick={undo}
             disabled={!canUndo}
             aria-label="Undo"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg active:bg-studio-hover disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/30"
           >
             <Undo2 className="h-4.5 w-4.5" />
           </button>
@@ -299,28 +354,60 @@ export function MobileProjectShell() {
             onClick={redo}
             disabled={!canRedo}
             aria-label="Redo"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted hover:bg-studio-hover hover:text-studio-fg disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg active:bg-studio-hover disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/30"
           >
             <Redo2 className="h-4.5 w-4.5" />
           </button>
-          <ThemeToggle
-            variant="ghost"
-            className="flex h-9 w-9 min-w-0 items-center justify-center rounded-xl border-0 bg-transparent p-0 text-studio-muted hover:bg-studio-hover hover:text-studio-fg focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-          <button
-            type="button"
-            onClick={() => setExportModalOpen(true)}
-            disabled={clips.length === 0}
-            aria-label="Export"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-studio-muted hover:bg-studio-hover hover:text-brand disabled:opacity-35"
+          <DropdownMenu
+            align="right"
+            animated={false}
+            className="w-52 bg-studio-topbar shadow-lg backdrop-blur-none"
+            trigger={(isOpen) => (
+              <button
+                type="button"
+                aria-label="More editor options"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                className={cn(
+                  "flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-studio-muted transition-colors hover:bg-studio-hover hover:text-studio-fg active:bg-studio-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-fg/30",
+                  isOpen && "bg-studio-hover text-studio-fg",
+                )}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
+            )}
           >
-            <Download className="h-4.5 w-4.5" />
-          </button>
+            <DropdownMenuItem className={MOBILE_HEADER_MENU_ITEM_CLASS} onClick={() => setExportModalOpen(true)} disabled={clips.length === 0}>
+              <Download className="h-4 w-4 text-studio-muted" />
+              Export video
+            </DropdownMenuItem>
+            <DropdownMenuItem className={MOBILE_HEADER_MENU_ITEM_CLASS} onClick={() => void handleEditorFullscreen()}>
+              {isEditorFullscreen ? <Minimize className="h-4 w-4 text-studio-muted" /> : <Maximize className="h-4 w-4 text-studio-muted" />}
+              {isEditorFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            </DropdownMenuItem>
+            <DropdownMenuItem className={MOBILE_HEADER_MENU_ITEM_CLASS} onClick={() => void handleRepair()} disabled={isRepairing}>
+              {isRepairing ? <Loader2 className="h-4 w-4 animate-spin text-studio-muted" /> : <Wrench className="h-4 w-4 text-studio-muted" />}
+              {isRepairing ? "Repairing…" : "Repair project"}
+            </DropdownMenuItem>
+            <div role="separator" className="my-1 border-t border-studio-border" />
+            <DropdownMenuItem className={MOBILE_HEADER_MENU_ITEM_CLASS} onClick={() => {
+              titleInputRef.current?.focus();
+              titleInputRef.current?.select();
+            }}>
+              <Pencil className="h-4 w-4 text-studio-muted" />
+              Rename project
+            </DropdownMenuItem>
+            <ThemeToggle
+              variant="outline"
+              showLabel
+              className="h-11 w-full justify-start gap-3 rounded-lg border-0 bg-transparent px-3 text-studio-fg shadow-none hover:bg-studio-hover [&_span]:text-[13px] [&_span]:font-medium"
+            />
+          </DropdownMenu>
         </div>
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="relative min-h-[160px] flex-[1.2] overflow-hidden bg-canvas-bg [@media(max-height:600px)]:min-h-[120px] [@media(max-height:480px)]:min-h-[96px]">
+        <div className="relative min-h-[160px] flex-[0.85] overflow-hidden bg-canvas-bg [@media(max-height:600px)]:min-h-[120px] [@media(max-height:480px)]:min-h-[96px]">
           <ErrorBoundary
             fallbackTitle="Stage Preview Error"
             fallbackMessage="Stage failed to render preview frame."
@@ -329,58 +416,88 @@ export function MobileProjectShell() {
           </ErrorBoundary>
         </div>
 
-        <div className="flex h-[58px] min-w-0 shrink-0 items-center justify-between gap-1 overflow-hidden border-y border-studio-border bg-studio-topbar px-2 [@media(max-height:480px)]:h-[52px]">
-          <div className="flex min-w-0 items-center justify-center gap-0.5">
-            <label className="relative block h-10 w-[102px] shrink-0 max-[359px]:w-[88px]">
-              <span className="sr-only">Stage zoom</span>
-              <select
-                value={zoomMode === "fit" ? "fit" : String(zoomMode)}
-                onChange={(event) => handleStageZoomChange(event.target.value)}
-                className="h-full w-full appearance-none rounded-lg border border-studio-border bg-studio-panel pl-2.5 pr-7 text-[10px] font-semibold text-studio-fg outline-none focus:border-brand"
-              >
-                <option value="fit">Fit Stage</option>
-                <option value="25">25%</option>
-                <option value="50">50%</option>
-                <option value="75">75%</option>
-                <option value="100">100%</option>
-                <option value="150">150%</option>
-                <option value="200">200%</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-muted" />
-            </label>
+        <div className="grid h-11 min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_40px_minmax(0,1fr)] items-center border-y border-studio-border bg-studio-topbar px-1.5">
+          <div className="flex min-w-0 items-center justify-between pr-1">
+            <DropdownMenu
+              animated={false}
+              triggerClassName="w-16 shrink-0"
+              className={cn(MOBILE_PLAYBACK_MENU_CLASS, "w-32")}
+              trigger={(isOpen) => (
+                <button
+                  type="button"
+                  aria-label="Stage zoom"
+                  aria-haspopup="menu"
+                  aria-expanded={isOpen}
+                  className={cn(
+                    "flex h-10 w-full min-w-0 touch-manipulation items-center gap-0.5 rounded-lg px-1 text-[10px] font-medium text-studio-fg active:bg-studio-hover focus-visible:outline-brand",
+                    isOpen && "bg-studio-hover",
+                  )}
+                >
+                  <span className="w-[42px] shrink-0 truncate">{zoomMode === "fit" ? "Fit Stage" : `${zoomMode}%`}</span>
+                  <ChevronDown className={cn("h-2.5 w-2.5 shrink-0 text-studio-muted", isOpen && "rotate-180")} />
+                </button>
+              )}
+            >
+                {MOBILE_STAGE_ZOOM_OPTIONS.map((zoom) => (
+                  <DropdownMenuItem
+                    key={zoom}
+                    role="menuitemradio"
+                    aria-checked={zoomMode === zoom}
+                    onClick={() => handleStageZoomChange(String(zoom))}
+                    className={cn(
+                      MOBILE_PLAYBACK_OPTION_CLASS,
+                      zoomMode === zoom ? "bg-studio-hover text-studio-fg font-semibold" : "text-studio-muted",
+                    )}
+                  >
+                    <span>{zoom === "fit" ? "Fit Stage" : `${zoom}%`}</span>
+                    {zoomMode === zoom && <Check className="h-3 w-3 shrink-0" />}
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenu>
 
-            <span
-              className="mx-1 h-6 w-px shrink-0 bg-studio-border"
-              aria-hidden="true"
-            />
-
+            <button
+              type="button"
+              onClick={() => setPreviewMuted(!previewMuted)}
+              aria-label={previewMuted ? "Unmute preview audio" : "Mute preview audio"}
+              aria-pressed={previewMuted}
+              className={cn(
+                "flex h-10 w-6 shrink-0 touch-manipulation items-center justify-center rounded-lg active:bg-studio-hover focus-visible:outline-brand",
+                previewMuted ? "text-brand" : "text-studio-muted active:text-studio-fg",
+              )}
+            >
+              {previewMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            </button>
             <button
               type="button"
               onClick={stepBackward}
               aria-label="Previous frame"
-              className="flex h-10 w-9 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg"
+              className="flex h-10 w-7 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg focus-visible:outline-brand"
             >
-              <SkipBack className="h-4 w-4" />
+              <SkipBack className="h-3.5 w-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={handleMobilePlayback}
-              aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-2xl bg-brand text-brand-contrast shadow-lg shadow-brand/20 active:scale-95"
-            >
+          </div>
+          <button
+            type="button"
+            onClick={handleMobilePlayback}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            className="group flex h-10 w-10 touch-manipulation items-center justify-center rounded-xl text-brand-contrast focus-visible:outline-brand"
+          >
+            <span aria-hidden="true" className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand shadow-sm ring-1 ring-inset ring-brand-contrast/10 transition-transform duration-150 group-active:scale-95">
               {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
+                <Pause className="h-4 w-4 fill-current" />
               ) : (
-                <Play className="ml-0.5 h-5 w-5 fill-current" />
+                <Play className="ml-0.5 h-4 w-4 fill-current" />
               )}
-            </button>
+            </span>
+          </button>
+          <div className="flex min-w-0 items-center justify-between pl-1">
             <button
               type="button"
               onClick={stepForward}
               aria-label="Next frame"
-              className="flex h-10 w-9 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg"
+              className="flex h-10 w-7 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg focus-visible:outline-brand"
             >
-              <SkipForward className="h-4 w-4" />
+              <SkipForward className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
@@ -390,31 +507,70 @@ export function MobileProjectShell() {
               }
               aria-pressed={isLooping}
               className={cn(
-                "flex h-10 w-9 shrink-0 touch-manipulation items-center justify-center rounded-lg active:bg-studio-hover",
+                "flex h-10 w-6 shrink-0 touch-manipulation items-center justify-center rounded-lg active:bg-studio-hover focus-visible:outline-brand",
                 isLooping
                   ? "text-brand"
                   : "text-studio-muted active:text-studio-fg",
               )}
             >
-              <Repeat2 className="h-4 w-4" />
+              <Repeat2 className="h-3.5 w-3.5" />
+            </button>
+            <DropdownMenu
+              align="right"
+              animated={false}
+              triggerClassName="w-11 shrink-0"
+              className={cn(MOBILE_PLAYBACK_MENU_CLASS, "w-32")}
+              trigger={(isOpen) => (
+                <button
+                  type="button"
+                  aria-label={`Preview playback speed: ${playbackRate}×`}
+                  aria-haspopup="menu"
+                  aria-expanded={isOpen}
+                  className={cn(
+                    "flex h-10 w-full touch-manipulation items-center justify-center gap-0.5 rounded-lg px-0.5 text-[10px] font-medium tabular-nums text-studio-fg active:bg-studio-hover focus-visible:outline-brand",
+                    isOpen && "bg-studio-hover",
+                  )}
+                >
+                  <span className="w-6 shrink-0 text-center">{playbackRate}×</span>
+                  <ChevronDown className={cn("h-2.5 w-2.5 shrink-0 text-studio-muted", isOpen && "rotate-180")} />
+                </button>
+              )}
+            >
+              <div className="px-2 py-1.5 text-[9px] font-medium leading-3 text-studio-muted">Playback speed</div>
+                {MOBILE_PLAYBACK_RATES.map((rate) => (
+                  <DropdownMenuItem
+                    key={rate}
+                    role="menuitemradio"
+                    aria-checked={playbackRate === rate}
+                    onClick={() => playbackClock.setPlaybackRate(rate)}
+                    aria-label={rate === 1 ? "1×, normal speed" : `${rate}×`}
+                    className={cn(
+                      MOBILE_PLAYBACK_OPTION_CLASS,
+                      playbackRate === rate ? "bg-studio-hover text-studio-fg font-semibold" : "text-studio-muted",
+                    )}
+                  >
+                    <span>{rate}×{rate === 1 ? " · Normal" : ""}</span>
+                    {playbackRate === rate && <Check className="h-3 w-3 shrink-0" />}
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenu>
+
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(true)}
+              aria-label="Fullscreen preview"
+              className="flex h-10 w-7 shrink-0 touch-manipulation items-center justify-center rounded-lg text-studio-muted active:bg-studio-hover active:text-studio-fg focus-visible:outline-brand"
+            >
+              <Maximize className="h-3.5 w-3.5" />
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(true)}
-            aria-label="Fullscreen preview"
-            className="flex h-11 w-10 shrink-0 touch-manipulation items-center justify-center rounded-xl text-studio-muted active:bg-studio-hover active:text-studio-fg"
-          >
-            <Maximize className="h-5 w-5" />
-          </button>
         </div>
 
         {!isFullscreen ? <MobileTimeline /> : null}
       </main>
 
       {selectedClip ? (
-        <nav className="flex h-[calc(78px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <nav aria-label="Clip actions" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <MobileNavButton
             label="Split"
             icon={Scissors}
@@ -451,7 +607,7 @@ export function MobileProjectShell() {
           />
         </nav>
       ) : (
-        <nav className="flex h-[calc(78px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <nav aria-label="Editor tools" className="flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-t border-studio-border bg-studio-topbar px-1 pb-[env(safe-area-inset-bottom)] touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {[...primaryTools, ...moreTools].map((tool) => (
             <MobileNavButton
               key={tool.id}
@@ -534,20 +690,20 @@ function MobileNavButton({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "flex min-h-11 w-[72px] min-w-[72px] shrink-0 snap-start touch-manipulation flex-col items-center justify-center gap-1 text-[9px] font-medium transition-colors",
+        "flex min-h-11 w-[62px] min-w-[62px] flex-1 snap-start touch-manipulation flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium transition-colors active:bg-studio-hover focus-visible:outline-brand",
         active ? "text-brand" : "text-studio-muted",
         destructive && "text-destructive",
       )}
     >
       <span
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl",
+          "flex h-7 w-7 items-center justify-center rounded-lg",
           active && "bg-brand/12",
           prominent &&
             "rounded-full bg-brand text-brand-contrast shadow-lg shadow-brand/25",
         )}
       >
-        <Icon className="h-4.5 w-4.5" />
+        <Icon className="h-4 w-4" />
       </span>
       <span className="truncate">{label}</span>
     </button>
@@ -555,4 +711,3 @@ function MobileNavButton({
 }
 
 export const MobileStudioShell = MobileProjectShell;
-

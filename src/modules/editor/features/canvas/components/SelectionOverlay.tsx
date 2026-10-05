@@ -169,7 +169,7 @@ export function SelectionOverlay({
       {/* Keep rotation outside when it fits, and inside at the canvas edges. */}
       <div
         onPointerDown={(e) => onStartTransform(clip, "rotate", e)}
-        className={`pointer-events-auto absolute left-1/2 ${rotationOutside ? compactControls ? "-top-12 lg:-top-8.5" : "-top-16 lg:-top-12" : "top-2 lg:top-3"} z-50 flex -translate-x-1/2 touch-none cursor-grab items-center justify-center rounded-full text-studio-fg active:cursor-grabbing ${compactControls ? "group/rotate h-11 w-11 lg:h-7 lg:w-7" : "h-10 w-10 border border-studio-border bg-studio-panel-raised/95 shadow-xl backdrop-blur-md transition-colors hover:bg-studio-hover hover:border-studio-border-strong lg:h-6.5 lg:w-6.5"}`}
+        className={`pointer-events-auto absolute left-1/2 ${rotationOutside ? compactControls ? "-top-12 lg:-top-8.5" : "-top-16 lg:-top-12" : "top-2 lg:top-3"} z-50 hidden lg:flex -translate-x-1/2 touch-none cursor-grab items-center justify-center rounded-full text-studio-fg active:cursor-grabbing ${compactControls ? "group/rotate h-11 w-11 lg:h-7 lg:w-7" : "h-10 w-10 border border-studio-border bg-studio-panel-raised/95 shadow-xl backdrop-blur-md transition-colors hover:bg-studio-hover hover:border-studio-border-strong lg:h-6.5 lg:w-6.5"}`}
         title="Drag to rotate. Hold Shift to snap."
         aria-label={
           isTextClip

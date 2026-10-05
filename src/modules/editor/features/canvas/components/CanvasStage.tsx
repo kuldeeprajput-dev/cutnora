@@ -6,7 +6,7 @@ import { useEditorUIStore } from '@/modules/editor/store/useEditorUIStore';
 import { usePlaybackStore } from '@/modules/editor/store/usePlaybackStore';
 import { historyManager } from '@/modules/editor/store/useHistoryStore';
 import { CanvasRenderer } from './CanvasRenderer';
-import { calculateFitScale, type Point } from '../utils/stage-math';
+import { calculateFitScale, transformBoundsWithGesture, type Point } from '../utils/stage-math';
 import type { TimelineClip } from '@/modules/editor/types';
 import { clampTextScale, defaultTextStyle, scaleTextStyle } from '@/modules/editor/features/text/utils/text-layout';
 import { FullscreenPlaybackControls } from './FullscreenPlaybackControls';
@@ -27,6 +27,7 @@ function getPointerMidpoint(first: Point, second: Point): Point {
 
 export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
   const currentProject = useProjectStore((state) => state.currentProject);
   const clearSelection = useEditorUIStore((state) => state.clearSelection);
   const activeTool = useEditorUIStore((state) => state.activeTool);
@@ -59,6 +60,9 @@ export function CanvasStage() {
     clipId: '',
     startDistance: 1,
     startMidpoint: { x: 0, y: 0 },
+    startAnchor: { x: 0, y: 0 },
+    lastAngle: 0,
+    rotationDelta: 0,
     startTransform: null as TimelineClip['transform'] | null,
     startTextStyle: undefined as TimelineClip['textStyle'],
     historyCaptured: false,
@@ -246,27 +250,48 @@ export function CanvasStage() {
     if (isFullscreenActive) return;
     if (e.pointerType !== 'touch' || !window.matchMedia(MOBILE_CANVAS_QUERY).matches) return;
 
+    if (touchPointersRef.current.size >= 2) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touchPointersRef.current.size !== 2) return;
 
     const selectedClipId = useEditorUIStore.getState().selectedClipIds[0];
     const project = useProjectStore.getState().currentProject;
     const selectedClip = project?.tracks
+      .filter((track) => !track.locked && !track.hidden)
       .flatMap((track) => track.clips)
       .find((clip) => clip.id === selectedClipId && clip.type !== 'audio');
     if (!selectedClip) return;
 
+    // Finish any pending one-finger move before taking the gesture snapshot.
+    window.dispatchEvent(new Event(MOBILE_PINCH_START_EVENT));
+    const startClip = useProjectStore.getState().currentProject?.tracks
+      .flatMap((track) => track.clips)
+      .find((clip) => clip.id === selectedClip.id);
+    const canvas = canvasRef.current;
+    if (!startClip || !canvas) return;
+
     const [first, second] = Array.from(touchPointersRef.current.values());
     const startMidpoint = getPointerMidpoint(first, second);
+    const canvasRect = canvas.getBoundingClientRect();
 
     pinchGestureRef.current = {
       active: true,
       clipId: selectedClip.id,
       startDistance: Math.max(1, getPointerDistance(first, second)),
       startMidpoint,
-      startTransform: { ...selectedClip.transform },
-      startTextStyle: selectedClip.type === 'text'
-        ? { ...defaultTextStyle, text: selectedClip.name || 'Sample Text', ...selectedClip.textStyle }
+      startAnchor: {
+        x: (startMidpoint.x - canvasRect.left - canvas.clientLeft) / (stageScale || 1),
+        y: (startMidpoint.y - canvasRect.top - canvas.clientTop) / (stageScale || 1),
+      },
+      lastAngle: Math.atan2(second.y - first.y, second.x - first.x),
+      rotationDelta: 0,
+      startTransform: { ...startClip.transform },
+      startTextStyle: startClip.type === 'text'
+        ? { ...defaultTextStyle, text: startClip.name || 'Sample Text', ...startClip.textStyle }
         : undefined,
       historyCaptured: false,
     };
@@ -277,7 +302,6 @@ export function CanvasStage() {
       panFrameRef.current = null;
     }
     setIsPanning(false);
-    window.dispatchEvent(new Event(MOBILE_PINCH_START_EVENT));
     e.preventDefault();
     e.stopPropagation();
   };
@@ -292,31 +316,34 @@ export function CanvasStage() {
 
     const [first, second] = Array.from(touchPointersRef.current.values());
     const distanceRatio = getPointerDistance(first, second) / gesture.startDistance;
-    let mediaScale = Math.min(8, Math.max(0.1, distanceRatio));
+    const angle = Math.atan2(second.y - first.y, second.x - first.x);
+    // Unwrap the angle so crossing +/-180 degrees never jumps the clip.
+    const angleDelta = angle - gesture.lastAngle;
+    gesture.rotationDelta += Math.atan2(Math.sin(angleDelta), Math.cos(angleDelta));
+    gesture.lastAngle = angle;
     const midpoint = getPointerMidpoint(first, second);
     const startTransform = gesture.startTransform;
+    let mediaScale = Math.max(
+      0.1, 20 / startTransform.width, 20 / startTransform.height,
+      Math.min(8, distanceRatio),
+    );
     if (gesture.startTextStyle)
       mediaScale = clampTextScale(gesture.startTextStyle, startTransform.width, startTransform.height, mediaScale);
-    const nextWidth = Math.max(20, startTransform.width * mediaScale);
-    const nextHeight = Math.max(20, startTransform.height * mediaScale);
-    const centerX =
-      startTransform.x +
-      startTransform.width / 2 +
-      (midpoint.x - gesture.startMidpoint.x) / (stageScale || 1);
-    const centerY =
-      startTransform.y +
-      startTransform.height / 2 +
-      (midpoint.y - gesture.startMidpoint.y) / (stageScale || 1);
+    const anchor = {
+      x: gesture.startAnchor.x + (midpoint.x - gesture.startMidpoint.x) / (stageScale || 1),
+      y: gesture.startAnchor.y + (midpoint.y - gesture.startMidpoint.y) / (stageScale || 1),
+    };
+    const bounds = transformBoundsWithGesture(
+      startTransform, gesture.startAnchor, anchor, mediaScale, gesture.rotationDelta,
+    );
 
     pendingPinchRef.current = {
       clipId: gesture.clipId,
       ...(gesture.startTextStyle ? { textStyle: scaleTextStyle(gesture.startTextStyle, mediaScale) } : {}),
       transform: {
         ...startTransform,
-        x: centerX - nextWidth / 2,
-        y: centerY - nextHeight / 2,
-        width: nextWidth,
-        height: nextHeight,
+        ...bounds,
+        rotation: startTransform.rotation + gesture.rotationDelta * 180 / Math.PI,
       },
     };
     if (pinchFrameRef.current === null) {
@@ -453,6 +480,7 @@ export function CanvasStage() {
 
         {/* Centered Canvas Box */}
         <div
+          ref={canvasRef}
           id="stage-canvas-box"
           style={{
             width: `${stageDisplayWidth}px`,
