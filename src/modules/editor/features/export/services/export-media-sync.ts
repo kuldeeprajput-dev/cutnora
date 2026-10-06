@@ -23,7 +23,8 @@ export async function synchronizeExportMedia(
         continue;
       }
 
-      const media = mediaElements.get(clip.assetId);
+      const media =
+        mediaElements.get(clip.id) ?? mediaElements.get(clip.assetId);
       if (
         !(media instanceof HTMLVideoElement) &&
         !(media instanceof HTMLAudioElement)
@@ -31,12 +32,12 @@ export async function synchronizeExportMedia(
         continue;
       }
 
-      nextActive.add(clip.assetId);
+      nextActive.add(clip.id);
       media.playbackRate = clip.speed || 1;
       const clipElapsed = currentTime - clip.timelineStart;
       const targetTime = clip.sourceStart + clipElapsed * (clip.speed || 1);
       const needsActivation =
-        !activeAssetIds.has(clip.assetId) ||
+        !activeAssetIds.has(clip.id) ||
         Math.abs(media.currentTime - targetTime) > 0.5;
 
       if (needsActivation) {

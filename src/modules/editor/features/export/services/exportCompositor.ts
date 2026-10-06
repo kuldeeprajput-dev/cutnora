@@ -1,6 +1,15 @@
 import type { Project } from "@/modules/projects/types";
-import type { TimelineClip } from "@/modules/editor/types";
+import type { TimelineClip, Track } from "@/modules/editor/types";
 import { renderClipTo2DCanvas } from "../utils/exportCanvasRenderer";
+
+export type ExportMediaSource =
+  | HTMLVideoElement
+  | HTMLImageElement
+  | HTMLAudioElement
+  | HTMLCanvasElement
+  | OffscreenCanvas;
+
+const renderTracksCache = new WeakMap<Project, Track[]>();
 
 export interface RenderFrameOptions {
   canvas: HTMLCanvasElement;
@@ -9,10 +18,7 @@ export interface RenderFrameOptions {
   currentTime: number;
   exportWidth: number;
   exportHeight: number;
-  mediaElementsMap: Map<
-    string,
-    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
-  >;
+  mediaElementsMap: ReadonlyMap<string, ExportMediaSource>;
 }
 
 export function renderExportFrame({
@@ -38,15 +44,22 @@ export function renderExportFrame({
   // Clear & Draw Background
   ctx.save();
   ctx.clearRect(0, 0, exportWidth, exportHeight);
-  if (project.settings.backgroundColor && project.settings.backgroundColor !== "transparent") {
+  if (
+    project.settings.backgroundColor &&
+    project.settings.backgroundColor !== "transparent"
+  ) {
     ctx.fillStyle = project.settings.backgroundColor;
     ctx.fillRect(0, 0, exportWidth, exportHeight);
   }
 
   // Sort visible tracks by order
-  const visibleTracks = [...project.tracks]
-    .filter((t) => !t.hidden)
-    .sort((a, b) => a.order - b.order);
+  let visibleTracks = renderTracksCache.get(project);
+  if (!visibleTracks) {
+    visibleTracks = project.tracks
+      .filter((track) => !track.hidden)
+      .sort((a, b) => a.order - b.order);
+    renderTracksCache.set(project, visibleTracks);
+  }
 
   for (const track of visibleTracks) {
     for (const clip of track.clips) {
@@ -87,14 +100,14 @@ function renderClipOnExportCanvas({
   scaleX: number;
   scaleY: number;
   stageScale: number;
-  mediaElementsMap: Map<
-    string,
-    HTMLVideoElement | HTMLImageElement | HTMLAudioElement
-  >;
+  mediaElementsMap: ReadonlyMap<string, ExportMediaSource>;
 }) {
-  // The text renderer applies the clip transform itself.
-  if (clip.type === "text") {
-    renderClipTo2DCanvas(ctx, clip, stageScale);
+  // Text and element renderers already apply position and rotation.
+  if (clip.type === "text" || clip.type === "overlay") {
+    ctx.save();
+    ctx.scale(scaleX, scaleY);
+    renderClipTo2DCanvas(ctx, clip);
+    ctx.restore();
     return;
   }
   ctx.save();
@@ -123,46 +136,63 @@ function renderClipOnExportCanvas({
     const sep = adjustments?.sepia ?? 0;
     const blur = (adjustments?.blur ?? 0) * stageScale;
 
-    ctx.filter = `brightness(${b * 100}%) contrast(${c * 100}%) saturate(${s * 100}%) grayscale(${g * 100}%) sepia(${sep * 100}%) blur(${blur}px)`;
+    ctx.filter =
+      b === 1 && c === 1 && s === 1 && g === 0 && sep === 0 && blur === 0
+        ? "none"
+        : `brightness(${b * 100}%) contrast(${c * 100}%) saturate(${s * 100}%) grayscale(${g * 100}%) sepia(${sep * 100}%) blur(${blur}px)`;
   }
 
-  // Draw Media (Video or Image)
+  // Match the preview's object-fit, flips, and crop mask instead of stretching media.
   if (assetId && (type === "video" || type === "image")) {
-    const mediaEl = mediaElementsMap.get(assetId);
-    if (
-      mediaEl &&
-      (mediaEl instanceof HTMLVideoElement ||
-        mediaEl instanceof HTMLImageElement)
-    ) {
-      // Handle Crop if specified
-      if (transform.crop) {
-        const { top, right, bottom, left } = transform.crop;
-        const naturalW =
-          mediaEl instanceof HTMLImageElement
-            ? mediaEl.naturalWidth
-            : mediaEl.videoWidth;
-        const naturalH =
-          mediaEl instanceof HTMLImageElement
-            ? mediaEl.naturalHeight
-            : mediaEl.videoHeight;
-
-        const srcX = (left / 100) * naturalW;
-        const srcY = (top / 100) * naturalH;
-        const srcW = ((100 - left - right) / 100) * naturalW;
-        const srcH = ((100 - top - bottom) / 100) * naturalH;
-
-        if (srcW > 0 && srcH > 0) {
-          ctx.drawImage(mediaEl, srcX, srcY, srcW, srcH, 0, 0, w, h);
+    const media =
+      mediaElementsMap.get(clip.id) ?? mediaElementsMap.get(assetId);
+    if (media && !(media instanceof HTMLAudioElement)) {
+      const naturalW =
+        media instanceof HTMLImageElement
+          ? media.naturalWidth
+          : media instanceof HTMLVideoElement
+            ? media.videoWidth
+            : media.width;
+      const naturalH =
+        media instanceof HTMLImageElement
+          ? media.naturalHeight
+          : media instanceof HTMLVideoElement
+            ? media.videoHeight
+            : media.height;
+      if (naturalW > 0 && naturalH > 0) {
+        ctx.translate(w / 2, h / 2);
+        ctx.scale(transform.scaleX ?? 1, transform.scaleY ?? 1);
+        ctx.translate(-w / 2, -h / 2);
+        const crop = transform.crop;
+        const left = (w * (crop?.left ?? 0)) / 100;
+        const top = (h * (crop?.top ?? 0)) / 100;
+        ctx.beginPath();
+        ctx.rect(
+          left,
+          top,
+          Math.max(0, w * (1 - (crop?.right ?? 0) / 100) - left),
+          Math.max(0, h * (1 - (crop?.bottom ?? 0) / 100) - top),
+        );
+        ctx.clip();
+        if (transform.fitMode === "fill") {
+          ctx.drawImage(media, 0, 0, w, h);
         } else {
-          ctx.drawImage(mediaEl, 0, 0, w, h);
+          const fitScale =
+            transform.fitMode === "cover"
+              ? Math.max(w / naturalW, h / naturalH)
+              : Math.min(w / naturalW, h / naturalH);
+          const drawWidth = naturalW * fitScale;
+          const drawHeight = naturalH * fitScale;
+          ctx.drawImage(
+            media,
+            (w - drawWidth) / 2,
+            (h - drawHeight) / 2,
+            drawWidth,
+            drawHeight,
+          );
         }
-      } else {
-        ctx.drawImage(mediaEl, 0, 0, w, h);
       }
     }
-  } else if (type === "overlay") {
-    // Render SVG element using exportCanvasRenderer
-    renderClipTo2DCanvas(ctx, clip, stageScale);
   }
 
   ctx.restore();
