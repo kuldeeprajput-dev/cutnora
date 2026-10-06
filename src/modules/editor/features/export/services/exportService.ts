@@ -19,6 +19,7 @@ import type {
   ExportPhase,
 } from "@/modules/editor/store/useExportStore";
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
+import { getExportFilename } from "./export-settings";
 import { loadTextFonts } from "@/modules/editor/features/text/utils/text-fonts";
 
 export interface ExportSettings {
@@ -36,7 +37,8 @@ export interface ExportCallbacks {
     percentage: number,
     phase: ExportPhase,
   ) => void;
-  onComplete: (blobUrl: string) => void;
+  onStatus?: (status: string) => void;
+  onComplete: (blobUrl: string, downloadName?: string) => void;
   onError: (error: string) => void;
   checkIsCancelled: () => boolean;
 }
@@ -185,7 +187,8 @@ export async function runExportTask(
 
     mediaRecorder = new MediaRecorder(combinedStream, {
       mimeType,
-      videoBitsPerSecond: getBitrateForQuality(settings.quality),
+      videoBitsPerSecond: preflight.videoBitrate,
+      ...(preflight.hasAudio ? { audioBitsPerSecond: 192_000 } : {}),
     });
 
     mediaRecorder.ondataavailable = (e) => {
@@ -218,19 +221,24 @@ export async function runExportTask(
       mediaElementsMap,
     });
     mediaRecorder.start(preflight.isLongExport ? 1000 : 200);
+    callbacks.onStatus?.("Exporting video…");
 
     let currentTime = 0;
     while (currentTime < totalDuration) {
       if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
       if (chunkWriteError) throw chunkWriteError;
       if (document.visibilityState === "hidden") {
+        callbacks.onStatus?.("Paused — return to this tab to continue");
         if (mediaRecorder.state === "recording") mediaRecorder.pause();
+        await audioSession?.audioCtx.suspend();
         pauseExportMedia(mediaElementsMap);
         while (document.visibilityState === "hidden") {
           if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
           await new Promise((resolve) => setTimeout(resolve, 250));
         }
+        await audioSession?.audioCtx.resume();
         if (mediaRecorder.state === "paused") mediaRecorder.resume();
+        callbacks.onStatus?.("Exporting video…");
         activeAssetIds.clear();
         wakeLock = await acquireScreenWakeLock();
       }
@@ -288,6 +296,21 @@ export async function runExportTask(
     let finalExportBlob = encodedBlob;
     let fileExtension = preflight.extension;
 
+    if (
+      !preflight.isLongExport &&
+      !preflight.requiresMp4Conversion &&
+      fileExtension === "webm" &&
+      encodedBlob
+    ) {
+      callbacks.onStatus?.("Finalizing video…");
+      const { finalizeRecordedWebM } = await import("./finalize-recorded-webm");
+      finalExportBlob = await finalizeRecordedWebM(
+        encodedBlob,
+        settings.fps,
+        checkIsCancelled,
+      );
+    }
+
     // 7. MP4 Local WASM Transcoding if MP4 selected
     if (preflight.requiresMp4Conversion && encodedBlob) {
       onProgress(totalDuration, totalDuration, 95, "converting");
@@ -335,18 +358,16 @@ export async function runExportTask(
 
     onProgress(totalDuration, totalDuration, 100, "completed");
 
+    const downloadName = getExportFilename(settings.filename, fileExtension);
     let exportUrl = "";
     if (finalExportBlob) {
       exportUrl = URL.createObjectURL(finalExportBlob);
-      triggerFileDownload(
-        exportUrl,
-        `${settings.filename || "video-export"}.${fileExtension}`,
-      );
+      triggerFileDownload(exportUrl, downloadName);
     }
     useToastStore
       .getState()
       .showToast("Export completed successfully", "success");
-    onComplete(exportUrl);
+    onComplete(exportUrl, downloadName);
   } catch (err: unknown) {
     await outputTarget?.abort().catch(() => undefined);
     outputTarget = null;

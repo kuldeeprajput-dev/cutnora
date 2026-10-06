@@ -28,6 +28,8 @@ interface ExportState {
   currentExportTime: number; // seconds
   exportError: string | null;
   exportBlobUrl: string | null;
+  exportDownloadName: string;
+  exportStatus: string;
   isCancelRequested: boolean;
   capabilities: Capabilities;
 
@@ -60,6 +62,8 @@ export const useExportStore = create<ExportState>()(
     currentExportTime: 0,
     exportError: null,
     exportBlobUrl: null,
+    exportDownloadName: "",
+    exportStatus: "",
     isCancelRequested: false,
     capabilities: {
       hasCaptureStream: true,
@@ -193,6 +197,8 @@ export const useExportStore = create<ExportState>()(
         state.currentExportTime = 0;
         state.exportError = null;
         state.exportBlobUrl = null;
+        state.exportDownloadName = "";
+        state.exportStatus = "";
         state.isCancelRequested = false;
       }),
   })),

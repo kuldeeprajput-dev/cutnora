@@ -14,6 +14,10 @@ import {
   type ExportPreflightResult,
   getNativeMp4MimeType,
 } from "../services/export-preflight";
+import {
+  EXPORT_QUALITY_OPTIONS,
+  getExportDimensions,
+} from "../services/export-settings";
 import { Dialog } from "@/shared/components/ui/Dialog";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -27,6 +31,19 @@ import {
   Film,
   Loader2,
 } from "lucide-react";
+
+function formatSeconds(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  const ms = Math.floor((sec % 1) * 10);
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${ms}`;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${Math.ceil(bytes / 1024)} KB`;
+}
 
 export function ExportModal() {
   const { currentProject } = useProjectStore();
@@ -42,6 +59,8 @@ export function ExportModal() {
     currentExportTime,
     exportError,
     exportBlobUrl,
+    exportDownloadName,
+    exportStatus,
     capabilities,
     setExportModalOpen,
     setFilename,
@@ -130,7 +149,8 @@ export function ExportModal() {
     if (
       !preflight ||
       preflight.isMobileBlocked ||
-      !preflight.hasEnoughStorage
+      !preflight.hasEnoughStorage ||
+      Boolean(preflight.blockingReason)
     ) {
       return;
     }
@@ -152,8 +172,10 @@ export function ExportModal() {
           setExportProgress(pct);
           setExportPhase(phase);
         },
-        onComplete: (url) => {
+        onStatus: (status) => useExportStore.setState({ exportStatus: status }),
+        onComplete: (url, downloadName) => {
           setExportBlobUrl(url);
+          useExportStore.setState({ exportDownloadName: downloadName ?? "" });
           setExportPhase("completed");
         },
         onError: (err) => {
@@ -177,24 +199,12 @@ export function ExportModal() {
     setExportModalOpen(false);
   };
 
-  const formatSeconds = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    const ms = Math.floor((sec % 1) * 10);
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${ms}`;
-  };
-  const formatBytes = (bytes: number) => {
-    if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
-    if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(0)} MB`;
-    return `${Math.ceil(bytes / 1024)} KB`;
-  };
-
   return (
     <Dialog
       isOpen={isExportModalOpen}
       onClose={handleClose}
       title="Export Video"
-      className="max-w-lg"
+      className="max-w-lg max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[92dvh] max-lg:rounded-b-none max-lg:rounded-t-2xl max-lg:border-b-0"
     >
       <div className="flex flex-col gap-4">
         {/* Browser Capability Warnings */}
@@ -214,9 +224,10 @@ export function ExportModal() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-brand flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {exportPhase === "rendering"
-                  ? "Rendering Video Frames..."
-                  : "Converting MP4 (WASM)..."}
+                {exportStatus ||
+                  (exportPhase === "rendering"
+                    ? "Rendering Video Frames..."
+                    : "Converting MP4 (WASM)...")}
               </span>
               <span className="font-mono text-xs font-semibold text-studio-fg">
                 {exportProgress}%
@@ -266,7 +277,7 @@ export function ExportModal() {
             {exportBlobUrl && (
               <a
                 href={exportBlobUrl}
-                download={`${filename}.${exportFormat}`}
+                download={exportDownloadName || `${filename}.${exportFormat}`}
                 className="mt-2 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-brand-contrast hover:bg-brand/90 transition-colors"
               >
                 <Download className="h-4 w-4" /> Download Video File
@@ -313,6 +324,7 @@ export function ExportModal() {
                   Format
                 </label>
                 <Select
+                  mobileTouchTargets
                   value={exportFormat}
                   onChange={(e) =>
                     setExportFormat(e.target.value as ExportFormat)
@@ -340,17 +352,26 @@ export function ExportModal() {
                   Resolution
                 </label>
                 <Select
+                  mobileTouchTargets
+                  mobileValueLabel={
+                    exportResolution === "project"
+                      ? "Original"
+                      : exportResolution
+                  }
                   value={exportResolution}
                   onChange={(e) =>
                     setExportResolution(e.target.value as ExportResolution)
                   }
                   className="h-8 text-xs border-studio-border"
                 >
-                  <option value="1280x720">1280x720</option>
-                  <option value="1920x1080">1920x1080</option>
                   <option value="project">
-                    Project resolution ({currentProject.settings.width}x
-                    {currentProject.settings.height})
+                    Original ({getExportDimensions(currentProject, "project").width} × {getExportDimensions(currentProject, "project").height})
+                  </option>
+                  <option value="720p">
+                    720p ({getExportDimensions(currentProject, "720p").width} × {getExportDimensions(currentProject, "720p").height})
+                  </option>
+                  <option value="1080p">
+                    1080p ({getExportDimensions(currentProject, "1080p").width} × {getExportDimensions(currentProject, "1080p").height})
                   </option>
                 </Select>
               </div>
@@ -363,6 +384,7 @@ export function ExportModal() {
                   Frame Rate
                 </label>
                 <Select
+                  mobileTouchTargets
                   value={String(exportFps)}
                   onChange={(e) =>
                     setExportFps(parseInt(e.target.value, 10) as 24 | 30 | 60)
@@ -380,18 +402,26 @@ export function ExportModal() {
                   Quality
                 </label>
                 <Select
+                  mobileTouchTargets
                   value={exportQuality}
                   onChange={(e) =>
                     setExportQuality(e.target.value as ExportQuality)
                   }
                   className="h-8 text-xs border-studio-border"
                 >
-                  <option value="draft">Draft</option>
-                  <option value="standard">Standard</option>
-                  <option value="high">High</option>
+                  {Object.entries(EXPORT_QUALITY_OPTIONS).map(
+                    ([value, option]) => (
+                      <option key={value} value={value}>
+                        {option.label}
+                      </option>
+                    ),
+                  )}
                 </Select>
               </div>
             </div>
+            <p className="-mt-2 text-[11px] text-studio-muted">
+              {EXPORT_QUALITY_OPTIONS[exportQuality].description}
+            </p>
 
             {/* Duration Badge & Performance Disclaimer */}
             <div className="rounded-lg border border-studio-border bg-studio-topbar p-3 text-xs flex flex-col gap-1">
@@ -425,15 +455,9 @@ export function ExportModal() {
                 and device performance.
               </p>
             </div>
-            {preflight?.isMobileBlocked && (
+            {preflight?.blockingReason && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-[11px] text-destructive">
-                Long exports require a desktop browser. Mobile editing and
-                preview remain available.
-              </div>
-            )}
-            {preflight && !preflight.hasEnoughStorage && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-[11px] text-destructive">
-                Not enough local storage for this export.
+                {preflight.blockingReason}
               </div>
             )}
           </div>
@@ -496,7 +520,8 @@ export function ExportModal() {
                 disabled={
                   !preflight ||
                   preflight.isMobileBlocked ||
-                  !preflight.hasEnoughStorage
+                  !preflight.hasEnoughStorage ||
+                  Boolean(preflight.blockingReason)
                 }
                 className="gap-1.5"
               >

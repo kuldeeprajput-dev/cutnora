@@ -16,6 +16,8 @@ import { cn } from '@/shared/utils/cn';
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   error?: boolean;
   placeholder?: string;
+  mobileTouchTargets?: boolean;
+  mobileValueLabel?: React.ReactNode;
 }
 
 interface ParsedOption {
@@ -37,6 +39,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       id,
       name,
       placeholder,
+      mobileTouchTargets = false,
+      mobileValueLabel,
       ...props
     },
     ref
@@ -95,7 +99,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const updateCoords = useCallback(() => {
       if (triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
-        const menuHeight = menuRef.current?.offsetHeight || Math.min(240, options.length * 36 + 12);
+        const touchLayout = mobileTouchTargets && window.matchMedia('(max-width: 1023px)').matches;
+        const menuHeight = menuRef.current?.offsetHeight || Math.min(240, options.length * (touchLayout ? 44 : 36) + 12);
         const viewportHeight = window.innerHeight;
 
         const openUpwards = rect.bottom + menuHeight > viewportHeight - 12 && rect.top > menuHeight;
@@ -105,11 +110,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
         setCoords({
           top,
-          left: rect.left,
-          width: rect.width,
+          left: touchLayout ? Math.max(10, Math.min(rect.left, window.innerWidth - Math.max(rect.width, 240) - 10)) : rect.left,
+          width: touchLayout ? Math.min(window.innerWidth - 20, Math.max(rect.width, 240)) : rect.width,
         });
       }
-    }, [options.length]);
+    }, [options.length, mobileTouchTargets]);
 
     const handleSelectOption = (opt: ParsedOption) => {
       if (opt.disabled || disabled) return;
@@ -264,7 +269,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
         >
-          <span className="truncate text-left font-medium">{displayLabel}</span>
+          <span className="truncate text-left font-medium">
+            {mobileValueLabel === undefined ? displayLabel : <>
+              <span className="lg:hidden">{mobileValueLabel}</span>
+              <span className="hidden lg:inline">{displayLabel}</span>
+            </>}
+          </span>
           <ChevronDown
             className={cn(
               'h-3.5 w-3.5 text-studio-muted transition-transform duration-200 shrink-0 ml-2',
@@ -304,6 +314,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                       onClick={() => handleSelectOption(opt)}
                       className={cn(
                         'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-left transition-colors select-none cursor-pointer',
+                        mobileTouchTargets && 'max-lg:min-h-11 max-lg:px-3 max-lg:text-sm',
                         isSelected
                           ? 'bg-studio-hover text-studio-fg font-semibold'
                           : 'text-studio-fg/90 hover:bg-studio-hover/60 hover:text-studio-fg',

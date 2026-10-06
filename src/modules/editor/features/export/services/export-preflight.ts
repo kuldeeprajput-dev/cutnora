@@ -2,6 +2,12 @@ import type { Project } from "@/modules/projects/types";
 import type { ExportSettings } from "./exportService";
 import { getStorageCapacity } from "@/modules/core/storage/opfs-media-storage";
 
+import {
+  getExportDimensions,
+  getExportVideoBitrate,
+  hasExportAudio,
+} from "./export-settings";
+
 const LONG_DURATION_SECONDS = 30 * 60;
 const LONG_OUTPUT_BYTES = 512 * 1024 * 1024;
 const AUDIO_BITRATE = 192_000;
@@ -18,6 +24,11 @@ export interface ExportPreflightResult {
   availableStorage?: number;
   hasEnoughStorage: boolean;
   destinationStrategy: ExportDestinationStrategy;
+  width: number;
+  height: number;
+  videoBitrate: number;
+  hasAudio: boolean;
+  blockingReason: string | null;
 }
 
 export function getNativeExportMimeType(): string {
@@ -43,15 +54,12 @@ export function getNativeMp4MimeType(): string | null {
 
 export function estimateExportBytes(
   duration: number,
-  settings: Pick<ExportSettings, "quality">,
+  videoBitrate: number,
+  hasAudio: boolean,
 ): number {
-  const videoBitrate =
-    settings.quality === "draft"
-      ? 3_000_000
-      : settings.quality === "high"
-        ? 15_000_000
-        : 8_000_000;
-  return Math.ceil(((videoBitrate + AUDIO_BITRATE) * duration * 1.2) / 8);
+  return Math.ceil(
+    ((videoBitrate + (hasAudio ? AUDIO_BITRATE : 0)) * duration * 1.2) / 8,
+  );
 }
 
 export async function buildExportPreflight(
@@ -59,7 +67,15 @@ export async function buildExportPreflight(
   settings: ExportSettings,
 ): Promise<ExportPreflightResult> {
   const duration = Math.max(0.5, project.settings.duration);
-  const estimatedBytes = estimateExportBytes(duration, settings);
+  const { width, height } = getExportDimensions(project, settings.resolution);
+  const videoBitrate = getExportVideoBitrate(
+    width,
+    height,
+    settings.fps,
+    settings.quality,
+  );
+  const hasAudio = hasExportAudio(project);
+  const estimatedBytes = estimateExportBytes(duration, videoBitrate, hasAudio);
   const isLongExport =
     duration > LONG_DURATION_SECONDS || estimatedBytes > LONG_OUTPUT_BYTES;
   const nativeMp4 = getNativeMp4MimeType();
@@ -89,6 +105,23 @@ export async function buildExportPreflight(
     storage.available === undefined ||
     storage.available >= requiredStorage;
 
+  const canRecord =
+    typeof MediaRecorder !== "undefined" &&
+    typeof HTMLCanvasElement !== "undefined" &&
+    "captureStream" in HTMLCanvasElement.prototype &&
+    MediaRecorder.isTypeSupported(mimeType);
+
+  const blockingReason =
+    isLongExport && isMobile
+      ? "For this export size, use a desktop browser."
+      : !hasEnoughStorage
+        ? "Not enough local storage for this export."
+        : !canRecord
+          ? "This browser cannot export this format. Try another format or an updated browser."
+          : settings.format === "webm" && extension !== "webm"
+            ? "WebM is unavailable in this browser. Choose MP4."
+            : null;
+
   return {
     isLongExport,
     isMobileBlocked: isLongExport && isMobile,
@@ -99,5 +132,10 @@ export async function buildExportPreflight(
     availableStorage: storage.available,
     hasEnoughStorage,
     destinationStrategy,
+    width,
+    height,
+    videoBitrate,
+    hasAudio,
+    blockingReason,
   };
 }
