@@ -39,7 +39,8 @@ export function createAudioExporterSession(
 
       for (const clip of track.clips) {
         if (!clip.assetId) continue;
-        const mediaEl = mediaElementsMap.get(clip.assetId);
+        const mediaEl =
+          mediaElementsMap.get(clip.id) ?? mediaElementsMap.get(clip.assetId);
 
         if (
           mediaEl &&
@@ -48,9 +49,14 @@ export function createAudioExporterSession(
         ) {
           try {
             const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0;
             const sourceNode = audioCtx.createMediaElementSource(mediaEl);
             sourceNode.connect(gainNode);
             gainNode.connect(masterGainNode);
+            // The element's mute/volume also affect its Web Audio source. Audio is
+            // routed to the recording stream, so unmuting here cannot reach speakers.
+            mediaEl.muted = false;
+            mediaEl.volume = 1;
 
             clipNodesMap.set(clip.id, { gainNode, mediaSource: sourceNode });
           } catch (e) {
@@ -72,9 +78,6 @@ export function createAudioExporterSession(
           const nodes = clipNodesMap.get(clip.id);
           if (!nodes) continue;
 
-          const mediaEl = clip.assetId
-            ? mediaElementsMap.get(clip.assetId)
-            : null;
           const isActive =
             currentTime >= clip.timelineStart &&
             currentTime < clip.timelineStart + clip.timelineDuration;
@@ -82,32 +85,7 @@ export function createAudioExporterSession(
 
           if (!isActive || isClipMuted) {
             nodes.gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            if (
-              mediaEl &&
-              (mediaEl instanceof HTMLVideoElement ||
-                mediaEl instanceof HTMLAudioElement)
-            ) {
-              if (!mediaEl.paused) {
-                mediaEl.pause();
-              }
-            }
             continue;
-          }
-
-          if (
-            mediaEl &&
-            (mediaEl instanceof HTMLVideoElement ||
-              mediaEl instanceof HTMLAudioElement)
-          ) {
-            const clipElapsed = currentTime - clip.timelineStart;
-            const targetSourceTime =
-              clip.sourceStart + clipElapsed * (clip.speed || 1);
-            if (Math.abs(mediaEl.currentTime - targetSourceTime) > 0.5) {
-              mediaEl.currentTime = targetSourceTime;
-            }
-            if (mediaEl.paused) {
-              mediaEl.play().catch(() => {});
-            }
           }
 
           const baseVolume = clip.audio?.volume ?? 1;
@@ -136,7 +114,8 @@ export function createAudioExporterSession(
     };
 
     const cleanup = () => {
-      clipNodesMap.forEach(({ gainNode }) => {
+      clipNodesMap.forEach(({ gainNode, mediaSource }) => {
+        mediaSource?.disconnect();
         try {
           gainNode.disconnect();
         } catch {}
