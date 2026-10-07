@@ -1,5 +1,6 @@
 import type { Project } from "@/modules/projects/types";
 import type { ExportSettings } from "./exportService";
+import type { FrameEncodingSupport } from "./frame-exporter";
 import { getStorageCapacity } from "@/modules/core/storage/opfs-media-storage";
 
 import {
@@ -29,6 +30,7 @@ export interface ExportPreflightResult {
   videoBitrate: number;
   hasAudio: boolean;
   blockingReason: string | null;
+  frameEncoding: FrameEncodingSupport | null;
 }
 
 export function getNativeExportMimeType(): string {
@@ -65,6 +67,7 @@ export function estimateExportBytes(
 export async function buildExportPreflight(
   project: Project,
   settings: ExportSettings,
+  allowFrameEncoding = true,
 ): Promise<ExportPreflightResult> {
   const duration = Math.max(0.5, project.settings.duration);
   const { width, height } = getExportDimensions(project, settings.resolution);
@@ -78,12 +81,45 @@ export async function buildExportPreflight(
   const estimatedBytes = estimateExportBytes(duration, videoBitrate, hasAudio);
   const isLongExport =
     duration > LONG_DURATION_SECONDS || estimatedBytes > LONG_OUTPUT_BYTES;
+  // Keep playback's pitch preservation for sped-up audible clips.
+  const needsPlaybackAudio =
+    hasAudio &&
+    project.tracks.some(
+      (track) =>
+        !track.hidden &&
+        !track.muted &&
+        track.clips.some(
+          (clip) =>
+            clip.timelineStart < duration &&
+            clip.timelineStart + clip.timelineDuration > 0 &&
+            !clip.audio?.muted &&
+            (clip.audio?.volume ?? 1) > 0 &&
+            (clip.type === "video" || clip.type === "audio") &&
+            (clip.speed || 1) !== 1,
+        ),
+    );
+  const frameEncoding =
+    allowFrameEncoding && !isLongExport && !needsPlaybackAudio
+      ? await (
+          await import("./frame-exporter")
+        ).getFrameEncodingSupport(
+          settings,
+          width,
+          height,
+          videoBitrate,
+          hasAudio,
+        )
+      : null;
   const nativeMp4 = getNativeMp4MimeType();
-  const mimeType =
-    !isLongExport && settings.format === "mp4" && nativeMp4
+  const mimeType = frameEncoding
+    ? settings.format === "mp4"
+      ? "video/mp4"
+      : "video/webm"
+    : !isLongExport && settings.format === "mp4" && nativeMp4
       ? nativeMp4
       : getNativeExportMimeType();
   const requiresMp4Conversion =
+    !frameEncoding &&
     !isLongExport &&
     settings.format === "mp4" &&
     !mimeType.startsWith("video/mp4");
@@ -116,13 +152,14 @@ export async function buildExportPreflight(
       ? "For this export size, use a desktop browser."
       : !hasEnoughStorage
         ? "Not enough local storage for this export."
-        : !canRecord
+        : !frameEncoding && !canRecord
           ? "This browser cannot export this format. Try another format or an updated browser."
           : settings.format === "webm" && extension !== "webm"
             ? "WebM is unavailable in this browser. Choose MP4."
             : null;
 
   return {
+    frameEncoding,
     isLongExport,
     isMobileBlocked: isLongExport && isMobile,
     mimeType,

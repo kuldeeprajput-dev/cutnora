@@ -9,6 +9,7 @@ import type { ExportPreflightResult } from "./export-preflight";
 export interface ExportOutputTarget {
   write: (chunk: Blob) => Promise<void>;
   close: () => Promise<Blob | null>;
+  dispose?: () => Promise<void>;
   abort: () => Promise<void>;
 }
 
@@ -74,6 +75,7 @@ export async function createExportOutputTarget(
   return {
     write: target.write,
     close: target.close,
+    dispose: target.dispose,
     abort: target.abort,
   };
 }

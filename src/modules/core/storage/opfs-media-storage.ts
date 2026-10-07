@@ -22,6 +22,7 @@ export interface OpfsWritableTarget {
   path: string;
   write: (chunk: Blob) => Promise<void>;
   close: () => Promise<File>;
+  dispose: () => Promise<void>;
   abort: () => Promise<void>;
 }
 
@@ -193,10 +194,10 @@ export async function createOpfsWritableTarget(
         settled = true;
         await writable.close();
       }
-      const file = await (await directory.getFileHandle(filename)).getFile();
-      await directory.removeEntry(filename).catch(() => undefined);
-      return file;
+      // Keep the backing file until its download URL is released.
+      return (await directory.getFileHandle(filename)).getFile();
     },
+    dispose: () => directory.removeEntry(filename),
     abort: async () => {
       if (!settled) {
         settled = true;

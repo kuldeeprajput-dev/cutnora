@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useProjectStore } from "@/modules/projects";
 import {
   useExportStore,
@@ -80,9 +80,24 @@ export function ExportModal() {
 
   const isCancelRef = useRef(false);
   const wasOpenRef = useRef(false);
+  const exportStartedAtRef = useRef<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const isRunning = exportPhase === "rendering" || exportPhase === "converting";
   const [preflight, setPreflight] = useState<ExportPreflightResult | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const timer = window.setInterval(() => {
+      if (exportStartedAtRef.current !== null) {
+        setElapsedSeconds(
+          Math.floor((performance.now() - exportStartedAtRef.current) / 1000),
+        );
+      }
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [isRunning]);
 
   useEffect(() => {
     detectCapabilities();
@@ -119,7 +134,8 @@ export function ExportModal() {
     let active = true;
     setPreflight(null);
     void buildExportPreflight(currentProject, {
-      filename,
+      // The filename does not affect codec support, storage, or output size.
+      filename: "",
       format: exportFormat,
       resolution: exportResolution,
       fps: exportFps,
@@ -136,13 +152,32 @@ export function ExportModal() {
     exportFps,
     exportQuality,
     exportResolution,
-    filename,
     isExportModalOpen,
   ]);
+
+  const handleCancelExport = useCallback(() => {
+    isCancelRef.current = true;
+    setIsCancelRequested(true);
+  }, [setIsCancelRequested]);
+
+  // Dialog resets focus when onClose changes, so keep it stable while typing.
+  const handleClose = useCallback(() => {
+    if (exportPhase === "rendering" || exportPhase === "converting") {
+      handleCancelExport();
+    }
+    setExportModalOpen(false);
+  }, [exportPhase, handleCancelExport, setExportModalOpen]);
 
   if (!isExportModalOpen || !currentProject) return null;
 
   const totalDuration = currentProject.settings.duration || 10;
+  const remainingSeconds =
+    exportPhase === "rendering" && currentExportTime > 0.5 && elapsedSeconds >= 3
+      ? Math.ceil(
+          (elapsedSeconds * Math.max(0, totalDuration - currentExportTime)) /
+            currentExportTime,
+        )
+      : null;
 
   const hasNativeMp4Export = Boolean(getNativeMp4MimeType());
   const handleStartExport = () => {
@@ -156,6 +191,8 @@ export function ExportModal() {
     }
     isCancelRef.current = false;
     resetExport();
+    exportStartedAtRef.current = performance.now();
+    setElapsedSeconds(0);
 
     runExportTask(
       currentProject,
@@ -173,8 +210,8 @@ export function ExportModal() {
           setExportPhase(phase);
         },
         onStatus: (status) => useExportStore.setState({ exportStatus: status }),
-        onComplete: (url, downloadName) => {
-          setExportBlobUrl(url);
+        onComplete: (url, downloadName, cleanup) => {
+          setExportBlobUrl(url, cleanup);
           useExportStore.setState({ exportDownloadName: downloadName ?? "" });
           setExportPhase("completed");
         },
@@ -185,18 +222,6 @@ export function ExportModal() {
       },
       preflight,
     );
-  };
-
-  const handleCancelExport = () => {
-    isCancelRef.current = true;
-    setIsCancelRequested(true);
-  };
-
-  const handleClose = () => {
-    if (exportPhase === "rendering" || exportPhase === "converting") {
-      handleCancelExport();
-    }
-    setExportModalOpen(false);
   };
 
   return (
@@ -250,12 +275,36 @@ export function ExportModal() {
               <span>{exportFps} FPS</span>
             </div>
 
+            <dl className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <dt className="text-studio-muted">Elapsed time</dt>
+                <dd className="mt-1 font-mono tabular-nums text-studio-fg">
+                  {formatSeconds(elapsedSeconds).slice(0, -2)}
+                </dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-studio-muted">
+                  {preflight?.requiresMp4Conversion
+                    ? "Approx. capture remaining"
+                    : "Approx. remaining"}
+                </dt>
+                <dd className="mt-1 font-mono tabular-nums text-studio-fg">
+                  {exportPhase === "converting"
+                    ? "Finalizing…"
+                    : remainingSeconds === null
+                      ? "Estimating…"
+                      : `~${formatSeconds(remainingSeconds).slice(0, -2)}`}
+                </dd>
+              </div>
+            </dl>
+
             {/* Active Tab Notice */}
-            <div className="flex items-center gap-2 rounded-lg border border-selection/40 bg-selection/10 p-2.5 text-xs text-selection">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 p-3 text-xs leading-relaxed text-studio-fg">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
               <span>
-                Keep this tab active while the export is running to ensure
-                smooth frame capture.
+                {preflight?.frameEncoding
+                  ? "Keep this tab open until your video is ready."
+                  : "Keep this tab active while the export is running to ensure smooth frame capture."}
               </span>
             </div>
           </div>
@@ -393,7 +442,7 @@ export function ExportModal() {
                 >
                   <option value="24">24</option>
                   <option value="30">30</option>
-                  <option value="60">60 when practical</option>
+                  <option value="60">60</option>
                 </Select>
               </div>
 
@@ -422,6 +471,12 @@ export function ExportModal() {
             <p className="-mt-2 text-[11px] text-studio-muted">
               {EXPORT_QUALITY_OPTIONS[exportQuality].description}
             </p>
+            {preflight && !preflight.frameEncoding && exportFps === 60 && (
+              <p className="text-xs leading-relaxed text-studio-muted">
+                This export requires real-time capture. Its frame rate depends
+                on your device and may be lower than 60 fps.
+              </p>
+            )}
 
             {/* Duration Badge & Performance Disclaimer */}
             <div className="rounded-lg border border-studio-border bg-studio-topbar p-3 text-xs flex flex-col gap-1">
@@ -480,7 +535,7 @@ export function ExportModal() {
             <Button
               size="sm"
               variant="secondary"
-              onClick={resetExport}
+              onClick={handleClose}
               className="w-full"
             >
               Close

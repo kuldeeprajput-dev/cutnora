@@ -28,6 +28,7 @@ interface ExportState {
   currentExportTime: number; // seconds
   exportError: string | null;
   exportBlobUrl: string | null;
+  exportSourceCleanup: (() => Promise<void>) | null;
   exportDownloadName: string;
   exportStatus: string;
   isCancelRequested: boolean;
@@ -43,7 +44,7 @@ interface ExportState {
   setExportProgress: (progress: number) => void;
   setCurrentExportTime: (time: number) => void;
   setExportError: (error: string | null) => void;
-  setExportBlobUrl: (url: string | null) => void;
+  setExportBlobUrl: (url: string | null, cleanup?: () => Promise<void>) => void;
   setIsCancelRequested: (cancel: boolean) => void;
   detectCapabilities: () => void;
   resetExport: () => void;
@@ -62,6 +63,7 @@ export const useExportStore = create<ExportState>()(
     currentExportTime: 0,
     exportError: null,
     exportBlobUrl: null,
+    exportSourceCleanup: null,
     exportDownloadName: "",
     exportStatus: "",
     isCancelRequested: false,
@@ -133,12 +135,14 @@ export const useExportStore = create<ExportState>()(
         state.exportPhase = "error";
       }),
 
-    setExportBlobUrl: (url) =>
+    setExportBlobUrl: (url, cleanup) =>
       set((state) => {
         if (state.exportBlobUrl && state.exportBlobUrl !== url) {
           URL.revokeObjectURL(state.exportBlobUrl);
+          void state.exportSourceCleanup?.().catch(() => undefined);
         }
         state.exportBlobUrl = url;
+        state.exportSourceCleanup = cleanup ?? null;
       }),
 
     setIsCancelRequested: (cancel) =>
@@ -192,11 +196,13 @@ export const useExportStore = create<ExportState>()(
         if (state.exportBlobUrl) {
           URL.revokeObjectURL(state.exportBlobUrl);
         }
+        void state.exportSourceCleanup?.().catch(() => undefined);
         state.exportPhase = "idle";
         state.exportProgress = 0;
         state.currentExportTime = 0;
         state.exportError = null;
         state.exportBlobUrl = null;
+        state.exportSourceCleanup = null;
         state.exportDownloadName = "";
         state.exportStatus = "";
         state.isCancelRequested = false;

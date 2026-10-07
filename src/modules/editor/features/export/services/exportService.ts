@@ -21,6 +21,8 @@ import type {
 import { useToastStore } from "@/shared/components/ui/Toast/useToastStore";
 import { getExportFilename } from "./export-settings";
 import { loadTextFonts } from "@/modules/editor/features/text/utils/text-fonts";
+import { loadExportMediaElement } from "./export-media-loader";
+import { usePlaybackStore } from "@/modules/editor/store/usePlaybackStore";
 
 export interface ExportSettings {
   filename: string;
@@ -38,7 +40,11 @@ export interface ExportCallbacks {
     phase: ExportPhase,
   ) => void;
   onStatus?: (status: string) => void;
-  onComplete: (blobUrl: string, downloadName?: string) => void;
+  onComplete: (
+    blobUrl: string,
+    downloadName?: string,
+    cleanup?: () => Promise<void>,
+  ) => void;
   onError: (error: string) => void;
   checkIsCancelled: () => boolean;
 }
@@ -60,11 +66,33 @@ export async function runExportTask(
     HTMLVideoElement | HTMLImageElement | HTMLAudioElement
   >();
   let outputTarget: ExportOutputTarget | null = null;
+  let completedSourceCleanup: (() => Promise<void>) | undefined;
   const activeAssetIds = new Set<string>();
   let wakeLock: ScreenWakeLock | null = null;
+  const publishExport = async (
+    blob: Blob | null,
+    extension: "mp4" | "webm",
+    duration: number,
+  ) => {
+    const name = getExportFilename(settings.filename, extension);
+    let url = "";
+    if (blob) {
+      if (!blob.size) throw new Error("The exported file is empty.");
+      await blob.slice(0, 1).arrayBuffer();
+      if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
+      url = URL.createObjectURL(blob);
+    }
+    onComplete(url, name, completedSourceCleanup);
+    completedSourceCleanup = undefined;
+    onProgress(duration, duration, 100, "completed");
+    if (url) triggerFileDownload(url, name);
+    useToastStore
+      .getState()
+      .showToast("Export completed successfully", "success");
+  };
 
   try {
-    const preflight =
+    let preflight =
       preparedPreflight || (await buildExportPreflight(project, settings));
     if (preflight.isMobileBlocked) {
       throw new Error(
@@ -84,6 +112,28 @@ export async function runExportTask(
     wakeLock = await acquireScreenWakeLock();
 
     onProgress(0, project.settings.duration, 0, "rendering");
+    usePlaybackStore.getState().setIsPlaying(false);
+
+    if (preflight.frameEncoding) {
+      const { runFrameExport, FrameExportUnsupportedError } =
+        await import("./frame-exporter");
+      try {
+        const blob = await runFrameExport(
+          project,
+          settings,
+          preflight,
+          preflight.frameEncoding,
+          callbacks,
+        );
+        await publishExport(blob, settings.format, project.settings.duration);
+        return;
+      } catch (error) {
+        if (!(error instanceof FrameExportUnsupportedError)) throw error;
+        preflight = await buildExportPreflight(project, settings, false);
+        if (preflight.blockingReason) throw new Error(preflight.blockingReason);
+        callbacks.onStatus?.("Preparing compatibility export…");
+      }
+    }
 
     await loadTextFonts(
       project.tracks.flatMap((track) =>
@@ -93,68 +143,48 @@ export async function runExportTask(
       ),
     );
 
-    // 1. Preload Media Elements (Images, Videos, & Audio) from IndexedDB
-    for (const assetId of project.assetIds) {
+    // Each timeline clip needs its own player, even when clips reuse one asset.
+    const clips = project.tracks
+      .filter((track) => !track.hidden)
+      .flatMap((track) =>
+        track.clips.filter(
+          (clip) =>
+            clip.assetId &&
+            clip.timelineStart < project.settings.duration &&
+            clip.timelineStart + clip.timelineDuration > 0,
+        ),
+      );
+    const ids = [...new Set(clips.map((clip) => clip.assetId!))];
+    const assets = await db.assets.bulkGet(ids);
+    const assetsById = new Map(ids.map((id, index) => [id, assets[index]]));
+    for (const clip of clips) {
       if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
-      const asset = await db.assets.get(assetId);
-      if (!asset) continue;
-
-      const mediaUrl = await resolveMediaAssetUrl(asset).catch(() => null);
-      if (!mediaUrl) continue;
-
-      if (asset.type === "video") {
-        const videoEl = document.createElement("video");
-        videoEl.muted = true;
-        videoEl.playsInline = true;
-        videoEl.preload = "metadata";
-        videoEl.src = mediaUrl;
-
-        await new Promise<void>((resolve) => {
-          videoEl.onloadedmetadata = () => resolve();
-          videoEl.onerror = () => resolve();
-        });
-        mediaElementsMap.set(asset.id, videoEl);
-      } else if (asset.type === "audio") {
-        const audioEl = document.createElement("audio");
-        audioEl.preload = "metadata";
-        audioEl.src = mediaUrl;
-
-        await new Promise<void>((resolve) => {
-          audioEl.onloadedmetadata = () => resolve();
-          audioEl.onerror = () => resolve();
-        });
-        mediaElementsMap.set(asset.id, audioEl);
-      } else if (asset.type === "image") {
-        const imgEl = new Image();
-        if (asset.remoteUrl) imgEl.crossOrigin = "anonymous";
-        imgEl.src = mediaUrl;
-
-        await new Promise<void>((resolve) => {
-          imgEl.onload = () => resolve();
-          imgEl.onerror = () => resolve();
-        });
-        mediaElementsMap.set(asset.id, imgEl);
+      const asset = assetsById.get(clip.assetId!);
+      if (!asset)
+        throw new Error(
+          "A timeline media file is missing. Restore it before exporting.",
+        );
+      const url = await resolveMediaAssetUrl(asset);
+      if (asset.type === "image") {
+        const image = new Image();
+        if (asset.remoteUrl || asset.source?.kind === "remote")
+          image.crossOrigin = "anonymous";
+        await loadExportMediaElement(image, url, checkIsCancelled);
+        mediaElementsMap.set(clip.id, image);
+      } else {
+        const element = document.createElement(
+          asset.type === "video" ? "video" : "audio",
+        );
+        element.muted = true;
+        element.preload = "auto";
+        if (element instanceof HTMLVideoElement) element.playsInline = true;
+        await loadExportMediaElement(element, url, checkIsCancelled);
+        mediaElementsMap.set(clip.id, element);
       }
     }
-
     if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
-
-    // 2. Resolution Setup
-    const projW = project.settings.width || 1920;
-    const projH = project.settings.height || 1080;
-    let exportW = projW;
-    let exportH = projH;
-
-    if (settings.resolution === "720p" || settings.resolution === "1280x720") {
-      exportW = 1280;
-      exportH = 720;
-    } else if (
-      settings.resolution === "1080p" ||
-      settings.resolution === "1920x1080"
-    ) {
-      exportW = 1920;
-      exportH = 1080;
-    }
+    const exportW = preflight.width;
+    const exportH = preflight.height;
 
     // 3. Create Offscreen Composition Canvas
     offscreenCanvas = document.createElement("canvas");
@@ -223,11 +253,15 @@ export async function runExportTask(
     mediaRecorder.start(preflight.isLongExport ? 1000 : 200);
     callbacks.onStatus?.("Exporting video…");
 
+    const startedAt = performance.now();
+    let pausedMs = 0;
+    let lastProgressAt = startedAt;
     let currentTime = 0;
     while (currentTime < totalDuration) {
       if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
       if (chunkWriteError) throw chunkWriteError;
       if (document.visibilityState === "hidden") {
+        const pauseStartedAt = performance.now();
         callbacks.onStatus?.("Paused — return to this tab to continue");
         if (mediaRecorder.state === "recording") mediaRecorder.pause();
         await audioSession?.audioCtx.suspend();
@@ -236,6 +270,7 @@ export async function runExportTask(
           if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
           await new Promise((resolve) => setTimeout(resolve, 250));
         }
+        pausedMs += performance.now() - pauseStartedAt;
         await audioSession?.audioCtx.resume();
         if (mediaRecorder.state === "paused") mediaRecorder.resume();
         callbacks.onStatus?.("Exporting video…");
@@ -244,6 +279,8 @@ export async function runExportTask(
       }
 
       const frameStartedAt = performance.now();
+      currentTime = (frameStartedAt - startedAt - pausedMs) / 1000;
+      if (currentTime >= totalDuration) break;
       await synchronizeExportMedia(
         project,
         currentTime,
@@ -268,9 +305,10 @@ export async function runExportTask(
       }
 
       const pct = Math.min(99, Math.round((currentTime / totalDuration) * 90));
-      onProgress(currentTime, totalDuration, pct, "rendering");
-
-      currentTime += frameIntervalSec;
+      if (frameStartedAt - lastProgressAt >= 100) {
+        onProgress(currentTime, totalDuration, pct, "rendering");
+        lastProgressAt = frameStartedAt;
+      }
       const remainingFrameMs = Math.max(
         0,
         frameIntervalSec * 1000 - (performance.now() - frameStartedAt),
@@ -289,6 +327,7 @@ export async function runExportTask(
     const encodedBlob = outputTarget
       ? await outputTarget.close()
       : new Blob(recordedChunks, { type: mimeType });
+    completedSourceCleanup = outputTarget?.dispose;
     outputTarget = null;
 
     if (checkIsCancelled()) throw new Error("EXPORT_CANCELLED");
@@ -356,18 +395,7 @@ export async function runExportTask(
       }
     }
 
-    onProgress(totalDuration, totalDuration, 100, "completed");
-
-    const downloadName = getExportFilename(settings.filename, fileExtension);
-    let exportUrl = "";
-    if (finalExportBlob) {
-      exportUrl = URL.createObjectURL(finalExportBlob);
-      triggerFileDownload(exportUrl, downloadName);
-    }
-    useToastStore
-      .getState()
-      .showToast("Export completed successfully", "success");
-    onComplete(exportUrl, downloadName);
+    await publishExport(finalExportBlob, fileExtension, totalDuration);
   } catch (err: unknown) {
     await outputTarget?.abort().catch(() => undefined);
     outputTarget = null;
@@ -381,6 +409,7 @@ export async function runExportTask(
       onError(errMsg);
     }
   } finally {
+    await completedSourceCleanup?.().catch(() => undefined);
     // Teardown Stream Tracks & Contexts
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
       try {
