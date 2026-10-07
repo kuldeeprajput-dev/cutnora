@@ -124,13 +124,34 @@ export async function runExportTask(
           preflight,
           preflight.frameEncoding,
           callbacks,
+          outputTarget,
         );
-        await publishExport(blob, settings.format, project.settings.duration);
+        let finalBlob = blob;
+        if (outputTarget) {
+          finalBlob = await outputTarget.close();
+          completedSourceCleanup = outputTarget.dispose;
+          outputTarget = null;
+        }
+        await publishExport(
+          finalBlob,
+          settings.format,
+          project.settings.duration,
+        );
         return;
       } catch (error) {
         if (!(error instanceof FrameExportUnsupportedError)) throw error;
         preflight = await buildExportPreflight(project, settings, false);
         if (preflight.blockingReason) throw new Error(preflight.blockingReason);
+        if (preflight.isLongExport && !outputTarget) {
+          outputTarget = await createExportOutputTarget(
+            project.id,
+            settings.filename,
+            {
+              ...preflight,
+              destinationStrategy: "opfs",
+            },
+          );
+        }
         callbacks.onStatus?.("Preparing compatibility export…");
       }
     }
@@ -200,7 +221,20 @@ export async function runExportTask(
     audioSession = createAudioExporterSession(project, mediaElementsMap);
 
     // 5. Build Combined MediaStream
-    const canvasStream = offscreenCanvas.captureStream(settings.fps);
+    // Frames are pushed manually after each render, so the recorder never
+    // captures a half-drawn canvas or duplicates a stale frame.
+    const canPushFrames =
+      typeof CanvasCaptureMediaStreamTrack !== "undefined" &&
+      "requestFrame" in CanvasCaptureMediaStreamTrack.prototype;
+    const canvasStream = offscreenCanvas.captureStream(
+      canPushFrames ? 0 : settings.fps,
+    );
+    const [videoTrack] = canvasStream.getVideoTracks() as Array<
+      MediaStreamTrack & { requestFrame?: () => void }
+    >;
+    const pushFrame = () => {
+      if (canPushFrames) videoTrack?.requestFrame?.();
+    };
     combinedStream = new MediaStream();
 
     canvasStream.getVideoTracks().forEach((vt) => combinedStream?.addTrack(vt));
@@ -218,7 +252,9 @@ export async function runExportTask(
     mediaRecorder = new MediaRecorder(combinedStream, {
       mimeType,
       videoBitsPerSecond: preflight.videoBitrate,
-      ...(preflight.hasAudio ? { audioBitsPerSecond: 192_000 } : {}),
+      ...(preflight.hasAudio
+        ? { audioBitsPerSecond: preflight.audioBitrate || 192_000 }
+        : {}),
     });
 
     mediaRecorder.ondataavailable = (e) => {
@@ -237,8 +273,7 @@ export async function runExportTask(
 
     // 6. Frame Loop Execution
     const totalDuration = Math.max(0.5, project.settings.duration);
-    const fps = settings.fps;
-    const frameIntervalSec = 1 / fps;
+    const frameIntervalMs = 1000 / settings.fps;
 
     await synchronizeExportMedia(project, 0, mediaElementsMap, activeAssetIds);
     renderExportFrame({
@@ -251,6 +286,7 @@ export async function runExportTask(
       mediaElementsMap,
     });
     mediaRecorder.start(preflight.isLongExport ? 1000 : 200);
+    pushFrame();
     callbacks.onStatus?.("Exporting video…");
 
     const startedAt = performance.now();
@@ -298,6 +334,7 @@ export async function runExportTask(
         exportHeight: exportH,
         mediaElementsMap,
       });
+      pushFrame();
 
       // Update Audio Nodes envelope
       if (audioSession) {
@@ -309,11 +346,13 @@ export async function runExportTask(
         onProgress(currentTime, totalDuration, pct, "rendering");
         lastProgressAt = frameStartedAt;
       }
-      const remainingFrameMs = Math.max(
-        0,
-        frameIntervalSec * 1000 - (performance.now() - frameStartedAt),
+      // Wait for the next slot on a fixed frame grid so timing errors don't accumulate.
+      const elapsedMs = performance.now() - startedAt - pausedMs;
+      const nextFrameMs =
+        (Math.floor(elapsedMs / frameIntervalMs) + 1) * frameIntervalMs;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.max(0, nextFrameMs - elapsedMs)),
       );
-      await new Promise((resolve) => setTimeout(resolve, remainingFrameMs));
     }
 
     await new Promise<void>((resolve, reject) => {
@@ -401,7 +440,9 @@ export async function runExportTask(
     outputTarget = null;
     if (err instanceof Error && err.message === "EXPORT_CANCELLED") {
       onProgress(0, 0, 0, "cancelled");
-      useToastStore.getState().showToast("Export cancelled", "info");
+      useToastStore
+        .getState()
+        .showToast("Export cancelled. You can export again anytime.", "info", 4000);
     } else {
       console.error("Export error:", err);
       const errMsg = err instanceof Error ? err.message : String(err);

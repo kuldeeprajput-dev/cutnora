@@ -35,6 +35,7 @@ export async function mixExportAudioBlock(
   for (const state of clips) {
     checkCancelled();
     const { clip } = state;
+    const speed = clip.speed || 1;
     const clipEnd = clip.timelineStart + clip.timelineDuration;
     if (clipEnd <= startTime) {
       await state.iterator?.return();
@@ -48,14 +49,15 @@ export async function mixExportAudioBlock(
       state.iterator = new AudioBufferSink(state.track).buffers(
         Math.max(
           0,
-          clip.sourceStart + Math.max(0, startTime - clip.timelineStart),
+          clip.sourceStart +
+            Math.max(0, startTime - clip.timelineStart) * speed,
         ),
-        clip.sourceStart + clip.timelineDuration,
+        clip.sourceStart + clip.timelineDuration * speed,
       );
     }
     const sourceEnd =
       clip.sourceStart +
-      Math.min(endTime - clip.timelineStart, clip.timelineDuration);
+      Math.min(endTime - clip.timelineStart, clip.timelineDuration) * speed;
     while (!state.ended) {
       checkCancelled();
       if (!state.current) {
@@ -69,8 +71,9 @@ export async function mixExportAudioBlock(
       }
       const { buffer, timestamp, duration } = state.current;
       if (timestamp >= sourceEnd) break;
-      const bufferStart = clip.timelineStart + timestamp - clip.sourceStart;
-      const bufferEnd = bufferStart + duration;
+      const bufferStart =
+        clip.timelineStart + (timestamp - clip.sourceStart) / speed;
+      const bufferEnd = bufferStart + duration / speed;
       const firstSample = Math.max(
         0,
         Math.ceil(
@@ -91,9 +94,10 @@ export async function mixExportAudioBlock(
       for (let index = firstSample; index < lastSample; index++) {
         const elapsed =
           startTime + index / EXPORT_SAMPLE_RATE - clip.timelineStart;
+        const sourceElapsed = elapsed * speed;
         const position = Math.max(
           0,
-          (clip.sourceStart + elapsed - timestamp) * buffer.sampleRate,
+          (clip.sourceStart + sourceElapsed - timestamp) * buffer.sampleRate,
         );
         const left = Math.min(buffer.length - 1, Math.floor(position));
         const right = Math.min(buffer.length - 1, left + 1);

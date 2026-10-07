@@ -28,7 +28,6 @@ import {
   CheckCircle,
   RefreshCw,
   XCircle,
-  Film,
   Loader2,
 } from "lucide-react";
 
@@ -82,7 +81,9 @@ export function ExportModal() {
   const wasOpenRef = useRef(false);
   const exportStartedAtRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const isRunning = exportPhase === "rendering" || exportPhase === "converting";
+  const confirmingCancel = isRunning && showCancelConfirmation;
   const [preflight, setPreflight] = useState<ExportPreflightResult | null>(
     null,
   );
@@ -156,23 +157,31 @@ export function ExportModal() {
   ]);
 
   const handleCancelExport = useCallback(() => {
+    const phase = useExportStore.getState().exportPhase;
+    if (phase !== "rendering" && phase !== "converting") return;
     isCancelRef.current = true;
     setIsCancelRequested(true);
-  }, [setIsCancelRequested]);
+    setShowCancelConfirmation(false);
+    setExportModalOpen(false);
+  }, [setIsCancelRequested, setExportModalOpen]);
 
   // Dialog resets focus when onClose changes, so keep it stable while typing.
   const handleClose = useCallback(() => {
     if (exportPhase === "rendering" || exportPhase === "converting") {
-      handleCancelExport();
+      // Escape or Close dismisses an open confirmation and keeps exporting.
+      setShowCancelConfirmation((shown) => !shown);
+      return;
     }
     setExportModalOpen(false);
-  }, [exportPhase, handleCancelExport, setExportModalOpen]);
+  }, [exportPhase, setExportModalOpen]);
 
   if (!isExportModalOpen || !currentProject) return null;
 
   const totalDuration = currentProject.settings.duration || 10;
   const remainingSeconds =
-    exportPhase === "rendering" && currentExportTime > 0.5 && elapsedSeconds >= 3
+    exportPhase === "rendering" &&
+    currentExportTime > 0.5 &&
+    elapsedSeconds >= 3
       ? Math.ceil(
           (elapsedSeconds * Math.max(0, totalDuration - currentExportTime)) /
             currentExportTime,
@@ -190,6 +199,7 @@ export function ExportModal() {
       return;
     }
     isCancelRef.current = false;
+    setShowCancelConfirmation(false);
     resetExport();
     exportStartedAtRef.current = performance.now();
     setElapsedSeconds(0);
@@ -205,6 +215,10 @@ export function ExportModal() {
       },
       {
         onProgress: (curTime, totTime, pct, phase) => {
+          if (phase === "cancelled") {
+            resetExport();
+            return;
+          }
           setCurrentExportTime(curTime);
           setExportProgress(pct);
           setExportPhase(phase);
@@ -228,12 +242,14 @@ export function ExportModal() {
     <Dialog
       isOpen={isExportModalOpen}
       onClose={handleClose}
-      title="Export Video"
-      className="max-w-lg max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[92dvh] max-lg:rounded-b-none max-lg:rounded-t-2xl max-lg:border-b-0"
+      title={confirmingCancel ? "Cancel export?" : "Export Video"}
+      closeOnBackdropClick={!isRunning}
+      className="max-w-lg rounded-2xl [&>div:first-child]:mb-5 [&>div:first-child_h2]:text-xl max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[92dvh] max-lg:rounded-b-none max-lg:rounded-t-2xl max-lg:border-b-0"
     >
       <div className="flex flex-col gap-4">
         {/* Browser Capability Warnings */}
-        {(!capabilities.hasCaptureStream || !capabilities.hasMediaRecorder) && (
+        {!confirmingCancel &&
+          (!capabilities.hasCaptureStream || !capabilities.hasMediaRecorder) && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive mb-2">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>
@@ -243,8 +259,20 @@ export function ExportModal() {
           </div>
         )}
 
+        {confirmingCancel && (
+          <div className="py-2">
+            <p className="text-sm leading-relaxed text-studio-fg">
+              Your video is still exporting. If you stop now, you’ll need to
+              start a new export.
+            </p>
+            <p className="mt-3 text-xs tabular-nums text-studio-muted">
+              {exportProgress}% complete
+            </p>
+          </div>
+        )}
+
         {/* Phase View: Rendering or Converting */}
-        {(exportPhase === "rendering" || exportPhase === "converting") && (
+        {isRunning && !confirmingCancel && (
           <div className="flex flex-col gap-4 py-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-brand flex items-center gap-2">
@@ -355,21 +383,21 @@ export function ExportModal() {
           <div className="flex flex-col gap-4">
             {/* Filename Input */}
             <div>
-              <label className="text-[11px] font-medium text-studio-muted block mb-1">
+              <label className="mb-1.5 block text-xs font-medium text-studio-muted">
                 Export Filename
               </label>
               <Input
                 value={filename}
                 onChange={(e) => setFilename(e.target.value)}
                 placeholder="my-video"
-                className="h-8 text-xs font-mono"
+                className="h-10 rounded-xl bg-studio-panel-raised/50 text-sm focus-visible:border-studio-fg/40 focus-visible:ring-1 focus-visible:ring-studio-fg/20 max-lg:h-12 max-lg:text-base"
               />
             </div>
 
             {/* Format & Resolution */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-studio-muted block mb-1">
+                <label className="mb-1.5 block text-xs font-medium text-studio-muted">
                   Format
                 </label>
                 <Select
@@ -378,7 +406,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportFormat(e.target.value as ExportFormat)
                   }
-                  className="h-8 text-xs border-studio-border"
+                  className="h-10 rounded-xl border-studio-border bg-studio-panel-raised/50 text-sm max-lg:h-11"
                 >
                   <option value="webm">WebM</option>
                   <option
@@ -397,7 +425,7 @@ export function ExportModal() {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-studio-muted block mb-1">
+                <label className="mb-1.5 block text-xs font-medium text-studio-muted">
                   Resolution
                 </label>
                 <Select
@@ -411,16 +439,20 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportResolution(e.target.value as ExportResolution)
                   }
-                  className="h-8 text-xs border-studio-border"
+                  className="h-10 rounded-xl border-studio-border bg-studio-panel-raised/50 text-sm max-lg:h-11"
                 >
                   <option value="project">
-                    Original ({getExportDimensions(currentProject, "project").width} × {getExportDimensions(currentProject, "project").height})
+                    Original (
+                    {getExportDimensions(currentProject, "project").width} ×{" "}
+                    {getExportDimensions(currentProject, "project").height})
                   </option>
                   <option value="720p">
-                    720p ({getExportDimensions(currentProject, "720p").width} × {getExportDimensions(currentProject, "720p").height})
+                    720p ({getExportDimensions(currentProject, "720p").width} ×{" "}
+                    {getExportDimensions(currentProject, "720p").height})
                   </option>
                   <option value="1080p">
-                    1080p ({getExportDimensions(currentProject, "1080p").width} × {getExportDimensions(currentProject, "1080p").height})
+                    1080p ({getExportDimensions(currentProject, "1080p").width}{" "}
+                    × {getExportDimensions(currentProject, "1080p").height})
                   </option>
                 </Select>
               </div>
@@ -429,7 +461,7 @@ export function ExportModal() {
             {/* Frame Rate & Quality */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-studio-muted block mb-1">
+                <label className="mb-1.5 block text-xs font-medium text-studio-muted">
                   Frame Rate
                 </label>
                 <Select
@@ -438,7 +470,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportFps(parseInt(e.target.value, 10) as 24 | 30 | 60)
                   }
-                  className="h-8 text-xs border-studio-border"
+                  className="h-10 rounded-xl border-studio-border bg-studio-panel-raised/50 text-sm max-lg:h-11"
                 >
                   <option value="24">24</option>
                   <option value="30">30</option>
@@ -447,7 +479,7 @@ export function ExportModal() {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-studio-muted block mb-1">
+                <label className="mb-1.5 block text-xs font-medium text-studio-muted">
                   Quality
                 </label>
                 <Select
@@ -456,7 +488,7 @@ export function ExportModal() {
                   onChange={(e) =>
                     setExportQuality(e.target.value as ExportQuality)
                   }
-                  className="h-8 text-xs border-studio-border"
+                  className="h-10 rounded-xl border-studio-border bg-studio-panel-raised/50 text-sm max-lg:h-11"
                 >
                   {Object.entries(EXPORT_QUALITY_OPTIONS).map(
                     ([value, option]) => (
@@ -471,6 +503,15 @@ export function ExportModal() {
             <p className="-mt-2 text-[11px] text-studio-muted">
               {EXPORT_QUALITY_OPTIONS[exportQuality].description}
             </p>
+            {preflight && preflight.frameEncoding && (
+              <p className="text-xs leading-relaxed text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  Smooth frame-accurate export ({exportFps} FPS, zero dropped
+                  frames)
+                </span>
+              </p>
+            )}
             {preflight && !preflight.frameEncoding && exportFps === 60 && (
               <p className="text-xs leading-relaxed text-studio-muted">
                 This export requires real-time capture. Its frame rate depends
@@ -478,36 +519,41 @@ export function ExportModal() {
               </p>
             )}
 
-            {/* Duration Badge & Performance Disclaimer */}
-            <div className="rounded-lg border border-studio-border bg-studio-topbar p-3 text-xs flex flex-col gap-1">
-              <div className="flex items-center justify-between text-studio-fg font-semibold">
-                <span className="flex items-center gap-1.5">
-                  <Film className="h-4 w-4 text-brand" /> Estimated Duration
-                </span>
-                <span className="font-mono">
-                  {formatSeconds(totalDuration)}
-                </span>
-              </div>
-              {preflight && (
-                <div className="mt-1 text-[11px] text-studio-muted">
-                  <div className="flex items-center justify-between">
-                    <span>Estimated output</span>
-                    <span className="font-mono">
-                      {formatBytes(preflight.estimatedBytes)} ·{" "}
-                      {preflight.extension.toUpperCase()}
-                    </span>
-                  </div>
-                  {preflight.isLongExport && (
-                    <p className="mt-1 text-brand">
-                      Long export streams to local storage in real time. Keep
-                      this tab open until it finishes.
-                    </p>
-                  )}
+            {/* Export summary */}
+            <div className="overflow-hidden rounded-xl border border-studio-border bg-studio-panel-raised/50">
+              <dl className="grid grid-cols-2 gap-4 p-4">
+                <div className="min-w-0">
+                  <dt className="text-[11px] text-studio-muted">
+                    Estimated duration
+                  </dt>
+                  <dd className="mt-1.5 font-mono text-base font-medium tabular-nums text-studio-fg">
+                    {formatSeconds(totalDuration)}
+                  </dd>
                 </div>
+                {preflight && (
+                  <div className="min-w-0 border-l border-studio-border pl-4">
+                    <dt className="text-[11px] text-studio-muted">
+                      Estimated output
+                    </dt>
+                    <dd className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base font-medium tabular-nums text-studio-fg">
+                      <span>{formatBytes(preflight.estimatedBytes)}</span>
+                      <span className="text-[10px] font-medium tracking-wide text-studio-muted">
+                        {preflight.extension.toUpperCase()}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              {preflight?.isLongExport && (
+                <p className="px-4 pb-3 text-xs leading-relaxed text-studio-fg">
+                  {preflight.frameEncoding
+                    ? "Long export streams smoothly to local storage. Keep this tab open until it finishes."
+                    : "Long export streams to local storage in real time. Keep this tab open until it finishes."}
+                </p>
               )}
-              <p className="text-[11px] text-studio-muted mt-1">
-                Local export performance depends on project length, resolution
-                and device performance.
+              <p className="border-t border-studio-border px-4 py-3 text-[11px] leading-relaxed text-studio-muted">
+                File size is estimated directly from encoded video and audio
+                bitrates.
               </p>
             </div>
             {preflight?.blockingReason && (
@@ -519,16 +565,36 @@ export function ExportModal() {
         )}
 
         {/* Modal Actions */}
-        <div className="mt-4 flex items-center justify-end gap-2 border-t border-studio-border pt-4">
-          {(exportPhase === "rendering" || exportPhase === "converting") && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleCancelExport}
-              className="w-full text-destructive"
-            >
-              Cancel Export
-            </Button>
+        <div className="mt-1 flex items-center justify-end gap-2 border-t border-studio-border pt-4">
+          {isRunning && (
+            confirmingCancel ? (
+              <div className="flex w-full flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleCancelExport}
+                  className="h-10 flex-1 rounded-xl text-sm text-destructive max-lg:h-12"
+                >
+                  Stop export
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setShowCancelConfirmation(false)}
+                  className="h-10 flex-1 rounded-xl text-sm max-lg:h-12"
+                >
+                  Keep exporting
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setShowCancelConfirmation(true)}
+                className="w-full text-destructive"
+              >
+                Cancel Export
+              </Button>
+            )
           )}
 
           {exportPhase === "completed" && (
@@ -565,7 +631,12 @@ export function ExportModal() {
 
           {exportPhase === "idle" && (
             <div className="flex items-center justify-end gap-2 w-full">
-              <Button size="sm" variant="secondary" onClick={handleClose}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleClose}
+                className="h-10 rounded-xl px-4 text-sm max-lg:h-12"
+              >
                 Cancel
               </Button>
               <Button
@@ -578,7 +649,7 @@ export function ExportModal() {
                   !preflight.hasEnoughStorage ||
                   Boolean(preflight.blockingReason)
                 }
-                className="gap-1.5"
+                className="h-10 gap-2 rounded-xl px-4 text-sm max-lg:h-12"
               >
                 <Download className="h-3.5 w-3.5" /> Start Export
               </Button>

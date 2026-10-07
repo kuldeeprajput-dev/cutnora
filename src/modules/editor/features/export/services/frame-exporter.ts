@@ -4,16 +4,19 @@ import {
   BlobSource,
   BufferTarget,
   CanvasSink,
-  CanvasSource,
+  VideoSample,
+  VideoSampleSource,
   Input,
   Mp4OutputFormat,
   Output,
   Quality,
+  StreamTarget,
   UrlSource,
   WebMOutputFormat,
   canEncodeAudio,
   canEncodeVideo,
   type InputVideoTrack,
+  type StreamTargetChunk,
   type WrappedCanvas,
 } from "mediabunny";
 import type { Project } from "@/modules/projects/types";
@@ -33,10 +36,12 @@ import {
 } from "./offline-audio-mixer";
 import type { ExportCallbacks, ExportSettings } from "./exportService";
 import type { ExportPreflightResult } from "./export-preflight";
+import type { ExportOutputTarget } from "./export-output-target";
 
 export interface FrameEncodingSupport {
-  videoCodec: "avc" | "vp8";
+  videoCodec: "avc" | "vp9" | "vp8";
   audioCodec: "aac" | "opus";
+  bitrateMode: "constant" | "variable";
 }
 export class FrameExportUnsupportedError extends Error {}
 let aacRegistration: Promise<void> | undefined;
@@ -65,19 +70,38 @@ export function getFrameEncodingSupport(
       typeof VideoDecoder === "undefined"
     )
       return null;
-    const videoCodec = settings.format === "mp4" ? "avc" : "vp8";
+    const videoCodecs: Array<"avc" | "vp9" | "vp8"> =
+      settings.format === "mp4" ? ["avc"] : ["vp9", "vp8"];
     const audioCodec = settings.format === "mp4" ? "aac" : "opus";
-    if (
-      !(await canEncodeVideo(videoCodec, {
-        width,
-        height,
-        bitrate,
-        frameRate: settings.fps,
-        latencyMode: "quality",
-        hardwareAcceleration: "no-preference",
-      }))
-    )
-      return null;
+
+    let chosenVideoCodec: "avc" | "vp9" | "vp8" | null = null;
+    let chosenBitrateMode: "constant" | "variable" | null = null;
+
+    for (const codec of videoCodecs) {
+      const canEncodeWith = (bitrateMode: "constant" | "variable") =>
+        canEncodeVideo(codec, {
+          width,
+          height,
+          quality: new Quality({ bitrate, bitrateMode }),
+          frameRate: settings.fps,
+          latencyMode: "quality",
+          hardwareAcceleration: "no-preference",
+        });
+
+      if (await canEncodeWith("constant")) {
+        chosenVideoCodec = codec;
+        chosenBitrateMode = "constant";
+        break;
+      }
+      if (await canEncodeWith("variable")) {
+        chosenVideoCodec = codec;
+        chosenBitrateMode = "variable";
+        break;
+      }
+    }
+
+    if (!chosenVideoCodec || !chosenBitrateMode) return null;
+
     if (hasAudio) {
       const audioOptions = {
         sampleRate: EXPORT_SAMPLE_RATE,
@@ -93,7 +117,11 @@ export function getFrameEncodingSupport(
         if (!(await canEncodeAudio(audioCodec, audioOptions))) return null;
       }
     }
-    return { videoCodec, audioCodec };
+    return {
+      videoCodec: chosenVideoCodec,
+      audioCodec,
+      bitrateMode: chosenBitrateMode,
+    };
   })().catch(() => null);
   if (supportCache.size >= 32) supportCache.clear();
   supportCache.set(key, probe);
@@ -107,13 +135,15 @@ interface VideoClip {
 }
 
 // Encode timeline timestamps directly: slow rendering never drops or stretches a frame.
+// Resolves to null when the file was streamed to `outputTarget`.
 export async function runFrameExport(
   project: Project,
   settings: ExportSettings,
   preflight: ExportPreflightResult,
   encoding: FrameEncodingSupport,
   callbacks: ExportCallbacks,
-): Promise<Blob> {
+  outputTarget: ExportOutputTarget | null = null,
+): Promise<Blob | null> {
   const inputs = new Map<string, Input>();
   const media = new Map<string, ExportMediaSource>();
   const videos: VideoClip[] = [];
@@ -214,26 +244,46 @@ export async function runFrameExport(
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) throw new Error("Could not create an export canvas.");
     ctx.imageSmoothingQuality = settings.quality === "high" ? "high" : "medium";
-    const target = new BufferTarget();
+    // Large exports stream to disk; muxers patch headers via positional writes.
+    const bufferTarget = outputTarget ? null : new BufferTarget();
+    const target =
+      bufferTarget ??
+      new StreamTarget(
+        new WritableStream<StreamTargetChunk>({
+          write: (chunk) => outputTarget!.write(chunk.data, chunk.position),
+        }),
+        { chunked: true },
+      );
     output = new Output({
       format:
         settings.format === "mp4"
-          ? new Mp4OutputFormat({ fastStart: "in-memory" })
+          ? new Mp4OutputFormat({
+              fastStart: bufferTarget ? "in-memory" : false,
+            })
           : new WebMOutputFormat(),
       target,
     });
-    const videoSource = new CanvasSource(canvas, {
+    const videoSource = new VideoSampleSource({
       codec: encoding.videoCodec,
-      quality: new Quality({ bitrate: preflight.videoBitrate }),
+      quality: new Quality({
+        bitrate: preflight.videoBitrate,
+        bitrateMode: encoding.bitrateMode,
+      }),
       keyFrameInterval: 2,
       latencyMode: "quality",
       hardwareAcceleration: "no-preference",
+      transform: {
+        frameRate: settings.fps,
+      },
     });
     output.addVideoTrack(videoSource, { frameRate: settings.fps });
     const audioSource = audio.length
       ? new AudioBufferSource({
           codec: encoding.audioCodec,
-          quality: new Quality({ bitrate: 192_000 }),
+          quality: new Quality({
+            bitrate: preflight.audioBitrate || 192_000,
+            bitrateMode: "constant",
+          }),
         })
       : null;
     if (audioSource) output.addAudioTrack(audioSource);
@@ -262,7 +312,7 @@ export async function runFrameExport(
             function* timestamps() {
               for (
                 let index = firstFrame;
-                index < frameCount && index / settings.fps < clipEnd;
+                index < frameCount && index / settings.fps < clipEnd + 0.1;
                 index++
               ) {
                 yield Math.max(
@@ -274,7 +324,7 @@ export async function runFrameExport(
               }
             }
             state.iterator = new CanvasSink(state.track, {
-              poolSize: 1,
+              poolSize: 3,
             }).canvasesAtTimestamps(timestamps());
           }
           const next = await state.iterator.next();
@@ -291,7 +341,17 @@ export async function runFrameExport(
         exportHeight: preflight.height,
         mediaElementsMap: media,
       });
-      await videoSource.add(time, 1 / settings.fps);
+      const sample = new VideoSample(canvas, {
+        timestamp: time,
+        duration: 1 / settings.fps,
+      });
+      try {
+        await videoSource.add(sample);
+      } finally {
+        // Encoding may clone the sample for frame-rate normalization. We own
+        // the original and must release it even when encoding fails.
+        sample.close();
+      }
       if (audioSource) {
         const until = Math.min(
           totalSamples,
@@ -325,14 +385,32 @@ export async function runFrameExport(
       }
     }
     checkCancelled();
+    if (audioSource && samplesWritten < totalSamples) {
+      while (samplesWritten < totalSamples) {
+        const length = Math.min(
+          Math.floor(EXPORT_SAMPLE_RATE / 4),
+          totalSamples - samplesWritten,
+        );
+        const block = await mixExportAudioBlock(
+          audio,
+          samplesWritten,
+          length,
+          project.settings.masterVolume ?? 1,
+          checkCancelled,
+        );
+        await audioSource.add(block);
+        samplesWritten += length;
+      }
+    }
     callbacks.onStatus?.("Finalizing video…");
     videoSource.close();
     audioSource?.close();
     await output.finalize();
     checkCancelled();
-    if (!target.buffer)
+    if (!bufferTarget) return null;
+    if (!bufferTarget.buffer)
       throw new Error("The exported video could not be finalized.");
-    return new Blob([target.buffer], {
+    return new Blob([bufferTarget.buffer], {
       type: settings.format === "mp4" ? "video/mp4" : "video/webm",
     });
   } finally {

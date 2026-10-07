@@ -18,9 +18,12 @@ export interface OpfsWriteOptions {
   onProgress?: (progress: OpfsWriteProgress) => void;
 }
 
+export type WritableChunk = Blob | Uint8Array<ArrayBuffer>;
+
 export interface OpfsWritableTarget {
   path: string;
-  write: (chunk: Blob) => Promise<void>;
+  /** Appends at the cursor, or writes at `position` when given. */
+  write: (chunk: WritableChunk, position?: number) => Promise<void>;
   close: () => Promise<File>;
   dispose: () => Promise<void>;
   abort: () => Promise<void>;
@@ -185,9 +188,13 @@ export async function createOpfsWritableTarget(
 
   return {
     path,
-    write: async (chunk) => {
+    write: async (chunk, position) => {
       if (settled) throw new Error("Export destination is already closed.");
-      await writable.write(chunk);
+      await writable.write(
+        position === undefined
+          ? chunk
+          : { type: "write", position, data: chunk },
+      );
     },
     close: async () => {
       if (!settled) {

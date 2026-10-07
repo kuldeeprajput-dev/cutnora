@@ -2,8 +2,10 @@ import type { Project } from "@/modules/projects/types";
 import type { ExportSettings } from "./exportService";
 import type { FrameEncodingSupport } from "./frame-exporter";
 import { getStorageCapacity } from "@/modules/core/storage/opfs-media-storage";
+import { db } from "@/modules/core/db/database";
 
 import {
+  getExportAudioBitrate,
   getExportDimensions,
   getExportVideoBitrate,
   hasExportAudio,
@@ -11,9 +13,8 @@ import {
 
 const LONG_DURATION_SECONDS = 30 * 60;
 const LONG_OUTPUT_BYTES = 512 * 1024 * 1024;
-const AUDIO_BITRATE = 192_000;
 
-export type ExportDestinationStrategy = "memory" | "direct-file" | "opfs";
+export type ExportDestinationStrategy = "memory" | "opfs";
 
 export interface ExportPreflightResult {
   isLongExport: boolean;
@@ -28,6 +29,7 @@ export interface ExportPreflightResult {
   width: number;
   height: number;
   videoBitrate: number;
+  audioBitrate: number;
   hasAudio: boolean;
   blockingReason: string | null;
   frameEncoding: FrameEncodingSupport | null;
@@ -57,11 +59,27 @@ export function getNativeMp4MimeType(): string | null {
 export function estimateExportBytes(
   duration: number,
   videoBitrate: number,
-  hasAudio: boolean,
+  audioBitrate: number,
 ): number {
-  return Math.ceil(
-    ((videoBitrate + (hasAudio ? AUDIO_BITRATE : 0)) * duration * 1.2) / 8,
-  );
+  // Container overhead (EBML / MP4 boxes) is ~1.5%
+  return Math.ceil(((videoBitrate + audioBitrate) * duration * 1.015) / 8);
+}
+
+async function loadTimelineVideoAssets(project: Project, duration: number) {
+  const ids = new Set<string>();
+  for (const track of project.tracks) {
+    if (track.hidden) continue;
+    for (const clip of track.clips) {
+      if (
+        clip.type === "video" &&
+        clip.assetId &&
+        clip.timelineStart < duration &&
+        clip.timelineStart + clip.timelineDuration > 0
+      )
+        ids.add(clip.assetId);
+    }
+  }
+  return ids.size ? db.assets.bulkGet([...ids]) : [];
 }
 
 export async function buildExportPreflight(
@@ -71,45 +89,32 @@ export async function buildExportPreflight(
 ): Promise<ExportPreflightResult> {
   const duration = Math.max(0.5, project.settings.duration);
   const { width, height } = getExportDimensions(project, settings.resolution);
+  const videoAssets = await loadTimelineVideoAssets(project, duration);
   const videoBitrate = getExportVideoBitrate(
     width,
     height,
     settings.fps,
     settings.quality,
+    videoAssets,
   );
   const hasAudio = hasExportAudio(project);
-  const estimatedBytes = estimateExportBytes(duration, videoBitrate, hasAudio);
+  const audioBitrate = getExportAudioBitrate(hasAudio, settings.quality);
+
+  // Frame encoding renders every frame at its exact timestamp offline,
+  // guaranteeing buttery-smooth playback at the requested FPS without dropped frames.
+  const frameEncoding = allowFrameEncoding
+    ? await (
+        await import("./frame-exporter")
+      ).getFrameEncodingSupport(settings, width, height, videoBitrate, hasAudio)
+    : null;
+
+  const estimatedBytes = estimateExportBytes(
+    duration,
+    videoBitrate,
+    audioBitrate,
+  );
   const isLongExport =
     duration > LONG_DURATION_SECONDS || estimatedBytes > LONG_OUTPUT_BYTES;
-  // Keep playback's pitch preservation for sped-up audible clips.
-  const needsPlaybackAudio =
-    hasAudio &&
-    project.tracks.some(
-      (track) =>
-        !track.hidden &&
-        !track.muted &&
-        track.clips.some(
-          (clip) =>
-            clip.timelineStart < duration &&
-            clip.timelineStart + clip.timelineDuration > 0 &&
-            !clip.audio?.muted &&
-            (clip.audio?.volume ?? 1) > 0 &&
-            (clip.type === "video" || clip.type === "audio") &&
-            (clip.speed || 1) !== 1,
-        ),
-    );
-  const frameEncoding =
-    allowFrameEncoding && !isLongExport && !needsPlaybackAudio
-      ? await (
-          await import("./frame-exporter")
-        ).getFrameEncodingSupport(
-          settings,
-          width,
-          height,
-          videoBitrate,
-          hasAudio,
-        )
-      : null;
   const nativeMp4 = getNativeMp4MimeType();
   const mimeType = frameEncoding
     ? settings.format === "mp4"
@@ -123,13 +128,14 @@ export async function buildExportPreflight(
     !isLongExport &&
     settings.format === "mp4" &&
     !mimeType.startsWith("video/mp4");
-  const extension = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
-  const hasDirectFile =
-    typeof window !== "undefined" && "showSaveFilePicker" in window;
+  const extension =
+    frameEncoding || settings.format === "mp4"
+      ? settings.format
+      : mimeType.startsWith("video/mp4")
+        ? "mp4"
+        : "webm";
   const destinationStrategy: ExportDestinationStrategy = isLongExport
-    ? hasDirectFile
-      ? "direct-file"
-      : "opfs"
+    ? "opfs"
     : "memory";
   const isMobile =
     typeof window !== "undefined" &&
@@ -137,9 +143,7 @@ export async function buildExportPreflight(
   const storage = await getStorageCapacity(false);
   const requiredStorage = Math.ceil(estimatedBytes * 1.1);
   const hasEnoughStorage =
-    destinationStrategy === "direct-file" ||
-    storage.available === undefined ||
-    storage.available >= requiredStorage;
+    storage.available === undefined || storage.available >= requiredStorage;
 
   const canRecord =
     typeof MediaRecorder !== "undefined" &&
@@ -172,6 +176,7 @@ export async function buildExportPreflight(
     width,
     height,
     videoBitrate,
+    audioBitrate,
     hasAudio,
     blockingReason,
   };

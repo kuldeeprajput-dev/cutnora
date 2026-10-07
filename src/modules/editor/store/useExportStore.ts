@@ -148,9 +148,6 @@ export const useExportStore = create<ExportState>()(
     setIsCancelRequested: (cancel) =>
       set((state) => {
         state.isCancelRequested = cancel;
-        if (cancel) {
-          state.exportPhase = "cancelled";
-        }
       }),
 
     detectCapabilities: () => {
