@@ -6,7 +6,7 @@ export interface SectionHeadingProps extends React.HTMLAttributes<HTMLDivElement
   subtitle?: string;
   badge?: string;
   align?: 'left' | 'center' | 'right';
-  theme?: 'marketing' | 'studio';
+  theme?: 'landing' | 'studio';
 }
 
 export function SectionHeading({
@@ -30,7 +30,7 @@ export function SectionHeading({
         <span
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium tracking-tight mb-1',
-            theme === 'marketing'
+            theme === 'landing'
               ? 'bg-white/[0.06] text-white border border-white/10'
               : 'bg-studio-panel-raised text-white border border-studio-border'
           )}
@@ -41,7 +41,7 @@ export function SectionHeading({
       <h2
         className={cn(
           'text-2xl font-bold tracking-tight sm:text-3xl',
-          theme === 'marketing' ? 'text-mkt-fg' : 'text-studio-fg'
+          theme === 'landing' ? 'text-mkt-fg' : 'text-studio-fg'
         )}
       >
         {title}
@@ -50,7 +50,7 @@ export function SectionHeading({
         <p
           className={cn(
             'text-sm max-w-2xl',
-            theme === 'marketing' ? 'text-mkt-muted' : 'text-studio-muted'
+            theme === 'landing' ? 'text-mkt-muted' : 'text-studio-muted'
           )}
         >
           {subtitle}

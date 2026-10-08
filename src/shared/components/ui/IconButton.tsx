@@ -29,7 +29,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   ghost: "text-studio-muted hover:text-studio-fg hover:bg-studio-panel-raised",
   destructive: "bg-destructive text-white hover:bg-destructive-hover",
   selection: "bg-selection text-studio-bg hover:bg-selection-hover",
-  marketing: "bg-brand text-brand-contrast hover:bg-brand-hover",
+  landing: "bg-brand text-brand-contrast hover:bg-brand-hover",
 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(

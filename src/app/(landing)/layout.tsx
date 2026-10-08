@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function MarketingLayout({
+export default function LandingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

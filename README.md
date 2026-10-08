@@ -51,10 +51,10 @@ The codebase follows a strict module-based structure:
 ```
 src/
 ├── app/                  # Next.js App Router routes & page layouts
-│   ├── (marketing)/      # Landing page (warm off-white editorial theme)
+│   ├── (landing)/      # Landing page (warm off-white editorial theme)
 │   └── studio/           # Editor dashboard & workspace (charcoal dark studio theme)
 ├── modules/              # Core domain modules
-│   ├── marketing/        # Landing page logic & components
+│   ├── landing/        # Landing page logic & components
 │   ├── projects/         # Project management, creation & schemas
 │   └── editor/           # Multitrack video editor engine & features
 │       └── features/     # Feature-level modules (canvas, timeline, inspector, etc.)
@@ -71,3 +71,9 @@ src/
 ## Local Browser Storage Approach
 
 All imported user media (videos, audio, images) remain strictly on the user's local device. Media assets are read via the File API and stored as binary `Blob` objects inside IndexedDB using **Dexie.js**. Projects, track configurations, and clip keyframes are persisted to IndexedDB so edits survive browser refreshes.
+
+## License
+
+Cutnora's original code is licensed under the [MIT License](LICENSE).
+Copyright (c) 2026 Kuldeep Rajput (github.com/kuldeeprajput-dev).
+Third-party dependencies and assets remain subject to their respective licenses.

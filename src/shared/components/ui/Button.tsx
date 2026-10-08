@@ -8,7 +8,7 @@ export type ButtonVariant =
   | "ghost"
   | "destructive"
   | "selection"
-  | "marketing";
+  | "landing";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -28,7 +28,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   destructive: "bg-destructive text-white hover:bg-destructive-hover",
   selection:
     "bg-selection text-studio-bg font-semibold hover:bg-selection-hover",
-  marketing:
+  landing:
     "bg-brand text-brand-contrast font-medium hover:bg-brand-hover shadow-sm",
 };
 

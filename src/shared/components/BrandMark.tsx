@@ -5,7 +5,7 @@ interface BrandMarkProps {
   className?: string;
   size?: number;
   inverted?: boolean;
-  variant?: "default" | "marketing";
+  variant?: "default" | "landing";
 }
 
 export function BrandMark({
