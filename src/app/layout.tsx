@@ -1,33 +1,46 @@
 import type { Metadata, Viewport } from "next";
+import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
 import { ToastContainer } from "@/shared/components/ui/Toast/ToastContainer";
 import { NativeContextMenuBlocker } from "@/shared/components/providers/NativeContextMenuBlocker";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Cutnora — Private browser video editor",
+    default: siteConfig.title,
     template: "%s · Cutnora",
   },
-  description:
-    "A private, multitrack video editor that keeps projects and media on your device.",
+  description: siteConfig.description,
   keywords: [
     "video editor",
     "browser video editor",
+    "online video editor",
     "webm export",
     "mp4 export",
     "multitrack timeline",
     "cutnora",
   ],
-  authors: [{ name: "Cutnora Team" }],
+  authors: [
+    { name: "Kuldeep Rajput", url: "https://github.com/kuldeeprajput-dev" },
+  ],
+  applicationName: siteConfig.name,
   icons: {
-    icon: "/brand/cutnora-logo.svg",
-    apple: "/brand/cutnora-logo.svg",
+    icon: { url: "/brand/cutnora-logo.svg", type: "image/svg+xml", sizes: "any" },
   },
   openGraph: {
-    title: "Cutnora — Private browser video editor",
-    description:
-      "Edit, mix, and export video locally in your browser. No account or upload required.",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    locale: "en_US",
     type: "website",
+    images: [siteConfig.socialImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    creator: siteConfig.twitterHandle,
+    images: [siteConfig.socialImage],
   },
 };
 

@@ -107,6 +107,28 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) for contribution checks and pull request
 
 </details>
 
+<details>
+<summary><strong>Production domain and search setup</strong></summary>
+
+The public domain is configured once in [`src/config/site.ts`](src/config/site.ts):
+
+```ts
+url: "https://cutnora.app",
+```
+
+Metadata, canonical URLs, the sitemap, and social previews use this value.
+
+After deploying:
+
+1. Add `cutnora.app` as a custom domain in your hosting dashboard and apply the DNS records provided by your host.
+2. Choose `https://cutnora.app` as the primary domain. Redirect any alternate hostnames, such as `www.cutnora.app`, to it through your host if you enable them.
+3. Confirm `/robots.txt`, `/sitemap.xml`, and `/images/og-image/og-image.png` load on the deployed domain.
+4. Add a **Domain property** for `cutnora.app` in [Google Search Console](https://search.google.com/search-console), verify ownership using its DNS TXT record, and submit `https://cutnora.app/sitemap.xml`.
+
+The sitemap lists the public landing page. Editor and local project routes use `noindex` metadata and are excluded from the sitemap; crawlers can still access them to read that metadata.
+
+</details>
+
 ## Under the hood
 
 Built with Next.js, React, TypeScript, and Tailwind CSS. Zustand manages editor state; Dexie and browser file storage keep projects and media local. Mediabunny and browser media APIs handle decoding and export, with MediaRecorder and FFmpeg compatibility paths.
